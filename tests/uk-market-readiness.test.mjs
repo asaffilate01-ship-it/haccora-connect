@@ -33,6 +33,7 @@ test("native and web diary enforce corrective action", () => {
 test("dependency manifest and lock use compatible Zod major", () => {
   const p = JSON.parse(read("package.json"));
   const l = JSON.parse(read("package-lock.json"));
-  assert.match(p.dependencies.zod, /\^3\./);
-  assert.match(l.packages["node_modules/zod"].version, /^3\./);
+  // TanStack Start v1 requires Zod v4 in this project.
+  assert.match(p.dependencies.zod, /\^4/);
+  assert.match(l.packages["node_modules/zod"].version, /^4\./);
 });
