@@ -52,6 +52,8 @@ import {
   CreditCard,
   PlugZap,
   Accessibility,
+  BookOpenCheck,
+  NotebookPen,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app")({
@@ -86,6 +88,8 @@ const GROUPS: NavGroup[] = [
   {
     labelKey: "nav.group.compliance",
     items: [
+      { to: "/app/safe-methods", icon: BookOpenCheck, key: "Safe methods", nav: "haccp" },
+      { to: "/app/diary", icon: NotebookPen, key: "Daily diary", nav: "checks" },
       { to: "/app/haccp", icon: ShieldCheck, key: "menu.haccp", nav: "haccp" },
       { to: "/app/haccp-flows", icon: ShieldCheck, key: "menu.haccpFlows", nav: "haccp" },
       { to: "/app/checks", icon: ClipboardCheck, key: "menu.checks", nav: "checks" },

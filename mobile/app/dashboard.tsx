@@ -44,6 +44,12 @@ export default function Dashboard() {
           Complete traceable opening, cleaning and closing checks.
         </Text>
       </Pressable>
+      <Pressable style={styles.card} onPress={() => router.push("/diary")}>
+        <Text style={styles.cardTitle}>Daily diary</Text>
+        <Text style={styles.cardBody}>
+          Record problems, corrective action and manager sign-off.
+        </Text>
+      </Pressable>
       <Pressable style={styles.card} onPress={() => router.push("/actions")}>
         <Text style={styles.cardTitle}>Corrective actions</Text>
         <Text style={styles.cardBody}>

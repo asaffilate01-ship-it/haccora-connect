@@ -33,6 +33,7 @@ import { Route as AppSuppliersRouteImport } from './routes/app.suppliers'
 import { Route as AppStockRouteImport } from './routes/app.stock'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppSecurityRouteImport } from './routes/app.security'
+import { Route as AppSafeMethodsRouteImport } from './routes/app.safe-methods'
 import { Route as AppRoutinesRouteImport } from './routes/app.routines'
 import { Route as AppRotaRouteImport } from './routes/app.rota'
 import { Route as AppRecipesRouteImport } from './routes/app.recipes'
@@ -53,6 +54,7 @@ import { Route as AppHaccpRouteImport } from './routes/app.haccp'
 import { Route as AppGoodsinRouteImport } from './routes/app.goodsin'
 import { Route as AppExpiryRouteImport } from './routes/app.expiry'
 import { Route as AppDocumentsRouteImport } from './routes/app.documents'
+import { Route as AppDiaryRouteImport } from './routes/app.diary'
 import { Route as AppControlCentreRouteImport } from './routes/app.control-centre'
 import { Route as AppComplaintsRouteImport } from './routes/app.complaints'
 import { Route as AppCleaningRouteImport } from './routes/app.cleaning'
@@ -184,6 +186,11 @@ const AppSecurityRoute = AppSecurityRouteImport.update({
   path: '/security',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSafeMethodsRoute = AppSafeMethodsRouteImport.update({
+  id: '/safe-methods',
+  path: '/safe-methods',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppRoutinesRoute = AppRoutinesRouteImport.update({
   id: '/routines',
   path: '/routines',
@@ -284,6 +291,11 @@ const AppDocumentsRoute = AppDocumentsRouteImport.update({
   path: '/documents',
   getParentRoute: () => AppRoute,
 } as any)
+const AppDiaryRoute = AppDiaryRouteImport.update({
+  id: '/diary',
+  path: '/diary',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppControlCentreRoute = AppControlCentreRouteImport.update({
   id: '/control-centre',
   path: '/control-centre',
@@ -354,6 +366,7 @@ export interface FileRoutesByFullPath {
   '/app/cleaning': typeof AppCleaningRoute
   '/app/complaints': typeof AppComplaintsRoute
   '/app/control-centre': typeof AppControlCentreRoute
+  '/app/diary': typeof AppDiaryRoute
   '/app/documents': typeof AppDocumentsRoute
   '/app/expiry': typeof AppExpiryRoute
   '/app/goodsin': typeof AppGoodsinRoute
@@ -374,6 +387,7 @@ export interface FileRoutesByFullPath {
   '/app/recipes': typeof AppRecipesRoute
   '/app/rota': typeof AppRotaRoute
   '/app/routines': typeof AppRoutinesRoute
+  '/app/safe-methods': typeof AppSafeMethodsRoute
   '/app/security': typeof AppSecurityRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/stock': typeof AppStockRoute
@@ -408,6 +422,7 @@ export interface FileRoutesByTo {
   '/app/cleaning': typeof AppCleaningRoute
   '/app/complaints': typeof AppComplaintsRoute
   '/app/control-centre': typeof AppControlCentreRoute
+  '/app/diary': typeof AppDiaryRoute
   '/app/documents': typeof AppDocumentsRoute
   '/app/expiry': typeof AppExpiryRoute
   '/app/goodsin': typeof AppGoodsinRoute
@@ -428,6 +443,7 @@ export interface FileRoutesByTo {
   '/app/recipes': typeof AppRecipesRoute
   '/app/rota': typeof AppRotaRoute
   '/app/routines': typeof AppRoutinesRoute
+  '/app/safe-methods': typeof AppSafeMethodsRoute
   '/app/security': typeof AppSecurityRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/stock': typeof AppStockRoute
@@ -465,6 +481,7 @@ export interface FileRoutesById {
   '/app/cleaning': typeof AppCleaningRoute
   '/app/complaints': typeof AppComplaintsRoute
   '/app/control-centre': typeof AppControlCentreRoute
+  '/app/diary': typeof AppDiaryRoute
   '/app/documents': typeof AppDocumentsRoute
   '/app/expiry': typeof AppExpiryRoute
   '/app/goodsin': typeof AppGoodsinRoute
@@ -485,6 +502,7 @@ export interface FileRoutesById {
   '/app/recipes': typeof AppRecipesRoute
   '/app/rota': typeof AppRotaRoute
   '/app/routines': typeof AppRoutinesRoute
+  '/app/safe-methods': typeof AppSafeMethodsRoute
   '/app/security': typeof AppSecurityRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/stock': typeof AppStockRoute
@@ -523,6 +541,7 @@ export interface FileRouteTypes {
     | '/app/cleaning'
     | '/app/complaints'
     | '/app/control-centre'
+    | '/app/diary'
     | '/app/documents'
     | '/app/expiry'
     | '/app/goodsin'
@@ -543,6 +562,7 @@ export interface FileRouteTypes {
     | '/app/recipes'
     | '/app/rota'
     | '/app/routines'
+    | '/app/safe-methods'
     | '/app/security'
     | '/app/settings'
     | '/app/stock'
@@ -577,6 +597,7 @@ export interface FileRouteTypes {
     | '/app/cleaning'
     | '/app/complaints'
     | '/app/control-centre'
+    | '/app/diary'
     | '/app/documents'
     | '/app/expiry'
     | '/app/goodsin'
@@ -597,6 +618,7 @@ export interface FileRouteTypes {
     | '/app/recipes'
     | '/app/rota'
     | '/app/routines'
+    | '/app/safe-methods'
     | '/app/security'
     | '/app/settings'
     | '/app/stock'
@@ -633,6 +655,7 @@ export interface FileRouteTypes {
     | '/app/cleaning'
     | '/app/complaints'
     | '/app/control-centre'
+    | '/app/diary'
     | '/app/documents'
     | '/app/expiry'
     | '/app/goodsin'
@@ -653,6 +676,7 @@ export interface FileRouteTypes {
     | '/app/recipes'
     | '/app/rota'
     | '/app/routines'
+    | '/app/safe-methods'
     | '/app/security'
     | '/app/settings'
     | '/app/stock'
@@ -852,6 +876,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSecurityRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/safe-methods': {
+      id: '/app/safe-methods'
+      path: '/safe-methods'
+      fullPath: '/app/safe-methods'
+      preLoaderRoute: typeof AppSafeMethodsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/routines': {
       id: '/app/routines'
       path: '/routines'
@@ -992,6 +1023,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDocumentsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/diary': {
+      id: '/app/diary'
+      path: '/diary'
+      fullPath: '/app/diary'
+      preLoaderRoute: typeof AppDiaryRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/control-centre': {
       id: '/app/control-centre'
       path: '/control-centre'
@@ -1076,6 +1114,7 @@ interface AppRouteChildren {
   AppCleaningRoute: typeof AppCleaningRoute
   AppComplaintsRoute: typeof AppComplaintsRoute
   AppControlCentreRoute: typeof AppControlCentreRoute
+  AppDiaryRoute: typeof AppDiaryRoute
   AppDocumentsRoute: typeof AppDocumentsRoute
   AppExpiryRoute: typeof AppExpiryRoute
   AppGoodsinRoute: typeof AppGoodsinRoute
@@ -1096,6 +1135,7 @@ interface AppRouteChildren {
   AppRecipesRoute: typeof AppRecipesRoute
   AppRotaRoute: typeof AppRotaRoute
   AppRoutinesRoute: typeof AppRoutinesRoute
+  AppSafeMethodsRoute: typeof AppSafeMethodsRoute
   AppSecurityRoute: typeof AppSecurityRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppStockRoute: typeof AppStockRoute
@@ -1118,6 +1158,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCleaningRoute: AppCleaningRoute,
   AppComplaintsRoute: AppComplaintsRoute,
   AppControlCentreRoute: AppControlCentreRoute,
+  AppDiaryRoute: AppDiaryRoute,
   AppDocumentsRoute: AppDocumentsRoute,
   AppExpiryRoute: AppExpiryRoute,
   AppGoodsinRoute: AppGoodsinRoute,
@@ -1138,6 +1179,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppRecipesRoute: AppRecipesRoute,
   AppRotaRoute: AppRotaRoute,
   AppRoutinesRoute: AppRoutinesRoute,
+  AppSafeMethodsRoute: AppSafeMethodsRoute,
   AppSecurityRoute: AppSecurityRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppStockRoute: AppStockRoute,
@@ -1194,13 +1236,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
