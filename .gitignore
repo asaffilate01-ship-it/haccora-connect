@@ -15,10 +15,20 @@ dist-ssr
 .tanstack/**
 .nitro
 *.local
+.env
+.env.*
+!.env.example
+!mobile/.env.example
 
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars
+
+# Test output
+blob-report/
+playwright-report/
+test-results/
+release-evidence/
 
 # Editor directories and files
 .vscode/*

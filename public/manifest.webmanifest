@@ -1,0 +1,40 @@
+{
+  "name": "Haccora — Digital food safety for Germany",
+  "short_name": "Haccora",
+  "description": "HACCP, temperature, cleaning, allergens, training and inspection prep for German food businesses.",
+  "start_url": "/app",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "id": "/app",
+  "background_color": "#ffffff",
+  "theme_color": "#e43f2c",
+  "categories": ["business", "productivity", "food"],
+  "lang": "de",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Temperature",
+      "url": "/app/temperature",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Daily checks",
+      "url": "/app/checks",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

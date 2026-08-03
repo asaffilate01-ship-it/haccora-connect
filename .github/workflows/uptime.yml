@@ -1,0 +1,44 @@
+name: Production uptime
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/15 * * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-uptime
+  cancel-in-progress: true
+
+jobs:
+  configuration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: Report monitoring configuration
+        env:
+          PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
+        run: |
+          if [ -z "$PRODUCTION_URL" ]; then
+            echo "::warning::PRODUCTION_URL is not configured; production probes are disabled until deployment."
+            echo "### Production monitoring pending" >> "$GITHUB_STEP_SUMMARY"
+            echo "Set the repository variable \`PRODUCTION_URL\` to enable scheduled health and smoke probes." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Production probes are enabled for the configured URL." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  health:
+    if: ${{ vars.PRODUCTION_URL != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - run: node scripts/check-deployment-health.mjs
+      - run: node scripts/check-deployment-smoke.mjs
