@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.15"
   }
   public: {
     Tables: {
@@ -824,6 +824,54 @@ export type Database = {
           },
         ]
       }
+      compliance_content_versions: {
+        Row: {
+          body: Json
+          content_key: string
+          created_at: string
+          id: string
+          jurisdiction: string
+          official_source_url: string
+          published_at: string | null
+          retired_at: string | null
+          source_reviewed_at: string
+          specialist_approved_at: string | null
+          specialist_approved_by: string | null
+          title: string
+          version: string
+        }
+        Insert: {
+          body?: Json
+          content_key: string
+          created_at?: string
+          id?: string
+          jurisdiction: string
+          official_source_url: string
+          published_at?: string | null
+          retired_at?: string | null
+          source_reviewed_at: string
+          specialist_approved_at?: string | null
+          specialist_approved_by?: string | null
+          title: string
+          version: string
+        }
+        Update: {
+          body?: Json
+          content_key?: string
+          created_at?: string
+          id?: string
+          jurisdiction?: string
+          official_source_url?: string
+          published_at?: string | null
+          retired_at?: string | null
+          source_reviewed_at?: string
+          specialist_approved_at?: string | null
+          specialist_approved_by?: string | null
+          title?: string
+          version?: string
+        }
+        Relationships: []
+      }
       contact_requests: {
         Row: {
           business_name: string | null
@@ -1017,6 +1065,69 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "locations"
             referencedColumns: ["id", "organization_id"]
+          },
+        ]
+      }
+      daily_diary_entries: {
+        Row: {
+          closing_checks: Json
+          corrective_actions: string
+          created_at: string
+          created_by: string
+          diary_date: string
+          id: string
+          location_id: string
+          opening_checks: Json
+          organization_id: string
+          problems: string
+          signed_off_at: string | null
+          signed_off_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          closing_checks?: Json
+          corrective_actions?: string
+          created_at?: string
+          created_by?: string
+          diary_date?: string
+          id?: string
+          location_id: string
+          opening_checks?: Json
+          organization_id: string
+          problems?: string
+          signed_off_at?: string | null
+          signed_off_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          closing_checks?: Json
+          corrective_actions?: string
+          created_at?: string
+          created_by?: string
+          diary_date?: string
+          id?: string
+          location_id?: string
+          opening_checks?: Json
+          organization_id?: string
+          problems?: string
+          signed_off_at?: string | null
+          signed_off_by?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_diary_entries_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_diary_entries_organization_id_location_id_fkey"
+            columns: ["organization_id", "location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["organization_id", "id"]
           },
         ]
       }
@@ -1910,9 +2021,13 @@ export type Database = {
           allergens: string[]
           created_at: string
           id: string
+          ingredient_statement: string | null
+          may_contain: string[]
           name: string
           organization_id: string
+          reviewed_at: string | null
           specification_document_id: string | null
+          specification_version: string | null
           supplier_id: string | null
           updated_at: string
         }
@@ -1920,9 +2035,13 @@ export type Database = {
           allergens?: string[]
           created_at?: string
           id?: string
+          ingredient_statement?: string | null
+          may_contain?: string[]
           name: string
           organization_id?: string
+          reviewed_at?: string | null
           specification_document_id?: string | null
+          specification_version?: string | null
           supplier_id?: string | null
           updated_at?: string
         }
@@ -1930,9 +2049,13 @@ export type Database = {
           allergens?: string[]
           created_at?: string
           id?: string
+          ingredient_statement?: string | null
+          may_contain?: string[]
           name?: string
           organization_id?: string
+          reviewed_at?: string | null
           specification_document_id?: string | null
+          specification_version?: string | null
           supplier_id?: string | null
           updated_at?: string
         }
@@ -2635,6 +2758,70 @@ export type Database = {
           },
         ]
       }
+      ppds_label_versions: {
+        Row: {
+          allergens: string[]
+          generated_at: string
+          generated_by: string
+          id: string
+          ingredient_statement: string
+          location_id: string
+          organization_id: string
+          product_name: string
+          recipe_id: string | null
+          source_snapshot: Json
+          version: number
+        }
+        Insert: {
+          allergens?: string[]
+          generated_at?: string
+          generated_by?: string
+          id?: string
+          ingredient_statement: string
+          location_id: string
+          organization_id: string
+          product_name: string
+          recipe_id?: string | null
+          source_snapshot: Json
+          version?: number
+        }
+        Update: {
+          allergens?: string[]
+          generated_at?: string
+          generated_by?: string
+          id?: string
+          ingredient_statement?: string
+          location_id?: string
+          organization_id?: string
+          product_name?: string
+          recipe_id?: string | null
+          source_snapshot?: Json
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ppds_label_versions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ppds_label_versions_organization_id_location_id_fkey"
+            columns: ["organization_id", "location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "ppds_label_versions_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       privacy_requests: {
         Row: {
           assigned_to: string | null
@@ -3279,6 +3466,76 @@ export type Database = {
           },
         ]
       }
+      responsibility_assignments: {
+        Row: {
+          control_area: string
+          created_at: string
+          created_by: string
+          escalation_contact: string | null
+          evidence_document_id: string | null
+          id: string
+          location_id: string
+          next_review_at: string | null
+          notes: string | null
+          organization_id: string
+          party_name: string | null
+          responsible_party: string
+          updated_at: string
+        }
+        Insert: {
+          control_area: string
+          created_at?: string
+          created_by?: string
+          escalation_contact?: string | null
+          evidence_document_id?: string | null
+          id?: string
+          location_id: string
+          next_review_at?: string | null
+          notes?: string | null
+          organization_id: string
+          party_name?: string | null
+          responsible_party: string
+          updated_at?: string
+        }
+        Update: {
+          control_area?: string
+          created_at?: string
+          created_by?: string
+          escalation_contact?: string | null
+          evidence_document_id?: string | null
+          id?: string
+          location_id?: string
+          next_review_at?: string | null
+          notes?: string | null
+          organization_id?: string
+          party_name?: string | null
+          responsible_party?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "responsibility_assignments_evidence_document_id_fkey"
+            columns: ["evidence_document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "responsibility_assignments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "responsibility_assignments_organization_id_location_id_fkey"
+            columns: ["organization_id", "location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       retention_policies: {
         Row: {
           approved_at: string | null
@@ -3322,6 +3579,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      safe_method_templates: {
+        Row: {
+          category: string
+          id: string
+          official_source_url: string
+          prompts: Json
+          published_at: string
+          summary: string
+          title: string
+          version: string
+        }
+        Insert: {
+          category: string
+          id: string
+          official_source_url: string
+          prompts?: Json
+          published_at?: string
+          summary: string
+          title: string
+          version: string
+        }
+        Update: {
+          category?: string
+          id?: string
+          official_source_url?: string
+          prompts?: Json
+          published_at?: string
+          summary?: string
+          title?: string
+          version?: string
+        }
+        Relationships: []
       }
       security_events: {
         Row: {
@@ -3649,6 +3939,127 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_compliance_profiles: {
+        Row: {
+          approved_content_version: string | null
+          business_type: string
+          created_at: string
+          jurisdiction: string
+          location_id: string
+          organization_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          serves_ppds: boolean
+          serves_vulnerable_groups: boolean
+          updated_at: string
+        }
+        Insert: {
+          approved_content_version?: string | null
+          business_type?: string
+          created_at?: string
+          jurisdiction: string
+          location_id: string
+          organization_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          serves_ppds?: boolean
+          serves_vulnerable_groups?: boolean
+          updated_at?: string
+        }
+        Update: {
+          approved_content_version?: string | null
+          business_type?: string
+          created_at?: string
+          jurisdiction?: string
+          location_id?: string
+          organization_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          serves_ppds?: boolean
+          serves_vulnerable_groups?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_compliance_profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_compliance_profiles_organization_id_location_id_fkey"
+            columns: ["organization_id", "location_id"]
+            isOneToOne: true
+            referencedRelation: "locations"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      site_safe_methods: {
+        Row: {
+          adopted_at: string | null
+          adopted_by: string | null
+          controls: Json
+          created_at: string
+          id: string
+          location_id: string
+          organization_id: string
+          review_due_at: string | null
+          status: string
+          template_id: string
+          updated_at: string
+        }
+        Insert: {
+          adopted_at?: string | null
+          adopted_by?: string | null
+          controls?: Json
+          created_at?: string
+          id?: string
+          location_id: string
+          organization_id: string
+          review_due_at?: string | null
+          status?: string
+          template_id: string
+          updated_at?: string
+        }
+        Update: {
+          adopted_at?: string | null
+          adopted_by?: string | null
+          controls?: Json
+          created_at?: string
+          id?: string
+          location_id?: string
+          organization_id?: string
+          review_due_at?: string | null
+          status?: string
+          template_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_safe_methods_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_safe_methods_organization_id_location_id_fkey"
+            columns: ["organization_id", "location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "site_safe_methods_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "safe_method_templates"
             referencedColumns: ["id"]
           },
         ]
