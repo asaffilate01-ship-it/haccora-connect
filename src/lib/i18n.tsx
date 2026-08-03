@@ -1728,7 +1728,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       const stored = localStorage.getItem("haccora-uk-lang");
-      if (stored === "de" || stored === "en") setLangState(stored);
+      if (stored === "en") setLangState("en");
       else if (typeof navigator !== "undefined" && navigator.language?.startsWith("en"))
         setLangState("en");
     } catch {
@@ -1737,6 +1737,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setLang = (l: Language) => {
+    if (l !== "en") return;
     if (l === lang) return;
     const doSwap = () => {
       setLangState(l);

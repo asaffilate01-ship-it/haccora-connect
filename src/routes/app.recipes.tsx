@@ -150,9 +150,9 @@ function RecipesPage() {
                 <div className="mt-5 grid grid-cols-3 gap-2 text-xs">
                   <Cell
                     label={t("recipes.cost")}
-                    value={canCost ? `£{Number(r.cost_eur).toFixed(2)}` : "—"}
+                    value={canCost ? `£${Number(r.cost_eur).toFixed(2)}` : "—"}
                   />
-                  <Cell label={t("recipes.price")} value={`£{Number(r.price_eur).toFixed(2)}`} />
+                  <Cell label={t("recipes.price")} value={`£${Number(r.price_eur).toFixed(2)}`} />
                   <Cell label={t("recipes.margin")} value={canCost ? `${margin}%` : "—"} accent />
                 </div>
               </div>

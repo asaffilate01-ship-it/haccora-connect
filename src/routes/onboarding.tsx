@@ -55,7 +55,7 @@ function OnboardingPage() {
   const [vertical, setVertical] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [vatId, setVatId] = useState("");
-  const [businessState, setBusinessState] = useState("Berlin");
+  const [businessState, setBusinessState] = useState("England");
   const [size, setSize] = useState("11-30");
   const [locations, setLocations] = useState(1);
   const [modules, setModules] = useState<string[]>([...MODULES]);
@@ -196,7 +196,7 @@ function OnboardingPage() {
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Kreuzberg Kitchen GmbH"
+                  placeholder="The Riverside Kitchen Ltd"
                   className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
                 />
               </label>
@@ -207,24 +207,23 @@ function OnboardingPage() {
                 <input
                   value={vatId}
                   onChange={(e) => setVatId(e.target.value)}
-                  placeholder="DE 123 456 789"
+                  placeholder="GB 123 4567 89"
                   className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
                 />
               </label>
               <label className="block">
                 <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1.5">
-                  {t("Bundesland", "State")}
+                  UK nation
                 </div>
                 <select
                   value={businessState}
                   onChange={(e) => setBusinessState(e.target.value)}
                   className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
                 >
-                  <option>Berlin</option>
-                  <option>Bayern</option>
-                  <option>Nordrhein-Westfalen</option>
-                  <option>Hamburg</option>
-                  <option>Baden-Württemberg</option>
+                  <option>England</option>
+                  <option>Wales</option>
+                  <option>Scotland</option>
+                  <option>Northern Ireland</option>
                 </select>
               </label>
             </div>
