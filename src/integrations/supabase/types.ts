@@ -20,7 +20,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      __setup_exec: { Args: { sql: string }; Returns: undefined }
     }
     Enums: {
       app_role: "owner" | "manager" | "chef" | "staff" | "inspector"
