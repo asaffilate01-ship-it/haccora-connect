@@ -1,0 +1,54 @@
+{
+  "expo": {
+    "name": "Haccora",
+    "slug": "haccora-uk",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "haccorauk",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "uk.co.haccora.app",
+      "usesAppleSignIn": false,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSCameraUsageDescription": "Haccora uses the camera only when you attach food-safety evidence.",
+        "NSFaceIDUsageDescription": "Use Face ID to protect access to Haccora records on this device.",
+        "NSPhotoLibraryUsageDescription": "Choose food-safety evidence to upload securely."
+      }
+    },
+    "android": {
+      "package": "uk.co.haccora.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#e43f2c"
+      },
+      "blockedPermissions": ["RECORD_AUDIO", "ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-notifications",
+      "expo-local-authentication",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Choose food-safety evidence to upload securely.",
+          "cameraPermission": "Take a photo only when attaching food-safety evidence.",
+          "microphonePermission": false
+        }
+      ],
+      "expo-document-picker"
+    ],
+    "experiments": { "typedRoutes": true },
+    "extra": {
+      "eas": { "projectId": "SET_WITH_EAS_INIT" }
+    }
+  }
+}

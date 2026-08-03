@@ -10,33 +10,676 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppRouteImport } from './routes/app'
+import { Route as BlogRouteImport } from './routes/blog'
+import { Route as HealthDotjsonRouteImport } from './routes/health[.]json'
+import { Route as LegalRouteImport } from './routes/legal'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppAlertsRouteImport } from './routes/app.alerts'
+import { Route as AppAssetsRouteImport } from './routes/app.assets'
+import { Route as AppAuditsRouteImport } from './routes/app.audits'
+import { Route as AppBillingRouteImport } from './routes/app.billing'
+import { Route as AppCalibrationRouteImport } from './routes/app.calibration'
+import { Route as AppChecksRouteImport } from './routes/app.checks'
+import { Route as AppChemicalsRouteImport } from './routes/app.chemicals'
+import { Route as AppCleaningRouteImport } from './routes/app.cleaning'
+import { Route as AppComplaintsRouteImport } from './routes/app.complaints'
+import { Route as AppControlCentreRouteImport } from './routes/app.control-centre'
+import { Route as AppDocumentsRouteImport } from './routes/app.documents'
+import { Route as AppExpiryRouteImport } from './routes/app.expiry'
+import { Route as AppGoodsinRouteImport } from './routes/app.goodsin'
+import { Route as AppHaccpRouteImport } from './routes/app.haccp'
+import { Route as AppHaccpFlowsRouteImport } from './routes/app.haccp-flows'
+import { Route as AppHealthRouteImport } from './routes/app.health'
+import { Route as AppIncidentsRouteImport } from './routes/app.incidents'
+import { Route as AppInspectionRouteImport } from './routes/app.inspection'
+import { Route as AppIntegrationsRouteImport } from './routes/app.integrations'
+import { Route as AppLabelsRouteImport } from './routes/app.labels'
+import { Route as AppLogsRouteImport } from './routes/app.logs'
+import { Route as AppMenuRouteImport } from './routes/app.menu'
+import { Route as AppOilRouteImport } from './routes/app.oil'
+import { Route as AppPestRouteImport } from './routes/app.pest'
+import { Route as AppPreferencesRouteImport } from './routes/app.preferences'
+import { Route as AppPurchasingRouteImport } from './routes/app.purchasing'
+import { Route as AppRecallsRouteImport } from './routes/app.recalls'
+import { Route as AppRecipesRouteImport } from './routes/app.recipes'
+import { Route as AppRotaRouteImport } from './routes/app.rota'
+import { Route as AppRoutinesRouteImport } from './routes/app.routines'
+import { Route as AppSecurityRouteImport } from './routes/app.security'
+import { Route as AppSettingsRouteImport } from './routes/app.settings'
+import { Route as AppStockRouteImport } from './routes/app.stock'
+import { Route as AppSuppliersRouteImport } from './routes/app.suppliers'
+import { Route as AppTemperatureRouteImport } from './routes/app.temperature'
+import { Route as AppTrainingRouteImport } from './routes/app.training'
+import { Route as AppWasteRouteImport } from './routes/app.waste'
+import { Route as AppWorkflowsRouteImport } from './routes/app.workflows'
+import { Route as BlogIndexRouteImport } from './routes/blog.index'
+import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
+import { Route as LegalComplaintsRouteImport } from './routes/legal.complaints'
+import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
+import { Route as LegalImprintRouteImport } from './routes/legal.imprint'
+import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
+import { Route as LegalTermsRouteImport } from './routes/legal.terms'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppRoute = AppRouteImport.update({
+  id: '/app',
+  path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogRoute = BlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HealthDotjsonRoute = HealthDotjsonRouteImport.update({
+  id: '/health.json',
+  path: '/health.json',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalRoute = LegalRouteImport.update({
+  id: '/legal',
+  path: '/legal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAlertsRoute = AppAlertsRouteImport.update({
+  id: '/alerts',
+  path: '/alerts',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAssetsRoute = AppAssetsRouteImport.update({
+  id: '/assets',
+  path: '/assets',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAuditsRoute = AppAuditsRouteImport.update({
+  id: '/audits',
+  path: '/audits',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBillingRoute = AppBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCalibrationRoute = AppCalibrationRouteImport.update({
+  id: '/calibration',
+  path: '/calibration',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppChecksRoute = AppChecksRouteImport.update({
+  id: '/checks',
+  path: '/checks',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppChemicalsRoute = AppChemicalsRouteImport.update({
+  id: '/chemicals',
+  path: '/chemicals',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCleaningRoute = AppCleaningRouteImport.update({
+  id: '/cleaning',
+  path: '/cleaning',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppComplaintsRoute = AppComplaintsRouteImport.update({
+  id: '/complaints',
+  path: '/complaints',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppControlCentreRoute = AppControlCentreRouteImport.update({
+  id: '/control-centre',
+  path: '/control-centre',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDocumentsRoute = AppDocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppExpiryRoute = AppExpiryRouteImport.update({
+  id: '/expiry',
+  path: '/expiry',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppGoodsinRoute = AppGoodsinRouteImport.update({
+  id: '/goodsin',
+  path: '/goodsin',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppHaccpRoute = AppHaccpRouteImport.update({
+  id: '/haccp',
+  path: '/haccp',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppHaccpFlowsRoute = AppHaccpFlowsRouteImport.update({
+  id: '/haccp-flows',
+  path: '/haccp-flows',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppHealthRoute = AppHealthRouteImport.update({
+  id: '/health',
+  path: '/health',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppIncidentsRoute = AppIncidentsRouteImport.update({
+  id: '/incidents',
+  path: '/incidents',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppInspectionRoute = AppInspectionRouteImport.update({
+  id: '/inspection',
+  path: '/inspection',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppIntegrationsRoute = AppIntegrationsRouteImport.update({
+  id: '/integrations',
+  path: '/integrations',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLabelsRoute = AppLabelsRouteImport.update({
+  id: '/labels',
+  path: '/labels',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLogsRoute = AppLogsRouteImport.update({
+  id: '/logs',
+  path: '/logs',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMenuRoute = AppMenuRouteImport.update({
+  id: '/menu',
+  path: '/menu',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppOilRoute = AppOilRouteImport.update({
+  id: '/oil',
+  path: '/oil',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPestRoute = AppPestRouteImport.update({
+  id: '/pest',
+  path: '/pest',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPreferencesRoute = AppPreferencesRouteImport.update({
+  id: '/preferences',
+  path: '/preferences',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPurchasingRoute = AppPurchasingRouteImport.update({
+  id: '/purchasing',
+  path: '/purchasing',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRecallsRoute = AppRecallsRouteImport.update({
+  id: '/recalls',
+  path: '/recalls',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRecipesRoute = AppRecipesRouteImport.update({
+  id: '/recipes',
+  path: '/recipes',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRotaRoute = AppRotaRouteImport.update({
+  id: '/rota',
+  path: '/rota',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRoutinesRoute = AppRoutinesRouteImport.update({
+  id: '/routines',
+  path: '/routines',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSecurityRoute = AppSecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppStockRoute = AppStockRouteImport.update({
+  id: '/stock',
+  path: '/stock',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSuppliersRoute = AppSuppliersRouteImport.update({
+  id: '/suppliers',
+  path: '/suppliers',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTemperatureRoute = AppTemperatureRouteImport.update({
+  id: '/temperature',
+  path: '/temperature',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTrainingRoute = AppTrainingRouteImport.update({
+  id: '/training',
+  path: '/training',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppWasteRoute = AppWasteRouteImport.update({
+  id: '/waste',
+  path: '/waste',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppWorkflowsRoute = AppWorkflowsRouteImport.update({
+  id: '/workflows',
+  path: '/workflows',
+  getParentRoute: () => AppRoute,
+} as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BlogRoute,
+} as any)
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => BlogRoute,
+} as any)
+const LegalComplaintsRoute = LegalComplaintsRouteImport.update({
+  id: '/complaints',
+  path: '/complaints',
+  getParentRoute: () => LegalRoute,
+} as any)
+const LegalCookiesRoute = LegalCookiesRouteImport.update({
+  id: '/cookies',
+  path: '/cookies',
+  getParentRoute: () => LegalRoute,
+} as any)
+const LegalImprintRoute = LegalImprintRouteImport.update({
+  id: '/imprint',
+  path: '/imprint',
+  getParentRoute: () => LegalRoute,
+} as any)
+const LegalPrivacyRoute = LegalPrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => LegalRoute,
+} as any)
+const LegalTermsRoute = LegalTermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => LegalRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
+  '/blog': typeof BlogRouteWithChildren
+  '/health.json': typeof HealthDotjsonRoute
+  '/legal': typeof LegalRouteWithChildren
+  '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/app/alerts': typeof AppAlertsRoute
+  '/app/assets': typeof AppAssetsRoute
+  '/app/audits': typeof AppAuditsRoute
+  '/app/billing': typeof AppBillingRoute
+  '/app/calibration': typeof AppCalibrationRoute
+  '/app/checks': typeof AppChecksRoute
+  '/app/chemicals': typeof AppChemicalsRoute
+  '/app/cleaning': typeof AppCleaningRoute
+  '/app/complaints': typeof AppComplaintsRoute
+  '/app/control-centre': typeof AppControlCentreRoute
+  '/app/documents': typeof AppDocumentsRoute
+  '/app/expiry': typeof AppExpiryRoute
+  '/app/goodsin': typeof AppGoodsinRoute
+  '/app/haccp': typeof AppHaccpRoute
+  '/app/haccp-flows': typeof AppHaccpFlowsRoute
+  '/app/health': typeof AppHealthRoute
+  '/app/incidents': typeof AppIncidentsRoute
+  '/app/inspection': typeof AppInspectionRoute
+  '/app/integrations': typeof AppIntegrationsRoute
+  '/app/labels': typeof AppLabelsRoute
+  '/app/logs': typeof AppLogsRoute
+  '/app/menu': typeof AppMenuRoute
+  '/app/oil': typeof AppOilRoute
+  '/app/pest': typeof AppPestRoute
+  '/app/preferences': typeof AppPreferencesRoute
+  '/app/purchasing': typeof AppPurchasingRoute
+  '/app/recalls': typeof AppRecallsRoute
+  '/app/recipes': typeof AppRecipesRoute
+  '/app/rota': typeof AppRotaRoute
+  '/app/routines': typeof AppRoutinesRoute
+  '/app/security': typeof AppSecurityRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/app/stock': typeof AppStockRoute
+  '/app/suppliers': typeof AppSuppliersRoute
+  '/app/temperature': typeof AppTemperatureRoute
+  '/app/training': typeof AppTrainingRoute
+  '/app/waste': typeof AppWasteRoute
+  '/app/workflows': typeof AppWorkflowsRoute
+  '/blog/$slug': typeof BlogSlugRoute
+  '/legal/complaints': typeof LegalComplaintsRoute
+  '/legal/cookies': typeof LegalCookiesRoute
+  '/legal/imprint': typeof LegalImprintRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/terms': typeof LegalTermsRoute
+  '/app/': typeof AppIndexRoute
+  '/blog/': typeof BlogIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/health.json': typeof HealthDotjsonRoute
+  '/legal': typeof LegalRouteWithChildren
+  '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/app/alerts': typeof AppAlertsRoute
+  '/app/assets': typeof AppAssetsRoute
+  '/app/audits': typeof AppAuditsRoute
+  '/app/billing': typeof AppBillingRoute
+  '/app/calibration': typeof AppCalibrationRoute
+  '/app/checks': typeof AppChecksRoute
+  '/app/chemicals': typeof AppChemicalsRoute
+  '/app/cleaning': typeof AppCleaningRoute
+  '/app/complaints': typeof AppComplaintsRoute
+  '/app/control-centre': typeof AppControlCentreRoute
+  '/app/documents': typeof AppDocumentsRoute
+  '/app/expiry': typeof AppExpiryRoute
+  '/app/goodsin': typeof AppGoodsinRoute
+  '/app/haccp': typeof AppHaccpRoute
+  '/app/haccp-flows': typeof AppHaccpFlowsRoute
+  '/app/health': typeof AppHealthRoute
+  '/app/incidents': typeof AppIncidentsRoute
+  '/app/inspection': typeof AppInspectionRoute
+  '/app/integrations': typeof AppIntegrationsRoute
+  '/app/labels': typeof AppLabelsRoute
+  '/app/logs': typeof AppLogsRoute
+  '/app/menu': typeof AppMenuRoute
+  '/app/oil': typeof AppOilRoute
+  '/app/pest': typeof AppPestRoute
+  '/app/preferences': typeof AppPreferencesRoute
+  '/app/purchasing': typeof AppPurchasingRoute
+  '/app/recalls': typeof AppRecallsRoute
+  '/app/recipes': typeof AppRecipesRoute
+  '/app/rota': typeof AppRotaRoute
+  '/app/routines': typeof AppRoutinesRoute
+  '/app/security': typeof AppSecurityRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/app/stock': typeof AppStockRoute
+  '/app/suppliers': typeof AppSuppliersRoute
+  '/app/temperature': typeof AppTemperatureRoute
+  '/app/training': typeof AppTrainingRoute
+  '/app/waste': typeof AppWasteRoute
+  '/app/workflows': typeof AppWorkflowsRoute
+  '/blog/$slug': typeof BlogSlugRoute
+  '/legal/complaints': typeof LegalComplaintsRoute
+  '/legal/cookies': typeof LegalCookiesRoute
+  '/legal/imprint': typeof LegalImprintRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/terms': typeof LegalTermsRoute
+  '/app': typeof AppIndexRoute
+  '/blog': typeof BlogIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
+  '/blog': typeof BlogRouteWithChildren
+  '/health.json': typeof HealthDotjsonRoute
+  '/legal': typeof LegalRouteWithChildren
+  '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/app/alerts': typeof AppAlertsRoute
+  '/app/assets': typeof AppAssetsRoute
+  '/app/audits': typeof AppAuditsRoute
+  '/app/billing': typeof AppBillingRoute
+  '/app/calibration': typeof AppCalibrationRoute
+  '/app/checks': typeof AppChecksRoute
+  '/app/chemicals': typeof AppChemicalsRoute
+  '/app/cleaning': typeof AppCleaningRoute
+  '/app/complaints': typeof AppComplaintsRoute
+  '/app/control-centre': typeof AppControlCentreRoute
+  '/app/documents': typeof AppDocumentsRoute
+  '/app/expiry': typeof AppExpiryRoute
+  '/app/goodsin': typeof AppGoodsinRoute
+  '/app/haccp': typeof AppHaccpRoute
+  '/app/haccp-flows': typeof AppHaccpFlowsRoute
+  '/app/health': typeof AppHealthRoute
+  '/app/incidents': typeof AppIncidentsRoute
+  '/app/inspection': typeof AppInspectionRoute
+  '/app/integrations': typeof AppIntegrationsRoute
+  '/app/labels': typeof AppLabelsRoute
+  '/app/logs': typeof AppLogsRoute
+  '/app/menu': typeof AppMenuRoute
+  '/app/oil': typeof AppOilRoute
+  '/app/pest': typeof AppPestRoute
+  '/app/preferences': typeof AppPreferencesRoute
+  '/app/purchasing': typeof AppPurchasingRoute
+  '/app/recalls': typeof AppRecallsRoute
+  '/app/recipes': typeof AppRecipesRoute
+  '/app/rota': typeof AppRotaRoute
+  '/app/routines': typeof AppRoutinesRoute
+  '/app/security': typeof AppSecurityRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/app/stock': typeof AppStockRoute
+  '/app/suppliers': typeof AppSuppliersRoute
+  '/app/temperature': typeof AppTemperatureRoute
+  '/app/training': typeof AppTrainingRoute
+  '/app/waste': typeof AppWasteRoute
+  '/app/workflows': typeof AppWorkflowsRoute
+  '/blog/$slug': typeof BlogSlugRoute
+  '/legal/complaints': typeof LegalComplaintsRoute
+  '/legal/cookies': typeof LegalCookiesRoute
+  '/legal/imprint': typeof LegalImprintRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/terms': typeof LegalTermsRoute
+  '/app/': typeof AppIndexRoute
+  '/blog/': typeof BlogIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/blog'
+    | '/health.json'
+    | '/legal'
+    | '/login'
+    | '/onboarding'
+    | '/sitemap.xml'
+    | '/app/alerts'
+    | '/app/assets'
+    | '/app/audits'
+    | '/app/billing'
+    | '/app/calibration'
+    | '/app/checks'
+    | '/app/chemicals'
+    | '/app/cleaning'
+    | '/app/complaints'
+    | '/app/control-centre'
+    | '/app/documents'
+    | '/app/expiry'
+    | '/app/goodsin'
+    | '/app/haccp'
+    | '/app/haccp-flows'
+    | '/app/health'
+    | '/app/incidents'
+    | '/app/inspection'
+    | '/app/integrations'
+    | '/app/labels'
+    | '/app/logs'
+    | '/app/menu'
+    | '/app/oil'
+    | '/app/pest'
+    | '/app/preferences'
+    | '/app/purchasing'
+    | '/app/recalls'
+    | '/app/recipes'
+    | '/app/rota'
+    | '/app/routines'
+    | '/app/security'
+    | '/app/settings'
+    | '/app/stock'
+    | '/app/suppliers'
+    | '/app/temperature'
+    | '/app/training'
+    | '/app/waste'
+    | '/app/workflows'
+    | '/blog/$slug'
+    | '/legal/complaints'
+    | '/legal/cookies'
+    | '/legal/imprint'
+    | '/legal/privacy'
+    | '/legal/terms'
+    | '/app/'
+    | '/blog/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/health.json'
+    | '/legal'
+    | '/login'
+    | '/onboarding'
+    | '/sitemap.xml'
+    | '/app/alerts'
+    | '/app/assets'
+    | '/app/audits'
+    | '/app/billing'
+    | '/app/calibration'
+    | '/app/checks'
+    | '/app/chemicals'
+    | '/app/cleaning'
+    | '/app/complaints'
+    | '/app/control-centre'
+    | '/app/documents'
+    | '/app/expiry'
+    | '/app/goodsin'
+    | '/app/haccp'
+    | '/app/haccp-flows'
+    | '/app/health'
+    | '/app/incidents'
+    | '/app/inspection'
+    | '/app/integrations'
+    | '/app/labels'
+    | '/app/logs'
+    | '/app/menu'
+    | '/app/oil'
+    | '/app/pest'
+    | '/app/preferences'
+    | '/app/purchasing'
+    | '/app/recalls'
+    | '/app/recipes'
+    | '/app/rota'
+    | '/app/routines'
+    | '/app/security'
+    | '/app/settings'
+    | '/app/stock'
+    | '/app/suppliers'
+    | '/app/temperature'
+    | '/app/training'
+    | '/app/waste'
+    | '/app/workflows'
+    | '/blog/$slug'
+    | '/legal/complaints'
+    | '/legal/cookies'
+    | '/legal/imprint'
+    | '/legal/privacy'
+    | '/legal/terms'
+    | '/app'
+    | '/blog'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/blog'
+    | '/health.json'
+    | '/legal'
+    | '/login'
+    | '/onboarding'
+    | '/sitemap.xml'
+    | '/app/alerts'
+    | '/app/assets'
+    | '/app/audits'
+    | '/app/billing'
+    | '/app/calibration'
+    | '/app/checks'
+    | '/app/chemicals'
+    | '/app/cleaning'
+    | '/app/complaints'
+    | '/app/control-centre'
+    | '/app/documents'
+    | '/app/expiry'
+    | '/app/goodsin'
+    | '/app/haccp'
+    | '/app/haccp-flows'
+    | '/app/health'
+    | '/app/incidents'
+    | '/app/inspection'
+    | '/app/integrations'
+    | '/app/labels'
+    | '/app/logs'
+    | '/app/menu'
+    | '/app/oil'
+    | '/app/pest'
+    | '/app/preferences'
+    | '/app/purchasing'
+    | '/app/recalls'
+    | '/app/recipes'
+    | '/app/rota'
+    | '/app/routines'
+    | '/app/security'
+    | '/app/settings'
+    | '/app/stock'
+    | '/app/suppliers'
+    | '/app/temperature'
+    | '/app/training'
+    | '/app/waste'
+    | '/app/workflows'
+    | '/blog/$slug'
+    | '/legal/complaints'
+    | '/legal/cookies'
+    | '/legal/imprint'
+    | '/legal/privacy'
+    | '/legal/terms'
+    | '/app/'
+    | '/blog/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
+  BlogRoute: typeof BlogRouteWithChildren
+  HealthDotjsonRoute: typeof HealthDotjsonRoute
+  LegalRoute: typeof LegalRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  OnboardingRoute: typeof OnboardingRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +691,505 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog': {
+      id: '/blog'
+      path: '/blog'
+      fullPath: '/blog'
+      preLoaderRoute: typeof BlogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/health.json': {
+      id: '/health.json'
+      path: '/health.json'
+      fullPath: '/health.json'
+      preLoaderRoute: typeof HealthDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal': {
+      id: '/legal'
+      path: '/legal'
+      fullPath: '/legal'
+      preLoaderRoute: typeof LegalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app/': {
+      id: '/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/alerts': {
+      id: '/app/alerts'
+      path: '/alerts'
+      fullPath: '/app/alerts'
+      preLoaderRoute: typeof AppAlertsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/assets': {
+      id: '/app/assets'
+      path: '/assets'
+      fullPath: '/app/assets'
+      preLoaderRoute: typeof AppAssetsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/audits': {
+      id: '/app/audits'
+      path: '/audits'
+      fullPath: '/app/audits'
+      preLoaderRoute: typeof AppAuditsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/billing': {
+      id: '/app/billing'
+      path: '/billing'
+      fullPath: '/app/billing'
+      preLoaderRoute: typeof AppBillingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/calibration': {
+      id: '/app/calibration'
+      path: '/calibration'
+      fullPath: '/app/calibration'
+      preLoaderRoute: typeof AppCalibrationRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/checks': {
+      id: '/app/checks'
+      path: '/checks'
+      fullPath: '/app/checks'
+      preLoaderRoute: typeof AppChecksRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/chemicals': {
+      id: '/app/chemicals'
+      path: '/chemicals'
+      fullPath: '/app/chemicals'
+      preLoaderRoute: typeof AppChemicalsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/cleaning': {
+      id: '/app/cleaning'
+      path: '/cleaning'
+      fullPath: '/app/cleaning'
+      preLoaderRoute: typeof AppCleaningRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/complaints': {
+      id: '/app/complaints'
+      path: '/complaints'
+      fullPath: '/app/complaints'
+      preLoaderRoute: typeof AppComplaintsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/control-centre': {
+      id: '/app/control-centre'
+      path: '/control-centre'
+      fullPath: '/app/control-centre'
+      preLoaderRoute: typeof AppControlCentreRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/documents': {
+      id: '/app/documents'
+      path: '/documents'
+      fullPath: '/app/documents'
+      preLoaderRoute: typeof AppDocumentsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/expiry': {
+      id: '/app/expiry'
+      path: '/expiry'
+      fullPath: '/app/expiry'
+      preLoaderRoute: typeof AppExpiryRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/goodsin': {
+      id: '/app/goodsin'
+      path: '/goodsin'
+      fullPath: '/app/goodsin'
+      preLoaderRoute: typeof AppGoodsinRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/haccp': {
+      id: '/app/haccp'
+      path: '/haccp'
+      fullPath: '/app/haccp'
+      preLoaderRoute: typeof AppHaccpRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/haccp-flows': {
+      id: '/app/haccp-flows'
+      path: '/haccp-flows'
+      fullPath: '/app/haccp-flows'
+      preLoaderRoute: typeof AppHaccpFlowsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/health': {
+      id: '/app/health'
+      path: '/health'
+      fullPath: '/app/health'
+      preLoaderRoute: typeof AppHealthRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/incidents': {
+      id: '/app/incidents'
+      path: '/incidents'
+      fullPath: '/app/incidents'
+      preLoaderRoute: typeof AppIncidentsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/inspection': {
+      id: '/app/inspection'
+      path: '/inspection'
+      fullPath: '/app/inspection'
+      preLoaderRoute: typeof AppInspectionRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/integrations': {
+      id: '/app/integrations'
+      path: '/integrations'
+      fullPath: '/app/integrations'
+      preLoaderRoute: typeof AppIntegrationsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/labels': {
+      id: '/app/labels'
+      path: '/labels'
+      fullPath: '/app/labels'
+      preLoaderRoute: typeof AppLabelsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/logs': {
+      id: '/app/logs'
+      path: '/logs'
+      fullPath: '/app/logs'
+      preLoaderRoute: typeof AppLogsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/menu': {
+      id: '/app/menu'
+      path: '/menu'
+      fullPath: '/app/menu'
+      preLoaderRoute: typeof AppMenuRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/oil': {
+      id: '/app/oil'
+      path: '/oil'
+      fullPath: '/app/oil'
+      preLoaderRoute: typeof AppOilRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/pest': {
+      id: '/app/pest'
+      path: '/pest'
+      fullPath: '/app/pest'
+      preLoaderRoute: typeof AppPestRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/preferences': {
+      id: '/app/preferences'
+      path: '/preferences'
+      fullPath: '/app/preferences'
+      preLoaderRoute: typeof AppPreferencesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/purchasing': {
+      id: '/app/purchasing'
+      path: '/purchasing'
+      fullPath: '/app/purchasing'
+      preLoaderRoute: typeof AppPurchasingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/recalls': {
+      id: '/app/recalls'
+      path: '/recalls'
+      fullPath: '/app/recalls'
+      preLoaderRoute: typeof AppRecallsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/recipes': {
+      id: '/app/recipes'
+      path: '/recipes'
+      fullPath: '/app/recipes'
+      preLoaderRoute: typeof AppRecipesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/rota': {
+      id: '/app/rota'
+      path: '/rota'
+      fullPath: '/app/rota'
+      preLoaderRoute: typeof AppRotaRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/routines': {
+      id: '/app/routines'
+      path: '/routines'
+      fullPath: '/app/routines'
+      preLoaderRoute: typeof AppRoutinesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/security': {
+      id: '/app/security'
+      path: '/security'
+      fullPath: '/app/security'
+      preLoaderRoute: typeof AppSecurityRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/settings': {
+      id: '/app/settings'
+      path: '/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/stock': {
+      id: '/app/stock'
+      path: '/stock'
+      fullPath: '/app/stock'
+      preLoaderRoute: typeof AppStockRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/suppliers': {
+      id: '/app/suppliers'
+      path: '/suppliers'
+      fullPath: '/app/suppliers'
+      preLoaderRoute: typeof AppSuppliersRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/temperature': {
+      id: '/app/temperature'
+      path: '/temperature'
+      fullPath: '/app/temperature'
+      preLoaderRoute: typeof AppTemperatureRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/training': {
+      id: '/app/training'
+      path: '/training'
+      fullPath: '/app/training'
+      preLoaderRoute: typeof AppTrainingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/waste': {
+      id: '/app/waste'
+      path: '/waste'
+      fullPath: '/app/waste'
+      preLoaderRoute: typeof AppWasteRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/workflows': {
+      id: '/app/workflows'
+      path: '/workflows'
+      fullPath: '/app/workflows'
+      preLoaderRoute: typeof AppWorkflowsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/blog/': {
+      id: '/blog/'
+      path: '/'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof BlogRoute
+    }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
+      parentRoute: typeof BlogRoute
+    }
+    '/legal/complaints': {
+      id: '/legal/complaints'
+      path: '/complaints'
+      fullPath: '/legal/complaints'
+      preLoaderRoute: typeof LegalComplaintsRouteImport
+      parentRoute: typeof LegalRoute
+    }
+    '/legal/cookies': {
+      id: '/legal/cookies'
+      path: '/cookies'
+      fullPath: '/legal/cookies'
+      preLoaderRoute: typeof LegalCookiesRouteImport
+      parentRoute: typeof LegalRoute
+    }
+    '/legal/imprint': {
+      id: '/legal/imprint'
+      path: '/imprint'
+      fullPath: '/legal/imprint'
+      preLoaderRoute: typeof LegalImprintRouteImport
+      parentRoute: typeof LegalRoute
+    }
+    '/legal/privacy': {
+      id: '/legal/privacy'
+      path: '/privacy'
+      fullPath: '/legal/privacy'
+      preLoaderRoute: typeof LegalPrivacyRouteImport
+      parentRoute: typeof LegalRoute
+    }
+    '/legal/terms': {
+      id: '/legal/terms'
+      path: '/terms'
+      fullPath: '/legal/terms'
+      preLoaderRoute: typeof LegalTermsRouteImport
+      parentRoute: typeof LegalRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppAlertsRoute: typeof AppAlertsRoute
+  AppAssetsRoute: typeof AppAssetsRoute
+  AppAuditsRoute: typeof AppAuditsRoute
+  AppBillingRoute: typeof AppBillingRoute
+  AppCalibrationRoute: typeof AppCalibrationRoute
+  AppChecksRoute: typeof AppChecksRoute
+  AppChemicalsRoute: typeof AppChemicalsRoute
+  AppCleaningRoute: typeof AppCleaningRoute
+  AppComplaintsRoute: typeof AppComplaintsRoute
+  AppControlCentreRoute: typeof AppControlCentreRoute
+  AppDocumentsRoute: typeof AppDocumentsRoute
+  AppExpiryRoute: typeof AppExpiryRoute
+  AppGoodsinRoute: typeof AppGoodsinRoute
+  AppHaccpRoute: typeof AppHaccpRoute
+  AppHaccpFlowsRoute: typeof AppHaccpFlowsRoute
+  AppHealthRoute: typeof AppHealthRoute
+  AppIncidentsRoute: typeof AppIncidentsRoute
+  AppInspectionRoute: typeof AppInspectionRoute
+  AppIntegrationsRoute: typeof AppIntegrationsRoute
+  AppLabelsRoute: typeof AppLabelsRoute
+  AppLogsRoute: typeof AppLogsRoute
+  AppMenuRoute: typeof AppMenuRoute
+  AppOilRoute: typeof AppOilRoute
+  AppPestRoute: typeof AppPestRoute
+  AppPreferencesRoute: typeof AppPreferencesRoute
+  AppPurchasingRoute: typeof AppPurchasingRoute
+  AppRecallsRoute: typeof AppRecallsRoute
+  AppRecipesRoute: typeof AppRecipesRoute
+  AppRotaRoute: typeof AppRotaRoute
+  AppRoutinesRoute: typeof AppRoutinesRoute
+  AppSecurityRoute: typeof AppSecurityRoute
+  AppSettingsRoute: typeof AppSettingsRoute
+  AppStockRoute: typeof AppStockRoute
+  AppSuppliersRoute: typeof AppSuppliersRoute
+  AppTemperatureRoute: typeof AppTemperatureRoute
+  AppTrainingRoute: typeof AppTrainingRoute
+  AppWasteRoute: typeof AppWasteRoute
+  AppWorkflowsRoute: typeof AppWorkflowsRoute
+  AppIndexRoute: typeof AppIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppAlertsRoute: AppAlertsRoute,
+  AppAssetsRoute: AppAssetsRoute,
+  AppAuditsRoute: AppAuditsRoute,
+  AppBillingRoute: AppBillingRoute,
+  AppCalibrationRoute: AppCalibrationRoute,
+  AppChecksRoute: AppChecksRoute,
+  AppChemicalsRoute: AppChemicalsRoute,
+  AppCleaningRoute: AppCleaningRoute,
+  AppComplaintsRoute: AppComplaintsRoute,
+  AppControlCentreRoute: AppControlCentreRoute,
+  AppDocumentsRoute: AppDocumentsRoute,
+  AppExpiryRoute: AppExpiryRoute,
+  AppGoodsinRoute: AppGoodsinRoute,
+  AppHaccpRoute: AppHaccpRoute,
+  AppHaccpFlowsRoute: AppHaccpFlowsRoute,
+  AppHealthRoute: AppHealthRoute,
+  AppIncidentsRoute: AppIncidentsRoute,
+  AppInspectionRoute: AppInspectionRoute,
+  AppIntegrationsRoute: AppIntegrationsRoute,
+  AppLabelsRoute: AppLabelsRoute,
+  AppLogsRoute: AppLogsRoute,
+  AppMenuRoute: AppMenuRoute,
+  AppOilRoute: AppOilRoute,
+  AppPestRoute: AppPestRoute,
+  AppPreferencesRoute: AppPreferencesRoute,
+  AppPurchasingRoute: AppPurchasingRoute,
+  AppRecallsRoute: AppRecallsRoute,
+  AppRecipesRoute: AppRecipesRoute,
+  AppRotaRoute: AppRotaRoute,
+  AppRoutinesRoute: AppRoutinesRoute,
+  AppSecurityRoute: AppSecurityRoute,
+  AppSettingsRoute: AppSettingsRoute,
+  AppStockRoute: AppStockRoute,
+  AppSuppliersRoute: AppSuppliersRoute,
+  AppTemperatureRoute: AppTemperatureRoute,
+  AppTrainingRoute: AppTrainingRoute,
+  AppWasteRoute: AppWasteRoute,
+  AppWorkflowsRoute: AppWorkflowsRoute,
+  AppIndexRoute: AppIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
+interface BlogRouteChildren {
+  BlogSlugRoute: typeof BlogSlugRoute
+  BlogIndexRoute: typeof BlogIndexRoute
+}
+
+const BlogRouteChildren: BlogRouteChildren = {
+  BlogSlugRoute: BlogSlugRoute,
+  BlogIndexRoute: BlogIndexRoute,
+}
+
+const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
+
+interface LegalRouteChildren {
+  LegalComplaintsRoute: typeof LegalComplaintsRoute
+  LegalCookiesRoute: typeof LegalCookiesRoute
+  LegalImprintRoute: typeof LegalImprintRoute
+  LegalPrivacyRoute: typeof LegalPrivacyRoute
+  LegalTermsRoute: typeof LegalTermsRoute
+}
+
+const LegalRouteChildren: LegalRouteChildren = {
+  LegalComplaintsRoute: LegalComplaintsRoute,
+  LegalCookiesRoute: LegalCookiesRoute,
+  LegalImprintRoute: LegalImprintRoute,
+  LegalPrivacyRoute: LegalPrivacyRoute,
+  LegalTermsRoute: LegalTermsRoute,
+}
+
+const LegalRouteWithChildren = LegalRoute._addFileChildren(LegalRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
+  BlogRoute: BlogRouteWithChildren,
+  HealthDotjsonRoute: HealthDotjsonRoute,
+  LegalRoute: LegalRouteWithChildren,
+  LoginRoute: LoginRoute,
+  OnboardingRoute: OnboardingRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

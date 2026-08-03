@@ -1,0 +1,132 @@
+name: Production release evidence
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployment_url:
+        description: HTTPS URL of the deployed release candidate to verify
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  deployments: write
+  id-token: write
+  attestations: write
+
+concurrency:
+  group: production-release-readiness
+  cancel-in-progress: false
+
+jobs:
+  release-readiness:
+    environment: production
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+      SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+      PUBLIC_APP_URL: ${{ vars.PUBLIC_APP_URL }}
+      PRODUCTION_URL: ${{ inputs.deployment_url }}
+      EXPECTED_RELEASE_SHA: ${{ github.sha }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
+      MALWARE_SCAN_URL: ${{ vars.MALWARE_SCAN_URL }}
+      MALWARE_SCAN_TOKEN: ${{ secrets.MALWARE_SCAN_TOKEN }}
+      VITE_SUPPORT_URL: ${{ vars.VITE_SUPPORT_URL }}
+      VITE_STATUS_URL: ${{ vars.VITE_STATUS_URL }}
+      ALLOWED_ORIGINS: ${{ vars.ALLOWED_ORIGINS }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      NOTIFICATION_FROM_EMAIL: ${{ vars.NOTIFICATION_FROM_EMAIL }}
+      STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+      STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+      STRIPE_PRICE_PRO: ${{ vars.STRIPE_PRICE_PRO }}
+      STRIPE_LIVE_MODE: ${{ vars.STRIPE_LIVE_MODE }}
+      CONTACT_HASH_SALT: ${{ secrets.CONTACT_HASH_SALT }}
+      CRON_SECRET: ${{ secrets.CRON_SECRET }}
+      INTEGRATION_ENCRYPTION_KEY: ${{ secrets.INTEGRATION_ENCRYPTION_KEY }}
+      VITE_LEGAL_COMPANY_NAME: ${{ vars.VITE_LEGAL_COMPANY_NAME }}
+      VITE_LEGAL_ADDRESS_LINE_1: ${{ vars.VITE_LEGAL_ADDRESS_LINE_1 }}
+      VITE_LEGAL_POSTAL_CITY: ${{ vars.VITE_LEGAL_POSTAL_CITY }}
+      VITE_LEGAL_EMAIL: ${{ vars.VITE_LEGAL_EMAIL }}
+      VITE_LEGAL_PHONE: ${{ vars.VITE_LEGAL_PHONE }}
+      VITE_LEGAL_REGISTER: ${{ vars.VITE_LEGAL_REGISTER }}
+      VITE_LEGAL_MANAGING_DIRECTOR: ${{ vars.VITE_LEGAL_MANAGING_DIRECTOR }}
+      VITE_LEGAL_CONTENT_APPROVED: ${{ vars.VITE_LEGAL_CONTENT_APPROVED }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.9.4
+      - run: npm ci
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npm run launch:preflight
+      - run: npm run quality
+      - name: Verify native release bundle
+        working-directory: mobile
+        env:
+          EXPO_NO_TELEMETRY: "1"
+        run: |
+          npm ci
+          npm audit --omit=dev --audit-level=high
+          npm run typecheck
+          npm run export:check
+          npm run release:preflight
+      - name: Verify Edge Functions release bundle
+        working-directory: supabase/functions
+        run: |
+          npm ci
+          npm audit --omit=dev --audit-level=high
+          deno fmt --check .
+          deno lint .
+          deno check --node-modules-dir=manual --no-lock \
+            contact/index.ts inspector-invite/index.ts inspection-export/index.ts \
+            notification-dispatch/index.ts sensor-ingest/index.ts sensor-provision/index.ts \
+            team-invite/index.ts privacy-requests/index.ts security-center/index.ts \
+            file-scan/index.ts operations-dispatch/index.ts billing/index.ts \
+            integration-admin/index.ts integration-dispatch/index.ts
+      - name: Verify deployed commit identity and health
+        run: npm run health:check
+      - name: Smoke-test the deployed release candidate
+        run: npm run deployment:smoke
+      - name: Generate web, native and Edge SBOMs
+        run: npm run release:sbom
+      - name: Generate tamper-evident release manifest
+        env:
+          DEPENDENCY_AUDIT_PASSED: "true"
+          LAUNCH_PREFLIGHT_PASSED: "true"
+          QUALITY_GATE_PASSED: "true"
+          NATIVE_EXPORT_PASSED: "true"
+          EDGE_FUNCTIONS_PASSED: "true"
+          DEPLOYMENT_HEALTH_PASSED: "true"
+          DEPLOYMENT_SMOKE_PASSED: "true"
+          SBOM_GENERATED: "true"
+        run: npm run release:evidence
+      - name: Package the verified release artifact
+        run: tar -czf "haccora-production-${GITHUB_SHA}.tar.gz" .output release-evidence
+      - name: Attest release build provenance
+        uses: actions/attest@v4
+        with:
+          subject-path: haccora-production-${{ github.sha }}.tar.gz
+      - name: Attest aggregate release SBOM
+        uses: actions/attest@v4
+        with:
+          subject-path: haccora-production-${{ github.sha }}.tar.gz
+          sbom-path: release-evidence/sbom-haccora-release.cdx.json
+      - name: Upload immutable release evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: haccora-production-${{ github.sha }}
+          path: |
+            haccora-production-${{ github.sha }}.tar.gz
+            release-evidence
+          if-no-files-found: error
+          retention-days: 30
+      - name: Record verified GitHub production deployment
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: npm run release:record-deployment

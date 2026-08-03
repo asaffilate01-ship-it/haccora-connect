@@ -1,29 +1,63 @@
-# Welcome to your Lovable project
+# Haccora UK
 
-This project was built with [Lovable](https://lovable.dev).
+Haccora UK is a commercial food-safety compliance SaaS for cafés, restaurants, takeaways, caterers, food retailers, care settings, hotels, mobile traders and multi-site operators.
 
-## Build with Lovable
+This clean Stage 1 repository combines:
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
+- Haccora's production tenancy, RLS, billing, audit, inspection and native-app architecture
+- UK-specific product direction from Food Safety Hub
+- a new versioned UK compliance-content and responsibility model
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
+Haccora supports HACCP-based food-safety management, SFBB-style working methods, daily evidence, allergens, PPDS processes, corrective actions and inspection preparation. It is not represented as FSA-approved and does not guarantee legal compliance or a Food Hygiene Rating.
 
-## Development
+## Included
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+- TanStack Start web application
+- Supabase Postgres, Auth, Storage and Edge Functions
+- Expo/React Native apps for iOS and Android
+- Multi-business and multi-site access control
+- HACCP, checks, temperatures, cleaning and allergens
+- Training, incidents, complaints and traceability
+- Scoped and expiring inspector access
+- PDF inspection evidence exports
+- Secure offline mobile writes and biometric lock
+- Stripe subscription and entitlement foundation
+- Versioned UK compliance content for all four UK jurisdictions
+- Landlord/contractor responsibility assignments
+- CI, CodeQL, dependency review, secret scanning and release evidence
 
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
+## Local setup
+
+```bash
+cp .env.example .env
+npm ci
 npm run dev
 ```
 
-## Built with
+Use only a Supabase publishable key in client-side variables. Never commit `.env` or a Supabase service-role key.
 
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
+## Validation
+
+```bash
+npm run quality
+npm run migrations:check
+cd mobile
+npm ci
+npm run typecheck
+npm run store:check
+```
+
+`store:check` intentionally fails until real EAS project and store settings have been configured.
+
+## Documentation
+
+- `docs/UK_PRODUCT_BLUEPRINT.md`
+- `docs/UK_COMPLIANCE_VALIDATION.md`
+- `docs/GO_LIVE_CHECKLIST.md`
+- `docs/PRODUCTION_READINESS.md`
+- `docs/DEPLOYMENT.md`
+- `mobile/store/STORE_RELEASE_CHECKLIST.md`
+
+## Repository upload
+
+Create a new empty GitHub repository, then upload the contents of this folder to its root. Do not upload the outer ZIP folder as a nested subdirectory.

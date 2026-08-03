@@ -1,0 +1,11 @@
+{
+  "imports": {
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2.110.7",
+    "pdf-lib": "npm:pdf-lib@1.17.1",
+    "zod": "npm:zod@3.24.2"
+  },
+  "compilerOptions": {
+    "lib": ["deno.window", "dom", "dom.iterable"]
+  },
+  "nodeModulesDir": "auto"
+}
