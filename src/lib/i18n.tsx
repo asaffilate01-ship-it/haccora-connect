@@ -39,7 +39,7 @@ const de: Dict = {
   "nav.more": "Mehr",
 
   // Hero
-  "hero.eyebrow": "HACCP · IfSG · LMHV · Digitale Nachweise",
+  "hero.eyebrow": "HACCP · Food-handler health · food hygiene · Digitale Nachweise",
 
   "hero.cta.primary": "Jetzt starten",
   "hero.cta.secondary": "Preise ansehen",
@@ -66,10 +66,10 @@ const de: Dict = {
     "Rezepte, deklarierte Allergene, Kalkulation und Lieferanteninformationen – strukturiert verknüpft.",
   "pillar.team.title": "Personal & Schulung",
   "pillar.team.body":
-    "IfSG §§42–43, LMHV, Allergene und Hygiene – mit geprüften Schulungsnachweisen auf Deutsch und Englisch; weitere Personalsprachen sind geplant.",
+    "Food-handler fitness-to-work, food hygiene, Allergene und Hygiene – mit geprüften Schulungsnachweisen auf Deutsch und Englisch; weitere Personalsprachen sind geplant.",
   "pillar.regulation.title": "Deutsche Regulatorik",
   "pillar.regulation.body":
-    "Referenzübersicht für Berlin, NRW und zentrale EU-Regeln – offizielle Quellen bleiben maßgeblich.",
+    "Referenzübersicht für London, England and Wales und zentrale EU-Regeln – offizielle Quellen bleiben maßgeblich.",
 
   // Inspector Mode
   "inspector.eyebrow": "Haccora Inspector Mode",
@@ -80,7 +80,7 @@ const de: Dict = {
   "inspector.item.temp": "Temperaturverlauf und Abweichungen",
   "inspector.item.clean": "Reinigungs- und Schädlingsnachweise",
   "inspector.item.allergen": "Allergenmatrix aller Rezepte",
-  "inspector.item.training": "IfSG- und LMHV-Nachweise",
+  "inspector.item.training": "Food-handler health- und food hygiene-Nachweise",
   "inspector.item.traceability": "Rückverfolgbarkeit vorwärts und rückwärts",
   "inspector.cta": "Nachweispaket demonstrieren",
 
@@ -166,21 +166,21 @@ const de: Dict = {
   "inspector.demo.clean.b": "Einträge · optionale Fotobelege",
   "inspector.demo.allerg.t": "Allergenmatrix",
   "inspector.demo.allerg.b": "Rezepte · 14 EU-Hauptallergene",
-  "inspector.demo.ifsg.t": "IfSG §§42–43",
+  "inspector.demo.ifsg.t": "Food-handler fitness-to-work",
   "inspector.demo.ifsg.b": "Nur geprüfte Nachweise",
   "inspector.demo.trace.t": "Rückverfolgbarkeit",
   "inspector.demo.trace.b": "Lieferant → Charge → Portion",
-  "reg.card.berlin.t": "Berlin Bezirksämter",
+  "reg.card.berlin.t": "London Bezirksämter",
   "reg.card.berlin.b": "Hinweise zu Bezirksbehörden · Angaben bei der offiziellen Stelle prüfen.",
-  "reg.card.nrw.t": "NRW Kreise/Städte",
+  "reg.card.nrw.t": "England and Wales Kreise/Städte",
   "reg.card.nrw.b": "Hinweise zu Kreisen und Städten · Angaben bei der offiziellen Stelle prüfen.",
   "reg.card.eu852.t": "EU 852/2004",
   "reg.card.eu852.b": "HACCP-Rahmen, übertragen in Ihre Prozesse.",
   "reg.card.eu1169.t": "EU 1169/2011",
   "reg.card.eu1169.b": "14 Hauptallergene strukturiert je Rezept dokumentieren.",
-  "reg.card.ifsg.t": "IfSG §§42–43",
+  "reg.card.ifsg.t": "Food-handler fitness-to-work",
   "reg.card.ifsg.b": "Fristen, Belehrungen, Wiederholungen.",
-  "reg.card.lmhv.t": "LMHV",
+  "reg.card.lmhv.t": "food hygiene",
   "reg.card.lmhv.b": "Schulungsreferenz zur betrieblichen Prüfung.",
   "dash.allTasks": "Alle anzeigen",
 
@@ -196,7 +196,7 @@ const de: Dict = {
   "task.allerg.t": "Allergenmappe prüfen",
   "task.allerg.cat": "Allergene",
   "action.cool.t": "Kühlhaus 2 über 5 °C",
-  "action.ifsg.t": "Fehlende IfSG-Unterweisung",
+  "action.ifsg.t": "Fehlende Food-handler health-Unterweisung",
   "action.clean.t": "Reinigungsfoto Küchenboden",
   "action.source.temp": "Temperatur",
   "action.source.staff": "Personal",
@@ -206,7 +206,7 @@ const de: Dict = {
   "time.trend": "+2 vs. letzte Woche",
 
   // App shell
-  "app.tag": "Kreuzberg Kitchen · Berlin",
+  "app.tag": "Kreuzberg Kitchen · London",
   "menu.dashboard": "Übersicht",
   "menu.haccp": "HACCP-Plan",
   "menu.haccpFlows": "HACCP-Flows",
@@ -297,7 +297,7 @@ const de: Dict = {
 
   // Training
   "training.title": "Team & Schulung",
-  "training.sub": "IfSG · LMHV · Allergene · Hygiene – mehrsprachig",
+  "training.sub": "Food-handler health · food hygiene · Allergene · Hygiene – mehrsprachig",
   "training.expires": "läuft ab in",
   "training.days": "Tagen",
 
@@ -339,7 +339,7 @@ const de: Dict = {
   "reg.title": "Für Lebensmittelbetriebe in Deutschland strukturiert.",
   "reg.title.short": "Regulatorische Referenzen.",
   "reg.body":
-    "Referenzübersicht für Berlin, NRW sowie ausgewählte EU- und Bundesregeln. Angaben sind anhand offizieller Quellen und fachlicher Beratung zu prüfen.",
+    "Referenzübersicht für London, England and Wales sowie ausgewählte EU- und Bundesregeln. Angaben sind anhand offizieller Quellen und fachlicher Beratung zu prüfen.",
 
   // Auth / roles
   "auth.title": "Bei Haccora anmelden",
@@ -410,7 +410,7 @@ const de: Dict = {
   "notif.viewAll": "Alle Nachweise anzeigen",
   "notif.temp.t": "Kühlhaus 2 über 5 °C",
   "notif.temp.m": "Temperatur · vor 12 Min.",
-  "notif.ifsg.t": "IfSG-Unterweisung fällig",
+  "notif.ifsg.t": "Food-handler health-Unterweisung fällig",
   "notif.ifsg.m": "Team · 2 Mitarbeitende",
   "notif.clean.t": "Reinigungsfoto ausstehend",
   "notif.clean.m": "Reinigung · Küchenboden",
@@ -655,7 +655,7 @@ const de: Dict = {
 
   // Recipes
   "recipes.newIngredient": "Zutat neu",
-  "recipe.currywurst": "Berliner Currywurst",
+  "recipe.currywurst": "Londoner Currywurst",
   "recipe.sesameNoodles": "Sesam-Nudeln (vegan)",
   "recipe.klopse": "Königsberger Klopse",
   "recipe.fishSoup": "Fischsuppe Nordsee",
@@ -696,7 +696,7 @@ const de: Dict = {
   "training.col.staff": "Mitarbeiter",
   "training.col.role": "Rolle",
   "training.col.langs": "Sprachen",
-  "training.col.ifsg": "IfSG-Belehrung",
+  "training.col.ifsg": "Food-handler health-Belehrung",
   "training.col.training": "Schulung",
   "training.col.expires": "Ablauf",
   "training.role.head": "Küchenleitung",
@@ -713,7 +713,7 @@ const de: Dict = {
   "suppliers.title": "Lieferanten",
   "suppliers.sub": "Approved-Supplier-Liste, Spezifikationen, Zertifikate, Rückrufe.",
   "suppliers.performance": "Performance",
-  "sup.metro": "Metro Berlin",
+  "sup.metro": "Metro London",
   "sup.metro.cat": "Gastronomie-Vollsortiment",
   "sup.havel": "Havelbauer GmbH",
   "sup.havel.cat": "Gemüse regional",
@@ -776,9 +776,9 @@ const de: Dict = {
   "inspection.item.pest.sub": "Sichtungen und Folgemaßnahmen",
   "inspection.item.allerg": "Allergenmatrix",
   "inspection.item.allerg.sub": "Rezept- und Allergenunterlagen",
-  "inspection.item.ifsg": "IfSG §§42–43 Nachweise",
+  "inspection.item.ifsg": "Food-handler fitness-to-work Nachweise",
   "inspection.item.ifsg.sub": "Nur geprüfte Schulungsnachweise",
-  "inspection.item.lmhv": "LMHV-Schulungsmatrix",
+  "inspection.item.lmhv": "food hygiene-Schulungsmatrix",
   "inspection.item.lmhv.sub": "Hochgeladene und geprüfte Unterlagen",
   "inspection.item.trace": "Rückverfolgbarkeit",
   "inspection.item.trace.sub": "Wareneingang und Chargennachweise",
@@ -849,14 +849,15 @@ const de: Dict = {
   "menu.incidents": "Vorfälle",
   "menu.goodsin": "Wareneingang",
   "menu.calibration": "Kalibrierung",
-  "menu.health": "IfSG §43 Register",
+  "menu.health": "Food-handler fitness-to-work Register",
   "menu.pest": "Schädlinge",
   "menu.oil": "Öl-Qualität",
   "menu.complaints": "Beschwerden",
   "menu.chemicals": "Gefahrstoffe",
   "nav.group.kitchenOps": "Küchenbetrieb",
   "settings.perms.title": "Berechtigungsmatrix",
-  "settings.perms.sub": "Rollenbasierte Aktionen – abgestimmt auf IfSG, ArbSchG und LMIV.",
+  "settings.perms.sub":
+    "Rollenbasierte Aktionen – abgestimmt auf Food-handler health, UK workplace safety und LMIV.",
   "settings.perms.action": "Aktion",
   "settings.perms.yourRole": "Ihre Rolle",
   "settings.perms.legend.yes": "Erlaubt",
@@ -896,19 +897,20 @@ const en: Dict = {
   "nav.login": "Sign in",
   "nav.demo": "Get started",
   "nav.tryFree": "Get started",
-  "brand.tag": "Digital food safety, built for Germany",
+  "brand.tag": "Digital food safety, built for UK food businesses",
   "brand.slogan": "Safe. Clean. Traceable.",
   "brand.tagline": "Structured for inspection preparation.",
   "marquee.phrase": "Built for German kitchens · Safe. Clean. Traceable. · Structured preparation.",
   "nav.more": "More",
 
-  "hero.eyebrow": "HACCP · IfSG · LMHV · Digital evidence",
+  "hero.eyebrow": "HACCP · Food-handler health · food hygiene · Digital evidence",
   "hero.title": "One system for every part of food safety.",
   "hero.subtitle":
-    "Haccora replaces your HACCP folder, temperature sheets, cleaning records, allergen files, staff certificates and inspection paperwork — in one multilingual platform built for food businesses in Germany.",
+    "Haccora replaces your HACCP folder, temperature sheets, cleaning records, allergen files, staff certificates and inspection paperwork — in one multilingual platform built for food businesses in the United Kingdom.",
   "hero.cta.primary": "Get started",
   "hero.cta.secondary": "See pricing",
-  "hero.trust": "Designed for independent restaurants, chains and franchises operating in Germany.",
+  "hero.trust":
+    "Designed for independent restaurants, chains and franchises operating in the United Kingdom.",
 
   "stats.locations": "Locations onboarded",
   "stats.checks": "Checks per month",
@@ -929,10 +931,10 @@ const en: Dict = {
     "Recipes, declared allergens, margin analysis and supplier information — linked in a structured model.",
   "pillar.team.title": "Staff & training",
   "pillar.team.body":
-    "IfSG §§42–43, LMHV, allergens and hygiene — with verified training records in German and English; more staff languages are planned.",
+    "Food-handler fitness-to-work, food hygiene, allergens and hygiene — with verified training records in German and English; more staff languages are planned.",
   "pillar.regulation.title": "German regulation",
   "pillar.regulation.body":
-    "Reference overview for Berlin, NRW and key EU rules — official sources remain authoritative.",
+    "Reference overview for London, England and Wales and key EU rules — official sources remain authoritative.",
 
   "inspector.eyebrow": "Haccora Inspector Mode",
   "inspector.title": "One click. Everything the authority asks for.",
@@ -942,7 +944,7 @@ const en: Dict = {
   "inspector.item.temp": "Temperature history and deviations",
   "inspector.item.clean": "Cleaning and pest-control records",
   "inspector.item.allergen": "Full allergen matrix",
-  "inspector.item.training": "IfSG & LMHV evidence",
+  "inspector.item.training": "Food-handler health & food hygiene evidence",
   "inspector.item.traceability": "One-step-forward and one-step-back",
   "inspector.cta": "See a sample evidence pack",
 
@@ -1025,21 +1027,21 @@ const en: Dict = {
   "inspector.demo.clean.b": "Records · optional photo evidence",
   "inspector.demo.allerg.t": "Allergen matrix",
   "inspector.demo.allerg.b": "Recipes · 14 EU main allergens",
-  "inspector.demo.ifsg.t": "IfSG §§42–43",
+  "inspector.demo.ifsg.t": "Food-handler fitness-to-work",
   "inspector.demo.ifsg.b": "Verified evidence only",
   "inspector.demo.trace.t": "Traceability",
   "inspector.demo.trace.b": "Supplier → batch → portion",
-  "reg.card.berlin.t": "Berlin districts",
+  "reg.card.berlin.t": "London districts",
   "reg.card.berlin.b": "District-authority pointers · verify details with the official authority.",
-  "reg.card.nrw.t": "NRW counties & cities",
+  "reg.card.nrw.t": "England and Wales counties & cities",
   "reg.card.nrw.b": "County and city pointers · verify details with the official authority.",
   "reg.card.eu852.t": "EU 852/2004",
   "reg.card.eu852.b": "HACCP framework mapped to your processes.",
   "reg.card.eu1169.t": "EU 1169/2011",
   "reg.card.eu1169.b": "Document the 14 major allergens for each recipe.",
-  "reg.card.ifsg.t": "IfSG §§42–43",
+  "reg.card.ifsg.t": "Food-handler fitness-to-work",
   "reg.card.ifsg.b": "Deadlines, briefings, refreshers.",
-  "reg.card.lmhv.t": "LMHV",
+  "reg.card.lmhv.t": "food hygiene",
   "reg.card.lmhv.b": "Training reference for operational review.",
   "dash.allTasks": "View all",
 
@@ -1054,7 +1056,7 @@ const en: Dict = {
   "task.allerg.t": "Check allergen folder",
   "task.allerg.cat": "Allergens",
   "action.cool.t": "Chiller 2 above 5 °C",
-  "action.ifsg.t": "Missing IfSG briefing",
+  "action.ifsg.t": "Missing Food-handler health briefing",
   "action.clean.t": "Cleaning photo — kitchen floor",
   "action.source.temp": "Temperature",
   "action.source.staff": "Staff",
@@ -1063,7 +1065,7 @@ const en: Dict = {
   "time.todayAt": "Today 12:00",
   "time.trend": "+2 vs. last week",
 
-  "app.tag": "Kreuzberg Kitchen · Berlin",
+  "app.tag": "Kreuzberg Kitchen · London",
   "menu.dashboard": "Overview",
   "menu.haccp": "HACCP plan",
   "menu.checks": "Daily checks",
@@ -1148,7 +1150,7 @@ const en: Dict = {
   "temp.last": "Last reading",
 
   "training.title": "Team & training",
-  "training.sub": "IfSG · LMHV · Allergens · Hygiene — multilingual",
+  "training.sub": "Food-handler health · food hygiene · Allergens · Hygiene — multilingual",
   "training.expires": "expires in",
   "training.days": "days",
 
@@ -1183,9 +1185,9 @@ const en: Dict = {
   "pillar.temp.body":
     "Manual entry or sensor integration — store readings and notify users about threshold deviations.",
   "reg.eyebrow": "German regulatory layer",
-  "reg.title": "Structured for food businesses in Germany.",
+  "reg.title": "Structured for food businesses in the United Kingdom.",
   "reg.body":
-    "A reference overview for Berlin, NRW and selected EU and federal rules. Verify details against official sources and professional advice.",
+    "A reference overview for London, England and Wales and selected EU and federal rules. Verify details against official sources and professional advice.",
 
   // Auth / roles
   "auth.title": "Sign in to Haccora",
@@ -1255,7 +1257,7 @@ const en: Dict = {
   "notif.viewAll": "See all evidence",
   "notif.temp.t": "Walk-in 2 above 5 °C",
   "notif.temp.m": "Temperature · 12 min ago",
-  "notif.ifsg.t": "IfSG training due",
+  "notif.ifsg.t": "Food-handler health training due",
   "notif.ifsg.m": "Team · 2 members",
   "notif.clean.t": "Cleaning photo pending",
   "notif.clean.m": "Cleaning · kitchen floor",
@@ -1500,7 +1502,7 @@ const en: Dict = {
 
   // Recipes
   "recipes.newIngredient": "New ingredient",
-  "recipe.currywurst": "Berlin currywurst",
+  "recipe.currywurst": "London currywurst",
   "recipe.sesameNoodles": "Sesame noodles (vegan)",
   "recipe.klopse": "Königsberger meatballs",
   "recipe.fishSoup": "North Sea fish soup",
@@ -1541,7 +1543,7 @@ const en: Dict = {
   "training.col.staff": "Staff member",
   "training.col.role": "Role",
   "training.col.langs": "Languages",
-  "training.col.ifsg": "IfSG briefing",
+  "training.col.ifsg": "Food-handler health briefing",
   "training.col.training": "Training",
   "training.col.expires": "Expiry",
   "training.role.head": "Head chef",
@@ -1558,7 +1560,7 @@ const en: Dict = {
   "suppliers.title": "Suppliers",
   "suppliers.sub": "Approved-supplier list, specifications, certificates and recalls.",
   "suppliers.performance": "Performance",
-  "sup.metro": "Metro Berlin",
+  "sup.metro": "Metro London",
   "sup.metro.cat": "Broadline foodservice",
   "sup.havel": "Havelbauer GmbH",
   "sup.havel.cat": "Regional produce",
@@ -1621,9 +1623,9 @@ const en: Dict = {
   "inspection.item.pest.sub": "Sightings and follow-up actions",
   "inspection.item.allerg": "Allergen matrix",
   "inspection.item.allerg.sub": "Recipe and allergen records",
-  "inspection.item.ifsg": "IfSG §§42–43 evidence",
+  "inspection.item.ifsg": "Food-handler fitness-to-work evidence",
   "inspection.item.ifsg.sub": "Verified training records only",
-  "inspection.item.lmhv": "LMHV training matrix",
+  "inspection.item.lmhv": "food hygiene training matrix",
   "inspection.item.lmhv.sub": "Uploaded and verified evidence",
   "inspection.item.trace": "Traceability",
   "inspection.item.trace.sub": "Goods receiving and batch evidence",
@@ -1644,7 +1646,7 @@ const en: Dict = {
   "outcomes.audit.label": "evidence for the selected period",
 
   // Industries
-  "industries.title": "Built for every kitchen in Germany.",
+  "industries.title": "Built for every kitchen in the United Kingdom.",
   "industries.subtitle": "From single sites to chains — Haccora adapts to your operation.",
   "industries.restaurant": "Restaurants",
   "industries.hotel": "Hotels & chains",
@@ -1693,14 +1695,15 @@ const en: Dict = {
   "menu.incidents": "Incidents",
   "menu.goodsin": "Goods-in",
   "menu.calibration": "Calibration",
-  "menu.health": "IfSG §43 register",
+  "menu.health": "Food-handler fitness-to-work register",
   "menu.pest": "Pest control",
   "menu.oil": "Oil quality",
   "menu.complaints": "Complaints",
   "menu.chemicals": "Chemicals",
   "nav.group.kitchenOps": "Kitchen ops",
   "settings.perms.title": "Permissions matrix",
-  "settings.perms.sub": "Role-based actions — mapped to IfSG, ArbSchG and EU-1169/2011.",
+  "settings.perms.sub":
+    "Role-based actions — mapped to Food-handler health, UK workplace safety and UK food information rules.",
   "settings.perms.action": "Action",
   "settings.perms.yourRole": "Your role",
   "settings.perms.legend.yes": "Allowed",

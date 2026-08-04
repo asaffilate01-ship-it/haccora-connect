@@ -55,8 +55,8 @@ const PHASES: Phase[] = [
       { id: "o3", deK: "Oberflächen desinfiziert", enK: "Surfaces sanitised", type: "clean" },
       {
         id: "o4",
-        deK: "Gesundheitszustand Team (IfSG §43)",
-        enK: "Team health check (IfSG §43)",
+        deK: "Gesundheitszustand Team (Food-handler fitness-to-work)",
+        enK: "Team health check (Food-handler fitness-to-work)",
         type: "check",
       },
       { id: "o5", deK: "Warenannahme-Bereich frei", enK: "Delivery area clear", type: "check" },

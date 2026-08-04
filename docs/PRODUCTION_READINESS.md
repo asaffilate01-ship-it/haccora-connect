@@ -42,7 +42,7 @@ These cannot be safely invented or completed from source code alone:
 3. Grant an inspector only `temperature` for one location and one hour; verify all other evidence and all PII is denied before, during and after expiry.
 4. Submit out-of-range temperatures from web, native and sensor function; verify alert, corrective action workflow and audit events.
 5. Upload allowed and disallowed files; verify size/type/prefix enforcement and five-minute URL expiry.
-6. Complete and verify training; confirm an internal quiz is never presented as an official IfSG certificate.
+6. Complete and verify training; confirm an internal quiz is never presented as an official Food-handler health certificate.
 7. Export evidence and reconcile counts against tenant-scoped source records.
 8. Restore staging from backup and document recovery time and recovery point.
 9. Run web quality checks, committed Playwright accessibility tests, native typecheck, manual screen-reader/zoom checks, two-device offline sync and browser/device matrix tests.

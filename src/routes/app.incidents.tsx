@@ -126,8 +126,8 @@ function IncidentsPage() {
           </h1>
           <p className="text-muted-foreground mt-1 max-w-2xl">
             {t(
-              "Meldepflichtige Ereignisse gemäß ArbSchG §16 und IfSG §42 – live gespeichert mit Ursachenanalyse.",
-              "Reportable events under ArbSchG §16 and IfSG §42 — stored live with root-cause analysis.",
+              "Meldepflichtige Ereignisse gemäß UK workplace safety §16 und Food-handler health §42 – live gespeichert mit Ursachenanalyse.",
+              "Reportable events under UK workplace safety §16 and Food-handler health §42 — stored live with root-cause analysis.",
             )}
           </p>
         </div>

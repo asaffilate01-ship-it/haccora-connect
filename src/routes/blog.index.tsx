@@ -13,13 +13,16 @@ export const Route = createFileRoute("/blog/")({
       {
         name: "description",
         content:
-          "HACCP, IfSG, LMHV and daily operations — practical guides for UK food businesses.",
+          "HACCP, Food-handler health, food hygiene and daily operations — practical guides for UK food businesses.",
       },
-      { property: "og:title", content: "Haccora Blog — Food safety insights for Germany" },
+      {
+        property: "og:title",
+        content: "Haccora Blog — Food safety insights for UK food businesses",
+      },
       {
         property: "og:description",
         content:
-          "HACCP, IfSG, LMHV and daily operations — practical guides for UK food businesses.",
+          "HACCP, Food-handler health, food hygiene and daily operations — practical guides for UK food businesses.",
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "/blog" },

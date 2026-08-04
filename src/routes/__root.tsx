@@ -91,7 +91,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Haccora unifies HACCP, daily checks, temperature, allergens, training and inspection preparation for food businesses in the United Kingdom.",
       },
       { name: "author", content: "Haccora" },
-      { property: "og:title", content: "Haccora — Digital food safety for Germany" },
+      { property: "og:title", content: "Haccora — Digital food safety for UK food businesses" },
       {
         property: "og:description",
         content:

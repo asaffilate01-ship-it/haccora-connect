@@ -1,1 +1,16 @@
 project_id = "dbjbhemmtdkzulsxfvmi"
+
+[functions.file-scan]
+verify_jwt = false
+
+[functions.operations-dispatch]
+verify_jwt = false
+
+[functions.billing]
+verify_jwt = false
+
+[functions.integration-admin]
+verify_jwt = false
+
+[functions.integration-dispatch]
+verify_jwt = false

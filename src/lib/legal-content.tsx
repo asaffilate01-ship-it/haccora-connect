@@ -59,17 +59,13 @@ const Address = ({ lang = "de" }: { lang?: Language }) => (
     <br />
     {lang === "de" ? "Tel." : "Phone"}: {PUBLIC_CONFIG.legal.phone ?? "—"}
     <br />
-    {lang === "de" ? "Handelsregister" : "Commercial register"}:{" "}
+    {lang === "de" ? "Handelsregister" : "Company number / register"}:{" "}
     {PUBLIC_CONFIG.legal.register ?? "—"}
     <br />
     {lang === "de" ? "USt-IdNr." : "VAT ID"}: {PUBLIC_CONFIG.legal.vatId ?? "—"}
     <br />
-    {lang === "de" ? "Geschäftsführung" : "Managing director"}:{" "}
+    {lang === "de" ? "Geschäftsführung" : "Responsible company officer"}:{" "}
     {PUBLIC_CONFIG.legal.managingDirector ?? "—"}
-    <br />
-    {lang === "de"
-      ? "Verantwortlich i.S.d. § 18 Abs. 2 MStV"
-      : "Responsible under § 18 (2) MStV"}: {PUBLIC_CONFIG.legal.managingDirector ?? "—"}
   </address>
 );
 
@@ -293,23 +289,18 @@ const de: Record<LegalKey, LegalDoc> = {
 /* ── EN ─────────────────────────────────────────────────────────────── */
 const en: Record<LegalKey, LegalDoc> = {
   imprint: {
-    title: "Imprint",
+    title: "Company information",
     updated: UPDATED,
     body: (
       <>
-        <H>Information according to § 5 DDG (German Digital Services Act)</H>
+        <H>Company information</H>
         <Address lang="en" />
-        <H>Online dispute resolution</H>
-        <P>
-          The former EU online dispute resolution platform has been discontinued. We are neither
-          obliged nor willing to participate in dispute resolution proceedings before a consumer
-          arbitration board.
-        </P>
+        <H>Contact</H>
+        <P>Use the configured email or postal address for legal and customer-service notices.</P>
         <H>Liability for content</H>
         <P>
-          As a service provider, we are responsible for our own content on these pages under § 7 (1)
-          DDG. According to §§ 8 to 10 DDG, we are not obliged to monitor transmitted or stored
-          third-party information.
+          We are responsible for content we publish. Links and third-party services remain subject
+          to their own terms and responsibilities.
         </P>
       </>
     ),
@@ -370,12 +361,13 @@ const en: Record<LegalKey, LegalDoc> = {
           <li>Restriction (Art. 18 GDPR)</li>
           <li>Portability (Art. 20 GDPR)</li>
           <li>Objection (Art. 21 GDPR)</li>
-          <li>Complaint with a competent data-protection supervisory authority (Art. 77 GDPR).</li>
+          <li>Complaint to the UK Information Commissioner’s Office.</li>
         </UL>
         <H>7. Cookies and tracking</H>
         <P>
           We only use strictly necessary cookies by default. Any non-necessary cookies (e.g.
-          analytics) are only set after your consent under § 25(1) TDDDG. See "Cookies" for details.
+          analytics) are only set after your consent under the Privacy and Electronic Communications
+          Regulations. See "Cookies" for details.
         </P>
       </>
     ),
@@ -388,8 +380,8 @@ const en: Record<LegalKey, LegalDoc> = {
         <H>§ 1 Scope</H>
         <P>
           These T&Cs govern all contracts for the use of the SaaS solution "Haccora" between the
-          provider identified in the imprint and the customer, who acts as an entrepreneur within
-          the meaning of § 14 BGB.
+          provider identified in the company information and the customer acting for business
+          purposes.
         </P>
         <H>§ 2 Scope of services</H>
         <P>
@@ -422,7 +414,8 @@ const en: Record<LegalKey, LegalDoc> = {
         <P>
           The Provider is liable without limitation for intent and gross negligence and for injury
           to life, body and health. For simple negligence, liability is limited to typically
-          foreseeable damage. Liability under the German Product Liability Act remains unaffected.
+          foreseeable damage. Nothing in these terms excludes liability that cannot lawfully be
+          excluded under the laws of England and Wales.
         </P>
         <H>§ 8 Final provisions</H>
         <P>
@@ -438,14 +431,14 @@ const en: Record<LegalKey, LegalDoc> = {
     body: (
       <>
         <P>
-          We currently use only technically necessary local-storage and authentication mechanisms (§
-          25(2)(2) TDDDG).
+          We currently use only technically necessary local storage and authentication mechanisms,
+          in line with UK GDPR and the Privacy and Electronic Communications Regulations.
         </P>
         <H>Categories</H>
         <UL>
           <li>
             <strong>Necessary:</strong> language selection, login state and acknowledgement of this
-            cookie notice. Legal basis: § 25(2)(2) TDDDG.
+            cookie notice. Used only where necessary to provide the requested service.
           </li>
           <li>
             <strong>Marketing:</strong> not currently used.
@@ -486,7 +479,7 @@ const en: Record<LegalKey, LegalDoc> = {
         <P>
           If you are not satisfied with the outcome, you can escalate the matter to management using
           the contact named in the imprint. Data protection complaints can also be submitted
-          directly to a competent data-protection supervisory authority.
+          directly to a the UK Information Commissioner’s Office.
         </P>
         <H>4. Whistleblower protection</H>
         <P>
@@ -499,6 +492,6 @@ const en: Record<LegalKey, LegalDoc> = {
   },
 };
 
-export function legalContent(lang: Language): Record<LegalKey, LegalDoc> {
-  return lang === "de" ? de : en;
+export function legalContent(_lang: Language): Record<LegalKey, LegalDoc> {
+  return en;
 }

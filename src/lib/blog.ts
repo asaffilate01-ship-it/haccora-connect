@@ -41,7 +41,7 @@ export const posts: BlogPost[] = [
     readMinutes: 7,
     category: { de: "HACCP", en: "HACCP" },
     author: "Haccora Editorial",
-    tags: ["HACCP", "IfSG", "LMHV"],
+    tags: ["HACCP", "Food-handler health", "food hygiene"],
     title: {
       de: "Einen HACCP-basierten Plan strukturiert aufbauen – Schritt für Schritt",
       en: "Build a structured HACCP-based plan — step by step",
@@ -128,7 +128,7 @@ export const posts: BlogPost[] = [
     readMinutes: 5,
     category: { de: "Betrieb", en: "Operations" },
     author: "Haccora Editorial",
-    tags: ["Reinigung", "SOP", "LMHV"],
+    tags: ["Reinigung", "SOP", "food hygiene"],
     title: {
       de: "Reinigungspläne, die im Küchenalltag funktionieren",
       en: "Cleaning plans that work in daily kitchen operations",
@@ -189,7 +189,7 @@ export const posts: BlogPost[] = [
     readMinutes: 6,
     category: { de: "Regulatorik", en: "Regulation" },
     author: "Haccora Editorial",
-    tags: ["Inspection", "IfSG"],
+    tags: ["Inspection", "Food-handler health"],
     title: {
       de: "Nachweise für eine Lebensmittelkontrolle strukturiert vorbereiten",
       en: "Prepare structured evidence for a food safety inspection",
@@ -211,7 +211,7 @@ export const posts: BlogPost[] = [
             "HACCP-Plan aktuell und freigegeben",
             "Temperaturprotokolle der letzten 30 Tage",
             "Reinigungsnachweise der letzten Woche",
-            "Schulungsnachweise nach IfSG §43",
+            "Schulungsnachweise nach Food-handler fitness-to-work",
             "Allergen- und Zusatzstoffkennzeichnung aktuell",
           ],
         },
@@ -228,7 +228,7 @@ export const posts: BlogPost[] = [
             "HACCP plan current and approved",
             "Temperature logs for the last 30 days",
             "Cleaning evidence for the last week",
-            "Training records per IfSG §43",
+            "Training records per Food-handler fitness-to-work",
             "Allergen and additive labelling current",
           ],
         },
@@ -253,7 +253,7 @@ export const posts: BlogPost[] = [
     },
     excerpt: {
       de: "Rezepte, Zutaten und Lieferantenwechsel – warum manuelle Allergenlisten in Deutschland gefährlich sind.",
-      en: "Recipes, ingredients, supplier changes — why manual allergen lists are risky in Germany.",
+      en: "Recipes, ingredients, supplier changes — why manual allergen lists are risky in United Kingdom.",
     },
     body: {
       de: [

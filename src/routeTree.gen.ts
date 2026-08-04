@@ -27,6 +27,7 @@ import { Route as LegalComplaintsRouteImport } from './routes/legal.complaints'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as AppWorkflowsRouteImport } from './routes/app.workflows'
 import { Route as AppWasteRouteImport } from './routes/app.waste'
+import { Route as AppUkComplianceRouteImport } from './routes/app.uk-compliance'
 import { Route as AppTrainingRouteImport } from './routes/app.training'
 import { Route as AppTemperatureRouteImport } from './routes/app.temperature'
 import { Route as AppSuppliersRouteImport } from './routes/app.suppliers'
@@ -40,6 +41,7 @@ import { Route as AppRecipesRouteImport } from './routes/app.recipes'
 import { Route as AppRecallsRouteImport } from './routes/app.recalls'
 import { Route as AppPurchasingRouteImport } from './routes/app.purchasing'
 import { Route as AppPreferencesRouteImport } from './routes/app.preferences'
+import { Route as AppPpdsRouteImport } from './routes/app.ppds'
 import { Route as AppPestRouteImport } from './routes/app.pest'
 import { Route as AppOilRouteImport } from './routes/app.oil'
 import { Route as AppMenuRouteImport } from './routes/app.menu'
@@ -156,6 +158,11 @@ const AppWasteRoute = AppWasteRouteImport.update({
   path: '/waste',
   getParentRoute: () => AppRoute,
 } as any)
+const AppUkComplianceRoute = AppUkComplianceRouteImport.update({
+  id: '/uk-compliance',
+  path: '/uk-compliance',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppTrainingRoute = AppTrainingRouteImport.update({
   id: '/training',
   path: '/training',
@@ -219,6 +226,11 @@ const AppPurchasingRoute = AppPurchasingRouteImport.update({
 const AppPreferencesRoute = AppPreferencesRouteImport.update({
   id: '/preferences',
   path: '/preferences',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPpdsRoute = AppPpdsRouteImport.update({
+  id: '/ppds',
+  path: '/ppds',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPestRoute = AppPestRouteImport.update({
@@ -381,6 +393,7 @@ export interface FileRoutesByFullPath {
   '/app/menu': typeof AppMenuRoute
   '/app/oil': typeof AppOilRoute
   '/app/pest': typeof AppPestRoute
+  '/app/ppds': typeof AppPpdsRoute
   '/app/preferences': typeof AppPreferencesRoute
   '/app/purchasing': typeof AppPurchasingRoute
   '/app/recalls': typeof AppRecallsRoute
@@ -394,6 +407,7 @@ export interface FileRoutesByFullPath {
   '/app/suppliers': typeof AppSuppliersRoute
   '/app/temperature': typeof AppTemperatureRoute
   '/app/training': typeof AppTrainingRoute
+  '/app/uk-compliance': typeof AppUkComplianceRoute
   '/app/waste': typeof AppWasteRoute
   '/app/workflows': typeof AppWorkflowsRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -437,6 +451,7 @@ export interface FileRoutesByTo {
   '/app/menu': typeof AppMenuRoute
   '/app/oil': typeof AppOilRoute
   '/app/pest': typeof AppPestRoute
+  '/app/ppds': typeof AppPpdsRoute
   '/app/preferences': typeof AppPreferencesRoute
   '/app/purchasing': typeof AppPurchasingRoute
   '/app/recalls': typeof AppRecallsRoute
@@ -450,6 +465,7 @@ export interface FileRoutesByTo {
   '/app/suppliers': typeof AppSuppliersRoute
   '/app/temperature': typeof AppTemperatureRoute
   '/app/training': typeof AppTrainingRoute
+  '/app/uk-compliance': typeof AppUkComplianceRoute
   '/app/waste': typeof AppWasteRoute
   '/app/workflows': typeof AppWorkflowsRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -496,6 +512,7 @@ export interface FileRoutesById {
   '/app/menu': typeof AppMenuRoute
   '/app/oil': typeof AppOilRoute
   '/app/pest': typeof AppPestRoute
+  '/app/ppds': typeof AppPpdsRoute
   '/app/preferences': typeof AppPreferencesRoute
   '/app/purchasing': typeof AppPurchasingRoute
   '/app/recalls': typeof AppRecallsRoute
@@ -509,6 +526,7 @@ export interface FileRoutesById {
   '/app/suppliers': typeof AppSuppliersRoute
   '/app/temperature': typeof AppTemperatureRoute
   '/app/training': typeof AppTrainingRoute
+  '/app/uk-compliance': typeof AppUkComplianceRoute
   '/app/waste': typeof AppWasteRoute
   '/app/workflows': typeof AppWorkflowsRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -556,6 +574,7 @@ export interface FileRouteTypes {
     | '/app/menu'
     | '/app/oil'
     | '/app/pest'
+    | '/app/ppds'
     | '/app/preferences'
     | '/app/purchasing'
     | '/app/recalls'
@@ -569,6 +588,7 @@ export interface FileRouteTypes {
     | '/app/suppliers'
     | '/app/temperature'
     | '/app/training'
+    | '/app/uk-compliance'
     | '/app/waste'
     | '/app/workflows'
     | '/blog/$slug'
@@ -612,6 +632,7 @@ export interface FileRouteTypes {
     | '/app/menu'
     | '/app/oil'
     | '/app/pest'
+    | '/app/ppds'
     | '/app/preferences'
     | '/app/purchasing'
     | '/app/recalls'
@@ -625,6 +646,7 @@ export interface FileRouteTypes {
     | '/app/suppliers'
     | '/app/temperature'
     | '/app/training'
+    | '/app/uk-compliance'
     | '/app/waste'
     | '/app/workflows'
     | '/blog/$slug'
@@ -670,6 +692,7 @@ export interface FileRouteTypes {
     | '/app/menu'
     | '/app/oil'
     | '/app/pest'
+    | '/app/ppds'
     | '/app/preferences'
     | '/app/purchasing'
     | '/app/recalls'
@@ -683,6 +706,7 @@ export interface FileRouteTypes {
     | '/app/suppliers'
     | '/app/temperature'
     | '/app/training'
+    | '/app/uk-compliance'
     | '/app/waste'
     | '/app/workflows'
     | '/blog/$slug'
@@ -834,6 +858,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppWasteRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/uk-compliance': {
+      id: '/app/uk-compliance'
+      path: '/uk-compliance'
+      fullPath: '/app/uk-compliance'
+      preLoaderRoute: typeof AppUkComplianceRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/training': {
       id: '/app/training'
       path: '/training'
@@ -923,6 +954,13 @@ declare module '@tanstack/react-router' {
       path: '/preferences'
       fullPath: '/app/preferences'
       preLoaderRoute: typeof AppPreferencesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/ppds': {
+      id: '/app/ppds'
+      path: '/ppds'
+      fullPath: '/app/ppds'
+      preLoaderRoute: typeof AppPpdsRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/pest': {
@@ -1129,6 +1167,7 @@ interface AppRouteChildren {
   AppMenuRoute: typeof AppMenuRoute
   AppOilRoute: typeof AppOilRoute
   AppPestRoute: typeof AppPestRoute
+  AppPpdsRoute: typeof AppPpdsRoute
   AppPreferencesRoute: typeof AppPreferencesRoute
   AppPurchasingRoute: typeof AppPurchasingRoute
   AppRecallsRoute: typeof AppRecallsRoute
@@ -1142,6 +1181,7 @@ interface AppRouteChildren {
   AppSuppliersRoute: typeof AppSuppliersRoute
   AppTemperatureRoute: typeof AppTemperatureRoute
   AppTrainingRoute: typeof AppTrainingRoute
+  AppUkComplianceRoute: typeof AppUkComplianceRoute
   AppWasteRoute: typeof AppWasteRoute
   AppWorkflowsRoute: typeof AppWorkflowsRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -1173,6 +1213,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppMenuRoute: AppMenuRoute,
   AppOilRoute: AppOilRoute,
   AppPestRoute: AppPestRoute,
+  AppPpdsRoute: AppPpdsRoute,
   AppPreferencesRoute: AppPreferencesRoute,
   AppPurchasingRoute: AppPurchasingRoute,
   AppRecallsRoute: AppRecallsRoute,
@@ -1186,6 +1227,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppSuppliersRoute: AppSuppliersRoute,
   AppTemperatureRoute: AppTemperatureRoute,
   AppTrainingRoute: AppTrainingRoute,
+  AppUkComplianceRoute: AppUkComplianceRoute,
   AppWasteRoute: AppWasteRoute,
   AppWorkflowsRoute: AppWorkflowsRoute,
   AppIndexRoute: AppIndexRoute,

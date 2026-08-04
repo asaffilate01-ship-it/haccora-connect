@@ -5,7 +5,7 @@ export const Route = createFileRoute("/legal/cookies")({
   head: () => ({
     meta: [
       { title: "Cookies — Haccora" },
-      { name: "description", content: "Cookie-Richtlinie nach § 25 TDDDG und DSGVO." },
+      { name: "description", content: "Haccora cookie policy under UK privacy rules." },
       { property: "og:title", content: "Cookies — Haccora" },
       { property: "og:url", content: "/legal/cookies" },
     ],

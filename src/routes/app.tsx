@@ -88,6 +88,7 @@ const GROUPS: NavGroup[] = [
   {
     labelKey: "nav.group.compliance",
     items: [
+      { to: "/app/uk-compliance", icon: ShieldCheck, key: "UK compliance profile", nav: "haccp" },
       { to: "/app/safe-methods", icon: BookOpenCheck, key: "Safe methods", nav: "haccp" },
       { to: "/app/diary", icon: NotebookPen, key: "Daily diary", nav: "checks" },
       { to: "/app/haccp", icon: ShieldCheck, key: "menu.haccp", nav: "haccp" },
@@ -128,7 +129,10 @@ const GROUPS: NavGroup[] = [
   },
   {
     labelKey: "nav.group.kitchenOps",
-    items: [{ to: "/app/labels", icon: Tag, key: "menu.labels", nav: "labels" }],
+    items: [
+      { to: "/app/ppds", icon: Tag, key: "PPDS & ingredients", nav: "labels" },
+      { to: "/app/labels", icon: Tag, key: "menu.labels", nav: "labels" },
+    ],
   },
   {
     labelKey: "nav.group.assets",
