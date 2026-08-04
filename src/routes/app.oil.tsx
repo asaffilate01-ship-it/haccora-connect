@@ -85,8 +85,8 @@ function OilPage() {
           </h1>
           <p className="text-muted-foreground mt-1 max-w-2xl">
             {t(
-              "Regelmäßige TPM-Messungen. Grenzwert: 24 % polare Anteile (§ 2 LMHV, DGF-Empfehlung).",
-              "Regular TPM checks. Legal limit: 24 % total polar material (§ 2 LMHV, DGF guidance).",
+              "Regelmäßige TPM-Messungen. Grenzwert: 24 % polare Anteile (§ 2 food hygiene, DGF-Empfehlung).",
+              "Regular TPM checks. Legal limit: 24 % total polar material (§ 2 food hygiene, DGF guidance).",
             )}
           </p>
         </div>

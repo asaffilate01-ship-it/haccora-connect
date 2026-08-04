@@ -23,7 +23,10 @@ interface Row {
 }
 
 const KIND: Record<Kind, [string, string]> = {
-  ifsg43: ["IfSG §43 Erstbelehrung", "IfSG §43 initial briefing"],
+  ifsg43: [
+    "Food-handler fitness-to-work Erstbelehrung",
+    "Food-handler fitness-to-work initial briefing",
+  ],
   refresher: ["Auffrischung (jährlich)", "Annual refresher"],
   sick_leave: ["Krankmeldung", "Sick leave"],
   fit_note: ["Gesundheitszeugnis", "Fit-to-work note"],
@@ -127,12 +130,15 @@ function HealthPage() {
         <div>
           <div className="eyebrow">{t("Personalgesundheit", "Staff health")}</div>
           <h1 className="mt-1 text-3xl md:text-4xl">
-            {t("IfSG §43 & Ausschluss-Register", "IfSG §43 & exclusion register")}
+            {t(
+              "Food-handler fitness-to-work & Ausschluss-Register",
+              "Food-handler fitness-to-work & exclusion register",
+            )}
           </h1>
           <p className="text-muted-foreground mt-1 max-w-2xl">
             {t(
-              "Erst- und Folgebelehrungen nach § 43 IfSG sowie Tätigkeitsverbote bei Erkrankung dokumentieren.",
-              "Track IfSG §43 briefings, annual refreshers, sick leave and work-exclusion orders per § 42/43 IfSG.",
+              "Erst- und Folgebelehrungen nach § 43 Food-handler health sowie Tätigkeitsverbote bei Erkrankung dokumentieren.",
+              "Track Food-handler fitness-to-work briefings, annual refreshers, sick leave and work-exclusion orders per § 42/43 Food-handler health.",
             )}
           </p>
         </div>

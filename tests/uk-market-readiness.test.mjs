@@ -37,3 +37,29 @@ test("dependency manifest and lock use compatible Zod major", () => {
   assert.match(p.dependencies.zod, /\^4/);
   assert.match(l.packages["node_modules/zod"].version, /^4\./);
 });
+test("all deployable Edge Functions are declared in Supabase config", () => {
+  const config = read("supabase/config.toml");
+  for (const fn of [
+    "file-scan",
+    "operations-dispatch",
+    "billing",
+    "integration-admin",
+    "integration-dispatch",
+  ])
+    assert.match(config, new RegExp(`\\[functions\\.${fn}\\]`));
+});
+test("UK compliance and PPDS workflows are reachable product routes", () => {
+  const nav = read("src/routes/app.tsx");
+  assert.match(nav, /\/app\/uk-compliance/);
+  assert.match(nav, /\/app\/ppds/);
+  assert.match(read("src/routes/app.ppds.tsx"), /source_snapshot/);
+  assert.match(read("src/routes/app.uk-compliance.tsx"), /site_compliance_profiles/);
+});
+test("UK runtime defaults use Europe London", () => {
+  const migration = read("supabase/migrations/20260803210000_uk_runtime_defaults.sql");
+  assert.match(migration, /Europe\/London/);
+});
+test("public metadata no longer positions Haccora for Germany", () => {
+  for (const file of ["src/routes/__root.tsx", "src/routes/blog.index.tsx"])
+    assert.doesNotMatch(read(file), /for Germany|insights for Germany/);
+});

@@ -174,7 +174,7 @@ function TrainingPage() {
   return (
     <div className="p-6 md:p-10 space-y-8">
       <div>
-        <div className="eyebrow">IfSG §§42–43 · LMHV · LMS</div>
+        <div className="eyebrow">Food-handler fitness-to-work · food hygiene · LMS</div>
         <h1 className="mt-1 text-3xl md:text-4xl">{t("training.title")}</h1>
         <p className="text-muted-foreground mt-1">{t("training.sub")}</p>
       </div>
@@ -356,8 +356,8 @@ function TrainingPage() {
         <p className="text-xs text-muted-foreground">
           {t("training.privacy")}{" "}
           {tt(
-            "Interne Kursabschlüsse ersetzen keine behördliche IfSG-Belehrung; externe Nachweise müssen hochgeladen und geprüft werden.",
-            "Internal course completion does not replace an official IfSG briefing; external evidence must be uploaded and verified.",
+            "Interne Kursabschlüsse ersetzen keine behördliche Food-handler health-Belehrung; externe Nachweise müssen hochgeladen und geprüft werden.",
+            "Internal course completion does not replace an official Food-handler health briefing; external evidence must be uploaded and verified.",
           )}
         </p>
       </div>

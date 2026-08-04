@@ -600,7 +600,7 @@ function Regulation() {
           </h2>
           <p className="mt-5 text-black/60">
             {t("reg.body") ??
-              "Referenzübersicht für Berlin, NRW und zentrale EU-Regeln. Prüfen Sie vor Maßnahmen stets die verlinkten offiziellen Quellen und fachliche Beratung."}
+              "Referenzübersicht für London, England and Wales und zentrale EU-Regeln. Prüfen Sie vor Maßnahmen stets die verlinkten offiziellen Quellen und fachliche Beratung."}
           </p>
         </div>
         <div className="md:col-span-2 grid sm:grid-cols-2 gap-5">
