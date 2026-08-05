@@ -56,6 +56,7 @@ import {
   NotebookPen,
   Gauge,
   Rocket,
+  Sunrise,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app")({
@@ -76,6 +77,7 @@ const GROUPS: NavGroup[] = [
     labelKey: "nav.group.overview",
     items: [
       { to: "/app", icon: LayoutDashboard, key: "menu.dashboard", nav: "dashboard", exact: true },
+      { to: "/app/today", icon: Sunrise, key: "Today's shift", nav: "checks" },
       { to: "/app/get-started", icon: Rocket, key: "Get started", nav: "dashboard" },
       { to: "/app/readiness", icon: Gauge, key: "UK readiness", nav: "dashboard" },
       { to: "/app/control-centre", icon: Command, key: "menu.control", nav: "control" },

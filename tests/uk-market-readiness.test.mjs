@@ -117,3 +117,28 @@ test("public metadata no longer positions Haccora for Germany", () => {
   ])
     assert.doesNotMatch(read(file), /Germany|German kitchens|haccora\.de|Datenschutz/);
 });
+test("the launch language runtime is explicitly UK English only", () => {
+  const i18n = read("src/lib/i18n.tsx");
+  assert.match(i18n, /const lang: Language = "en"/);
+  assert.doesNotMatch(i18n, /dicts.*de|setLangState|localStorage\.getItem\("haccora-uk-lang"\)/);
+  assert.doesNotMatch(i18n, /multilingual platform|Kreuzberg Kitchen/);
+});
+test("today shift centre joins opening monitoring and closing evidence", () => {
+  const nav = read("src/routes/app.tsx");
+  const today = read("src/routes/app.today.tsx");
+  assert.match(nav, /\/app\/today/);
+  for (const evidence of ["checks", "temperature_logs", "corrective_actions", "incidents"])
+    assert.match(today, new RegExp(evidence));
+  assert.match(today, /not an official Food Hygiene Rating/i);
+});
+test("native app exposes UK safe methods PPDS and inspection evidence", () => {
+  const dashboard = read("mobile/app/dashboard.tsx");
+  const layout = read("mobile/app/_layout.tsx");
+  for (const route of ["safe-methods", "ppds", "inspection-readiness"]) {
+    assert.match(dashboard, new RegExp(`/${route}`));
+    assert.match(layout, new RegExp(route));
+  }
+  assert.match(read("mobile/app/safe-methods.tsx"), /site_safe_methods/);
+  assert.match(read("mobile/app/ppds.tsx"), /ppds_label_versions/);
+  assert.match(read("mobile/app/inspection-readiness.tsx"), /corrective_actions/);
+});

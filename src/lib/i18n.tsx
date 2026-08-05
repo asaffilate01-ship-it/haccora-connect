@@ -1,6 +1,7 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createContext, useContext, type ReactNode } from "react";
 
+// The union is retained temporarily for legacy component signatures; the provider below is fixed
+// to UK English and does not expose a German runtime path.
 export type Language = "de" | "en";
 
 type Dict = Record<string, string>;
@@ -39,7 +40,7 @@ const en: Dict = {
   "hero.eyebrow": "HACCP · Food-handler health · food hygiene · Digital evidence",
   "hero.title": "One system for every part of food safety.",
   "hero.subtitle":
-    "Haccora replaces your HACCP folder, temperature sheets, cleaning records, allergen files, staff certificates and inspection paperwork — in one multilingual platform built for food businesses in the United Kingdom.",
+    "Haccora replaces your HACCP folder, temperature sheets, cleaning records, allergen files, staff certificates and inspection paperwork — in one clear platform built for food businesses in the United Kingdom.",
   "hero.cta.primary": "Get started",
   "hero.cta.secondary": "See pricing",
   "hero.trust":
@@ -198,7 +199,7 @@ const en: Dict = {
   "time.todayAt": "Today 12:00",
   "time.trend": "+2 vs. last week",
 
-  "app.tag": "Kreuzberg Kitchen · London",
+  "app.tag": "Riverside Kitchen · London",
   "menu.dashboard": "Overview",
   "menu.haccp": "HACCP plan",
   "menu.checks": "Daily checks",
@@ -853,60 +854,13 @@ const en: Dict = {
   "inspection.stat.open": "Still open",
 };
 
-const dicts: Record<Language, Dict> = { de: en, en };
-
 type Ctx = { lang: Language; setLang: (l: Language) => void; t: (key: string) => string };
 const LanguageContext = createContext<Ctx | null>(null);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Language>("en");
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem("haccora-uk-lang");
-      if (stored === "en") setLangState("en");
-      else if (typeof navigator !== "undefined" && navigator.language?.startsWith("en"))
-        setLangState("en");
-    } catch {
-      /* noop */
-    }
-  }, []);
-
-  const setLang = (l: Language) => {
-    if (l !== "en") return;
-    if (l === lang) return;
-    const doSwap = () => {
-      setLangState(l);
-      try {
-        localStorage.setItem("haccora-uk-lang", l);
-      } catch {
-        /* noop */
-      }
-      if (typeof document !== "undefined") {
-        document.documentElement.lang = l;
-        document.documentElement.setAttribute("data-lang-changing", "true");
-        setTimeout(() => document.documentElement.removeAttribute("data-lang-changing"), 400);
-      }
-      // Persist to profile if signed in — non-blocking.
-      supabase.auth.getSession().then(({ data }) => {
-        const uid = data.session?.user?.id;
-        if (uid)
-          supabase
-            .from("profiles")
-            .update({ language: l })
-            .eq("id", uid)
-            .then(() => {});
-      });
-    };
-    const anyDoc =
-      typeof document !== "undefined"
-        ? (document as Document & { startViewTransition?: (cb: () => void) => unknown })
-        : null;
-    if (anyDoc?.startViewTransition) anyDoc.startViewTransition(doSwap);
-    else doSwap();
-  };
-
-  const t = (key: string) => dicts[lang][key] ?? dicts.en[key] ?? "";
+  const lang: Language = "en";
+  const setLang = (_language: Language) => undefined;
+  const t = (key: string) => en[key] ?? "";
   return (
     <LanguageContext.Provider value={{ lang, setLang, t }}>{children}</LanguageContext.Provider>
   );

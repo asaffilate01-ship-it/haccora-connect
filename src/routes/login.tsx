@@ -241,7 +241,7 @@ function LoginPage() {
                   label={lang === "de" ? "Betrieb" : "Restaurant"}
                   value={restaurant}
                   onChange={setRestaurant}
-                  placeholder={lang === "de" ? "z. B. Kreuzberg Kitchen" : "e.g. Kreuzberg Kitchen"}
+                  placeholder="e.g. Riverside Kitchen"
                 />
                 <p className="rounded-lg border border-black/10 bg-secondary/40 px-3 py-2 text-xs text-muted-foreground">
                   {lang === "de"
@@ -320,7 +320,7 @@ function LoginPage() {
             </Link>
             {lang === "de" ? " und " : " and "}
             <Link to="/legal/privacy" className="underline hover:text-foreground">
-              {lang === "de" ? "Datenschutzerklärung" : "Privacy Policy"}
+              Privacy Policy
             </Link>
             .
           </p>

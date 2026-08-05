@@ -29,6 +29,7 @@ import { Route as AppWorkflowsRouteImport } from './routes/app.workflows'
 import { Route as AppWasteRouteImport } from './routes/app.waste'
 import { Route as AppUkComplianceRouteImport } from './routes/app.uk-compliance'
 import { Route as AppTrainingRouteImport } from './routes/app.training'
+import { Route as AppTodayRouteImport } from './routes/app.today'
 import { Route as AppTemperatureRouteImport } from './routes/app.temperature'
 import { Route as AppSuppliersRouteImport } from './routes/app.suppliers'
 import { Route as AppStockRouteImport } from './routes/app.stock'
@@ -168,6 +169,11 @@ const AppUkComplianceRoute = AppUkComplianceRouteImport.update({
 const AppTrainingRoute = AppTrainingRouteImport.update({
   id: '/training',
   path: '/training',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTodayRoute = AppTodayRouteImport.update({
+  id: '/today',
+  path: '/today',
   getParentRoute: () => AppRoute,
 } as any)
 const AppTemperatureRoute = AppTemperatureRouteImport.update({
@@ -420,6 +426,7 @@ export interface FileRoutesByFullPath {
   '/app/stock': typeof AppStockRoute
   '/app/suppliers': typeof AppSuppliersRoute
   '/app/temperature': typeof AppTemperatureRoute
+  '/app/today': typeof AppTodayRoute
   '/app/training': typeof AppTrainingRoute
   '/app/uk-compliance': typeof AppUkComplianceRoute
   '/app/waste': typeof AppWasteRoute
@@ -480,6 +487,7 @@ export interface FileRoutesByTo {
   '/app/stock': typeof AppStockRoute
   '/app/suppliers': typeof AppSuppliersRoute
   '/app/temperature': typeof AppTemperatureRoute
+  '/app/today': typeof AppTodayRoute
   '/app/training': typeof AppTrainingRoute
   '/app/uk-compliance': typeof AppUkComplianceRoute
   '/app/waste': typeof AppWasteRoute
@@ -543,6 +551,7 @@ export interface FileRoutesById {
   '/app/stock': typeof AppStockRoute
   '/app/suppliers': typeof AppSuppliersRoute
   '/app/temperature': typeof AppTemperatureRoute
+  '/app/today': typeof AppTodayRoute
   '/app/training': typeof AppTrainingRoute
   '/app/uk-compliance': typeof AppUkComplianceRoute
   '/app/waste': typeof AppWasteRoute
@@ -607,6 +616,7 @@ export interface FileRouteTypes {
     | '/app/stock'
     | '/app/suppliers'
     | '/app/temperature'
+    | '/app/today'
     | '/app/training'
     | '/app/uk-compliance'
     | '/app/waste'
@@ -667,6 +677,7 @@ export interface FileRouteTypes {
     | '/app/stock'
     | '/app/suppliers'
     | '/app/temperature'
+    | '/app/today'
     | '/app/training'
     | '/app/uk-compliance'
     | '/app/waste'
@@ -729,6 +740,7 @@ export interface FileRouteTypes {
     | '/app/stock'
     | '/app/suppliers'
     | '/app/temperature'
+    | '/app/today'
     | '/app/training'
     | '/app/uk-compliance'
     | '/app/waste'
@@ -894,6 +906,13 @@ declare module '@tanstack/react-router' {
       path: '/training'
       fullPath: '/app/training'
       preLoaderRoute: typeof AppTrainingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/today': {
+      id: '/app/today'
+      path: '/today'
+      fullPath: '/app/today'
+      preLoaderRoute: typeof AppTodayRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/temperature': {
@@ -1220,6 +1239,7 @@ interface AppRouteChildren {
   AppStockRoute: typeof AppStockRoute
   AppSuppliersRoute: typeof AppSuppliersRoute
   AppTemperatureRoute: typeof AppTemperatureRoute
+  AppTodayRoute: typeof AppTodayRoute
   AppTrainingRoute: typeof AppTrainingRoute
   AppUkComplianceRoute: typeof AppUkComplianceRoute
   AppWasteRoute: typeof AppWasteRoute
@@ -1268,6 +1288,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppStockRoute: AppStockRoute,
   AppSuppliersRoute: AppSuppliersRoute,
   AppTemperatureRoute: AppTemperatureRoute,
+  AppTodayRoute: AppTodayRoute,
   AppTrainingRoute: AppTrainingRoute,
   AppUkComplianceRoute: AppUkComplianceRoute,
   AppWasteRoute: AppWasteRoute,
