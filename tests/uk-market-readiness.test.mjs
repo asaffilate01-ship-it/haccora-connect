@@ -164,9 +164,33 @@ test("web and native Today surfaces present one persisted next action", () => {
 });
 test("native navigation keeps five high-frequency destinations visible", () => {
   const nav = read("mobile/components/bottom-nav.tsx");
-  for (const label of ["Today", "Log", "Actions", "Evidence", "More"])
+  for (const label of ["Today", "Log", "Actions", "Evidence", "Coach"])
     assert.match(nav, new RegExp(`"${label}"`));
   assert.match(read("mobile/app/_layout.tsx"), /<BottomNav/);
+});
+
+test("Phase 8 compliance coach ranks real persisted evidence on web and native", () => {
+  const web = read("src/routes/app.coach.tsx");
+  const native = read("mobile/app/coach.tsx");
+  for (const source of [web, native]) {
+    for (const table of ["checks", "corrective_actions", "temperature_logs"])
+      assert.match(source, new RegExp(table));
+    assert.match(source, /not an official|not.*official|official hygiene rating/i);
+  }
+  for (const table of ["incidents", "site_safe_methods", "training_records"])
+    assert.match(web, new RegExp(table));
+  assert.match(web, /Seven-day momentum/);
+  assert.match(web, /No generic score/);
+});
+
+test("Phase 8 makes the coach a role-aware web destination and native primary tab", () => {
+  const shell = read("src/routes/app.tsx");
+  const layout = read("mobile/app/_layout.tsx");
+  const nav = read("mobile/components/bottom-nav.tsx");
+  assert.match(shell, /\/app\/coach/);
+  assert.match(shell, /Compliance coach/);
+  assert.match(layout, /name="coach"/);
+  assert.match(nav, /label: "Coach", path: "\/coach"/);
 });
 test("public pricing offers four clear packages and trial conversion", () => {
   const landing = read("src/routes/index.tsx");

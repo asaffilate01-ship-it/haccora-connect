@@ -6,7 +6,7 @@ const items = [
   { label: "Log", path: "/temperature" },
   { label: "Actions", path: "/actions" },
   { label: "Evidence", path: "/inspection-readiness" },
-  { label: "More", path: "/settings" },
+  { label: "Coach", path: "/coach" },
 ] as const;
 
 export function BottomNav() {
