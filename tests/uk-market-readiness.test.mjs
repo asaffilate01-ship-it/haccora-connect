@@ -142,3 +142,39 @@ test("native app exposes UK safe methods PPDS and inspection evidence", () => {
   assert.match(read("mobile/app/ppds.tsx"), /ppds_label_versions/);
   assert.match(read("mobile/app/inspection-readiness.tsx"), /corrective_actions/);
 });
+test("role-based navigation prioritises daily work and persists disclosure", () => {
+  const shell = read("src/routes/app.tsx");
+  assert.match(shell, /const quickItems/);
+  for (const role of ["staff", "manager", "owner", "inspector"])
+    assert.match(shell, new RegExp(`${role}:`));
+  assert.match(shell, /haccora-nav-groups-v1/);
+  assert.match(shell, /Quick access/);
+  assert.match(shell, /More tools/);
+});
+test("web and native Today surfaces present one persisted next action", () => {
+  const web = read("src/routes/app.today.tsx");
+  const native = read("mobile/app/dashboard.tsx");
+  for (const source of [web, native]) {
+    assert.match(source, /NEXT REQUIRED ACTION|Next required action/);
+    assert.match(source, /corrective_actions/);
+    assert.match(source, /checks/);
+  }
+  assert.match(web, /saved to\s+your site workspace/i);
+  assert.match(native, /saved to your workspace/i);
+});
+test("native navigation keeps five high-frequency destinations visible", () => {
+  const nav = read("mobile/components/bottom-nav.tsx");
+  for (const label of ["Today", "Log", "Actions", "Evidence", "More"])
+    assert.match(nav, new RegExp(`"${label}"`));
+  assert.match(read("mobile/app/_layout.tsx"), /<BottomNav/);
+});
+test("public pricing offers four clear packages and trial conversion", () => {
+  const landing = read("src/routes/index.tsx");
+  const pricingBlock = landing.slice(
+    landing.indexOf("function Pricing"),
+    landing.indexOf("function CtaFooter"),
+  );
+  assert.equal((pricingBlock.match(/\{ k:/g) ?? []).length, 4);
+  assert.match(pricingBlock, /Start 7-day free trial/);
+  assert.match(pricingBlock, /Contact sales/);
+});

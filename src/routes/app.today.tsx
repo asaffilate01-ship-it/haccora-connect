@@ -78,6 +78,17 @@ function Today() {
   }, [load]);
 
   const needsAttention = counts.exceptions + counts.actionsOpen + counts.incidentsOpen;
+  const totalChecks = counts.checksDone + counts.checksOpen;
+  const completion = totalChecks ? Math.round((counts.checksDone / totalChecks) * 100) : 0;
+  const nextAction = counts.checksOpen
+    ? { label: "Complete the next due check", to: "/app/checks" }
+    : counts.exceptions
+      ? { label: "Resolve temperature exceptions", to: "/app/temperature" }
+      : counts.actionsOpen
+        ? { label: "Review corrective actions", to: "/app/control-centre" }
+        : counts.incidentsOpen
+          ? { label: "Review open incidents", to: "/app/incidents" }
+          : { label: "Review closing routines", to: "/app/routines" };
   return (
     <div className="p-5 md:p-8 space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -99,6 +110,41 @@ function Today() {
           </div>
         )}
       </div>
+
+      <section className="surface p-5 grid gap-5 md:grid-cols-[1fr_auto] md:items-center">
+        <div>
+          <div className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+            Next required action
+          </div>
+          <h2 className="mt-1 text-xl font-bold">{nextAction.label}</h2>
+          <div className="mt-4 flex items-center gap-3">
+            <div
+              className="h-2 flex-1 overflow-hidden rounded-full bg-secondary"
+              role="progressbar"
+              aria-label="Today's check completion"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={completion}
+            >
+              <div
+                className="h-full bg-success transition-all"
+                style={{ width: `${completion}%` }}
+              />
+            </div>
+            <span className="text-xs font-bold tabular-nums">{completion}%</span>
+          </div>
+          <p className="mt-2 text-xs text-muted-foreground">
+            {counts.checksDone} completed and {counts.checksOpen} open today. Records are saved to
+            your site workspace.
+          </p>
+        </div>
+        <Link
+          to={nextAction.to as never}
+          className="btn-primary px-5 py-3 inline-flex items-center justify-center gap-2 text-sm"
+        >
+          Start now <ChevronRight size={16} />
+        </Link>
+      </section>
 
       <div className="grid lg:grid-cols-3 gap-4">
         <ShiftCard
