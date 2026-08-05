@@ -57,6 +57,7 @@ import {
   Gauge,
   Rocket,
   Sunrise,
+  Lightbulb,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app")({
@@ -78,6 +79,7 @@ const GROUPS: NavGroup[] = [
     items: [
       { to: "/app", icon: LayoutDashboard, key: "menu.dashboard", nav: "dashboard", exact: true },
       { to: "/app/today", icon: Sunrise, key: "Today's shift", nav: "checks" },
+      { to: "/app/coach", icon: Lightbulb, key: "Compliance coach", nav: "dashboard" },
       { to: "/app/get-started", icon: Rocket, key: "Get started", nav: "dashboard" },
       { to: "/app/readiness", icon: Gauge, key: "UK readiness", nav: "dashboard" },
       { to: "/app/control-centre", icon: Command, key: "menu.control", nav: "control" },
@@ -215,6 +217,7 @@ function AppShell() {
     if (!user) return;
     const PATH_KEY: Array<{ prefix: string; nav: NavKey }> = [
       { prefix: "/app/today", nav: "checks" },
+      { prefix: "/app/coach", nav: "dashboard" },
       { prefix: "/app/readiness", nav: "dashboard" },
       { prefix: "/app/get-started", nav: "dashboard" },
       { prefix: "/app/safe-methods", nav: "haccp" },
@@ -303,12 +306,12 @@ function AppShell() {
       chef: ["/app/today", "/app/checks", "/app/temperature", "/app/diary", "/app/incidents"],
       manager: [
         "/app/today",
+        "/app/coach",
         "/app/control-centre",
-        "/app/training",
         "/app/inspection",
         "/app/readiness",
       ],
-      owner: ["/app", "/app/today", "/app/readiness", "/app/inspection", "/app/billing"],
+      owner: ["/app", "/app/today", "/app/coach", "/app/readiness", "/app/inspection"],
       inspector: ["/app/inspection"],
     };
     const paths = preferred[user.role] ?? preferred.staff;

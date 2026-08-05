@@ -121,6 +121,10 @@ export default function Dashboard() {
         <Text style={styles.cardTitle}>Evidence readiness</Text>
         <Text style={styles.cardBody}>See evidence coverage and unresolved actions.</Text>
       </Pressable>
+      <Pressable style={styles.card} onPress={() => router.push("/coach")}>
+        <Text style={styles.cardTitle}>Compliance coach</Text>
+        <Text style={styles.cardBody}>See live, prioritised actions from your saved records.</Text>
+      </Pressable>
       <Pressable style={styles.card} onPress={() => router.push("/settings")}>
         <Text style={styles.cardTitle}>Security & privacy</Text>
         <Text style={styles.cardBody}>
