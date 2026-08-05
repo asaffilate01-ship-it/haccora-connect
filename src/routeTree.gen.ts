@@ -62,6 +62,7 @@ import { Route as AppDocumentsRouteImport } from './routes/app.documents'
 import { Route as AppDiaryRouteImport } from './routes/app.diary'
 import { Route as AppControlCentreRouteImport } from './routes/app.control-centre'
 import { Route as AppComplaintsRouteImport } from './routes/app.complaints'
+import { Route as AppCoachRouteImport } from './routes/app.coach'
 import { Route as AppCleaningRouteImport } from './routes/app.cleaning'
 import { Route as AppChemicalsRouteImport } from './routes/app.chemicals'
 import { Route as AppChecksRouteImport } from './routes/app.checks'
@@ -336,6 +337,11 @@ const AppComplaintsRoute = AppComplaintsRouteImport.update({
   path: '/complaints',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCoachRoute = AppCoachRouteImport.update({
+  id: '/coach',
+  path: '/coach',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCleaningRoute = AppCleaningRouteImport.update({
   id: '/cleaning',
   path: '/cleaning',
@@ -394,6 +400,7 @@ export interface FileRoutesByFullPath {
   '/app/checks': typeof AppChecksRoute
   '/app/chemicals': typeof AppChemicalsRoute
   '/app/cleaning': typeof AppCleaningRoute
+  '/app/coach': typeof AppCoachRoute
   '/app/complaints': typeof AppComplaintsRoute
   '/app/control-centre': typeof AppControlCentreRoute
   '/app/diary': typeof AppDiaryRoute
@@ -455,6 +462,7 @@ export interface FileRoutesByTo {
   '/app/checks': typeof AppChecksRoute
   '/app/chemicals': typeof AppChemicalsRoute
   '/app/cleaning': typeof AppCleaningRoute
+  '/app/coach': typeof AppCoachRoute
   '/app/complaints': typeof AppComplaintsRoute
   '/app/control-centre': typeof AppControlCentreRoute
   '/app/diary': typeof AppDiaryRoute
@@ -519,6 +527,7 @@ export interface FileRoutesById {
   '/app/checks': typeof AppChecksRoute
   '/app/chemicals': typeof AppChemicalsRoute
   '/app/cleaning': typeof AppCleaningRoute
+  '/app/coach': typeof AppCoachRoute
   '/app/complaints': typeof AppComplaintsRoute
   '/app/control-centre': typeof AppControlCentreRoute
   '/app/diary': typeof AppDiaryRoute
@@ -584,6 +593,7 @@ export interface FileRouteTypes {
     | '/app/checks'
     | '/app/chemicals'
     | '/app/cleaning'
+    | '/app/coach'
     | '/app/complaints'
     | '/app/control-centre'
     | '/app/diary'
@@ -645,6 +655,7 @@ export interface FileRouteTypes {
     | '/app/checks'
     | '/app/chemicals'
     | '/app/cleaning'
+    | '/app/coach'
     | '/app/complaints'
     | '/app/control-centre'
     | '/app/diary'
@@ -708,6 +719,7 @@ export interface FileRouteTypes {
     | '/app/checks'
     | '/app/chemicals'
     | '/app/cleaning'
+    | '/app/coach'
     | '/app/complaints'
     | '/app/control-centre'
     | '/app/diary'
@@ -1139,6 +1151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppComplaintsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/coach': {
+      id: '/app/coach'
+      path: '/coach'
+      fullPath: '/app/coach'
+      preLoaderRoute: typeof AppCoachRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/cleaning': {
       id: '/app/cleaning'
       path: '/cleaning'
@@ -1207,6 +1226,7 @@ interface AppRouteChildren {
   AppChecksRoute: typeof AppChecksRoute
   AppChemicalsRoute: typeof AppChemicalsRoute
   AppCleaningRoute: typeof AppCleaningRoute
+  AppCoachRoute: typeof AppCoachRoute
   AppComplaintsRoute: typeof AppComplaintsRoute
   AppControlCentreRoute: typeof AppControlCentreRoute
   AppDiaryRoute: typeof AppDiaryRoute
@@ -1256,6 +1276,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppChecksRoute: AppChecksRoute,
   AppChemicalsRoute: AppChemicalsRoute,
   AppCleaningRoute: AppCleaningRoute,
+  AppCoachRoute: AppCoachRoute,
   AppComplaintsRoute: AppComplaintsRoute,
   AppControlCentreRoute: AppControlCentreRoute,
   AppDiaryRoute: AppDiaryRoute,
