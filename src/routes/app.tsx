@@ -185,6 +185,15 @@ function AppShell() {
   const [notifOpen, setNotifOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [paletteQ, setPaletteQ] = useState("");
+  const [expandedGroups, setExpandedGroups] = useState<string[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const stored = window.localStorage.getItem("haccora-nav-groups-v1");
+      return stored ? (JSON.parse(stored) as string[]) : [];
+    } catch {
+      return [];
+    }
+  });
 
   useEffect(() => {
     if (hydrated && !user) {
@@ -205,6 +214,11 @@ function AppShell() {
   useEffect(() => {
     if (!user) return;
     const PATH_KEY: Array<{ prefix: string; nav: NavKey }> = [
+      { prefix: "/app/today", nav: "checks" },
+      { prefix: "/app/readiness", nav: "dashboard" },
+      { prefix: "/app/get-started", nav: "dashboard" },
+      { prefix: "/app/safe-methods", nav: "haccp" },
+      { prefix: "/app/ppds", nav: "labels" },
       { prefix: "/app/haccp", nav: "haccp" },
       { prefix: "/app/checks", nav: "checks" },
       { prefix: "/app/temperature", nav: "temperature" },
@@ -281,6 +295,46 @@ function AppShell() {
     () => (user ? ALL_ITEMS.filter((i) => canAccess(user.role, i.nav, user.inspectorScopes)) : []),
     [user],
   );
+
+  const quickItems = useMemo(() => {
+    if (!user) return [];
+    const preferred: Record<string, string[]> = {
+      staff: ["/app/today", "/app/checks", "/app/temperature", "/app/diary", "/app/incidents"],
+      chef: ["/app/today", "/app/checks", "/app/temperature", "/app/diary", "/app/incidents"],
+      manager: [
+        "/app/today",
+        "/app/control-centre",
+        "/app/training",
+        "/app/inspection",
+        "/app/readiness",
+      ],
+      owner: ["/app", "/app/today", "/app/readiness", "/app/inspection", "/app/billing"],
+      inspector: ["/app/inspection"],
+    };
+    const paths = preferred[user.role] ?? preferred.staff;
+    return paths
+      .map((path) => visibleFlat.find((item) => item.to === path))
+      .filter(Boolean) as NavItem[];
+  }, [user, visibleFlat]);
+
+  const secondaryGroups = useMemo(() => {
+    const quickPaths = new Set(quickItems.map((item) => item.to));
+    return visibleGroups
+      .map((group) => ({ ...group, items: group.items.filter((item) => !quickPaths.has(item.to)) }))
+      .filter((group) => group.items.length > 0);
+  }, [quickItems, visibleGroups]);
+
+  const toggleGroup = (labelKey: string) => {
+    const next = expandedGroups.includes(labelKey)
+      ? expandedGroups.filter((key) => key !== labelKey)
+      : [...expandedGroups, labelKey];
+    setExpandedGroups(next);
+    try {
+      window.localStorage.setItem("haccora-nav-groups-v1", JSON.stringify(next));
+    } catch {
+      // Navigation still works when storage is unavailable.
+    }
+  };
 
   const doSignOut = () => {
     signOut();
@@ -405,37 +459,87 @@ function AppShell() {
             </div>
           </div>
 
-          <nav className="p-3 flex-1 overflow-y-auto space-y-4">
-            {visibleGroups.map((group) => (
-              <div key={group.labelKey}>
-                <div className="px-2 pb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
-                  {t(group.labelKey)}
-                </div>
-                {group.items.map(({ to, icon: Icon, key, exact }) => {
-                  const active = exact ? pathname === to : pathname.startsWith(to);
-                  return (
-                    <Link
-                      key={to}
-                      to={to as never}
-                      className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm mb-0.5 transition group relative ${
-                        active
-                          ? "bg-primary text-primary-foreground shadow-sm"
-                          : "text-foreground/80 hover:bg-secondary hover:text-foreground"
-                      }`}
-                    >
-                      <Icon
-                        size={16}
-                        className={active ? "" : "opacity-70 group-hover:opacity-100"}
-                      />
-                      <span className="flex-1 truncate">{t(key)}</span>
-                      {active && (
-                        <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground/80" />
-                      )}
-                    </Link>
-                  );
-                })}
+          <nav className="p-3 flex-1 overflow-y-auto space-y-3" aria-label="Main navigation">
+            <div>
+              <div className="px-2 pb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                Quick access
               </div>
-            ))}
+              {quickItems.map(({ to, icon: Icon, key, exact }) => {
+                const active = exact ? pathname === to : pathname.startsWith(to);
+                return (
+                  <Link
+                    key={to}
+                    to={to as never}
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm mb-0.5 transition group relative ${active ? "bg-primary text-primary-foreground shadow-sm" : "text-foreground/80 hover:bg-secondary hover:text-foreground"}`}
+                  >
+                    <Icon
+                      size={17}
+                      className={active ? "" : "opacity-70 group-hover:opacity-100"}
+                    />
+                    <span className="flex-1 truncate">{t(key) || key}</span>
+                    {active && (
+                      <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground/80" />
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+
+            <div className="border-t border-border pt-2">
+              <div className="px-2 pb-1 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                More tools
+              </div>
+              {secondaryGroups.map((group) => {
+                const groupActive = group.items.some((item) =>
+                  item.exact ? pathname === item.to : pathname.startsWith(item.to),
+                );
+                const expanded = expandedGroups.includes(group.labelKey) || groupActive;
+                return (
+                  <div key={group.labelKey} className="mb-1">
+                    <button
+                      type="button"
+                      onClick={() => toggleGroup(group.labelKey)}
+                      aria-expanded={expanded}
+                      className="w-full flex items-center gap-2 rounded-lg px-2 py-2 text-xs font-bold text-muted-foreground hover:bg-secondary hover:text-foreground"
+                    >
+                      <ChevronRight
+                        size={14}
+                        className={`transition-transform ${expanded ? "rotate-90" : ""}`}
+                      />
+                      <span className="flex-1 text-left truncate">{t(group.labelKey)}</span>
+                      <span className="text-[10px] font-normal">{group.items.length}</span>
+                    </button>
+                    {expanded && (
+                      <div className="pl-2">
+                        {group.items.map(({ to, icon: Icon, key, exact }) => {
+                          const active = exact ? pathname === to : pathname.startsWith(to);
+                          return (
+                            <Link
+                              key={to}
+                              to={to as never}
+                              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-xs mb-0.5 transition group relative ${
+                                active
+                                  ? "bg-primary text-primary-foreground shadow-sm"
+                                  : "text-foreground/80 hover:bg-secondary hover:text-foreground"
+                              }`}
+                            >
+                              <Icon
+                                size={16}
+                                className={active ? "" : "opacity-70 group-hover:opacity-100"}
+                              />
+                              <span className="flex-1 truncate">{t(key)}</span>
+                              {active && (
+                                <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground/80" />
+                              )}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </nav>
 
           <div className="p-3 border-t border-border space-y-1">

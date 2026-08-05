@@ -11,9 +11,32 @@ export default function Dashboard() {
   const { session, workspaceReady, loading } = useSession();
   const network = useNetInfo();
   const [pending, setPending] = useState(0);
+  const [today, setToday] = useState({ done: 0, open: 0, actions: 0 });
   useEffect(() => {
     void getQueueStatus().then((status) => setPending(status.pending));
   }, [network.isConnected]);
+  useEffect(() => {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    void Promise.all([
+      supabase
+        .from("checks")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "completed")
+        .gte("completed_at", start.toISOString()),
+      supabase
+        .from("checks")
+        .select("id", { count: "exact", head: true })
+        .neq("status", "completed")
+        .gte("created_at", start.toISOString()),
+      supabase
+        .from("corrective_actions")
+        .select("id", { count: "exact", head: true })
+        .neq("status", "closed"),
+    ]).then(([done, open, actions]) =>
+      setToday({ done: done.count ?? 0, open: open.count ?? 0, actions: actions.count ?? 0 }),
+    );
+  }, []);
   if (loading) return null;
   if (!session) return <Redirect href="/login" />;
   if (!workspaceReady) return <Redirect href="/onboarding" />;
@@ -34,6 +57,24 @@ export default function Dashboard() {
               : "Online · server confirmed"}
         </Text>
       </View>
+      <Pressable
+        style={styles.priority}
+        onPress={() =>
+          router.push(today.open ? "/checks" : today.actions ? "/actions" : "/temperature")
+        }
+      >
+        <Text style={styles.priorityLabel}>NEXT REQUIRED ACTION</Text>
+        <Text style={styles.priorityTitle}>
+          {today.open
+            ? `${today.open} daily check${today.open === 1 ? "" : "s"} to complete`
+            : today.actions
+              ? `${today.actions} corrective action${today.actions === 1 ? "" : "s"} to review`
+              : "Log the next temperature reading"}
+        </Text>
+        <Text style={styles.priorityBody}>
+          {today.done} checks completed today · saved to your workspace
+        </Text>
+      </Pressable>
       <Pressable style={styles.card} onPress={() => router.push("/temperature")}>
         <Text style={styles.cardTitle}>Temperature</Text>
         <Text style={styles.cardBody}>Log a reading with offline retry and critical limits.</Text>
@@ -93,12 +134,16 @@ export default function Dashboard() {
   );
 }
 const styles = StyleSheet.create({
-  page: { padding: 20, gap: 14 },
+  page: { padding: 20, paddingBottom: 84, gap: 14 },
   eyebrow: { color: "#e43f2c", fontWeight: "900", letterSpacing: 2 },
   title: { fontSize: 24, fontWeight: "800", marginBottom: 6 },
   sync: { backgroundColor: "#dff4e7", borderRadius: 12, padding: 12 },
   offline: { backgroundColor: "#fff0c7" },
   syncText: { fontSize: 12, fontWeight: "800" },
+  priority: { backgroundColor: "#111", borderRadius: 16, padding: 18 },
+  priorityLabel: { color: "#f38b7c", fontSize: 10, fontWeight: "900", letterSpacing: 1.4 },
+  priorityTitle: { color: "#fff", fontSize: 18, fontWeight: "800", marginTop: 7 },
+  priorityBody: { color: "#bbb", fontSize: 12, lineHeight: 17, marginTop: 6 },
   card: {
     backgroundColor: "#fff",
     padding: 16,

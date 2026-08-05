@@ -627,9 +627,7 @@ function Pricing() {
   const plans = [
     { k: "solo", price: "£9.99", featured: false },
     { k: "complete", price: "£24.99", featured: true },
-    { k: "completePlus", price: "£39.99", featured: false },
     { k: "group", price: "£59.99", featured: false },
-    { k: "growing", price: "£149", featured: false },
     { k: "enterprise", price: "Custom", featured: false },
   ] as const;
   return (
@@ -666,14 +664,14 @@ function Pricing() {
                 </span>
               </div>
               <a
-                href="#contact"
+                href={p.k === "enterprise" ? "#contact" : "/login"}
                 className={`mt-7 inline-flex w-full items-center justify-center rounded-full py-3 text-sm font-black tracking-wider uppercase transition ${
                   p.featured
                     ? "bg-[color:var(--color-alert-green)] text-white hover:brightness-110"
                     : "bg-black text-white hover:bg-[color:var(--color-alert-red)]"
                 }`}
               >
-                {t("pricing.cta")}
+                {p.k === "enterprise" ? "Contact sales" : "Start 7-day free trial"}
               </a>
             </div>
           ))}

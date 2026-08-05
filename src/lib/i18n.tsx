@@ -85,7 +85,7 @@ const en: Dict = {
   "pricing.eyebrow": "Pricing",
   "pricing.title": "Transparent. No hidden modules.",
   "pricing.subtitle":
-    "Indicative monthly prices. Scope, tax, SLA and integrations are confirmed in the offer.",
+    "Four clear choices, priced per site per month. Start with seven days free; no payment card is required for the trial.",
   "pricing.perMonth": "/month",
   "pricing.perLocation": "per location",
   "pricing.cta": "Request a quote",
