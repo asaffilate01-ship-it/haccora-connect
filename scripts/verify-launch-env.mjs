@@ -51,6 +51,7 @@ for (const name of [
   "MALWARE_SCAN_URL",
   "VITE_SUPPORT_URL",
   "VITE_STATUS_URL",
+  "WEB_PUSH_GATEWAY_URL",
 ])
   requireHttps(name);
 requireHttpsList("ALLOWED_ORIGINS");
@@ -64,10 +65,16 @@ for (const name of [
   "STRIPE_WEBHOOK_SECRET",
   "STRIPE_PRICE_PRO",
   "MALWARE_SCAN_TOKEN",
+  "VITE_WEB_PUSH_PUBLIC_KEY",
 ])
   requireValue(name);
 
-for (const name of ["CONTACT_HASH_SALT", "CRON_SECRET", "INTEGRATION_ENCRYPTION_KEY"])
+for (const name of [
+  "CONTACT_HASH_SALT",
+  "CRON_SECRET",
+  "INTEGRATION_ENCRYPTION_KEY",
+  "WEB_PUSH_GATEWAY_TOKEN",
+])
   requireSecret(name);
 
 for (const name of [

@@ -30,9 +30,17 @@ interface Row {
   version: string | null;
   file_url: string | null;
   expires_at: string | null;
+  issued_on: string | null;
+  document_kind: string | null;
+  subject_user_id: string | null;
   created_at: string;
   storage_path?: string | null;
   archived_at?: string | null;
+}
+
+interface StaffProfile {
+  id: string;
+  full_name: string | null;
 }
 
 const ALLOWED_FILE_TYPES = new Set([
@@ -57,6 +65,7 @@ function DocumentsPage() {
   const { user } = useAuth();
 
   const [rows, setRows] = useState<Row[]>([]);
+  const [staff, setStaff] = useState<StaffProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<"all" | Category>("all");
@@ -65,6 +74,10 @@ function DocumentsPage() {
     category: "haccp" as Category,
     version: "",
     file_url: "",
+    subject_user_id: "",
+    document_kind: "",
+    issued_on: "",
+    expires_at: "",
   });
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
@@ -72,12 +85,16 @@ function DocumentsPage() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("documents")
-      .select("*")
-      .is("archived_at", null)
-      .order("created_at", { ascending: false });
-    setRows((data ?? []) as Row[]);
+    const [documents, profiles] = await Promise.all([
+      supabase
+        .from("documents")
+        .select("*")
+        .is("archived_at", null)
+        .order("created_at", { ascending: false }),
+      supabase.from("profiles").select("id,full_name").order("full_name"),
+    ]);
+    setRows((documents.data ?? []) as Row[]);
+    setStaff((profiles.data ?? []) as StaffProfile[]);
     setLoading(false);
   }, []);
   useEffect(() => {
@@ -138,6 +155,10 @@ function DocumentsPage() {
       category: form.category,
       version: form.version.trim() || null,
       file_url,
+      subject_user_id: form.subject_user_id || null,
+      document_kind: form.document_kind || null,
+      issued_on: form.issued_on || null,
+      expires_at: form.expires_at ? `${form.expires_at}T23:59:59.000Z` : null,
       ...(storage_path
         ? {
             storage_path,
@@ -153,7 +174,16 @@ function DocumentsPage() {
       setErr(error.message);
       return;
     }
-    setForm({ title: "", category: "haccp", version: "", file_url: "" });
+    setForm({
+      title: "",
+      category: "haccp",
+      version: "",
+      file_url: "",
+      subject_user_id: "",
+      document_kind: "",
+      issued_on: "",
+      expires_at: "",
+    });
     setFile(null);
     load();
   };
@@ -237,6 +267,53 @@ function DocumentsPage() {
           placeholder={lang === "de" ? "Titel" : "Title"}
           className="md:col-span-2 rounded-lg border border-border bg-card px-3 py-2 text-sm"
         />
+        <select
+          value={form.subject_user_id}
+          onChange={(e) => setForm({ ...form, subject_user_id: e.target.value })}
+          className="md:col-span-2 rounded-lg border border-border bg-card px-3 py-2 text-sm"
+          aria-label="Staff member"
+        >
+          <option value="">Business-wide document</option>
+          {staff.map((person) => (
+            <option key={person.id} value={person.id}>
+              {person.full_name || "Unnamed staff member"}
+            </option>
+          ))}
+        </select>
+        <select
+          value={form.document_kind}
+          onChange={(e) => setForm({ ...form, document_kind: e.target.value })}
+          className="md:col-span-2 rounded-lg border border-border bg-card px-3 py-2 text-sm"
+          aria-label="Document type"
+        >
+          <option value="">Document type</option>
+          <option value="food_hygiene_training">Food hygiene training</option>
+          <option value="allergen_training">Allergen awareness</option>
+          <option value="haccp_training">HACCP training</option>
+          <option value="fitness_to_work">Fitness to work</option>
+          <option value="first_aid">First aid</option>
+          <option value="supplier_certificate">Supplier certificate</option>
+          <option value="pest_report">Pest-control report</option>
+          <option value="other">Other</option>
+        </select>
+        <label className="text-xs text-muted-foreground">
+          Issued
+          <input
+            type="date"
+            value={form.issued_on}
+            onChange={(e) => setForm({ ...form, issued_on: e.target.value })}
+            className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
+          />
+        </label>
+        <label className="text-xs text-muted-foreground">
+          Expires
+          <input
+            type="date"
+            value={form.expires_at}
+            onChange={(e) => setForm({ ...form, expires_at: e.target.value })}
+            className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
+          />
+        </label>
         <select
           value={form.category}
           onChange={(e) => setForm({ ...form, category: e.target.value as Category })}
@@ -331,6 +408,10 @@ function DocumentsPage() {
               <div className="divide-y divide-border">
                 {filtered.map((d) => {
                   const Icon = CAT_ICON[d.category as Category] ?? FileText;
+                  const subject = staff.find((person) => person.id === d.subject_user_id);
+                  const expiryDays = d.expires_at
+                    ? Math.ceil((new Date(d.expires_at).getTime() - Date.now()) / 86_400_000)
+                    : null;
                   return (
                     <div
                       key={d.id}
@@ -345,12 +426,31 @@ function DocumentsPage() {
                           <div className="text-[11px] uppercase tracking-widest text-muted-foreground">
                             {t(`docs.cat.${d.category}`)}
                           </div>
+                          {(subject || d.document_kind) && (
+                            <div className="mt-1 text-xs text-muted-foreground">
+                              {subject?.full_name || "Business-wide"}
+                              {d.document_kind ? ` · ${d.document_kind.replaceAll("_", " ")}` : ""}
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div className="md:col-span-2 text-xs font-mono">{d.version ?? "—"}</div>
-                      <div className="md:col-span-2 text-xs text-muted-foreground">
-                        {new Date(d.created_at).toLocaleDateString(
-                          lang === "de" ? "de-DE" : "en-GB",
+                      <div className="md:col-span-2 text-xs text-muted-foreground space-y-1">
+                        <div>{new Date(d.created_at).toLocaleDateString("en-GB")}</div>
+                        {expiryDays !== null && (
+                          <span
+                            className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                              expiryDays < 0
+                                ? "bg-destructive/10 text-destructive"
+                                : expiryDays <= 30
+                                  ? "bg-amber-100 text-amber-900"
+                                  : "bg-emerald-100 text-emerald-900"
+                            }`}
+                          >
+                            {expiryDays < 0
+                              ? `Expired ${Math.abs(expiryDays)}d ago`
+                              : `Expires in ${expiryDays}d`}
+                          </span>
                         )}
                       </div>
                       <div className="md:col-span-2 md:text-right flex items-center gap-3 md:justify-end">

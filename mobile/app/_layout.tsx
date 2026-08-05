@@ -26,7 +26,7 @@ export default function RootLayout() {
             <Stack.Screen name="ppds" options={{ title: "PPDS labels" }} />
             <Stack.Screen name="inspection-readiness" options={{ title: "Evidence readiness" }} />
             <Stack.Screen name="coach" options={{ title: "Compliance coach" }} />
-            <Stack.Screen name="settings" options={{ title: "Security & privacy" }} />
+            <Stack.Screen name="settings" options={{ title: "Alerts & security" }} />
           </Stack>
           <BottomNav />
         </View>
