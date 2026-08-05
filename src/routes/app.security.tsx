@@ -192,7 +192,7 @@ function SecurityCentre() {
     });
     if (error || data?.error) return toast.error(data?.error ?? error?.message ?? "Request failed");
     setRequestDetails("");
-    toast.success(de ? "Datenschutzanfrage eingereicht." : "Privacy request submitted.");
+    toast.success("Privacy request submitted.");
     await load();
   };
 
@@ -211,14 +211,12 @@ function SecurityCentre() {
   return (
     <div className="p-4 md:p-8 space-y-6 max-w-6xl mx-auto">
       <header>
-        <div className="eyebrow">{de ? "Konto & Datenschutz" : "Account & privacy"}</div>
+        <div className="eyebrow">Account & privacy</div>
         <h1 className="mt-1 text-3xl md:text-4xl">
           {de ? "Sicherheitszentrum" : "Security centre"}
         </h1>
         <p className="mt-2 text-muted-foreground max-w-3xl">
-          {de
-            ? "MFA, aktive Geräte, Datenschutzanfragen und sensible Freigaben an einem Ort."
-            : "MFA, active devices, privacy requests and sensitive approvals in one place."}
+          MFA, active devices, privacy requests and sensitive approvals in one place.
         </p>
       </header>
 
@@ -363,7 +361,7 @@ function SecurityCentre() {
       </section>
 
       <section className="surface p-5 md:p-7">
-        <h2 className="text-xl font-display">{de ? "Datenschutzrechte" : "Privacy rights"}</h2>
+        <h2 className="text-xl font-display">Privacy rights</h2>
         <p className="text-sm text-muted-foreground mt-1">
           {de
             ? "Anfragen werden dokumentiert und vor Ausführung geprüft. Gesetzliche Aufbewahrungspflichten können eine Löschung begrenzen."

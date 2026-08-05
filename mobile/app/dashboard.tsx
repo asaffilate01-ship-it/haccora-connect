@@ -68,6 +68,18 @@ export default function Dashboard() {
           Upload private documents and camera evidence for malware scanning.
         </Text>
       </Pressable>
+      <Pressable style={styles.card} onPress={() => router.push("/safe-methods")}>
+        <Text style={styles.cardTitle}>Safe methods</Text>
+        <Text style={styles.cardBody}>Review site-adopted UK food-safety controls.</Text>
+      </Pressable>
+      <Pressable style={styles.card} onPress={() => router.push("/ppds")}>
+        <Text style={styles.cardTitle}>PPDS labels</Text>
+        <Text style={styles.cardBody}>Check current label versions and declared allergens.</Text>
+      </Pressable>
+      <Pressable style={styles.card} onPress={() => router.push("/inspection-readiness")}>
+        <Text style={styles.cardTitle}>Evidence readiness</Text>
+        <Text style={styles.cardBody}>See evidence coverage and unresolved actions.</Text>
+      </Pressable>
       <Pressable style={styles.card} onPress={() => router.push("/settings")}>
         <Text style={styles.cardTitle}>Security & privacy</Text>
         <Text style={styles.cardBody}>

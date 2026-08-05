@@ -95,7 +95,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         property: "og:description",
         content:
-          "HACCP, temperature, cleaning, allergens, training and inspection prep — one multilingual platform, built for UK food businesses.",
+          "HACCP, temperature, cleaning, allergens, training and inspection preparation — one clear platform built for UK food businesses.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

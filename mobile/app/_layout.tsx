@@ -19,6 +19,9 @@ export default function RootLayout() {
           <Stack.Screen name="actions" options={{ title: "Corrective actions" }} />
           <Stack.Screen name="incidents" options={{ title: "Report incident" }} />
           <Stack.Screen name="documents" options={{ title: "Evidence library" }} />
+          <Stack.Screen name="safe-methods" options={{ title: "Safe methods" }} />
+          <Stack.Screen name="ppds" options={{ title: "PPDS labels" }} />
+          <Stack.Screen name="inspection-readiness" options={{ title: "Evidence readiness" }} />
           <Stack.Screen name="settings" options={{ title: "Security & privacy" }} />
         </Stack>
       </AppLockProvider>
