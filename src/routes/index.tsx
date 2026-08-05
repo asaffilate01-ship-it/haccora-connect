@@ -550,7 +550,7 @@ function InspectorBand() {
               <div className="text-[10px] font-black uppercase tracking-widest text-[color:var(--color-alert-red)]">
                 {t("inspector.demo.header")}
               </div>
-              <span className="text-xs font-bold text-black/60">DE</span>
+              <span className="text-xs font-bold text-black/60">UK</span>
             </div>
             <h3 className="mt-3 display-black text-2xl md:text-3xl">{t("inspector.demo.title")}</h3>
             <p className="mt-1 text-sm text-black/60">{t("inspector.demo.sub")}</p>
@@ -581,11 +581,9 @@ function InspectorBand() {
 /* ────────────────────────────────────────────── regulation */
 function Regulation() {
   const { t } = useI18n();
-  const cards = (["berlin", "nrw", "eu852", "eu1169", "ifsg", "lmhv"] as const).map((k) => ({
-    k,
-    title: t(`reg.card.${k}.t`),
-    body: t(`reg.card.${k}.b`),
-  }));
+  const cards = (
+    ["england", "wales", "scotland", "northernIreland", "haccp", "allergens"] as const
+  ).map((k) => ({ k, title: t(`reg.card.${k}.t`), body: t(`reg.card.${k}.b`) }));
 
   return (
     <section id="regulation" className="bg-[color:var(--color-cream)]">

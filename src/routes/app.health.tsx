@@ -7,7 +7,7 @@ import { HeartPulse, PlusCircle, Loader2, ShieldCheck, AlertTriangle } from "luc
 
 export const Route = createFileRoute("/app/health")({ component: HealthPage });
 
-type Kind = "ifsg43" | "refresher" | "sick_leave" | "fit_note" | "exclusion";
+type Kind = "fitness_briefing" | "refresher" | "sick_leave" | "fit_note" | "exclusion";
 type Status = "active" | "expired" | "cleared" | "excluded";
 interface Row {
   id: string;
@@ -23,10 +23,7 @@ interface Row {
 }
 
 const KIND: Record<Kind, [string, string]> = {
-  ifsg43: [
-    "Food-handler fitness-to-work Erstbelehrung",
-    "Food-handler fitness-to-work initial briefing",
-  ],
+  fitness_briefing: ["Fitness-to-work briefing", "Fitness-to-work briefing"],
   refresher: ["Auffrischung (jährlich)", "Annual refresher"],
   sick_leave: ["Krankmeldung", "Sick leave"],
   fit_note: ["Gesundheitszeugnis", "Fit-to-work note"],
@@ -44,7 +41,7 @@ function HealthPage() {
   const [open, setOpen] = useState(false);
   const [f, setF] = useState({
     staff_name: "",
-    kind: "ifsg43" as Kind,
+    kind: "fitness_briefing" as Kind,
     issued_on: "",
     expires_on: "",
     symptoms: "",
@@ -94,7 +91,7 @@ function HealthPage() {
     }
     setF({
       staff_name: "",
-      kind: "ifsg43",
+      kind: "fitness_briefing",
       issued_on: "",
       expires_on: "",
       symptoms: "",
@@ -114,7 +111,7 @@ function HealthPage() {
   };
 
   const active = items.filter(
-    (i) => i.status === "active" && (i.kind === "ifsg43" || i.kind === "refresher"),
+    (i) => i.status === "active" && (i.kind === "fitness_briefing" || i.kind === "refresher"),
   ).length;
   const excluded = items.filter((i) => i.status === "excluded").length;
   const expiringSoon = items.filter(

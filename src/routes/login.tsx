@@ -174,19 +174,11 @@ function LoginPage() {
           <div className="mt-1 text-[10px] font-bold tracking-[0.12em] text-muted-foreground uppercase">
             {t("brand.slogan")}
           </div>
-          <h1 className="mt-3 font-display text-4xl md:text-5xl leading-[1.05] tracking-tight">
-            {mode === "signin"
-              ? lang === "de"
-                ? "Willkommen zurück."
-                : "Welcome back."
-              : lang === "de"
-                ? "Konto erstellen."
-                : "Create your account."}
+          <h1 className="mt-3 font-display text-3xl md:text-4xl leading-[1.08] tracking-tight">
+            {mode === "signin" ? "Welcome back." : "Create your account."}
           </h1>
           <p className="mt-4 text-base md:text-lg text-muted-foreground">
-            {lang === "de"
-              ? "Rollenbasierte Dashboards für Inhaber, Manager, Küchenchef, Personal und Lebensmittelaufsicht."
-              : "Role-based dashboards for owners, managers, chefs, staff, and food safety inspectors."}
+            Role-based dashboards for owners, managers, chefs, staff and authorised reviewers.
           </p>
 
           <div className="mt-8 grid grid-cols-2 sm:grid-cols-3 gap-2">

@@ -3949,8 +3949,11 @@ export type Database = {
           business_type: string
           created_at: string
           jurisdiction: string
+          local_authority_name: string | null
           location_id: string
           organization_id: string
+          registration_confirmed_at: string | null
+          registration_reference: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           serves_ppds: boolean
@@ -3962,8 +3965,11 @@ export type Database = {
           business_type?: string
           created_at?: string
           jurisdiction: string
+          local_authority_name?: string | null
           location_id: string
           organization_id: string
+          registration_confirmed_at?: string | null
+          registration_reference?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           serves_ppds?: boolean
@@ -3975,8 +3981,11 @@ export type Database = {
           business_type?: string
           created_at?: string
           jurisdiction?: string
+          local_authority_name?: string | null
           location_id?: string
           organization_id?: string
+          registration_confirmed_at?: string | null
+          registration_reference?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           serves_ppds?: boolean
