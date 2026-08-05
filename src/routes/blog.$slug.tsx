@@ -17,14 +17,14 @@ export const Route = createFileRoute("/blog/$slug")({
         meta: [{ title: "Not found — Haccora Blog" }, { name: "robots", content: "noindex" }],
       };
     }
-    const title = `${loaderData.title.en} — Haccora`;
-    const desc = loaderData.excerpt.en;
+    const title = `${loaderData.title} — Haccora`;
+    const desc = loaderData.excerpt;
     const url = `/blog/${params.slug}`;
     return {
       meta: [
         { title },
         { name: "description", content: desc },
-        { property: "og:title", content: loaderData.title.en },
+        { property: "og:title", content: loaderData.title },
         { property: "og:description", content: desc },
         { property: "og:type", content: "article" },
         { property: "og:url", content: url },
@@ -32,7 +32,7 @@ export const Route = createFileRoute("/blog/$slug")({
         { property: "article:published_time", content: loaderData.date },
         { property: "article:author", content: loaderData.author },
         { name: "twitter:card", content: "summary_large_image" },
-        { name: "twitter:title", content: loaderData.title.en },
+        { name: "twitter:title", content: loaderData.title },
         { name: "twitter:description", content: desc },
         { name: "twitter:image", content: loaderData.image },
       ],
@@ -43,7 +43,7 @@ export const Route = createFileRoute("/blog/$slug")({
           children: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "Article",
-            headline: loaderData.title.en,
+            headline: loaderData.title,
             description: desc,
             author: { "@type": "Organization", name: loaderData.author },
             datePublished: loaderData.date,
@@ -59,7 +59,7 @@ export const Route = createFileRoute("/blog/$slug")({
 
 function BlogPostPage() {
   const post = Route.useLoaderData() as BlogPost;
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
   const url = `/blog/${post.slug}`;
   const related = posts.filter((p) => p.slug !== post.slug).slice(0, 3);
 
@@ -83,7 +83,7 @@ function BlogPostPage() {
         <div className="absolute inset-0">
           <img
             src={post.image}
-            alt={post.imageAlt[lang]}
+            alt={post.imageAlt}
             width={1600}
             height={900}
             className="w-full h-full object-cover opacity-60"
@@ -103,15 +103,13 @@ function BlogPostPage() {
             <ArrowLeft size={14} /> {t("blog.all") ?? "All articles"}
           </Link>
           <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-[color:var(--color-alert-red)] px-3 py-1 text-[10px] font-black tracking-widest uppercase">
-            {post.category[lang]}
+            {post.category}
           </div>
-          <h1 className="mt-5 display-black text-4xl md:text-6xl leading-[1.05]">
-            {post.title[lang]}
-          </h1>
-          <p className="mt-5 max-w-2xl text-white/80 text-lg">{post.excerpt[lang]}</p>
+          <h1 className="mt-5 display-black text-3xl md:text-5xl leading-[1.08]">{post.title}</h1>
+          <p className="mt-5 max-w-2xl text-white/80 text-base md:text-lg">{post.excerpt}</p>
           <div className="mt-6 flex flex-wrap items-center gap-5 text-xs text-white/70">
             <span>{post.author}</span>
-            <span>{formatDate(post.date, lang)}</span>
+            <span>{formatDate(post.date)}</span>
             <span className="inline-flex items-center gap-1">
               <Clock size={12} /> {post.readMinutes} {t("blog.min") ?? "min"}
             </span>
@@ -122,12 +120,11 @@ function BlogPostPage() {
       {/* body */}
       <article className="mx-auto max-w-[760px] px-4 md:px-8 py-14 md:py-20">
         <aside className="mb-10 rounded-2xl border border-amber-300 bg-amber-50 p-5 text-sm leading-relaxed text-amber-950">
-          {lang === "de"
-            ? "Redaktionelle Produktinformation, keine Rechts- oder Lebensmittelsicherheitsberatung. Prüfen Sie Anforderungen bei offiziellen Stellen und qualifizierten Fachleuten."
-            : "Editorial product information, not legal or food-safety advice. Verify requirements with official authorities and qualified professionals."}
+          Editorial product information, not legal or food-safety advice. Verify requirements with
+          official authorities and qualified professionals.
         </aside>
         <div className="prose-gs">
-          {post.body[lang].map((block, i) => (
+          {post.body.map((block, i) => (
             <Block key={i} block={block} />
           ))}
         </div>
@@ -144,7 +141,7 @@ function BlogPostPage() {
         </div>
 
         <div className="mt-10 pt-8 border-t border-black/10">
-          <ShareBar url={url} title={post.title[lang]} />
+          <ShareBar url={url} title={post.title} />
         </div>
 
         <div className="mt-14 rounded-3xl bg-black text-white p-8 md:p-10 flex flex-wrap items-center justify-between gap-6">
@@ -179,7 +176,7 @@ function BlogPostPage() {
                 <div className="aspect-[16/10] overflow-hidden bg-black">
                   <img
                     src={p.image}
-                    alt={p.imageAlt[lang]}
+                    alt={p.imageAlt}
                     width={1600}
                     height={900}
                     loading="lazy"
@@ -188,10 +185,10 @@ function BlogPostPage() {
                 </div>
                 <div className="p-5">
                   <div className="text-[10px] font-black uppercase tracking-widest text-[color:var(--color-alert-red)]">
-                    {p.category[lang]}
+                    {p.category}
                   </div>
                   <h3 className="mt-2 display-black text-lg leading-tight group-hover:text-[color:var(--color-alert-red)] transition">
-                    {p.title[lang]}
+                    {p.title}
                   </h3>
                 </div>
               </Link>

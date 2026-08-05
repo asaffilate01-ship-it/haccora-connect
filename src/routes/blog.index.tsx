@@ -34,7 +34,7 @@ export const Route = createFileRoute("/blog/")({
 });
 
 function BlogIndex() {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
   const [featured, ...rest] = posts;
 
   return (
@@ -56,7 +56,7 @@ function BlogIndex() {
         <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-24 grid md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] gap-10 items-end">
           <div>
             <div className="eyebrow">{t("blog.eyebrow") ?? "Insights"}</div>
-            <h1 className="mt-4 display-black text-5xl md:text-7xl">
+            <h1 className="mt-4 display-black text-4xl md:text-6xl">
               {t("blog.title") ?? "Haccora Blog"}
             </h1>
             <p className="mt-5 max-w-2xl text-black/60 text-lg">
@@ -83,7 +83,7 @@ function BlogIndex() {
             <div className="relative aspect-[16/10] md:aspect-auto overflow-hidden bg-black">
               <img
                 src={featured.image}
-                alt={featured.imageAlt[lang]}
+                alt={featured.imageAlt}
                 width={1600}
                 height={900}
                 className="h-full w-full object-cover group-hover:scale-[1.03] transition duration-500"
@@ -94,14 +94,14 @@ function BlogIndex() {
             </div>
             <div className="p-6 md:p-10 flex flex-col justify-center">
               <div className="text-xs font-black uppercase tracking-widest text-[color:var(--color-alert-red)]">
-                {featured.category[lang]}
+                {featured.category}
               </div>
-              <h2 className="mt-3 display-black text-3xl md:text-5xl leading-[1.05] group-hover:text-[color:var(--color-alert-red)] transition">
-                {featured.title[lang]}
+              <h2 className="mt-3 display-black text-2xl md:text-4xl leading-[1.08] group-hover:text-[color:var(--color-alert-red)] transition">
+                {featured.title}
               </h2>
-              <p className="mt-4 text-black/60">{featured.excerpt[lang]}</p>
+              <p className="mt-4 text-black/60">{featured.excerpt}</p>
               <div className="mt-6 flex items-center gap-4 text-xs text-black/50">
-                <span>{formatDate(featured.date, lang)}</span>
+                <span>{formatDate(featured.date)}</span>
                 <span className="inline-flex items-center gap-1">
                   <Clock size={12} /> {featured.readMinutes} {t("blog.min") ?? "min"}
                 </span>
@@ -129,7 +129,7 @@ function BlogIndex() {
                 <div className="relative aspect-[16/10] overflow-hidden bg-black">
                   <img
                     src={p.image}
-                    alt={p.imageAlt[lang]}
+                    alt={p.imageAlt}
                     width={1600}
                     height={900}
                     loading="lazy"
@@ -138,14 +138,14 @@ function BlogIndex() {
                 </div>
                 <div className="p-6 flex-1 flex flex-col">
                   <div className="text-[10px] font-black uppercase tracking-widest text-[color:var(--color-alert-red)]">
-                    {p.category[lang]}
+                    {p.category}
                   </div>
                   <h3 className="mt-2 display-black text-xl leading-tight group-hover:text-[color:var(--color-alert-red)] transition">
-                    {p.title[lang]}
+                    {p.title}
                   </h3>
-                  <p className="mt-3 text-sm text-black/60 line-clamp-3">{p.excerpt[lang]}</p>
+                  <p className="mt-3 text-sm text-black/60 line-clamp-3">{p.excerpt}</p>
                   <div className="mt-5 flex items-center justify-between text-xs text-black/50">
-                    <span>{formatDate(p.date, lang)}</span>
+                    <span>{formatDate(p.date)}</span>
                     <span className="inline-flex items-center gap-1">
                       <Clock size={12} /> {p.readMinutes} {t("blog.min") ?? "min"}
                     </span>

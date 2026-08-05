@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
 test("UK onboarding has four nations and no German state default", () => {
   const s = read("src/routes/onboarding.tsx");
@@ -177,4 +177,62 @@ test("public pricing offers four clear packages and trial conversion", () => {
   assert.equal((pricingBlock.match(/\{ k:/g) ?? []).length, 4);
   assert.match(pricingBlock, /Start 7-day free trial/);
   assert.match(pricingBlock, /Contact sales/);
+});
+
+test("Phase 7 replaces German regional concepts with four-nation UK authority context", () => {
+  const landing = read("src/routes/index.tsx");
+  const dictionary = read("src/lib/i18n.tsx");
+  const authorities = read("src/lib/uk-authorities.ts");
+  for (const nation of ["england", "wales", "scotland", "northernIreland"])
+    assert.match(landing + dictionary, new RegExp(nation));
+  for (const scheme of ["FHRS", "FHIS", "Food Standards Scotland", "district council"])
+    assert.match(authorities, new RegExp(scheme, "i"));
+  assert.doesNotMatch(landing, /\["berlin", "nrw"/i);
+  assert.match(landing, />UK<\/span>/);
+});
+
+test("Phase 7 persists each site's local-authority and registration context", () => {
+  const profile = read("src/routes/app.uk-compliance.tsx");
+  const migration = read("supabase/migrations/20260805223000_uk_local_authority_profiles.sql");
+  const types = read("src/integrations/supabase/types.ts");
+  for (const field of [
+    "local_authority_name",
+    "registration_reference",
+    "registration_confirmed_at",
+  ]) {
+    assert.match(profile, new RegExp(field));
+    assert.match(migration, new RegExp(field));
+    assert.match(types, new RegExp(field));
+  }
+  assert.match(profile, /Official registration guidance/);
+  assert.match(profile, /authority verification/i);
+});
+
+test("Phase 7 editorial content is UK English only", () => {
+  const blog = read("src/lib/blog.ts");
+  assert.doesNotMatch(blog, /\bde\s*:|Deutschland|Lebensmittel|LMIV|Küchen/);
+  assert.match(blog, /local-authority visit/i);
+  assert.match(blog, /PPDS/);
+  assert.match(blog, /en-GB/);
+});
+
+test("Phase 7 replaces Germany-specific health and audit classifications", () => {
+  const health = read("src/routes/app.health.tsx");
+  const audits = read("src/routes/app.audits.tsx");
+  const migration = read("supabase/migrations/20260805223000_uk_local_authority_profiles.sql");
+  assert.match(health, /fitness_briefing/);
+  assert.match(migration, /SET kind = 'fitness_briefing' WHERE kind = 'ifsg43'/);
+  assert.doesNotMatch(audits, /value="lmhv"|value="ifs"|value="din"/);
+  assert.match(audits, /Safer Food, Better Business review/);
+});
+
+test("every visible operational route is connected to persistence or the authenticated shell", () => {
+  const operational = readdirSync(new URL("../src/routes", import.meta.url)).filter((file) =>
+    /^app\..+\.tsx$/.test(file),
+  );
+  assert.ok(operational.length >= 40);
+  for (const file of operational) {
+    const source = read(`src/routes/${file}`);
+    assert.match(source, /supabase|<Outlet|createFileRoute\("\/app\/"/, `${file} must be wired`);
+  }
 });

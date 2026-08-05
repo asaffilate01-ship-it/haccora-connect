@@ -195,11 +195,11 @@ html.haccora-reduced-motion *::after {
 
 /* Denser operational typography for busy kitchens and smaller tablets. */
 .app-shell {
-  font-size: 0.9375rem;
+  font-size: 0.9rem;
 }
 
 .app-shell h1 {
-  font-size: clamp(1.75rem, 2.5vw, 2.25rem);
+  font-size: clamp(1.55rem, 2.25vw, 2rem);
   line-height: 1.08;
 }
 
@@ -212,31 +212,31 @@ html.haccora-reduced-motion *::after {
 }
 
 .app-shell .surface {
-  --app-card-copy: 0.875rem;
+  --app-card-copy: 0.8125rem;
 }
 
 @media (max-width: 767px) {
   .app-shell {
-    font-size: 0.875rem;
+    font-size: 0.8375rem;
   }
 
   .app-shell h1 {
-    font-size: 1.625rem;
+    font-size: 1.45rem;
   }
 }
 
 /* Keep the public site confident without oversized display text. */
 .marketing-shell {
-  font-size: 0.9375rem;
+  font-size: 0.9rem;
 }
 
 .marketing-shell h1 {
-  font-size: clamp(2.25rem, 5vw, 4.5rem);
+  font-size: clamp(2rem, 4.5vw, 4rem);
   line-height: 0.98;
 }
 
 .marketing-shell h2 {
-  font-size: clamp(1.75rem, 3.5vw, 3.25rem);
+  font-size: clamp(1.6rem, 3vw, 2.85rem);
   line-height: 1.04;
 }
 

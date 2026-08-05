@@ -148,9 +148,9 @@ function AuditsPage() {
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
           >
             <option value="internal">{t("Intern", "Internal")}</option>
-            <option value="lmhv">food hygiene</option>
-            <option value="ifs">IFS Food v8</option>
-            <option value="din">DIN 10514</option>
+            <option value="food_hygiene">Food hygiene review</option>
+            <option value="sfbb">Safer Food, Better Business review</option>
+            <option value="traceability">Traceability exercise</option>
             <option value="allergen">{t("Allergene", "Allergen")}</option>
           </select>
           <input

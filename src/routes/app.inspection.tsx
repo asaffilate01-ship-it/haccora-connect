@@ -9,7 +9,7 @@ export const Route = createFileRoute("/app/inspection")({
 });
 
 type EvidenceKey =
-  "plan" | "temp" | "clean" | "pest" | "allerg" | "ifsg" | "lmhv" | "trace" | "audit";
+  "plan" | "temp" | "clean" | "pest" | "allerg" | "fitness" | "training" | "trace" | "audit";
 
 type Row = { key: EvidenceKey; count: number; status: "ok" | "warn" | "empty" };
 
@@ -51,7 +51,7 @@ function InspectionPage() {
         .gte(col, fromIso)
         .lte(col, toIso);
 
-    const [temp, clean, pest, allerg, ifsg, trace, audit, haccp, lmhvDocs, incAll, incOpen] =
+    const [temp, clean, pest, allerg, fitness, trace, audit, haccp, trainingDocs, incAll, incOpen] =
       await Promise.all([
         headRange("temperature_logs", "logged_at"),
         supabase
@@ -103,8 +103,12 @@ function InspectionPage() {
       { key: "clean", count: c(clean), status: c(clean) > 0 ? "ok" : "warn" },
       { key: "pest", count: c(pest), status: c(pest) > 0 ? "ok" : "empty" },
       { key: "allerg", count: c(allerg), status: c(allerg) > 0 ? "ok" : "warn" },
-      { key: "ifsg", count: c(ifsg), status: c(ifsg) > 0 ? "ok" : "warn" },
-      { key: "lmhv", count: c(lmhvDocs), status: c(lmhvDocs) > 0 ? "ok" : "empty" },
+      { key: "fitness", count: c(fitness), status: c(fitness) > 0 ? "ok" : "warn" },
+      {
+        key: "training",
+        count: c(trainingDocs),
+        status: c(trainingDocs) > 0 ? "ok" : "empty",
+      },
       { key: "trace", count: c(trace), status: c(trace) > 0 ? "ok" : "empty" },
       { key: "audit", count: c(audit), status: c(audit) > 0 ? "ok" : "empty" },
     ];
