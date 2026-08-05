@@ -1237,16 +1237,19 @@ export type Database = {
           archived_at: string | null
           category: string
           created_at: string
+          document_kind: string | null
           expires_at: string | null
           file_size: number | null
           file_url: string | null
           id: string
           idempotency_key: string | null
+          issued_on: string | null
           location_id: string | null
           mime_type: string | null
           organization_id: string | null
           sha256: string | null
           storage_path: string | null
+          subject_user_id: string | null
           title: string
           user_id: string
           version: string | null
@@ -1255,16 +1258,19 @@ export type Database = {
           archived_at?: string | null
           category: string
           created_at?: string
+          document_kind?: string | null
           expires_at?: string | null
           file_size?: number | null
           file_url?: string | null
           id?: string
           idempotency_key?: string | null
+          issued_on?: string | null
           location_id?: string | null
           mime_type?: string | null
           organization_id?: string | null
           sha256?: string | null
           storage_path?: string | null
+          subject_user_id?: string | null
           title: string
           user_id: string
           version?: string | null
@@ -1273,16 +1279,19 @@ export type Database = {
           archived_at?: string | null
           category?: string
           created_at?: string
+          document_kind?: string | null
           expires_at?: string | null
           file_size?: number | null
           file_url?: string | null
           id?: string
           idempotency_key?: string | null
+          issued_on?: string | null
           location_id?: string | null
           mime_type?: string | null
           organization_id?: string | null
           sha256?: string | null
           storage_path?: string | null
+          subject_user_id?: string | null
           title?: string
           user_id?: string
           version?: string | null
@@ -2418,8 +2427,12 @@ export type Database = {
         Row: {
           critical_only: boolean
           email_enabled: boolean
+          expiry_alerts_enabled: boolean
+          issue_alerts_enabled: boolean
           organization_id: string
           push_enabled: boolean
+          start_of_day_enabled: boolean
+          start_of_day_local_time: string
           updated_at: string
           user_id: string
           weekly_digest: boolean
@@ -2427,8 +2440,12 @@ export type Database = {
         Insert: {
           critical_only?: boolean
           email_enabled?: boolean
+          expiry_alerts_enabled?: boolean
+          issue_alerts_enabled?: boolean
           organization_id: string
           push_enabled?: boolean
+          start_of_day_enabled?: boolean
+          start_of_day_local_time?: string
           updated_at?: string
           user_id: string
           weekly_digest?: boolean
@@ -2436,8 +2453,12 @@ export type Database = {
         Update: {
           critical_only?: boolean
           email_enabled?: boolean
+          expiry_alerts_enabled?: boolean
+          issue_alerts_enabled?: boolean
           organization_id?: string
           push_enabled?: boolean
+          start_of_day_enabled?: boolean
+          start_of_day_local_time?: string
           updated_at?: string
           user_id?: string
           weekly_digest?: boolean
@@ -5840,6 +5861,15 @@ export type Database = {
           p_email_enabled?: boolean
           p_push_enabled?: boolean
           p_weekly_digest?: boolean
+        }
+        Returns: undefined
+      }
+      set_my_notification_schedule: {
+        Args: {
+          p_expiry_alerts_enabled?: boolean
+          p_issue_alerts_enabled?: boolean
+          p_start_of_day_enabled?: boolean
+          p_start_of_day_local_time?: string
         }
         Returns: undefined
       }

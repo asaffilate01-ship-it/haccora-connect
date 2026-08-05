@@ -3,7 +3,7 @@ import type { Session } from "@supabase/supabase-js";
 import { createContext, useContext, useEffect, useState, type PropsWithChildren } from "react";
 import { supabase } from "./supabase";
 import { flush, startOfflineSync } from "./offline-queue";
-import { registerPushNotifications } from "./push";
+import { configureNotificationNavigation, registerPushNotifications } from "./push";
 
 type SessionContextValue = {
   session: Session | null;
@@ -99,9 +99,11 @@ export function SessionProvider({ children }: PropsWithChildren) {
       }
     });
     const stopOfflineSync = startOfflineSync();
+    const stopNotificationNavigation = configureNotificationNavigation();
     return () => {
       data.subscription.unsubscribe();
       stopOfflineSync();
+      stopNotificationNavigation();
     };
   }, []);
   return (

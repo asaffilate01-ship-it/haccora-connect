@@ -64,3 +64,37 @@ self.addEventListener("fetch", (event) => {
     ),
   );
 });
+
+self.addEventListener("push", (event) => {
+  let payload = {};
+  try {
+    payload = event.data?.json() ?? {};
+  } catch {
+    payload = { body: event.data?.text() };
+  }
+  const data = payload.data ?? {};
+  event.waitUntil(
+    self.registration.showNotification(payload.title ?? "Haccora", {
+      body: payload.body ?? "A food-safety record needs attention.",
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      data,
+      tag: data.idempotencyKey ?? data.route ?? "haccora-alert",
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const route = event.notification.data?.route ?? "/app/alerts";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      const existing = clients.find((client) => "focus" in client);
+      if (existing) {
+        existing.navigate(route);
+        return existing.focus();
+      }
+      return self.clients.openWindow(route);
+    }),
+  );
+});

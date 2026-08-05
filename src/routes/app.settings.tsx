@@ -10,6 +10,7 @@ import {
   type Action,
 } from "@/lib/permissions";
 import { supabase } from "@/integrations/supabase/client";
+import { disableWebPush, registerWebPush } from "@/lib/web-push";
 import {
   Settings as SettingsIcon,
   Bell,
@@ -47,6 +48,10 @@ function SettingsPage() {
   const [emailAlerts, setEmailAlerts] = useState(true);
   const [pushAlerts, setPushAlerts] = useState(true);
   const [digest, setDigest] = useState(false);
+  const [startOfDay, setStartOfDay] = useState(true);
+  const [issueAlerts, setIssueAlerts] = useState(true);
+  const [expiryAlerts, setExpiryAlerts] = useState(true);
+  const [startTime, setStartTime] = useState("08:00");
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<"manager" | "chef" | "staff">("staff");
@@ -91,6 +96,19 @@ function SettingsPage() {
         setPushAlerts(!!data.push_alerts);
         setDigest(!!data.weekly_digest);
       }
+      const { data: schedule } = await supabase
+        .from("notification_preferences")
+        .select(
+          "start_of_day_enabled,issue_alerts_enabled,expiry_alerts_enabled,start_of_day_local_time",
+        )
+        .eq("user_id", authUser.id)
+        .maybeSingle();
+      if (schedule) {
+        setStartOfDay(schedule.start_of_day_enabled);
+        setIssueAlerts(schedule.issue_alerts_enabled);
+        setExpiryAlerts(schedule.expiry_alerts_enabled);
+        setStartTime(schedule.start_of_day_local_time.slice(0, 5));
+      }
     })();
   }, []);
 
@@ -130,6 +148,23 @@ function SettingsPage() {
     }
     setSaveState("saved");
     setTimeout(() => setSaveState("idle"), 1200);
+  };
+
+  const saveSchedule = async (patch: {
+    startOfDay?: boolean;
+    issueAlerts?: boolean;
+    expiryAlerts?: boolean;
+    startTime?: string;
+  }) => {
+    setSaveState("saving");
+    const { error } = await supabase.rpc("set_my_notification_schedule", {
+      p_start_of_day_enabled: patch.startOfDay,
+      p_issue_alerts_enabled: patch.issueAlerts,
+      p_expiry_alerts_enabled: patch.expiryAlerts,
+      p_start_of_day_local_time: patch.startTime,
+    });
+    setSaveState(error ? "error" : "saved");
+    if (!error) setTimeout(() => setSaveState("idle"), 1200);
   };
 
   if (!user) return null;
@@ -559,9 +594,17 @@ function SettingsPage() {
             label={t("settings.n.push")}
             hint={t("settings.n.push.hint")}
             checked={pushAlerts}
-            onChange={(v) => {
+            onChange={async (v) => {
+              try {
+                if (v) await registerWebPush();
+                else await disableWebPush();
+              } catch (pushError) {
+                setSaveState("error");
+                console.warn(pushError);
+                return;
+              }
               setPushAlerts(v);
-              savePref({ push_alerts: v });
+              await savePref({ push_alerts: v });
             }}
           />
           <Toggle
@@ -574,6 +617,52 @@ function SettingsPage() {
               savePref({ weekly_digest: v });
             }}
           />
+          <Toggle
+            icon={<RefreshCw size={16} />}
+            label="Start-of-day routine"
+            hint="Remind me to complete opening checks before service."
+            checked={startOfDay}
+            onChange={(value) => {
+              setStartOfDay(value);
+              void saveSchedule({ startOfDay: value });
+            }}
+          />
+          <Toggle
+            icon={<Bell size={16} />}
+            label="Open issues"
+            hint="Alert me about unresolved corrective actions and exceptions."
+            checked={issueAlerts}
+            onChange={(value) => {
+              setIssueAlerts(value);
+              void saveSchedule({ issueAlerts: value });
+            }}
+          />
+          <Toggle
+            icon={<KeyRound size={16} />}
+            label="Document and training expiry"
+            hint="Warn me when staff evidence expires within 30 days."
+            checked={expiryAlerts}
+            onChange={(value) => {
+              setExpiryAlerts(value);
+              void saveSchedule({ expiryAlerts: value });
+            }}
+          />
+          <label className="flex items-center justify-between gap-4 py-4 text-sm">
+            <span>
+              <strong className="block">Opening reminder time</strong>
+              <span className="text-xs text-muted-foreground">
+                Uses your organisation timezone.
+              </span>
+            </span>
+            <input
+              type="time"
+              value={startTime}
+              disabled={!startOfDay}
+              onChange={(event) => setStartTime(event.target.value)}
+              onBlur={() => void saveSchedule({ startTime })}
+              className="rounded-lg border border-border bg-card px-3 py-2"
+            />
+          </label>
         </div>
       </section>
       {/* Permissions matrix */}
