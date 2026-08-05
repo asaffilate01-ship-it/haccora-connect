@@ -266,7 +266,7 @@ function RecipeForm({
           </div>
           <div>
             <label className="text-[10px] uppercase tracking-widest text-muted-foreground">
-              {lang === "de" ? "Preis €" : "Price €"}
+              Price £
             </label>
             <input
               type="number"

@@ -64,7 +64,7 @@ export default function Diary() {
 }
 const styles = StyleSheet.create({
   page: { padding: 20, gap: 16 },
-  title: { fontSize: 30, fontWeight: "800" },
+  title: { fontSize: 24, fontWeight: "800" },
   help: { color: "#666", lineHeight: 20 },
   row: { fontSize: 16, fontWeight: "700" },
   input: {

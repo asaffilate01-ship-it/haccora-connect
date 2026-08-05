@@ -1,6 +1,6 @@
 # Haccora
 
-> Digital food safety, built for Germany. Haccora unifies HACCP, daily checks, temperature monitoring, cleaning, recipes & allergens, staff training, procurement and inspection prep in one multilingual platform.
+> Digital food safety for UK food businesses. Haccora unifies HACCP-based controls, daily checks, temperature monitoring, cleaning, recipes and allergens, staff training, traceability and inspection preparation in one straightforward platform.
 
 ## Pages
-- [Home](/): Product overview, modules, Inspector Mode, pricing, German regulatory layer.
+- [Home](/): Product overview, modules, Inspector Mode, transparent UK pricing and UK compliance tools.

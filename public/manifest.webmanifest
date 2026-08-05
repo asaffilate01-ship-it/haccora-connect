@@ -1,7 +1,7 @@
 {
-  "name": "Haccora — Digital food safety for Germany",
+  "name": "Haccora — Digital food safety for UK businesses",
   "short_name": "Haccora",
-  "description": "HACCP, temperature, cleaning, allergens, training and inspection prep for German food businesses.",
+  "description": "HACCP-based controls, temperature, cleaning, allergens, training and inspection preparation for UK food businesses.",
   "start_url": "/app",
   "scope": "/",
   "display": "standalone",

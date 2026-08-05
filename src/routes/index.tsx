@@ -66,7 +66,7 @@ export const Route = createFileRoute("/")({
 
 function Landing() {
   return (
-    <div className="min-h-screen bg-white text-foreground pb-20 md:pb-0">
+    <div className="marketing-shell min-h-screen bg-white text-foreground pb-20 md:pb-0">
       <TopBar />
       <SubNav />
       <Hero />
@@ -88,7 +88,7 @@ function Landing() {
   );
 }
 
-/* ────────────────────────────────────────────── marquee: built for German kitchens */
+/* ────────────────────────────────────────────── marquee: built for UK food businesses */
 function ChefsMarquee() {
   const { t } = useI18n();
   const phrase = t("marquee.phrase") ?? "Built for UK kitchens · Safe. Simple. Evidenced.";
@@ -592,15 +592,12 @@ function Regulation() {
       <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-32 grid md:grid-cols-3 gap-10 md:gap-16">
         <div className="md:col-span-1">
           <div className="eyebrow">{t("reg.eyebrow") ?? "UK compliance framework"}</div>
-          <h2
-            lang="de"
-            className="mt-4 display-black text-3xl md:text-4xl lg:text-[2.75rem] leading-[1.05] [overflow-wrap:anywhere] [hyphens:auto]"
-          >
+          <h2 className="mt-4 display-black text-3xl md:text-4xl lg:text-[2.75rem] leading-[1.05] [overflow-wrap:anywhere]">
             {t("reg.title") ?? "Structured for UK food businesses."}
           </h2>
           <p className="mt-5 text-black/60">
             {t("reg.body") ??
-              "Referenzübersicht für London, England and Wales und zentrale EU-Regeln. Prüfen Sie vor Maßnahmen stets die verlinkten offiziellen Quellen und fachliche Beratung."}
+              "A versioned overview for all four UK nations. Always verify requirements using linked official sources and qualified advice."}
           </p>
         </div>
         <div className="md:col-span-2 grid sm:grid-cols-2 gap-5">

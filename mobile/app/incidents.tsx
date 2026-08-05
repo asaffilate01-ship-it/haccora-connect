@@ -118,7 +118,7 @@ export default function Incidents() {
 const styles = StyleSheet.create({
   page: { padding: 20, gap: 10 },
   eyebrow: { color: "#e43f2c", fontWeight: "900", letterSpacing: 2 },
-  title: { fontSize: 30, fontWeight: "800" },
+  title: { fontSize: 24, fontWeight: "800" },
   intro: { color: "#666", lineHeight: 20, marginBottom: 8 },
   label: { fontWeight: "800", marginTop: 6 },
   input: {

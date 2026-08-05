@@ -109,7 +109,7 @@ export default function Documents() {
 const styles = StyleSheet.create({
   page: { padding: 20, gap: 13 },
   eyebrow: { color: "#e43f2c", fontWeight: "900", letterSpacing: 2 },
-  title: { fontSize: 30, fontWeight: "800" },
+  title: { fontSize: 24, fontWeight: "800" },
   intro: { color: "#666", lineHeight: 20 },
   buttons: { flexDirection: "row", gap: 10, flexWrap: "wrap", marginVertical: 5 },
   primary: {

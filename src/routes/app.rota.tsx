@@ -141,7 +141,7 @@ function RotaPage() {
           </h1>
           <p className="text-muted-foreground mt-1">
             {t(
-              `Woche ab ${weekStart.toLocaleDateString("de-DE")} · Grundprüfungen für Dauer und Ruhezeit aktiv.`,
+              `Week beginning ${weekStart.toLocaleDateString("en-GB")} · Basic duration and rest checks are active.`,
               `Week starting ${weekStart.toLocaleDateString("en-GB")} · Basic duration and rest checks enabled.`,
             )}
           </p>

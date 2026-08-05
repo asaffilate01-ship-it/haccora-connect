@@ -16,6 +16,15 @@ type Ingredient = {
 };
 type Recipe = { id: string; name: string };
 type Link = { recipe_id: string; ingredient_id: string; quantity: number; unit: string };
+type LabelVersion = {
+  id: string;
+  recipe_id: string;
+  version: number;
+  generated_at: string;
+  source_snapshot: {
+    specifications?: Array<{ id: string; version: string | null; reviewed_at: string | null }>;
+  } | null;
+};
 function Ppds() {
   const { user } = useAuth();
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
@@ -24,11 +33,13 @@ function Ppds() {
   const [name, setName] = useState("");
   const [statement, setStatement] = useState("");
   const [allergens, setAllergens] = useState<string[]>([]);
+  const [mayContain, setMayContain] = useState<string[]>([]);
+  const [labels, setLabels] = useState<LabelVersion[]>([]);
   const [recipeId, setRecipeId] = useState("");
   const [ingredientId, setIngredientId] = useState("");
   const [msg, setMsg] = useState("");
   const load = useCallback(async () => {
-    const [a, b, c] = await Promise.all([
+    const [a, b, c, d] = await Promise.all([
       supabase
         .from("ingredients")
         .select(
@@ -37,10 +48,15 @@ function Ppds() {
         .order("name"),
       supabase.from("recipes").select("id,name").order("name"),
       supabase.from("recipe_ingredients").select("recipe_id,ingredient_id,quantity,unit"),
+      supabase
+        .from("ppds_label_versions")
+        .select("id,recipe_id,version,generated_at,source_snapshot")
+        .order("generated_at", { ascending: false }),
     ]);
     setIngredients((a.data ?? []) as Ingredient[]);
     setRecipes((b.data ?? []) as Recipe[]);
     setLinks((c.data ?? []) as Link[]);
+    setLabels((d.data ?? []) as unknown as LabelVersion[]);
     if (!recipeId && b.data?.[0]) setRecipeId(b.data[0].id);
   }, [recipeId]);
   useEffect(() => {
@@ -55,7 +71,18 @@ function Ppds() {
     [links, ingredients, recipeId],
   );
   const derivedAllergens = [...new Set(selected.flatMap((i) => i.allergens))].sort();
+  const derivedMayContain = [...new Set(selected.flatMap((i) => i.may_contain))].sort();
   const derivedStatement = selected.map((i) => i.ingredient_statement || i.name).join(", ");
+  const currentLabel = labels.find((label) => label.recipe_id === recipeId);
+  const labelIsStale = Boolean(
+    currentLabel &&
+    selected.some((ingredient) => {
+      const captured = currentLabel.source_snapshot?.specifications?.find(
+        (specification) => specification.id === ingredient.id,
+      );
+      return !captured || captured.version !== ingredient.specification_version;
+    }),
+  );
   const add = async () => {
     if (!user?.organizationId || !name.trim() || !statement.trim()) return;
     const { error } = await supabase.from("ingredients").insert({
@@ -63,6 +90,7 @@ function Ppds() {
       name: name.trim(),
       ingredient_statement: statement.trim(),
       allergens,
+      may_contain: mayContain,
       reviewed_at: new Date().toISOString(),
       specification_version: "1",
     });
@@ -71,6 +99,7 @@ function Ppds() {
       setName("");
       setStatement("");
       setAllergens([]);
+      setMayContain([]);
       void load();
     }
   };
@@ -96,6 +125,7 @@ function Ppds() {
       allergens: derivedAllergens,
       source_snapshot: {
         ingredient_ids: selected.map((i) => i.id),
+        may_contain: derivedMayContain,
         specifications: selected.map((i) => ({
           id: i.id,
           version: i.specification_version,
@@ -167,6 +197,28 @@ function Ppds() {
               ))}
             </div>
           </div>
+          <div>
+            <div className="text-sm font-bold mb-2">May contain</div>
+            <p className="text-xs text-muted-foreground mb-2">
+              Use only where a documented cross-contamination risk assessment supports the warning.
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {UK_ALLERGENS.map((a) => (
+                <label className="text-xs flex gap-2" key={a}>
+                  <input
+                    type="checkbox"
+                    checked={mayContain.includes(a)}
+                    onChange={(e) =>
+                      setMayContain(
+                        e.target.checked ? [...mayContain, a] : mayContain.filter((x) => x !== a),
+                      )
+                    }
+                  />
+                  {a}
+                </label>
+              ))}
+            </div>
+          </div>
           <button className="btn-primary px-4 py-2" onClick={() => void add()}>
             Save specification
           </button>
@@ -214,9 +266,28 @@ function Ppds() {
               {derivedStatement || "Add ingredients to this recipe first."}
             </p>
             <p className="text-sm mt-3">
-              <strong>Allergens:</strong> {derivedAllergens.join(", ") || "None derived"}
+              <strong>Contains:</strong> {derivedAllergens.join(", ") || "None derived"}
             </p>
+            {derivedMayContain.length > 0 && (
+              <p className="text-sm mt-2">
+                <strong>May contain:</strong> {derivedMayContain.join(", ")}
+              </p>
+            )}
           </div>
+          {currentLabel && (
+            <div
+              className={`rounded-xl border p-3 text-sm ${
+                labelIsStale
+                  ? "border-destructive/30 bg-destructive/5"
+                  : "border-success/30 bg-success/5"
+              }`}
+            >
+              <strong>Controlled version {currentLabel.version}:</strong>{" "}
+              {labelIsStale
+                ? "Out of date — an ingredient specification changed. Generate and verify a new label before sale."
+                : "Matches the current ingredient specification versions."}
+            </div>
+          )}
           <button className="btn-primary px-4 py-2" onClick={() => void generate()}>
             Generate controlled version
           </button>

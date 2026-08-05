@@ -39,6 +39,7 @@ import { Route as AppRoutinesRouteImport } from './routes/app.routines'
 import { Route as AppRotaRouteImport } from './routes/app.rota'
 import { Route as AppRecipesRouteImport } from './routes/app.recipes'
 import { Route as AppRecallsRouteImport } from './routes/app.recalls'
+import { Route as AppReadinessRouteImport } from './routes/app.readiness'
 import { Route as AppPurchasingRouteImport } from './routes/app.purchasing'
 import { Route as AppPreferencesRouteImport } from './routes/app.preferences'
 import { Route as AppPpdsRouteImport } from './routes/app.ppds'
@@ -54,6 +55,7 @@ import { Route as AppHealthRouteImport } from './routes/app.health'
 import { Route as AppHaccpFlowsRouteImport } from './routes/app.haccp-flows'
 import { Route as AppHaccpRouteImport } from './routes/app.haccp'
 import { Route as AppGoodsinRouteImport } from './routes/app.goodsin'
+import { Route as AppGetStartedRouteImport } from './routes/app.get-started'
 import { Route as AppExpiryRouteImport } from './routes/app.expiry'
 import { Route as AppDocumentsRouteImport } from './routes/app.documents'
 import { Route as AppDiaryRouteImport } from './routes/app.diary'
@@ -218,6 +220,11 @@ const AppRecallsRoute = AppRecallsRouteImport.update({
   path: '/recalls',
   getParentRoute: () => AppRoute,
 } as any)
+const AppReadinessRoute = AppReadinessRouteImport.update({
+  id: '/readiness',
+  path: '/readiness',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppPurchasingRoute = AppPurchasingRouteImport.update({
   id: '/purchasing',
   path: '/purchasing',
@@ -291,6 +298,11 @@ const AppHaccpRoute = AppHaccpRouteImport.update({
 const AppGoodsinRoute = AppGoodsinRouteImport.update({
   id: '/goodsin',
   path: '/goodsin',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppGetStartedRoute = AppGetStartedRouteImport.update({
+  id: '/get-started',
+  path: '/get-started',
   getParentRoute: () => AppRoute,
 } as any)
 const AppExpiryRoute = AppExpiryRouteImport.update({
@@ -381,6 +393,7 @@ export interface FileRoutesByFullPath {
   '/app/diary': typeof AppDiaryRoute
   '/app/documents': typeof AppDocumentsRoute
   '/app/expiry': typeof AppExpiryRoute
+  '/app/get-started': typeof AppGetStartedRoute
   '/app/goodsin': typeof AppGoodsinRoute
   '/app/haccp': typeof AppHaccpRoute
   '/app/haccp-flows': typeof AppHaccpFlowsRoute
@@ -396,6 +409,7 @@ export interface FileRoutesByFullPath {
   '/app/ppds': typeof AppPpdsRoute
   '/app/preferences': typeof AppPreferencesRoute
   '/app/purchasing': typeof AppPurchasingRoute
+  '/app/readiness': typeof AppReadinessRoute
   '/app/recalls': typeof AppRecallsRoute
   '/app/recipes': typeof AppRecipesRoute
   '/app/rota': typeof AppRotaRoute
@@ -439,6 +453,7 @@ export interface FileRoutesByTo {
   '/app/diary': typeof AppDiaryRoute
   '/app/documents': typeof AppDocumentsRoute
   '/app/expiry': typeof AppExpiryRoute
+  '/app/get-started': typeof AppGetStartedRoute
   '/app/goodsin': typeof AppGoodsinRoute
   '/app/haccp': typeof AppHaccpRoute
   '/app/haccp-flows': typeof AppHaccpFlowsRoute
@@ -454,6 +469,7 @@ export interface FileRoutesByTo {
   '/app/ppds': typeof AppPpdsRoute
   '/app/preferences': typeof AppPreferencesRoute
   '/app/purchasing': typeof AppPurchasingRoute
+  '/app/readiness': typeof AppReadinessRoute
   '/app/recalls': typeof AppRecallsRoute
   '/app/recipes': typeof AppRecipesRoute
   '/app/rota': typeof AppRotaRoute
@@ -500,6 +516,7 @@ export interface FileRoutesById {
   '/app/diary': typeof AppDiaryRoute
   '/app/documents': typeof AppDocumentsRoute
   '/app/expiry': typeof AppExpiryRoute
+  '/app/get-started': typeof AppGetStartedRoute
   '/app/goodsin': typeof AppGoodsinRoute
   '/app/haccp': typeof AppHaccpRoute
   '/app/haccp-flows': typeof AppHaccpFlowsRoute
@@ -515,6 +532,7 @@ export interface FileRoutesById {
   '/app/ppds': typeof AppPpdsRoute
   '/app/preferences': typeof AppPreferencesRoute
   '/app/purchasing': typeof AppPurchasingRoute
+  '/app/readiness': typeof AppReadinessRoute
   '/app/recalls': typeof AppRecallsRoute
   '/app/recipes': typeof AppRecipesRoute
   '/app/rota': typeof AppRotaRoute
@@ -562,6 +580,7 @@ export interface FileRouteTypes {
     | '/app/diary'
     | '/app/documents'
     | '/app/expiry'
+    | '/app/get-started'
     | '/app/goodsin'
     | '/app/haccp'
     | '/app/haccp-flows'
@@ -577,6 +596,7 @@ export interface FileRouteTypes {
     | '/app/ppds'
     | '/app/preferences'
     | '/app/purchasing'
+    | '/app/readiness'
     | '/app/recalls'
     | '/app/recipes'
     | '/app/rota'
@@ -620,6 +640,7 @@ export interface FileRouteTypes {
     | '/app/diary'
     | '/app/documents'
     | '/app/expiry'
+    | '/app/get-started'
     | '/app/goodsin'
     | '/app/haccp'
     | '/app/haccp-flows'
@@ -635,6 +656,7 @@ export interface FileRouteTypes {
     | '/app/ppds'
     | '/app/preferences'
     | '/app/purchasing'
+    | '/app/readiness'
     | '/app/recalls'
     | '/app/recipes'
     | '/app/rota'
@@ -680,6 +702,7 @@ export interface FileRouteTypes {
     | '/app/diary'
     | '/app/documents'
     | '/app/expiry'
+    | '/app/get-started'
     | '/app/goodsin'
     | '/app/haccp'
     | '/app/haccp-flows'
@@ -695,6 +718,7 @@ export interface FileRouteTypes {
     | '/app/ppds'
     | '/app/preferences'
     | '/app/purchasing'
+    | '/app/readiness'
     | '/app/recalls'
     | '/app/recipes'
     | '/app/rota'
@@ -942,6 +966,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRecallsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/readiness': {
+      id: '/app/readiness'
+      path: '/readiness'
+      fullPath: '/app/readiness'
+      preLoaderRoute: typeof AppReadinessRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/purchasing': {
       id: '/app/purchasing'
       path: '/purchasing'
@@ -1045,6 +1076,13 @@ declare module '@tanstack/react-router' {
       path: '/goodsin'
       fullPath: '/app/goodsin'
       preLoaderRoute: typeof AppGoodsinRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/get-started': {
+      id: '/app/get-started'
+      path: '/get-started'
+      fullPath: '/app/get-started'
+      preLoaderRoute: typeof AppGetStartedRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/expiry': {
@@ -1155,6 +1193,7 @@ interface AppRouteChildren {
   AppDiaryRoute: typeof AppDiaryRoute
   AppDocumentsRoute: typeof AppDocumentsRoute
   AppExpiryRoute: typeof AppExpiryRoute
+  AppGetStartedRoute: typeof AppGetStartedRoute
   AppGoodsinRoute: typeof AppGoodsinRoute
   AppHaccpRoute: typeof AppHaccpRoute
   AppHaccpFlowsRoute: typeof AppHaccpFlowsRoute
@@ -1170,6 +1209,7 @@ interface AppRouteChildren {
   AppPpdsRoute: typeof AppPpdsRoute
   AppPreferencesRoute: typeof AppPreferencesRoute
   AppPurchasingRoute: typeof AppPurchasingRoute
+  AppReadinessRoute: typeof AppReadinessRoute
   AppRecallsRoute: typeof AppRecallsRoute
   AppRecipesRoute: typeof AppRecipesRoute
   AppRotaRoute: typeof AppRotaRoute
@@ -1201,6 +1241,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDiaryRoute: AppDiaryRoute,
   AppDocumentsRoute: AppDocumentsRoute,
   AppExpiryRoute: AppExpiryRoute,
+  AppGetStartedRoute: AppGetStartedRoute,
   AppGoodsinRoute: AppGoodsinRoute,
   AppHaccpRoute: AppHaccpRoute,
   AppHaccpFlowsRoute: AppHaccpFlowsRoute,
@@ -1216,6 +1257,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppPpdsRoute: AppPpdsRoute,
   AppPreferencesRoute: AppPreferencesRoute,
   AppPurchasingRoute: AppPurchasingRoute,
+  AppReadinessRoute: AppReadinessRoute,
   AppRecallsRoute: AppRecallsRoute,
   AppRecipesRoute: AppRecipesRoute,
   AppRotaRoute: AppRotaRoute,
@@ -1278,3 +1320,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

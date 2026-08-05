@@ -54,6 +54,8 @@ import {
   Accessibility,
   BookOpenCheck,
   NotebookPen,
+  Gauge,
+  Rocket,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app")({
@@ -74,6 +76,8 @@ const GROUPS: NavGroup[] = [
     labelKey: "nav.group.overview",
     items: [
       { to: "/app", icon: LayoutDashboard, key: "menu.dashboard", nav: "dashboard", exact: true },
+      { to: "/app/get-started", icon: Rocket, key: "Get started", nav: "dashboard" },
+      { to: "/app/readiness", icon: Gauge, key: "UK readiness", nav: "dashboard" },
       { to: "/app/control-centre", icon: Command, key: "menu.control", nav: "control" },
     ],
   },
@@ -354,7 +358,7 @@ function AppShell() {
   const paletteResults = visibleFlat.filter((i) => !q || t(i.key).toLowerCase().includes(q));
 
   return (
-    <div className="min-h-screen bg-secondary/40 flex flex-col">
+    <div className="app-shell min-h-screen bg-secondary/40 flex flex-col">
       {/* Active tenant and location context */}
       <div className="sticky top-0 z-40 bg-black text-white text-xs md:text-sm">
         <div className="px-4 md:px-6 h-9 flex items-center justify-between gap-3">
