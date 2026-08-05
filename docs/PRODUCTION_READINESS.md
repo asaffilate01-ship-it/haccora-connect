@@ -24,14 +24,14 @@ Updated: 2026-08-02
 
 These cannot be safely invented or completed from source code alone:
 
-- Real legal entity, address, register, VAT, managing director and counsel-approved German/English legal copy
+- Real legal entity, UK address, Companies House details where applicable, VAT details and counsel-approved UK English legal copy
 - Production Supabase project, SMTP, redirect URLs, MFA policy, Auth rate limits and point-in-time recovery/backups
 - Real domain, DNS, TLS, status page, support address and transactional email/push providers
 - Sentry or equivalent DSN, tested alert routing, named on-call owner and private provider/incident contacts; the repository now supplies the uptime workflow and response procedure
 - Stripe account/prices/tax configuration if self-service billing is enabled
 - Apple/Google developer organizations, signing keys, privacy nutrition labels/data-safety declarations, screenshots and store review
 - Vendor contracts and credentials for Testo/other sensors, OCR, wholesale catalogs or any future AI providers
-- Product-owner approval of public pricing, package names, marketing claims and final German/English content
+- Product-owner approval of public pricing, package names, marketing claims and final UK English content
 - Independent penetration test, GDPR/DPA review and specialist validation of HACCP/regulatory templates
 - Reconciled Supabase migration ledger and successful linked-staging migration run; the repository now also exercises the 18-file migration set on fresh Postgres in CI and rejects repeated policy or identical function definitions
 

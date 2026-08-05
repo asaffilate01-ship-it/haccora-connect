@@ -41,7 +41,7 @@ type InspectorGrant = {
 };
 
 function SettingsPage() {
-  const { t, lang, setLang } = useI18n();
+  const { t, lang } = useI18n();
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [emailAlerts, setEmailAlerts] = useState(true);
@@ -513,20 +513,8 @@ function SettingsPage() {
           <h2 className="font-display text-lg">{t("settings.language")}</h2>
         </div>
         <p className="text-sm text-muted-foreground mb-4">{t("settings.language.hint")}</p>
-        <div className="flex gap-2">
-          {(["de", "en"] as const).map((l) => (
-            <button
-              key={l}
-              onClick={() => setLang(l)}
-              className={`px-5 py-2.5 rounded-full text-sm font-bold transition ${
-                lang === l
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-secondary text-foreground hover:bg-secondary/70"
-              }`}
-            >
-              {l === "de" ? "Deutsch" : "English"}
-            </button>
-          ))}
+        <div className="inline-flex rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground">
+          UK English
         </div>
       </section>
 

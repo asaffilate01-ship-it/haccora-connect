@@ -61,7 +61,7 @@ function BlogIndex() {
             </h1>
             <p className="mt-5 max-w-2xl text-black/60 text-lg">
               {t("blog.subtitle") ??
-                "Practical guides on HACCP, inspections and daily operations — written for German kitchens."}
+                "Practical guides on HACCP, inspections and daily operations for UK food businesses."}
             </p>
           </div>
           <nav className="text-sm">

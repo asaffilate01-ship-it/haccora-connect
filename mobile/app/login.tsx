@@ -54,7 +54,7 @@ export default function Login() {
 const styles = StyleSheet.create({
   page: { flex: 1, justifyContent: "center", padding: 24, gap: 14, backgroundColor: "#fff" },
   brand: { color: "#e43f2c", fontSize: 14, fontWeight: "900", letterSpacing: 2 },
-  title: { color: "#111", fontSize: 30, fontWeight: "800", marginBottom: 18 },
+  title: { color: "#111", fontSize: 24, fontWeight: "800", marginBottom: 16 },
   input: { borderWidth: 1, borderColor: "#d8d8d8", borderRadius: 12, padding: 14, fontSize: 16 },
   button: { backgroundColor: "#e43f2c", borderRadius: 24, padding: 15, alignItems: "center" },
   buttonText: { color: "#fff", fontWeight: "800", fontSize: 16 },

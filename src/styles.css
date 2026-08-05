@@ -193,6 +193,64 @@ html.haccora-reduced-motion *::after {
   }
 }
 
+/* Denser operational typography for busy kitchens and smaller tablets. */
+.app-shell {
+  font-size: 0.9375rem;
+}
+
+.app-shell h1 {
+  font-size: clamp(1.75rem, 2.5vw, 2.25rem);
+  line-height: 1.08;
+}
+
+.app-shell h2 {
+  line-height: 1.12;
+}
+
+.app-shell aside {
+  font-size: 0.8125rem;
+}
+
+.app-shell .surface {
+  --app-card-copy: 0.875rem;
+}
+
+@media (max-width: 767px) {
+  .app-shell {
+    font-size: 0.875rem;
+  }
+
+  .app-shell h1 {
+    font-size: 1.625rem;
+  }
+}
+
+/* Keep the public site confident without oversized display text. */
+.marketing-shell {
+  font-size: 0.9375rem;
+}
+
+.marketing-shell h1 {
+  font-size: clamp(2.25rem, 5vw, 4.5rem);
+  line-height: 0.98;
+}
+
+.marketing-shell h2 {
+  font-size: clamp(1.75rem, 3.5vw, 3.25rem);
+  line-height: 1.04;
+}
+
+.marketing-shell h3 {
+  font-size: clamp(1.125rem, 2vw, 1.5rem);
+  line-height: 1.12;
+}
+
+@media (max-width: 767px) {
+  .marketing-shell {
+    font-size: 0.875rem;
+  }
+}
+
 /* --- buttons: FoodAlert-style pill shapes --- */
 @utility btn-primary {
   display: inline-flex;

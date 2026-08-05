@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     padding: 28,
   },
   logo: { color: "#e43f2c", fontWeight: "900", letterSpacing: 3 },
-  title: { marginTop: 18, color: "white", fontSize: 28, fontWeight: "800" },
+  title: { marginTop: 18, color: "white", fontSize: 24, fontWeight: "800" },
   body: { marginTop: 8, color: "#bbb", textAlign: "center", lineHeight: 21 },
   button: {
     marginTop: 24,

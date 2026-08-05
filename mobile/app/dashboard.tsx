@@ -83,18 +83,18 @@ export default function Dashboard() {
 const styles = StyleSheet.create({
   page: { padding: 20, gap: 14 },
   eyebrow: { color: "#e43f2c", fontWeight: "900", letterSpacing: 2 },
-  title: { fontSize: 30, fontWeight: "800", marginBottom: 8 },
+  title: { fontSize: 24, fontWeight: "800", marginBottom: 6 },
   sync: { backgroundColor: "#dff4e7", borderRadius: 12, padding: 12 },
   offline: { backgroundColor: "#fff0c7" },
   syncText: { fontSize: 12, fontWeight: "800" },
   card: {
     backgroundColor: "#fff",
-    padding: 20,
-    borderRadius: 18,
+    padding: 16,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: "#e5e5e5",
   },
-  cardTitle: { fontSize: 20, fontWeight: "800" },
-  cardBody: { color: "#666", marginTop: 5, lineHeight: 20 },
+  cardTitle: { fontSize: 16, fontWeight: "800" },
+  cardBody: { color: "#666", fontSize: 13, marginTop: 4, lineHeight: 18 },
   signOut: { alignSelf: "center", padding: 16 },
 });

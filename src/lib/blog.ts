@@ -31,7 +31,7 @@ export type BlogBlock =
 
 export const posts: BlogPost[] = [
   {
-    slug: "haccp-plan-germany-2026",
+    slug: "haccp-plan-uk-food-business-2026",
     image: haccpImg,
     imageAlt: {
       de: "Küchenchef prüft die Kühlraumtemperatur mit einem digitalen Thermometer",

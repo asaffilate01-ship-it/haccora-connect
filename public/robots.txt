@@ -3,4 +3,4 @@ Allow: /
 Disallow: /app
 Disallow: /login
 Disallow: /onboarding
-Sitemap: https://haccora.de/sitemap.xml
+Sitemap: https://haccora.co.uk/sitemap.xml

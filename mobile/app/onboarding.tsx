@@ -61,7 +61,7 @@ export default function Onboarding() {
 
 const styles = StyleSheet.create({
   page: { flex: 1, justifyContent: "center", padding: 24, gap: 14, backgroundColor: "#fff" },
-  title: { fontSize: 28, fontWeight: "800", color: "#111" },
+  title: { fontSize: 24, fontWeight: "800", color: "#111" },
   body: { color: "#666", lineHeight: 21, marginBottom: 8 },
   input: { borderWidth: 1, borderColor: "#d8d8d8", borderRadius: 12, padding: 14 },
   button: { backgroundColor: "#e43f2c", borderRadius: 24, padding: 15, alignItems: "center" },

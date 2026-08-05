@@ -255,7 +255,7 @@ function LoginPage() {
               value={email}
               onChange={setEmail}
               type="email"
-              placeholder="you@restaurant.de"
+              placeholder="you@restaurant.co.uk"
             />
             <Field
               label={lang === "de" ? "Passwort" : "Password"}
