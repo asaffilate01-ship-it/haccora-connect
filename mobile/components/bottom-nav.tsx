@@ -3,10 +3,10 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 const items = [
   { label: "Today", path: "/dashboard", icon: "✓" },
-  { label: "Log", path: "/temperature", icon: "°" },
-  { label: "Actions", path: "/actions", icon: "!" },
-  { label: "Evidence", path: "/inspection-readiness", icon: "▤" },
-  { label: "Coach", path: "/coach", icon: "✦" },
+  { label: "Checks", path: "/checks", icon: "☑" },
+  { label: "Log", path: "/quick-log", icon: "+" },
+  { label: "Alerts", path: "/alerts", icon: "!" },
+  { label: "More", path: "/more", icon: "•••" },
 ] as const;
 
 export function BottomNav() {

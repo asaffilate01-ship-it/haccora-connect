@@ -133,10 +133,10 @@ test("today shift centre joins opening monitoring and closing evidence", () => {
   assert.match(today, /not an official Food Hygiene Rating/i);
 });
 test("native app exposes UK safe methods PPDS and inspection evidence", () => {
-  const dashboard = read("mobile/app/dashboard.tsx");
+  const navigation = read("mobile/app/dashboard.tsx") + read("mobile/app/more.tsx");
   const layout = read("mobile/app/_layout.tsx");
   for (const route of ["safe-methods", "ppds", "inspection-readiness"]) {
-    assert.match(dashboard, new RegExp(`/${route}`));
+    assert.match(navigation, new RegExp(`/${route}`));
     assert.match(layout, new RegExp(route));
   }
   assert.match(read("mobile/app/safe-methods.tsx"), /site_safe_methods/);
@@ -165,7 +165,7 @@ test("web and native Today surfaces present one persisted next action", () => {
 });
 test("native navigation keeps five high-frequency destinations visible", () => {
   const nav = read("mobile/components/bottom-nav.tsx");
-  for (const label of ["Today", "Log", "Actions", "Evidence", "Coach"])
+  for (const label of ["Today", "Checks", "Log", "Alerts", "More"])
     assert.match(nav, new RegExp(`"${label}"`));
   assert.match(read("mobile/app/_layout.tsx"), /<BottomNav/);
 });
@@ -184,14 +184,15 @@ test("Phase 8 compliance coach ranks real persisted evidence on web and native",
   assert.match(web, /No generic score/);
 });
 
-test("Phase 8 makes the coach a role-aware web destination and native primary tab", () => {
+test("Phase 8 keeps the coach a role-aware web and native destination", () => {
   const shell = read("src/routes/app.tsx");
   const layout = read("mobile/app/_layout.tsx");
-  const nav = read("mobile/components/bottom-nav.tsx");
+  const more = read("mobile/app/more.tsx");
   assert.match(shell, /\/app\/coach/);
   assert.match(shell, /Compliance coach/);
   assert.match(layout, /name="coach"/);
-  assert.match(nav, /label: "Coach", path: "\/coach"/);
+  assert.match(more, /Compliance coach/);
+  assert.match(more, /\/coach/);
 });
 test("public pricing offers four clear packages and trial conversion", () => {
   const landing = read("src/routes/index.tsx");
@@ -384,4 +385,27 @@ test("Phase 17 wires compact web and offline-native cleaning flows", () => {
   assert.match(queue, /"cleaning_completions"/);
   assert.match(dispatch, /scheduled cleaning task/);
   assert.doesNotMatch(web, /Sanixyl|DesInfekt|FrostClean/);
+});
+
+test("Phase 18 gives staff fast live allergen lookup with safe caveats", () => {
+  const allergens = read("mobile/app/allergens.tsx");
+  assert.match(allergens, /from\("recipes"\)/);
+  assert.match(allergens, /Search dish or category/);
+  assert.match(allergens, /This is not a guarantee of absence/);
+  assert.match(allergens, /cross-contamination controls/);
+  for (const allergen of ["gluten", "crustaceans", "sulphites", "molluscs"])
+    assert.match(allergens, new RegExp(allergen));
+});
+
+test("Phase 18 simplifies mobile navigation around Today Log Alerts and More", () => {
+  const nav = read("mobile/components/bottom-nav.tsx");
+  const dashboard = read("mobile/app/dashboard.tsx");
+  const quickLog = read("mobile/app/quick-log.tsx");
+  const more = read("mobile/app/more.tsx");
+  for (const label of ["Today", "Checks", "Log", "Alerts", "More"])
+    assert.match(nav, new RegExp(`label: "${label}"`));
+  assert.equal((dashboard.match(/style=\{styles\.card\}/g) ?? []).length, 6);
+  assert.match(quickLog, /What are you recording/);
+  assert.match(more, /Food safety/);
+  assert.match(more, /People/);
 });
