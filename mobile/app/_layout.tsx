@@ -29,6 +29,9 @@ export default function RootLayout() {
             <Stack.Screen name="fitness-to-work" options={{ title: "Fitness to work" }} />
             <Stack.Screen name="goods-in" options={{ title: "Delivery check" }} />
             <Stack.Screen name="cleaning" options={{ title: "Cleaning schedule" }} />
+            <Stack.Screen name="allergens" options={{ title: "Allergen lookup" }} />
+            <Stack.Screen name="quick-log" options={{ title: "Quick log" }} />
+            <Stack.Screen name="more" options={{ title: "All tools" }} />
             <Stack.Screen name="safe-methods" options={{ title: "Safe methods" }} />
             <Stack.Screen name="ppds" options={{ title: "PPDS labels" }} />
             <Stack.Screen name="inspection-readiness" options={{ title: "Evidence readiness" }} />

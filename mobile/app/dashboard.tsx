@@ -8,7 +8,7 @@ import { getQueueStatus } from "@/lib/offline-queue";
 import { useEffect, useState } from "react";
 
 export default function Dashboard() {
-  const { session, workspaceReady, role, loading } = useSession();
+  const { session, workspaceReady, loading } = useSession();
   const network = useNetInfo();
   const [pending, setPending] = useState(0);
   const [today, setToday] = useState({ done: 0, open: 0, actions: 0 });
@@ -87,87 +87,25 @@ export default function Dashboard() {
             Complete traceable opening, cleaning and closing checks.
           </Text>
         </Pressable>
-        <Pressable style={styles.card} onPress={() => router.push("/diary")}>
-          <Text style={styles.cardTitle}>Daily diary</Text>
-          <Text style={styles.cardBody}>
-            Record problems, corrective action and manager sign-off.
-          </Text>
-        </Pressable>
-        <Pressable style={styles.card} onPress={() => router.push("/actions")}>
-          <Text style={styles.cardTitle}>Corrective actions</Text>
-          <Text style={styles.cardBody}>
-            Claim exceptions, attach camera evidence and verify closures.
-          </Text>
-        </Pressable>
-        <Pressable style={styles.card} onPress={() => router.push("/alerts" as never)}>
-          <Text style={styles.cardTitle}>Alert inbox</Text>
-          <Text style={styles.cardBody}>
-            Review live warnings, expiries and food-safety issues.
-          </Text>
-        </Pressable>
-        <Pressable style={styles.card} onPress={() => router.push("/incidents")}>
-          <Text style={styles.cardTitle}>Report incident</Text>
-          <Text style={styles.cardBody}>
-            Create a persistent incident with severity and optional photo.
-          </Text>
-        </Pressable>
-        <Pressable style={styles.card} onPress={() => router.push("/documents")}>
-          <Text style={styles.cardTitle}>Evidence library</Text>
-          <Text style={styles.cardBody}>
-            Upload private documents and camera evidence for malware scanning.
-          </Text>
-        </Pressable>
-        {(role === "owner" || role === "manager") && (
-          <Pressable style={styles.card} onPress={() => router.push("/staff-compliance" as never)}>
-            <Text style={styles.cardTitle}>Staff compliance</Text>
-            <Text style={styles.cardBody}>
-              Review training, certificates and evidence that is due to expire.
-            </Text>
-          </Pressable>
-        )}
-        <Pressable style={styles.card} onPress={() => router.push("/training" as never)}>
-          <Text style={styles.cardTitle}>Training</Text>
-          <Text style={styles.cardBody}>Review courses, certificates and renewal dates.</Text>
-        </Pressable>
-        <Pressable style={styles.card} onPress={() => router.push("/inductions" as never)}>
-          <Text style={styles.cardTitle}>Staff induction</Text>
-          <Text style={styles.cardBody}>Read or assign site instructions with recorded acknowledgement.</Text>
-        </Pressable>
-        <Pressable style={styles.card} onPress={() => router.push("/fitness-to-work" as never)}>
-          <Text style={styles.cardTitle}>Fitness to work</Text>
-          <Text style={styles.cardBody}>Privately report sickness and record manager clearance.</Text>
-        </Pressable>
         <Pressable style={styles.card} onPress={() => router.push("/goods-in" as never)}>
           <Text style={styles.cardTitle}>Delivery check</Text>
-          <Text style={styles.cardBody}>Accept or reject goods with offline traceability evidence.</Text>
+          <Text style={styles.cardBody}>
+            Accept or reject goods with offline traceability evidence.
+          </Text>
         </Pressable>
         <Pressable style={styles.card} onPress={() => router.push("/cleaning" as never)}>
           <Text style={styles.cardTitle}>Cleaning schedule</Text>
-          <Text style={styles.cardBody}>Follow site methods and save completion evidence offline.</Text>
-        </Pressable>
-        <Pressable style={styles.card} onPress={() => router.push("/safe-methods")}>
-          <Text style={styles.cardTitle}>Safe methods</Text>
-          <Text style={styles.cardBody}>Review site-adopted UK food-safety controls.</Text>
-        </Pressable>
-        <Pressable style={styles.card} onPress={() => router.push("/ppds")}>
-          <Text style={styles.cardTitle}>PPDS labels</Text>
-          <Text style={styles.cardBody}>Check current label versions and declared allergens.</Text>
-        </Pressable>
-        <Pressable style={styles.card} onPress={() => router.push("/inspection-readiness")}>
-          <Text style={styles.cardTitle}>Evidence readiness</Text>
-          <Text style={styles.cardBody}>See evidence coverage and unresolved actions.</Text>
-        </Pressable>
-        <Pressable style={styles.card} onPress={() => router.push("/coach")}>
-          <Text style={styles.cardTitle}>Compliance coach</Text>
           <Text style={styles.cardBody}>
-            See live, prioritised actions from your saved records.
+            Follow site methods and save completion evidence offline.
           </Text>
         </Pressable>
-        <Pressable style={styles.card} onPress={() => router.push("/settings")}>
-          <Text style={styles.cardTitle}>Security & privacy</Text>
-          <Text style={styles.cardBody}>
-            Biometric lock, data export and reviewed deletion requests.
-          </Text>
+        <Pressable style={styles.card} onPress={() => router.push("/allergens" as never)}>
+          <Text style={styles.cardTitle}>Allergen lookup</Text>
+          <Text style={styles.cardBody}>Search the live menu before advising a customer.</Text>
+        </Pressable>
+        <Pressable style={styles.card} onPress={() => router.push("/more" as never)}>
+          <Text style={styles.cardTitle}>All tools</Text>
+          <Text style={styles.cardBody}>People, evidence, PPDS, safe methods and settings.</Text>
         </Pressable>
       </View>
       <Pressable onPress={signOut} style={styles.signOut}>
