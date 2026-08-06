@@ -8,12 +8,14 @@ export type ExperiencePreferences = {
   glove_mode: boolean;
   reduced_motion: boolean;
   high_contrast: boolean;
+  compact_mode: boolean;
 };
 
 const defaults: ExperiencePreferences = {
   glove_mode: false,
   reduced_motion: false,
   high_contrast: false,
+  compact_mode: false,
 };
 
 export function applyExperiencePreferences(value: ExperiencePreferences) {
@@ -21,6 +23,7 @@ export function applyExperiencePreferences(value: ExperiencePreferences) {
   document.documentElement.classList.toggle("haccora-glove", value.glove_mode);
   document.documentElement.classList.toggle("haccora-reduced-motion", value.reduced_motion);
   document.documentElement.classList.toggle("haccora-high-contrast", value.high_contrast);
+  document.documentElement.classList.toggle("haccora-compact", value.compact_mode);
 }
 
 export function ExperienceController() {
@@ -44,7 +47,7 @@ export function ExperienceController() {
     const load = async () => {
       const { data } = await (supabase as any)
         .from("user_experience_preferences")
-        .select("glove_mode,reduced_motion,high_contrast")
+        .select("glove_mode,reduced_motion,high_contrast,compact_mode")
         .eq("organization_id", user.organizationId)
         .eq("user_id", user.id)
         .maybeSingle();

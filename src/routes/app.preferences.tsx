@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { Accessibility, Contrast, Hand, Loader2, Save, ZapOff } from "lucide-react";
+import { Accessibility, Contrast, Hand, Loader2, Save, ScanLine, ZapOff } from "lucide-react";
 import { toast } from "sonner";
 import {
   applyExperiencePreferences,
@@ -16,6 +16,7 @@ const defaults: ExperiencePreferences = {
   glove_mode: false,
   reduced_motion: false,
   high_contrast: false,
+  compact_mode: false,
 };
 
 function PreferencesPage() {
@@ -30,7 +31,7 @@ function PreferencesPage() {
     if (!user?.organizationId) return;
     void (supabase as any)
       .from("user_experience_preferences")
-      .select("glove_mode,reduced_motion,high_contrast")
+      .select("glove_mode,reduced_motion,high_contrast,compact_mode")
       .eq("organization_id", user.organizationId)
       .eq("user_id", user.id)
       .maybeSingle()
@@ -63,6 +64,12 @@ function PreferencesPage() {
   };
 
   const options = [
+    [
+      "compact_mode",
+      ScanLine,
+      "Compact workspace",
+      "Smaller type and tighter cards for tablets and manager dashboards.",
+    ],
     [
       "glove_mode",
       Hand,
