@@ -186,6 +186,34 @@ async function enqueueComplianceReminders(
           clock.date,
         );
       }
+
+      const inductionDeadline = new Date(now.getTime() + 7 * 86400000).toISOString();
+      let inductionsQuery = supabase
+        .from("staff_induction_assignments")
+        .select("id", { count: "exact", head: true })
+        .eq("organization_id", preference.organization_id)
+        .is("acknowledged_at", null)
+        .not("due_at", "is", null)
+        .lte("due_at", inductionDeadline);
+      if (!(["owner", "manager"] as string[]).includes(membership.role)) {
+        inductionsQuery = inductionsQuery.eq("user_id", preference.user_id);
+      }
+      const { count: inductionCount } = await inductionsQuery;
+      if (inductionCount) {
+        queued += await enqueueReminder(
+          supabase,
+          preference,
+          "staff_induction_due",
+          {
+            severity: "warning",
+            title: "Staff instruction needs acknowledgement",
+            message: `${inductionCount} induction or policy instruction${inductionCount === 1 ? " is" : "s are"} due within 7 days.`,
+            route: "/app/inductions",
+            nativeRoute: "/inductions",
+          },
+          clock.date,
+        );
+      }
     }
   }
   return queued;

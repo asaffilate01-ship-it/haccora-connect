@@ -4094,6 +4094,73 @@ export type Database = {
           },
         ]
       }
+      staff_induction_assignments: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledgement_version: string
+          assigned_by: string
+          created_at: string
+          due_at: string | null
+          id: string
+          instructions: string | null
+          location_id: string | null
+          organization_id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledgement_version?: string
+          assigned_by: string
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          instructions?: string | null
+          location_id?: string | null
+          organization_id: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledgement_version?: string
+          assigned_by?: string
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          instructions?: string | null
+          location_id?: string | null
+          organization_id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_induction_assignments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_induction_location_org_fk"
+            columns: ["organization_id", "location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "staff_induction_member_fk"
+            columns: ["organization_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "organization_memberships"
+            referencedColumns: ["organization_id", "user_id"]
+          },
+        ]
+      }
       stock_items: {
         Row: {
           category: string | null
@@ -5646,6 +5713,10 @@ export type Database = {
       accept_organization_invitation: {
         Args: { p_token: string }
         Returns: Json
+      }
+      acknowledge_my_induction: {
+        Args: { p_assignment_id: string }
+        Returns: string
       }
       bootstrap_my_organization: {
         Args: {
