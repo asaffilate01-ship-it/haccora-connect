@@ -7,6 +7,7 @@ const actions = [
   ["Cleaning", "Complete the site cleaning schedule", "/cleaning", "✦"],
   ["Daily diary", "Record problems and corrective action", "/diary", "▤"],
   ["Incident", "Report a food-safety event", "/incidents", "!"],
+  ["Scan equipment", "Open its details and add a timestamped record", "/scan-asset", "⌗"],
 ] as const;
 export default function QuickLog() {
   return (

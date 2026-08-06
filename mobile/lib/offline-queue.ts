@@ -12,7 +12,8 @@ type Table =
   | "temperature_logs"
   | "haccp_flow_runs"
   | "goods_in_logs"
-  | "cleaning_completions";
+  | "cleaning_completions"
+  | "asset_events";
 type Job = {
   id: string;
   table: Table;

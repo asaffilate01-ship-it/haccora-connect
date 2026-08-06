@@ -59,6 +59,12 @@ async function upsert(table, rows, onConflict = "id") {
   process.stdout.write(`Seeded ${table}: ${rows.length}\n`);
 }
 
+async function insertOnce(table, rows, onConflict = "id") {
+  const { error } = await supabase.from(table).upsert(rows, { onConflict, ignoreDuplicates: true });
+  if (error) throw new Error(`${table}: ${error.message}`);
+  process.stdout.write(`Seeded ${table}: ${rows.length}\n`);
+}
+
 const users = {
   owner: await ensureUser(emails.owner, "Alex Morgan"),
   manager: await ensureUser(emails.manager, "Samira Khan"),
@@ -338,6 +344,70 @@ await upsert("documents", [
     expires_at: dateDaysFromNow(65),
     version: "2026",
     mime_type: "application/pdf",
+  },
+]);
+await upsert("assets", [
+  {
+    id: id(100),
+    qr_token: id(110),
+    asset_code: "EQ-DEMO-001",
+    organization_id: DEMO_ORGANIZATION_ID,
+    location_id: DEMO_LOCATION_ID,
+    created_by: users.manager.id,
+    name: "Walk-in fridge 1",
+    category: "fridge",
+    location: "Main kitchen",
+    manufacturer: "Demo Refrigeration",
+    model: "CHILL-900",
+    serial: "DEMO-FR-001",
+    next_service_at: dateDaysFromNow(28),
+    status: "ok",
+    notes: "Demonstration equipment record. Replace with the premises' real asset details.",
+  },
+  {
+    id: id(101),
+    qr_token: id(111),
+    asset_code: "EQ-DEMO-002",
+    organization_id: DEMO_ORGANIZATION_ID,
+    location_id: DEMO_LOCATION_ID,
+    created_by: users.manager.id,
+    name: "Blue food probe",
+    category: "probe",
+    location: "Chef station",
+    manufacturer: "Demo Instruments",
+    model: "PROBE-2",
+    serial: "DEMO-TP-002",
+    next_service_at: dateDaysFromNow(14),
+    status: "ok",
+  },
+]);
+await insertOnce("asset_events", [
+  {
+    id: id(120),
+    organization_id: DEMO_ORGANIZATION_ID,
+    location_id: DEMO_LOCATION_ID,
+    asset_id: id(100),
+    event_type: "inspection",
+    outcome: "pass",
+    title: "Door seals and displayed temperature checked",
+    notes: "No damage or food debris observed.",
+    recorded_by: users.staff.id,
+    recorded_by_name: "Jamie Evans",
+  },
+  {
+    id: id(121),
+    organization_id: DEMO_ORGANIZATION_ID,
+    location_id: DEMO_LOCATION_ID,
+    asset_id: id(101),
+    event_type: "calibration",
+    outcome: "pass",
+    title: "Ice-point accuracy check",
+    notes: "Probe cleaned and sanitised after the check.",
+    measured_value: 0.3,
+    measured_unit: "°C",
+    next_due_at: isoDaysFromNow(30),
+    recorded_by: users.manager.id,
+    recorded_by_name: "Samira Khan",
   },
 ]);
 

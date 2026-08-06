@@ -31,6 +31,7 @@ Deno.serve(async (request) => {
       audits,
       recalls,
       training,
+      equipment,
     ] = await Promise.all([
       client.rpc("get_my_context"),
       client
@@ -76,6 +77,12 @@ Deno.serve(async (request) => {
         .gte("created_at", from.toISOString())
         .lte("created_at", to.toISOString())
         .limit(1000),
+      client
+        .from("asset_events")
+        .select("event_type,outcome,title,notes,recorded_by_name,recorded_at", { count: "exact" })
+        .gte("recorded_at", from.toISOString())
+        .lte("recorded_at", to.toISOString())
+        .limit(1000),
     ]);
     for (
       const result of [
@@ -85,6 +92,7 @@ Deno.serve(async (request) => {
         audits,
         recalls,
         training,
+        equipment,
       ]
     ) {
       if (result.error) throw result.error;
@@ -119,6 +127,7 @@ Deno.serve(async (request) => {
       `Audits: ${audits.count ?? 0}`,
       `Open recalls: ${recalls.count ?? 0}`,
       `Verified training records: ${training.count ?? 0}`,
+      `Equipment history records: ${equipment.count ?? 0}`,
       "Detailed sections include bounded record samples; totals above are exact for the selected period.",
       "",
       "TEMPERATURE RECORDS",
@@ -177,6 +186,14 @@ Deno.serve(async (request) => {
             } | progress ${row.progress}% | score ${
               row.score ?? "-"
             } | verified ${row.verified_at ?? "no"}`,
+        ),
+      "",
+      "EQUIPMENT, MAINTENANCE AND CHECKS",
+      ...(equipment.data ?? [])
+        .slice(0, 250)
+        .map(
+          (row) =>
+            `${row.recorded_at} | ${ascii(row.event_type)} | ${ascii(row.outcome)} | ${ascii(row.title)} | ${ascii(row.recorded_by_name)} | ${ascii(row.notes)}`,
         ),
       "",
       "Generated from tenant-scoped data. Export creation is recorded in the immutable audit chain.",

@@ -15,10 +15,11 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "uk.co.haccora.app",
+      "associatedDomains": ["applinks:app.haccora.co.uk"],
       "usesAppleSignIn": false,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "NSCameraUsageDescription": "Haccora uses the camera only when you attach food-safety evidence.",
+        "NSCameraUsageDescription": "Haccora uses the camera only when you scan an equipment QR code or attach food-safety evidence.",
         "NSFaceIDUsageDescription": "Use Face ID to protect access to Haccora records on this device.",
         "NSPhotoLibraryUsageDescription": "Choose food-safety evidence to upload securely."
       }
@@ -29,7 +30,17 @@
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#e43f2c"
       },
-      "blockedPermissions": ["RECORD_AUDIO", "ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"]
+      "blockedPermissions": ["RECORD_AUDIO", "ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            { "scheme": "https", "host": "app.haccora.co.uk", "pathPrefix": "/app/assets/" }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "plugins": [
       "expo-router",
@@ -44,7 +55,8 @@
           "microphonePermission": false
         }
       ],
-      "expo-document-picker"
+      "expo-document-picker",
+      ["expo-camera", { "cameraPermission": "Scan Haccora equipment QR labels." }]
     ],
     "experiments": { "typedRoutes": true },
     "extra": {

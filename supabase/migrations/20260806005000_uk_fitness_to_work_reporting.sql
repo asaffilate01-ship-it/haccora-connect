@@ -25,6 +25,7 @@ begin
 end;
 $$;
 
+drop policy if exists health_read_private on public.health_register;
 create policy health_read_private on public.health_register for select to authenticated
 using (
   organization_id = public.current_organization_id()

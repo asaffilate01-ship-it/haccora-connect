@@ -54,6 +54,7 @@ The seed command prints the owner, manager and staff email addresses. All use th
 5. Complete a cleaning task and confirm the completion is shown in history.
 6. Search allergens for “Chicken tikka wrap” and confirm milk and gluten are shown.
 7. Check that management-only configuration is not available.
+8. Open Equipment, scan a printed demo QR, add an inspection record, then reconnect and confirm it appears only once in history.
 
 ### Manager journey
 
@@ -63,6 +64,7 @@ The seed command prints the owner, manager and staff email addresses. All use th
 4. Add a cleaning schedule item and confirm staff can see it.
 5. Review expiring documents and generate the inspection evidence export.
 6. Confirm manager access does not silently become owner/billing access.
+7. Add equipment, print its label sheet, record maintenance and confirm the last-service/next-due summary updates without overwriting history.
 
 ### Owner journey
 
@@ -71,6 +73,7 @@ The seed command prints the owner, manager and staff email addresses. All use th
 3. Invite another test user and verify role/location scoping.
 4. Request an inspector access link, verify its expiry/scope, then revoke it.
 5. Complete checkout only with Stripe test-mode keys and a test card.
+6. Grant a test inspector only the Equipment scope and confirm the inspector can read asset history but cannot add, edit, retire or delete anything.
 
 ## 5. Offline and notification acceptance
 
