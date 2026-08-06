@@ -132,6 +132,7 @@ const GROUPS: NavGroup[] = [
     labelKey: "nav.group.people",
     items: [
       { to: "/app/training", icon: Users, key: "menu.training", nav: "training" },
+      { to: "/app/inductions", icon: ClipboardCheck, key: "Staff induction", nav: "training" },
       { to: "/app/health", icon: HeartPulse, key: "menu.health", nav: "health" },
     ],
   },
@@ -229,6 +230,7 @@ function AppShell() {
       { prefix: "/app/recipes", nav: "recipes" },
       { prefix: "/app/suppliers", nav: "suppliers" },
       { prefix: "/app/training", nav: "training" },
+      { prefix: "/app/inductions", nav: "training" },
       { prefix: "/app/alerts", nav: "alerts" },
       { prefix: "/app/expiry", nav: "expiry" },
       { prefix: "/app/documents", nav: "documents" },

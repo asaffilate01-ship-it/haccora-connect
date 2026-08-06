@@ -129,6 +129,10 @@ export default function Dashboard() {
           <Text style={styles.cardTitle}>Training</Text>
           <Text style={styles.cardBody}>Review courses, certificates and renewal dates.</Text>
         </Pressable>
+        <Pressable style={styles.card} onPress={() => router.push("/inductions" as never)}>
+          <Text style={styles.cardTitle}>Staff induction</Text>
+          <Text style={styles.cardBody}>Read or assign site instructions with recorded acknowledgement.</Text>
+        </Pressable>
         <Pressable style={styles.card} onPress={() => router.push("/safe-methods")}>
           <Text style={styles.cardTitle}>Safe methods</Text>
           <Text style={styles.cardBody}>Review site-adopted UK food-safety controls.</Text>

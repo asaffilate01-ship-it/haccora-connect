@@ -281,3 +281,30 @@ test("Phase 13 wires native training and renewal management", () => {
   assert.match(training, /Provider not recorded/);
   assert.match(layout, /name="training"/);
 });
+
+test("Phase 14 induction acknowledgement is attributable and cannot be backdated by staff", () => {
+  const migration = read("supabase/migrations/20260806004000_staff_induction_acknowledgements.sql");
+  assert.match(migration, /acknowledge_my_induction/);
+  assert.match(migration, /and user_id = auth\.uid\(\)/);
+  assert.match(migration, /set acknowledged_at = coalesce\(acknowledged_at, now\(\)\)/i);
+  assert.match(
+    migration,
+    /revoke update on public\.staff_induction_assignments from authenticated/i,
+  );
+  assert.match(migration, /Staff read own inductions; leaders read organisation/);
+});
+
+test("Phase 14 wires induction flow and due alerts across SaaS and native apps", () => {
+  const web = read("src/routes/app.inductions.tsx");
+  const native = read("mobile/app/inductions.tsx");
+  const dispatch = read("supabase/functions/notification-dispatch/index.ts");
+  const nav = read("src/routes/app.tsx") + read("mobile/app/_layout.tsx");
+  for (const source of [web, native]) {
+    assert.match(source, /staff_induction_assignments/);
+    assert.match(source, /acknowledge_my_induction/);
+    assert.match(source, /I have read and understood/);
+  }
+  assert.match(dispatch, /staff_induction_due/);
+  assert.match(dispatch, /nativeRoute: "\/inductions"/);
+  assert.match(nav, /inductions/);
+});
