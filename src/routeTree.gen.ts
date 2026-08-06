@@ -51,6 +51,7 @@ import { Route as AppLogsRouteImport } from './routes/app.logs'
 import { Route as AppLabelsRouteImport } from './routes/app.labels'
 import { Route as AppIntegrationsRouteImport } from './routes/app.integrations'
 import { Route as AppInspectionRouteImport } from './routes/app.inspection'
+import { Route as AppInductionsRouteImport } from './routes/app.inductions'
 import { Route as AppIncidentsRouteImport } from './routes/app.incidents'
 import { Route as AppHealthRouteImport } from './routes/app.health'
 import { Route as AppHaccpFlowsRouteImport } from './routes/app.haccp-flows'
@@ -282,6 +283,11 @@ const AppInspectionRoute = AppInspectionRouteImport.update({
   path: '/inspection',
   getParentRoute: () => AppRoute,
 } as any)
+const AppInductionsRoute = AppInductionsRouteImport.update({
+  id: '/inductions',
+  path: '/inductions',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppIncidentsRoute = AppIncidentsRouteImport.update({
   id: '/incidents',
   path: '/incidents',
@@ -412,6 +418,7 @@ export interface FileRoutesByFullPath {
   '/app/haccp-flows': typeof AppHaccpFlowsRoute
   '/app/health': typeof AppHealthRoute
   '/app/incidents': typeof AppIncidentsRoute
+  '/app/inductions': typeof AppInductionsRoute
   '/app/inspection': typeof AppInspectionRoute
   '/app/integrations': typeof AppIntegrationsRoute
   '/app/labels': typeof AppLabelsRoute
@@ -474,6 +481,7 @@ export interface FileRoutesByTo {
   '/app/haccp-flows': typeof AppHaccpFlowsRoute
   '/app/health': typeof AppHealthRoute
   '/app/incidents': typeof AppIncidentsRoute
+  '/app/inductions': typeof AppInductionsRoute
   '/app/inspection': typeof AppInspectionRoute
   '/app/integrations': typeof AppIntegrationsRoute
   '/app/labels': typeof AppLabelsRoute
@@ -539,6 +547,7 @@ export interface FileRoutesById {
   '/app/haccp-flows': typeof AppHaccpFlowsRoute
   '/app/health': typeof AppHealthRoute
   '/app/incidents': typeof AppIncidentsRoute
+  '/app/inductions': typeof AppInductionsRoute
   '/app/inspection': typeof AppInspectionRoute
   '/app/integrations': typeof AppIntegrationsRoute
   '/app/labels': typeof AppLabelsRoute
@@ -605,6 +614,7 @@ export interface FileRouteTypes {
     | '/app/haccp-flows'
     | '/app/health'
     | '/app/incidents'
+    | '/app/inductions'
     | '/app/inspection'
     | '/app/integrations'
     | '/app/labels'
@@ -667,6 +677,7 @@ export interface FileRouteTypes {
     | '/app/haccp-flows'
     | '/app/health'
     | '/app/incidents'
+    | '/app/inductions'
     | '/app/inspection'
     | '/app/integrations'
     | '/app/labels'
@@ -731,6 +742,7 @@ export interface FileRouteTypes {
     | '/app/haccp-flows'
     | '/app/health'
     | '/app/incidents'
+    | '/app/inductions'
     | '/app/inspection'
     | '/app/integrations'
     | '/app/labels'
@@ -1074,6 +1086,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppInspectionRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/inductions': {
+      id: '/app/inductions'
+      path: '/inductions'
+      fullPath: '/app/inductions'
+      preLoaderRoute: typeof AppInductionsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/incidents': {
       id: '/app/incidents'
       path: '/incidents'
@@ -1238,6 +1257,7 @@ interface AppRouteChildren {
   AppHaccpFlowsRoute: typeof AppHaccpFlowsRoute
   AppHealthRoute: typeof AppHealthRoute
   AppIncidentsRoute: typeof AppIncidentsRoute
+  AppInductionsRoute: typeof AppInductionsRoute
   AppInspectionRoute: typeof AppInspectionRoute
   AppIntegrationsRoute: typeof AppIntegrationsRoute
   AppLabelsRoute: typeof AppLabelsRoute
@@ -1288,6 +1308,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppHaccpFlowsRoute: AppHaccpFlowsRoute,
   AppHealthRoute: AppHealthRoute,
   AppIncidentsRoute: AppIncidentsRoute,
+  AppInductionsRoute: AppInductionsRoute,
   AppInspectionRoute: AppInspectionRoute,
   AppIntegrationsRoute: AppIntegrationsRoute,
   AppLabelsRoute: AppLabelsRoute,
