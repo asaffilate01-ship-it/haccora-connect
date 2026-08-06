@@ -55,7 +55,7 @@ function LogoArtwork({
         fontWeight="800"
         letterSpacing="2.4"
       >
-        SICHER · SAUBER · NACHWEISBAR
+        SAFE · CLEAN · TRACEABLE
       </text>
     </svg>
   );

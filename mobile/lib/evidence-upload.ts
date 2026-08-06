@@ -11,6 +11,10 @@ type UploadInput = {
   locationId?: string | null;
   title: string;
   category: string;
+  subjectUserId?: string | null;
+  documentKind?: string | null;
+  issuedOn?: string | null;
+  expiresAt?: string | null;
 };
 
 export async function uploadEvidence(input: UploadInput) {
@@ -32,6 +36,10 @@ export async function uploadEvidence(input: UploadInput) {
       user_id: input.userId,
       title: input.title,
       category: input.category,
+      subject_user_id: input.subjectUserId ?? null,
+      document_kind: input.documentKind ?? null,
+      issued_on: input.issuedOn ?? null,
+      expires_at: input.expiresAt ?? null,
       file_url: path,
       storage_path: path,
       idempotency_key: Crypto.randomUUID(),

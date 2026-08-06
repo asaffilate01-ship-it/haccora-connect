@@ -4,9 +4,9 @@ import { LegalPage } from "@/components/LegalPage";
 export const Route = createFileRoute("/legal/terms")({
   head: () => ({
     meta: [
-      { title: "AGB · Terms — Haccora" },
-      { name: "description", content: "Allgemeine Geschäftsbedingungen für Haccora." },
-      { property: "og:title", content: "AGB — Haccora" },
+      { title: "Terms and conditions — Haccora" },
+      { name: "description", content: "Terms and conditions for the Haccora service." },
+      { property: "og:title", content: "Terms and conditions — Haccora" },
       { property: "og:url", content: "/legal/terms" },
     ],
     links: [{ rel: "canonical", href: "/legal/terms" }],
