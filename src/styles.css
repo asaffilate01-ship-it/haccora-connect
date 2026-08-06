@@ -89,6 +89,22 @@ html.haccora-high-contrast .surface {
   border-width: 2px;
 }
 
+html.haccora-compact .app-shell {
+  font-size: 0.825rem;
+}
+
+html.haccora-compact .app-shell h1 {
+  font-size: clamp(1.35rem, 2vw, 1.7rem);
+}
+
+html.haccora-compact .app-shell .surface {
+  border-radius: 0.65rem;
+}
+
+html.haccora-compact .app-shell main .surface > :is(header, div, section) {
+  --compact-spacing: 0.75rem;
+}
+
 html.haccora-reduced-motion *,
 html.haccora-reduced-motion *::before,
 html.haccora-reduced-motion *::after {
@@ -195,11 +211,11 @@ html.haccora-reduced-motion *::after {
 
 /* Denser operational typography for busy kitchens and smaller tablets. */
 .app-shell {
-  font-size: 0.9rem;
+  font-size: 0.875rem;
 }
 
 .app-shell h1 {
-  font-size: clamp(1.55rem, 2.25vw, 2rem);
+  font-size: clamp(1.5rem, 2.15vw, 1.9rem);
   line-height: 1.08;
 }
 
@@ -231,7 +247,7 @@ html.haccora-reduced-motion *::after {
 }
 
 .marketing-shell h1 {
-  font-size: clamp(2rem, 4.5vw, 4rem);
+  font-size: clamp(1.9rem, 4.2vw, 3.6rem);
   line-height: 0.98;
 }
 

@@ -91,8 +91,9 @@ test("web and native typography use compact operational sizes", () => {
   const css = read("src/styles.css");
   assert.match(css, /\.app-shell/);
   assert.match(css, /\.marketing-shell/);
-  assert.match(read("mobile/app/dashboard.tsx"), /title: \{ fontSize: 24/);
-  assert.match(read("mobile/app/dashboard.tsx"), /cardTitle: \{ fontSize: 16/);
+  assert.match(read("mobile/app/dashboard.tsx"), /title: \{ fontSize: 22/);
+  assert.match(read("mobile/app/dashboard.tsx"), /cardTitle: \{ fontSize: 14/);
+  assert.match(read("mobile/app/dashboard.tsx"), /flexWrap: "wrap"/);
 });
 test("PPDS warns when a controlled label no longer matches ingredient specifications", () => {
   const ppds = read("src/routes/app.ppds.tsx");
