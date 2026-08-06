@@ -8,7 +8,7 @@ import { getQueueStatus } from "@/lib/offline-queue";
 import { useEffect, useState } from "react";
 
 export default function Dashboard() {
-  const { session, workspaceReady, loading } = useSession();
+  const { session, workspaceReady, role, loading } = useSession();
   const network = useNetInfo();
   const [pending, setPending] = useState(0);
   const [today, setToday] = useState({ done: 0, open: 0, actions: 0 });
@@ -109,6 +109,14 @@ export default function Dashboard() {
           Upload private documents and camera evidence for malware scanning.
         </Text>
       </Pressable>
+      {(role === "owner" || role === "manager") && (
+        <Pressable style={styles.card} onPress={() => router.push("/staff-compliance" as never)}>
+          <Text style={styles.cardTitle}>Staff compliance</Text>
+          <Text style={styles.cardBody}>
+            Review training, certificates and evidence that is due to expire.
+          </Text>
+        </Pressable>
+      )}
       <Pressable style={styles.card} onPress={() => router.push("/safe-methods")}>
         <Text style={styles.cardTitle}>Safe methods</Text>
         <Text style={styles.cardBody}>Review site-adopted UK food-safety controls.</Text>
