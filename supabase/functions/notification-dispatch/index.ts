@@ -107,7 +107,14 @@ async function enqueueComplianceReminders(
         .eq("organization_id", preference.organization_id)
         .neq("status", "completed");
       if (membership.role === "staff") checksQuery = checksQuery.eq("user_id", preference.user_id);
-      const { count } = await checksQuery;
+      const [{ count }, { count: cleaningCount }] = await Promise.all([
+        checksQuery,
+        supabase
+          .from("cleaning_tasks")
+          .select("id", { count: "exact", head: true })
+          .eq("organization_id", preference.organization_id)
+          .eq("active", true),
+      ]);
       queued += await enqueueReminder(
         supabase,
         preference,
@@ -115,9 +122,9 @@ async function enqueueComplianceReminders(
         {
           severity: "info",
           title: "Start today's food-safety routine",
-          message: `${count ?? 0} open check${count === 1 ? "" : "s"}. Complete opening checks before service begins.`,
-          route: "/app/routines",
-          nativeRoute: "/checks",
+          message: `${count ?? 0} open check${count === 1 ? "" : "s"} · ${cleaningCount ?? 0} scheduled cleaning task${cleaningCount === 1 ? "" : "s"}.`,
+          route: count ? "/app/routines" : "/app/cleaning",
+          nativeRoute: count ? "/checks" : "/cleaning",
         },
         clock.date,
       );

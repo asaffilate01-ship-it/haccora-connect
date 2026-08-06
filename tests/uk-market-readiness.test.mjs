@@ -360,3 +360,28 @@ test("Phase 16 wires compact offline delivery checks and manager alerts", () => 
   assert.match(dispatch, /rejected_delivery_review/);
   assert.match(dispatch, /nativeRoute: "\/goods-in"/);
 });
+
+test("Phase 17 persists configurable cleaning schedules and immutable evidence", () => {
+  const migration = read("supabase/migrations/20260806007000_persistent_cleaning_schedules.sql");
+  for (const table of ["cleaning_tasks", "cleaning_completions"])
+    assert.match(migration, new RegExp(`create table if not exists public\\.${table}`));
+  assert.match(migration, /contact_minutes/);
+  assert.match(migration, /task_area_snapshot/);
+  assert.match(migration, /completed_by = auth\.uid\(\)/);
+  assert.match(migration, /revoke update, delete on public\.cleaning_completions/);
+});
+
+test("Phase 17 wires compact web and offline-native cleaning flows", () => {
+  const web = read("src/routes/app.cleaning.tsx");
+  const native = read("mobile/app/cleaning.tsx");
+  const queue = read("mobile/lib/offline-queue.ts");
+  const dispatch = read("supabase/functions/notification-dispatch/index.ts");
+  for (const source of [web, native]) {
+    assert.match(source, /cleaning_tasks/);
+    assert.match(source, /cleaning_completions/);
+  }
+  assert.match(native, /enqueue\("cleaning_completions"/);
+  assert.match(queue, /"cleaning_completions"/);
+  assert.match(dispatch, /scheduled cleaning task/);
+  assert.doesNotMatch(web, /Sanixyl|DesInfekt|FrostClean/);
+});

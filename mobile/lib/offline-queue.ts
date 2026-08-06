@@ -7,7 +7,12 @@ import { supabase } from "./supabase";
 
 const KEY = "haccora-offline-queue-v1";
 const jobKey = (id: string) => `haccora-offline-job-${id}`;
-type Table = "checks" | "temperature_logs" | "haccp_flow_runs" | "goods_in_logs";
+type Table =
+  | "checks"
+  | "temperature_logs"
+  | "haccp_flow_runs"
+  | "goods_in_logs"
+  | "cleaning_completions";
 type Job = {
   id: string;
   table: Table;
