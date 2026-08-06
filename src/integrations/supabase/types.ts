@@ -5022,6 +5022,7 @@ export type Database = {
       user_experience_preferences: {
         Row: {
           biometric_lock: boolean
+          compact_mode: boolean
           default_station: string | null
           glove_mode: boolean
           high_contrast: boolean
@@ -5033,6 +5034,7 @@ export type Database = {
         }
         Insert: {
           biometric_lock?: boolean
+          compact_mode?: boolean
           default_station?: string | null
           glove_mode?: boolean
           high_contrast?: boolean
@@ -5044,6 +5046,7 @@ export type Database = {
         }
         Update: {
           biometric_lock?: boolean
+          compact_mode?: boolean
           default_station?: string | null
           glove_mode?: boolean
           high_contrast?: boolean
