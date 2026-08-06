@@ -189,8 +189,95 @@ export type Database = {
           },
         ]
       }
+      asset_events: {
+        Row: {
+          asset_id: string
+          created_at: string
+          event_type: string
+          id: string
+          idempotency_key: string | null
+          location_id: string | null
+          measured_unit: string | null
+          measured_value: number | null
+          next_due_at: string | null
+          notes: string | null
+          organization_id: string
+          outcome: string
+          recorded_at: string
+          recorded_by: string
+          recorded_by_name: string
+          title: string
+        }
+        Insert: {
+          asset_id: string
+          created_at?: string
+          event_type: string
+          id?: string
+          idempotency_key?: string | null
+          location_id?: string | null
+          measured_unit?: string | null
+          measured_value?: number | null
+          next_due_at?: string | null
+          notes?: string | null
+          organization_id: string
+          outcome: string
+          recorded_at?: string
+          recorded_by?: string
+          recorded_by_name?: string
+          title: string
+        }
+        Update: {
+          asset_id?: string
+          created_at?: string
+          event_type?: string
+          id?: string
+          idempotency_key?: string | null
+          location_id?: string | null
+          measured_unit?: string | null
+          measured_value?: number | null
+          next_due_at?: string | null
+          notes?: string | null
+          organization_id?: string
+          outcome?: string
+          recorded_at?: string
+          recorded_by?: string
+          recorded_by_name?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asset_events_asset_org"
+            columns: ["asset_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "asset_events_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asset_events_location_org"
+            columns: ["location_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "asset_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assets: {
         Row: {
+          asset_code: string
           category: string | null
           created_at: string
           created_by: string | null
@@ -199,14 +286,22 @@ export type Database = {
           last_service_at: string | null
           location: string | null
           location_id: string | null
+          manufacturer: string | null
+          model: string | null
           name: string
           next_service_at: string | null
+          notes: string | null
           organization_id: string | null
+          purchase_date: string | null
+          qr_token: string
+          retired_at: string | null
           serial: string | null
           status: string
           updated_at: string
+          warranty_expires_at: string | null
         }
         Insert: {
+          asset_code: string
           category?: string | null
           created_at?: string
           created_by?: string | null
@@ -215,14 +310,22 @@ export type Database = {
           last_service_at?: string | null
           location?: string | null
           location_id?: string | null
+          manufacturer?: string | null
+          model?: string | null
           name: string
           next_service_at?: string | null
+          notes?: string | null
           organization_id?: string | null
+          purchase_date?: string | null
+          qr_token?: string
+          retired_at?: string | null
           serial?: string | null
           status?: string
           updated_at?: string
+          warranty_expires_at?: string | null
         }
         Update: {
+          asset_code?: string
           category?: string | null
           created_at?: string
           created_by?: string | null
@@ -231,12 +334,19 @@ export type Database = {
           last_service_at?: string | null
           location?: string | null
           location_id?: string | null
+          manufacturer?: string | null
+          model?: string | null
           name?: string
           next_service_at?: string | null
+          notes?: string | null
           organization_id?: string | null
+          purchase_date?: string | null
+          qr_token?: string
+          retired_at?: string | null
           serial?: string | null
           status?: string
           updated_at?: string
+          warranty_expires_at?: string | null
         }
         Relationships: [
           {
