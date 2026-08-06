@@ -287,7 +287,7 @@ const en: Dict = {
   "temp.last": "Last reading",
 
   "training.title": "Team & training",
-  "training.sub": "Food-handler health · food hygiene · Allergens · Hygiene — multilingual",
+  "training.sub": "Food-handler fitness · food hygiene · allergens · certificates",
   "training.expires": "expires in",
   "training.days": "days",
 

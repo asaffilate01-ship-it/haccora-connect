@@ -133,6 +133,10 @@ export default function Dashboard() {
           <Text style={styles.cardTitle}>Staff induction</Text>
           <Text style={styles.cardBody}>Read or assign site instructions with recorded acknowledgement.</Text>
         </Pressable>
+        <Pressable style={styles.card} onPress={() => router.push("/fitness-to-work" as never)}>
+          <Text style={styles.cardTitle}>Fitness to work</Text>
+          <Text style={styles.cardBody}>Privately report sickness and record manager clearance.</Text>
+        </Pressable>
         <Pressable style={styles.card} onPress={() => router.push("/safe-methods")}>
           <Text style={styles.cardTitle}>Safe methods</Text>
           <Text style={styles.cardBody}>Review site-adopted UK food-safety controls.</Text>

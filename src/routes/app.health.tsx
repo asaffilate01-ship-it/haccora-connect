@@ -24,15 +24,16 @@ interface Row {
 
 const KIND: Record<Kind, [string, string]> = {
   fitness_briefing: ["Fitness-to-work briefing", "Fitness-to-work briefing"],
-  refresher: ["Auffrischung (jährlich)", "Annual refresher"],
-  sick_leave: ["Krankmeldung", "Sick leave"],
-  fit_note: ["Gesundheitszeugnis", "Fit-to-work note"],
-  exclusion: ["Tätigkeitsverbot", "Work exclusion"],
+  refresher: ["Annual refresher", "Annual refresher"],
+  sick_leave: ["Sickness report", "Sickness report"],
+  fit_note: ["Fit-to-work note", "Fit-to-work note"],
+  exclusion: ["Work exclusion", "Work exclusion"],
 };
 
 function HealthPage() {
   const { lang } = useI18n();
   const { user } = useAuth();
+  const manager = user?.role === "owner" || user?.role === "manager";
   const t = (de: string, en: string) => (lang === "de" ? de : en);
   const [items, setItems] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
@@ -102,10 +103,11 @@ function HealthPage() {
   };
 
   const clearReturn = async (id: string) => {
-    const { error } = await supabase
-      .from("health_register")
-      .update({ status: "cleared", fitness_cleared_on: new Date().toISOString().slice(0, 10) })
-      .eq("id", id);
+    const { error } = await supabase.rpc("clear_health_exclusion", {
+      p_record_id: id,
+      p_clearance_note:
+        "Manager reviewed the report and confirmed the return-to-work procedure was satisfied.",
+    });
     if (error) setErr(error.message);
     else load();
   };
@@ -125,21 +127,23 @@ function HealthPage() {
     <div className="p-6 md:p-10 space-y-8">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <div className="eyebrow">{t("Personalgesundheit", "Staff health")}</div>
+          <div className="eyebrow">Staff health</div>
           <h1 className="mt-1 text-3xl md:text-4xl">
-            {t(
-              "Food-handler fitness-to-work & Ausschluss-Register",
-              "Food-handler fitness-to-work & exclusion register",
-            )}
+            Food-handler fitness-to-work & exclusion register
           </h1>
           <p className="text-muted-foreground mt-1 max-w-2xl">
-            {t(
-              "Erst- und Folgebelehrungen nach § 43 Food-handler health sowie Tätigkeitsverbote bei Erkrankung dokumentieren.",
-              "Track Food-handler fitness-to-work briefings, annual refreshers, sick leave and work-exclusion orders per § 42/43 Food-handler health.",
-            )}
+            Record staff briefings, sickness reports, temporary food-handling exclusions and
+            attributable manager clearance for UK operations.
           </p>
         </div>
-        <button onClick={() => setOpen((o) => !o)} className="btn-alert-solid text-sm">
+        <button
+          onClick={() => {
+            if (!manager)
+              setF((current) => ({ ...current, staff_name: user?.name || "", kind: "sick_leave" }));
+            setOpen((o) => !o);
+          }}
+          className="btn-alert-solid text-sm"
+        >
           <PlusCircle size={16} className="inline mr-1.5" />
           {t("Eintrag erfassen", "New entry")}
         </button>
@@ -172,11 +176,13 @@ function HealthPage() {
             onChange={(e) => setF({ ...f, kind: e.target.value as Kind })}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm md:col-span-2"
           >
-            {(Object.keys(KIND) as Kind[]).map((k) => (
-              <option key={k} value={k}>
-                {KIND[k][lang === "de" ? 0 : 1]}
-              </option>
-            ))}
+            {(Object.keys(KIND) as Kind[])
+              .filter((k) => manager || k === "sick_leave")
+              .map((k) => (
+                <option key={k} value={k}>
+                  {KIND[k][lang === "de" ? 0 : 1]}
+                </option>
+              ))}
           </select>
           <input
             value={f.issued_on}
@@ -271,7 +277,7 @@ function HealthPage() {
                   </div>
                   {i.notes && <div className="text-xs text-muted-foreground mt-1">{i.notes}</div>}
                 </div>
-                {i.status === "excluded" && (
+                {i.status === "excluded" && manager && (
                   <button
                     onClick={() => clearReturn(i.id)}
                     className="shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full bg-success text-success-foreground hover:brightness-110"

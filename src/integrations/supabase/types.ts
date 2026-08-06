@@ -1810,6 +1810,9 @@ export type Database = {
       }
       health_register: {
         Row: {
+          clearance_note: string | null
+          cleared_at: string | null
+          cleared_by: string | null
           created_at: string
           expires_on: string | null
           fitness_cleared_on: string | null
@@ -1820,6 +1823,7 @@ export type Database = {
           location_id: string | null
           notes: string | null
           organization_id: string | null
+          reported_by: string
           staff_name: string
           status: string
           symptoms: string | null
@@ -1827,6 +1831,9 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          clearance_note?: string | null
+          cleared_at?: string | null
+          cleared_by?: string | null
           created_at?: string
           expires_on?: string | null
           fitness_cleared_on?: string | null
@@ -1837,6 +1844,7 @@ export type Database = {
           location_id?: string | null
           notes?: string | null
           organization_id?: string | null
+          reported_by?: string
           staff_name: string
           status?: string
           symptoms?: string | null
@@ -1844,6 +1852,9 @@ export type Database = {
           user_id: string
         }
         Update: {
+          clearance_note?: string | null
+          cleared_at?: string | null
+          cleared_by?: string | null
           created_at?: string
           expires_on?: string | null
           fitness_cleared_on?: string | null
@@ -1854,6 +1865,7 @@ export type Database = {
           location_id?: string | null
           notes?: string | null
           organization_id?: string | null
+          reported_by?: string
           staff_name?: string
           status?: string
           symptoms?: string | null
@@ -5797,6 +5809,10 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      clear_health_exclusion: {
+        Args: { p_clearance_note?: string; p_record_id: string }
+        Returns: string
       }
       complete_workflow_run: {
         Args: { p_run_id: string }
