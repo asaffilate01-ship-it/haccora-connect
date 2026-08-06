@@ -16,7 +16,13 @@ interface Row {
   unit: string | null;
   delivery_temp_c: number | null;
   temp_ok: boolean | null;
+  packaging_ok: boolean | null;
+  condition_ok: boolean | null;
+  allergen_label_ok: boolean | null;
   best_before: string | null;
+  use_by: string | null;
+  delivery_reference: string | null;
+  corrective_action: string | null;
   status: "accepted" | "rejected" | "partial";
   notes: string | null;
   received_at: string;
@@ -39,6 +45,12 @@ function GoodsInPage() {
     unit: "kg",
     delivery_temp_c: "",
     best_before: "",
+    use_by: "",
+    delivery_reference: "",
+    packaging_ok: true,
+    condition_ok: true,
+    allergen_label_ok: true,
+    corrective_action: "",
     notes: "",
   });
 
@@ -63,6 +75,16 @@ function GoodsInPage() {
     setBusy(true);
     setErr(null);
     const tempC = f.delivery_temp_c ? parseFloat(f.delivery_temp_c) : null;
+    const tempOk = tempC == null ? null : tempC <= 8;
+    const failed = !f.packaging_ok || !f.condition_ok || !f.allergen_label_ok || tempOk === false;
+    if (status === "accepted" && failed) {
+      setErr("A delivery with a failed check cannot be accepted.");
+      return;
+    }
+    if (status !== "accepted" && f.corrective_action.trim().length < 3) {
+      setErr("Record the corrective action for rejected or partially accepted goods.");
+      return;
+    }
     const { error } = await supabase.from("goods_in_logs").insert({
       user_id: user.id,
       supplier: f.supplier.trim(),
@@ -71,8 +93,14 @@ function GoodsInPage() {
       quantity: f.quantity ? parseFloat(f.quantity) : null,
       unit: f.unit || null,
       delivery_temp_c: tempC,
-      temp_ok: tempC == null ? null : tempC <= 7,
+      temp_ok: tempOk,
+      packaging_ok: f.packaging_ok,
+      condition_ok: f.condition_ok,
+      allergen_label_ok: f.allergen_label_ok,
       best_before: f.best_before || null,
+      use_by: f.use_by || null,
+      delivery_reference: f.delivery_reference.trim() || null,
+      corrective_action: status === "accepted" ? null : f.corrective_action.trim(),
       status,
       notes: f.notes.trim() || null,
     });
@@ -89,6 +117,12 @@ function GoodsInPage() {
       unit: "kg",
       delivery_temp_c: "",
       best_before: "",
+      use_by: "",
+      delivery_reference: "",
+      packaging_ok: true,
+      condition_ok: true,
+      allergen_label_ok: true,
+      corrective_action: "",
       notes: "",
     });
     setOpen(false);
@@ -102,13 +136,11 @@ function GoodsInPage() {
     <div className="p-6 md:p-10 space-y-8">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <div className="eyebrow">{t("Rückverfolgbarkeit", "Traceability")}</div>
-          <h1 className="mt-1 text-3xl md:text-4xl">{t("Wareneingang", "Goods-in inspection")}</h1>
+          <div className="eyebrow">Traceability</div>
+          <h1 className="mt-1 text-3xl md:text-4xl">Goods-in inspection</h1>
           <p className="text-muted-foreground mt-1 max-w-2xl">
-            {t(
-              "Chargen-, Lot- und Lieferkontrolle gemäß VO (EG) 178/2002 – ein Schritt zurück, ein Schritt vor.",
-              "Batch, lot and delivery inspection per Reg. (EC) 178/2002 — one step back, one step forward.",
-            )}
+            Record supplier, batch, condition, date and corrective-action evidence at the point of
+            delivery.
           </p>
         </div>
         <button onClick={() => setOpen((o) => !o)} className="btn-alert-solid text-sm">
@@ -129,6 +161,12 @@ function GoodsInPage() {
 
       {open && (
         <div className="surface p-5 grid md:grid-cols-4 gap-3">
+          <input
+            value={f.delivery_reference}
+            onChange={(e) => setF({ ...f, delivery_reference: e.target.value })}
+            placeholder="Delivery note reference"
+            className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
+          />
           <input
             value={f.supplier}
             onChange={(e) => setF({ ...f, supplier: e.target.value })}
@@ -154,12 +192,46 @@ function GoodsInPage() {
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
           <input
+            value={f.use_by}
+            onChange={(e) => setF({ ...f, use_by: e.target.value })}
+            type="date"
+            aria-label="Use-by date"
+            className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
+          />
+          <input
             value={f.quantity}
             onChange={(e) => setF({ ...f, quantity: e.target.value })}
             placeholder={t("Menge", "Qty")}
             type="number"
             step="0.01"
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
+          />
+          <div className="md:col-span-4 grid gap-2 sm:grid-cols-3">
+            {(
+              [
+                ["packaging_ok", "Packaging intact"],
+                ["condition_ok", "Condition acceptable"],
+                ["allergen_label_ok", "Allergen information present"],
+              ] as const
+            ).map(([key, label]) => (
+              <label
+                key={key}
+                className="flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs font-semibold"
+              >
+                <input
+                  type="checkbox"
+                  checked={f[key]}
+                  onChange={(e) => setF({ ...f, [key]: e.target.checked })}
+                />
+                {label}
+              </label>
+            ))}
+          </div>
+          <input
+            value={f.corrective_action}
+            onChange={(e) => setF({ ...f, corrective_action: e.target.value })}
+            placeholder="Corrective action for rejected goods"
+            className="md:col-span-4 rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
           <input
             value={f.unit}

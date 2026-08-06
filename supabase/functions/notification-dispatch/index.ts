@@ -170,6 +170,29 @@ async function enqueueComplianceReminders(
             clock.date,
           );
         }
+
+        const dayStart = new Date(now.getTime() - 24 * 86400000).toISOString();
+        const { count: rejectedDeliveryCount } = await supabase
+          .from("goods_in_logs")
+          .select("id", { count: "exact", head: true })
+          .eq("organization_id", preference.organization_id)
+          .in("status", ["rejected", "partial"])
+          .gte("received_at", dayStart);
+        if (rejectedDeliveryCount) {
+          queued += await enqueueReminder(
+            supabase,
+            preference,
+            "rejected_delivery_review",
+            {
+              severity: "warning",
+              title: "Rejected delivery recorded",
+              message: `${rejectedDeliveryCount} rejected or partially accepted deliver${rejectedDeliveryCount === 1 ? "y requires" : "ies require"} review.`,
+              route: "/app/goodsin",
+              nativeRoute: "/goods-in",
+            },
+            clock.date,
+          );
+        }
       }
     }
 
