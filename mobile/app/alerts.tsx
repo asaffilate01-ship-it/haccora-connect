@@ -18,7 +18,7 @@ const routes: Record<string, string> = {
   temperature: "/temperature",
   cleaning: "/checks",
   haccp: "/safe-methods",
-  training: "/staff-compliance",
+  training: "/training",
   incident: "/incidents",
   expiry: "/documents",
   audit: "/inspection-readiness",

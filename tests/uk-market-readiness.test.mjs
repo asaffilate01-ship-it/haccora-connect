@@ -261,3 +261,23 @@ test("every visible operational route is connected to persistence or the authent
     assert.match(source, /supabase|<Outlet|createFileRoute\("\/app\/"/, `${file} must be wired`);
   }
 });
+
+test("Phase 13 converts the training catalogue to UK content and preserves certificate metadata", () => {
+  const migration = read(
+    "supabase/migrations/20260806003000_uk_training_certificate_management.sql",
+  );
+  assert.match(migration, /Food-handler health and fitness to work/);
+  assert.match(migration, /Allergen awareness and PPDS/);
+  assert.match(migration, /certificate_reference/);
+  assert.match(migration, /provider text/);
+});
+
+test("Phase 13 wires native training and renewal management", () => {
+  const training = read("mobile/app/training.tsx");
+  const layout = read("mobile/app/_layout.tsx");
+  assert.match(training, /from\("training_records"\)/);
+  assert.match(training, /certificate_valid_to/);
+  assert.match(training, /Save verified training/);
+  assert.match(training, /Provider not recorded/);
+  assert.match(layout, /name="training"/);
+});
