@@ -99,6 +99,12 @@ export default function Dashboard() {
             Claim exceptions, attach camera evidence and verify closures.
           </Text>
         </Pressable>
+        <Pressable style={styles.card} onPress={() => router.push("/alerts" as never)}>
+          <Text style={styles.cardTitle}>Alert inbox</Text>
+          <Text style={styles.cardBody}>
+            Review live warnings, expiries and food-safety issues.
+          </Text>
+        </Pressable>
         <Pressable style={styles.card} onPress={() => router.push("/incidents")}>
           <Text style={styles.cardTitle}>Report incident</Text>
           <Text style={styles.cardBody}>

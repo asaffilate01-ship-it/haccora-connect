@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import {
   AlertTriangle,
@@ -34,9 +33,6 @@ const ICON: Record<string, typeof Bell> = {
 };
 
 function AlertsPage() {
-  const { lang } = useI18n();
-  const t = (de: string, en: string) => (lang === "de" ? de : en);
-
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "unread" | "critical">("all");
@@ -73,14 +69,9 @@ function AlertsPage() {
     <div className="p-6 md:p-10 space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <div className="eyebrow">{t("Benachrichtigungen", "Notifications")}</div>
-          <h1 className="mt-1 text-3xl md:text-4xl">{t("Alerts", "Alerts")}</h1>
-          <p className="text-muted-foreground mt-1">
-            {t(
-              `${unread} ungelesen · Live-Verbindung aktiv.`,
-              `${unread} unread · live connection active.`,
-            )}
-          </p>
+          <div className="eyebrow">Action inbox</div>
+          <h1 className="mt-1 text-3xl md:text-4xl">Alerts</h1>
+          <p className="text-muted-foreground mt-1">{unread} unread · live connection active.</p>
         </div>
         <div className="flex gap-2">
           {(["all", "unread", "critical"] as const).map((f) => (
@@ -89,11 +80,7 @@ function AlertsPage() {
               onClick={() => setFilter(f)}
               className={`text-xs font-semibold px-3 py-1.5 rounded-full border ${filter === f ? "bg-foreground text-background border-foreground" : "border-border hover:bg-secondary"}`}
             >
-              {f === "all"
-                ? t("Alle", "All")
-                : f === "unread"
-                  ? t("Ungelesen", "Unread")
-                  : t("Kritisch", "Critical")}
+              {f === "all" ? "All" : f === "unread" ? "Unread" : "Critical"}
             </button>
           ))}
           {unread > 0 && (
@@ -101,7 +88,7 @@ function AlertsPage() {
               onClick={markAllRead}
               className="text-xs font-semibold px-3 py-1.5 rounded-full bg-success text-success-foreground"
             >
-              {t("Alle gelesen", "Mark all read")}
+              Mark all read
             </button>
           )}
         </div>
@@ -111,12 +98,12 @@ function AlertsPage() {
         {loading ? (
           <div className="p-10 text-center text-sm text-muted-foreground">
             <Loader2 size={16} className="inline animate-spin mr-2" />
-            {t("Lade…", "Loading…")}
+            Loading…
           </div>
         ) : filtered.length === 0 ? (
           <div className="p-10 text-center text-sm text-muted-foreground">
             <Bell size={20} className="inline mr-2 opacity-40" />
-            {t("Keine Alerts. Perfekt.", "No alerts. All clear.")}
+            No alerts. All clear.
           </div>
         ) : (
           <ul className="divide-y divide-border">
@@ -144,7 +131,7 @@ function AlertsPage() {
                         {a.severity}
                       </span>
                       {!a.read_at && (
-                        <span className="text-[9px] font-bold text-success">● NEU</span>
+                        <span className="text-[9px] font-bold text-success">● NEW</span>
                       )}
                     </div>
                     <div className="font-display text-lg mt-0.5">{a.title}</div>
@@ -152,7 +139,7 @@ function AlertsPage() {
                       <div className="text-sm text-muted-foreground mt-1">{a.message}</div>
                     )}
                     <div className="mt-1 text-xs text-muted-foreground">
-                      {new Date(a.created_at).toLocaleString(lang === "de" ? "de-DE" : "en-GB")}
+                      {new Date(a.created_at).toLocaleString("en-GB")}
                     </div>
                   </div>
                   {!a.read_at && (
@@ -161,7 +148,7 @@ function AlertsPage() {
                       className="shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full bg-secondary hover:bg-secondary/70"
                     >
                       <CheckCircle2 size={12} className="inline mr-1" />
-                      {t("Gelesen", "Read")}
+                      Read
                     </button>
                   )}
                 </li>

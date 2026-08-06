@@ -20,6 +20,7 @@ export default function RootLayout() {
             <Stack.Screen name="checks" options={{ title: "Daily check" }} />
             <Stack.Screen name="diary" options={{ title: "Daily diary" }} />
             <Stack.Screen name="actions" options={{ title: "Corrective actions" }} />
+            <Stack.Screen name="alerts" options={{ title: "Action inbox" }} />
             <Stack.Screen name="incidents" options={{ title: "Report incident" }} />
             <Stack.Screen name="documents" options={{ title: "Evidence library" }} />
             <Stack.Screen name="staff-compliance" options={{ title: "Staff compliance" }} />

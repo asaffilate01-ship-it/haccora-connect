@@ -52,6 +52,7 @@ const ALLOWED_ROUTES = new Set([
   "/dashboard",
   "/checks",
   "/actions",
+  "/alerts",
   "/documents",
   "/inspection-readiness",
   "/settings",
