@@ -148,6 +148,29 @@ async function enqueueComplianceReminders(
           clock.date,
         );
       }
+
+      if ((["owner", "manager"] as string[]).includes(membership.role)) {
+        const { count: exclusionCount } = await supabase
+          .from("health_register")
+          .select("id", { count: "exact", head: true })
+          .eq("organization_id", preference.organization_id)
+          .eq("status", "excluded");
+        if (exclusionCount) {
+          queued += await enqueueReminder(
+            supabase,
+            preference,
+            "fitness_to_work_review",
+            {
+              severity: "critical",
+              title: "Fitness-to-work report needs review",
+              message: `${exclusionCount} active food-handling exclusion${exclusionCount === 1 ? " requires" : "s require"} manager review.`,
+              route: "/app/health",
+              nativeRoute: "/fitness-to-work",
+            },
+            clock.date,
+          );
+        }
+      }
     }
 
     if (preference.expiry_alerts_enabled) {

@@ -308,3 +308,25 @@ test("Phase 14 wires induction flow and due alerts across SaaS and native apps",
   assert.match(dispatch, /nativeRoute: "\/inductions"/);
   assert.match(nav, /inductions/);
 });
+
+test("Phase 15 protects UK fitness-to-work reports and manager clearance", () => {
+  const migration = read("supabase/migrations/20260806005000_uk_fitness_to_work_reporting.sql");
+  assert.match(migration, /health_read_private/);
+  assert.match(migration, /user_id = auth\.uid\(\) or public\.is_manager_or_owner/);
+  assert.match(migration, /revoke update, delete on public\.health_register from authenticated/);
+  assert.match(migration, /clear_health_exclusion/);
+  assert.match(migration, /cleared_by = auth\.uid\(\)/);
+  assert.match(migration, /cleared_at = now\(\)/);
+});
+
+test("Phase 15 wires native sickness reporting and private manager alerts", () => {
+  const native = read("mobile/app/fitness-to-work.tsx");
+  const dispatch = read("supabase/functions/notification-dispatch/index.ts");
+  const layout = read("mobile/app/_layout.tsx") + read("mobile/lib/push.ts");
+  assert.match(native, /from\("health_register"\)\.insert/);
+  assert.match(native, /clear_health_exclusion/);
+  assert.match(native, /Do not handle food/);
+  assert.match(dispatch, /fitness_to_work_review/);
+  assert.doesNotMatch(dispatch, /fitness_to_work_review[\s\S]{0,500}symptoms/);
+  assert.match(layout, /fitness-to-work/);
+});
