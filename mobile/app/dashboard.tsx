@@ -137,6 +137,10 @@ export default function Dashboard() {
           <Text style={styles.cardTitle}>Fitness to work</Text>
           <Text style={styles.cardBody}>Privately report sickness and record manager clearance.</Text>
         </Pressable>
+        <Pressable style={styles.card} onPress={() => router.push("/goods-in" as never)}>
+          <Text style={styles.cardTitle}>Delivery check</Text>
+          <Text style={styles.cardBody}>Accept or reject goods with offline traceability evidence.</Text>
+        </Pressable>
         <Pressable style={styles.card} onPress={() => router.push("/safe-methods")}>
           <Text style={styles.cardTitle}>Safe methods</Text>
           <Text style={styles.cardBody}>Review site-adopted UK food-safety controls.</Text>

@@ -57,6 +57,7 @@ const ALLOWED_ROUTES = new Set([
   "/training",
   "/inductions",
   "/fitness-to-work",
+  "/goods-in",
   "/inspection-readiness",
   "/settings",
 ]);
