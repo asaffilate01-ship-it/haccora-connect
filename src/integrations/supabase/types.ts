@@ -1237,6 +1237,7 @@ export type Database = {
           archived_at: string | null
           category: string
           created_at: string
+          document_kind: string | null
           expires_at: string | null
           file_size: number | null
           file_url: string | null
@@ -1245,7 +1246,6 @@ export type Database = {
           issued_on: string | null
           location_id: string | null
           mime_type: string | null
-          document_kind: string | null
           organization_id: string | null
           sha256: string | null
           storage_path: string | null
@@ -1258,6 +1258,7 @@ export type Database = {
           archived_at?: string | null
           category: string
           created_at?: string
+          document_kind?: string | null
           expires_at?: string | null
           file_size?: number | null
           file_url?: string | null
@@ -1266,7 +1267,6 @@ export type Database = {
           issued_on?: string | null
           location_id?: string | null
           mime_type?: string | null
-          document_kind?: string | null
           organization_id?: string | null
           sha256?: string | null
           storage_path?: string | null
@@ -1279,6 +1279,7 @@ export type Database = {
           archived_at?: string | null
           category?: string
           created_at?: string
+          document_kind?: string | null
           expires_at?: string | null
           file_size?: number | null
           file_url?: string | null
@@ -1287,7 +1288,6 @@ export type Database = {
           issued_on?: string | null
           location_id?: string | null
           mime_type?: string | null
-          document_kind?: string | null
           organization_id?: string | null
           sha256?: string | null
           storage_path?: string | null
@@ -5021,8 +5021,8 @@ export type Database = {
       }
       user_experience_preferences: {
         Row: {
-          compact_mode: boolean
           biometric_lock: boolean
+          compact_mode: boolean
           default_station: string | null
           glove_mode: boolean
           high_contrast: boolean
@@ -5033,8 +5033,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          compact_mode?: boolean
           biometric_lock?: boolean
+          compact_mode?: boolean
           default_station?: string | null
           glove_mode?: boolean
           high_contrast?: boolean
@@ -5045,8 +5045,8 @@ export type Database = {
           user_id: string
         }
         Update: {
-          compact_mode?: boolean
           biometric_lock?: boolean
+          compact_mode?: boolean
           default_station?: string | null
           glove_mode?: boolean
           high_contrast?: boolean
