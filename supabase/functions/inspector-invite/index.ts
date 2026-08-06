@@ -13,6 +13,7 @@ const Scope = z.enum([
   "audits",
   "documents",
   "incidents",
+  "equipment",
 ]);
 const Input = z.object({
   email: z
@@ -21,7 +22,7 @@ const Input = z.object({
     .max(254)
     .transform((value) => value.toLowerCase()),
   locationIds: z.array(z.string().uuid()).min(1).max(20),
-  scopes: z.array(Scope).min(1).max(10),
+  scopes: z.array(Scope).min(1).max(11),
   accessHours: z.number().int().min(1).max(168),
   reason: z.string().trim().max(500).optional().default(
     "Inspection evidence access",

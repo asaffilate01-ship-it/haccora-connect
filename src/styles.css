@@ -68,6 +68,55 @@
   --shadow-elevated: 0 4px 6px oklch(0 0 0 / 0.06), 0 24px 48px -20px oklch(0 0 0 / 0.28);
 }
 
+.field {
+  width: 100%;
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.55rem;
+  background: hsl(var(--background));
+  padding: 0.55rem 0.7rem;
+  font-size: 0.78rem;
+}
+
+.asset-label-sheet {
+  display: none;
+}
+
+@media print {
+  .no-print,
+  body > *:not(#root) {
+    display: none !important;
+  }
+  .asset-label-sheet {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8mm;
+    color: #111;
+  }
+  .asset-label {
+    display: flex;
+    min-height: 44mm;
+    align-items: center;
+    gap: 4mm;
+    border: 1px solid #111;
+    border-radius: 3mm;
+    padding: 4mm;
+    break-inside: avoid;
+  }
+  .asset-label img {
+    width: 34mm;
+    height: 34mm;
+  }
+  .asset-label h2 {
+    margin: 1mm 0;
+    font-size: 13pt;
+  }
+  .asset-label p,
+  .asset-label small {
+    margin: 0.5mm 0;
+    font-size: 8pt;
+  }
+}
+
 html.haccora-glove button,
 html.haccora-glove [role="button"],
 html.haccora-glove input,

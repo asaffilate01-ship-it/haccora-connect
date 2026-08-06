@@ -30,6 +30,9 @@ export default function RootLayout() {
             <Stack.Screen name="goods-in" options={{ title: "Delivery check" }} />
             <Stack.Screen name="cleaning" options={{ title: "Cleaning schedule" }} />
             <Stack.Screen name="allergens" options={{ title: "Allergen lookup" }} />
+            <Stack.Screen name="scan-asset" options={{ title: "Scan equipment" }} />
+            <Stack.Screen name="assets/index" options={{ title: "Equipment" }} />
+            <Stack.Screen name="assets/[assetId]" options={{ title: "Equipment record" }} />
             <Stack.Screen name="quick-log" options={{ title: "Quick log" }} />
             <Stack.Screen name="more" options={{ title: "All tools" }} />
             <Stack.Screen name="safe-methods" options={{ title: "Safe methods" }} />

@@ -72,6 +72,7 @@ import { Route as AppBillingRouteImport } from './routes/app.billing'
 import { Route as AppAuditsRouteImport } from './routes/app.audits'
 import { Route as AppAssetsRouteImport } from './routes/app.assets'
 import { Route as AppAlertsRouteImport } from './routes/app.alerts'
+import { Route as AppAssetsAssetIdRouteImport } from './routes/app.assets.$assetId'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -388,6 +389,11 @@ const AppAlertsRoute = AppAlertsRouteImport.update({
   path: '/alerts',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAssetsAssetIdRoute = AppAssetsAssetIdRouteImport.update({
+  id: '/$assetId',
+  path: '/$assetId',
+  getParentRoute: () => AppAssetsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -399,7 +405,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/app/alerts': typeof AppAlertsRoute
-  '/app/assets': typeof AppAssetsRoute
+  '/app/assets': typeof AppAssetsRouteWithChildren
   '/app/audits': typeof AppAuditsRoute
   '/app/billing': typeof AppBillingRoute
   '/app/calibration': typeof AppCalibrationRoute
@@ -453,6 +459,7 @@ export interface FileRoutesByFullPath {
   '/legal/terms': typeof LegalTermsRoute
   '/app/': typeof AppIndexRoute
   '/blog/': typeof BlogIndexRoute
+  '/app/assets/$assetId': typeof AppAssetsAssetIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -462,7 +469,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/app/alerts': typeof AppAlertsRoute
-  '/app/assets': typeof AppAssetsRoute
+  '/app/assets': typeof AppAssetsRouteWithChildren
   '/app/audits': typeof AppAuditsRoute
   '/app/billing': typeof AppBillingRoute
   '/app/calibration': typeof AppCalibrationRoute
@@ -516,6 +523,7 @@ export interface FileRoutesByTo {
   '/legal/terms': typeof LegalTermsRoute
   '/app': typeof AppIndexRoute
   '/blog': typeof BlogIndexRoute
+  '/app/assets/$assetId': typeof AppAssetsAssetIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -528,7 +536,7 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/app/alerts': typeof AppAlertsRoute
-  '/app/assets': typeof AppAssetsRoute
+  '/app/assets': typeof AppAssetsRouteWithChildren
   '/app/audits': typeof AppAuditsRoute
   '/app/billing': typeof AppBillingRoute
   '/app/calibration': typeof AppCalibrationRoute
@@ -582,6 +590,7 @@ export interface FileRoutesById {
   '/legal/terms': typeof LegalTermsRoute
   '/app/': typeof AppIndexRoute
   '/blog/': typeof BlogIndexRoute
+  '/app/assets/$assetId': typeof AppAssetsAssetIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -649,6 +658,7 @@ export interface FileRouteTypes {
     | '/legal/terms'
     | '/app/'
     | '/blog/'
+    | '/app/assets/$assetId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -712,6 +722,7 @@ export interface FileRouteTypes {
     | '/legal/terms'
     | '/app'
     | '/blog'
+    | '/app/assets/$assetId'
   id:
     | '__root__'
     | '/'
@@ -777,6 +788,7 @@ export interface FileRouteTypes {
     | '/legal/terms'
     | '/app/'
     | '/blog/'
+    | '/app/assets/$assetId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1233,12 +1245,31 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAlertsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/assets/$assetId': {
+      id: '/app/assets/$assetId'
+      path: '/$assetId'
+      fullPath: '/app/assets/$assetId'
+      preLoaderRoute: typeof AppAssetsAssetIdRouteImport
+      parentRoute: typeof AppAssetsRoute
+    }
   }
 }
 
+interface AppAssetsRouteChildren {
+  AppAssetsAssetIdRoute: typeof AppAssetsAssetIdRoute
+}
+
+const AppAssetsRouteChildren: AppAssetsRouteChildren = {
+  AppAssetsAssetIdRoute: AppAssetsAssetIdRoute,
+}
+
+const AppAssetsRouteWithChildren = AppAssetsRoute._addFileChildren(
+  AppAssetsRouteChildren,
+)
+
 interface AppRouteChildren {
   AppAlertsRoute: typeof AppAlertsRoute
-  AppAssetsRoute: typeof AppAssetsRoute
+  AppAssetsRoute: typeof AppAssetsRouteWithChildren
   AppAuditsRoute: typeof AppAuditsRoute
   AppBillingRoute: typeof AppBillingRoute
   AppCalibrationRoute: typeof AppCalibrationRoute
@@ -1289,7 +1320,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppAlertsRoute: AppAlertsRoute,
-  AppAssetsRoute: AppAssetsRoute,
+  AppAssetsRoute: AppAssetsRouteWithChildren,
   AppAuditsRoute: AppAuditsRoute,
   AppBillingRoute: AppBillingRoute,
   AppCalibrationRoute: AppCalibrationRoute,
@@ -1383,13 +1414,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

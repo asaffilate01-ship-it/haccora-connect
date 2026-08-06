@@ -384,6 +384,7 @@ function SettingsPage() {
               <option value="audits">Audits</option>
               <option value="documents">Documents</option>
               <option value="incidents">Incidents</option>
+              <option value="equipment">Equipment & maintenance</option>
             </select>
             <select
               value={inspectorHours}

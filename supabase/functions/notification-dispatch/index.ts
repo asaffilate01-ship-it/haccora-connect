@@ -86,7 +86,7 @@ async function enqueueComplianceReminders(
     const [{ data: membership }, { data: organization }] = await Promise.all([
       supabase
         .from("organization_memberships")
-        .select("role,status")
+        .select("role,status,default_location_id")
         .eq("organization_id", preference.organization_id)
         .eq("user_id", preference.user_id)
         .maybeSingle(),
@@ -235,6 +235,36 @@ async function enqueueComplianceReminders(
             message: `${documents.count ?? 0} document(s) and ${training.count ?? 0} training record(s) expire within 30 days.`,
             route: "/app/documents",
             nativeRoute: "/documents",
+          },
+          clock.date,
+        );
+      }
+
+      let equipmentQuery = supabase
+        .from("assets")
+        .select("id", { count: "exact", head: true })
+        .eq("organization_id", preference.organization_id)
+        .is("retired_at", null)
+        .not("next_service_at", "is", null)
+        .lte("next_service_at", deadline.slice(0, 10));
+      if (
+        !(["owner", "manager"] as string[]).includes(membership.role) &&
+        membership.default_location_id
+      ) {
+        equipmentQuery = equipmentQuery.eq("location_id", membership.default_location_id);
+      }
+      const { count: equipmentCount } = await equipmentQuery;
+      if (equipmentCount) {
+        queued += await enqueueReminder(
+          supabase,
+          preference,
+          "equipment_service_due",
+          {
+            severity: "warning",
+            title: "Equipment check or service is due",
+            message: `${equipmentCount} equipment item${equipmentCount === 1 ? " is" : "s are"} due within 30 days or overdue.`,
+            route: "/app/assets",
+            nativeRoute: "/assets",
           },
           clock.date,
         );

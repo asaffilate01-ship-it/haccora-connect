@@ -1,346 +1,412 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
-import { useI18n } from "@/lib/i18n";
-import { useAuth } from "@/lib/auth";
-import { supabase } from "@/integrations/supabase/client";
+import { Link, createFileRoute } from "@tanstack/react-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  Wrench,
-  Thermometer,
-  CheckCircle2,
   AlertTriangle,
+  CheckCircle2,
   Clock,
-  PlusCircle,
   Loader2,
-  Trash2,
+  Plus,
+  Printer,
+  QrCode,
+  Search,
+  Wrench,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
+import { renderQrDataUrl } from "@/lib/qr";
 
 export const Route = createFileRoute("/app/assets")({ component: AssetsPage });
 
-interface Asset {
+type Asset = {
   id: string;
+  asset_code: string;
+  qr_token: string;
   name: string;
   category: string | null;
   location: string | null;
+  manufacturer: string | null;
+  model: string | null;
   serial: string | null;
   last_service_at: string | null;
   next_service_at: string | null;
   status: string;
+  retired_at: string | null;
+};
+
+type Label = Asset & { qr: string };
+
+const blankForm = () => ({
+  asset_code: `EQ-${crypto.randomUUID().slice(0, 6).toUpperCase()}`,
+  name: "",
+  category: "fridge",
+  location: "",
+  manufacturer: "",
+  model: "",
+  serial: "",
+  next_service_at: "",
+});
+
+function daysUntil(value: string | null) {
+  if (!value) return null;
+  return Math.ceil((new Date(`${value}T23:59:59`).getTime() - Date.now()) / 86400000);
+}
+
+function statusOf(asset: Asset): "ok" | "due" | "overdue" | "attention" | "retired" {
+  if (asset.retired_at) return "retired";
+  if (asset.status === "attention") return "attention";
+  const days = daysUntil(asset.next_service_at);
+  if (days !== null && days < 0) return "overdue";
+  if (days !== null && days <= 30) return "due";
+  return "ok";
 }
 
 function AssetsPage() {
-  const { lang } = useI18n();
   const { user } = useAuth();
-  const role = user?.role;
-  const t = (de: string, en: string) => (lang === "de" ? de : en);
-  const canEdit = role === "owner" || role === "manager";
-
+  const canManage = user?.role === "owner" || user?.role === "manager";
   const [rows, setRows] = useState<Asset[]>([]);
+  const [labels, setLabels] = useState<Label[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({
-    name: "",
-    category: "fridge",
-    location: "",
-    serial: "",
-    next_service_at: "",
-  });
+  const [query, setQuery] = useState("");
+  const [form, setForm] = useState(blankForm);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
+    setError(null);
+    const { data, error: loadError } = await supabase
       .from("assets")
-      .select("*")
-      .order("next_service_at", { ascending: true, nullsFirst: false });
-    if (error) setErr(error.message);
+      .select(
+        "id,asset_code,qr_token,name,category,location,manufacturer,model,serial,last_service_at,next_service_at,status,retired_at",
+      )
+      .order("name");
+    if (loadError) setError(loadError.message);
     else setRows((data ?? []) as Asset[]);
     setLoading(false);
   }, []);
+
   useEffect(() => {
-    load();
+    void load();
   }, [load]);
 
-  const daysUntil = (d: string | null) => {
-    if (!d) return null;
-    return Math.floor((new Date(d).getTime() - Date.now()) / 86400000);
-  };
-  const computedStatus = (d: string | null): "ok" | "due" | "overdue" => {
-    const days = daysUntil(d);
-    if (days === null) return "ok";
-    if (days < 0) return "overdue";
-    if (days <= 14) return "due";
-    return "ok";
-  };
+  const filtered = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    if (!needle) return rows;
+    return rows.filter((asset) =>
+      [asset.name, asset.asset_code, asset.serial, asset.location, asset.manufacturer, asset.model]
+        .filter(Boolean)
+        .some((value) => value!.toLowerCase().includes(needle)),
+    );
+  }, [query, rows]);
 
   const submit = async () => {
-    if (!form.name.trim()) {
-      setErr(t("Name ist Pflicht.", "Name is required."));
+    if (!user?.organizationId || !form.name.trim() || !form.asset_code.trim()) {
+      setError("Asset code and name are required.");
       return;
     }
     setBusy(true);
-    setErr(null);
-    const { error } = await supabase.from("assets").insert({
-      name: form.name,
+    setError(null);
+    const { error: insertError } = await supabase.from("assets").insert({
+      organization_id: user.organizationId,
+      location_id: user.locationId,
+      created_by: user.id,
+      asset_code: form.asset_code.trim().toUpperCase(),
+      name: form.name.trim(),
       category: form.category,
-      location: form.location || null,
-      serial: form.serial || null,
+      location: form.location.trim() || user.location,
+      manufacturer: form.manufacturer.trim() || null,
+      model: form.model.trim() || null,
+      serial: form.serial.trim() || null,
       next_service_at: form.next_service_at || null,
-      status: computedStatus(form.next_service_at || null),
+      status: "ok",
     });
     setBusy(false);
-    if (error) {
-      setErr(error.message);
+    if (insertError) {
+      setError(insertError.message);
       return;
     }
-    setForm({ name: "", category: "fridge", location: "", serial: "", next_service_at: "" });
+    setForm(blankForm());
     setOpen(false);
-    load();
+    await load();
   };
 
-  const markServiced = async (id: string) => {
-    const today = new Date().toISOString().slice(0, 10);
-    const next = new Date();
-    next.setMonth(next.getMonth() + 6);
-    const nextIso = next.toISOString().slice(0, 10);
-    const { error } = await supabase
-      .from("assets")
-      .update({ last_service_at: today, next_service_at: nextIso, status: "ok" })
-      .eq("id", id);
-    if (error) setErr(error.message);
-    else load();
+  const printLabels = async () => {
+    const active = rows.filter((asset) => !asset.retired_at);
+    const origin = window.location.origin;
+    const nextLabels = await Promise.all(
+      active.map(async (asset) => ({
+        ...asset,
+        qr: renderQrDataUrl(`${origin}/app/assets/${asset.qr_token}`),
+      })),
+    );
+    setLabels(nextLabels);
+    window.setTimeout(() => window.print(), 100);
   };
 
-  const remove = async (id: string) => {
-    const { error } = await supabase.from("assets").delete().eq("id", id);
-    if (error) setErr(error.message);
-    else load();
-  };
-
-  const overdue = rows.filter((a) => computedStatus(a.next_service_at) === "overdue").length;
-  const due = rows.filter((a) => computedStatus(a.next_service_at) === "due").length;
-  const ok = rows.length - overdue - due;
-  const compliance = rows.length ? Math.round((ok / rows.length) * 100) : 100;
+  const due = rows.filter((asset) => ["due", "overdue"].includes(statusOf(asset))).length;
+  const attention = rows.filter((asset) => statusOf(asset) === "attention").length;
 
   return (
-    <div className="p-6 md:p-10 space-y-8">
-      <div className="flex flex-wrap items-start justify-between gap-4">
+    <div className="p-4 md:p-7 space-y-5">
+      <header className="no-print flex flex-wrap items-start justify-between gap-3">
         <div>
-          <div className="eyebrow">{t("Instandhaltung", "Maintenance")}</div>
-          <h1 className="mt-1 text-3xl md:text-4xl">
-            {t("Geräte & Wartung", "Assets & maintenance")}
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            {t(
-              "Kalibrierungen, Wartungsintervalle und Reparaturhistorie – auditsicher.",
-              "Calibrations, service intervals and repair history in a traceable record.",
-            )}
+          <div className="eyebrow">Equipment control</div>
+          <h1 className="mt-1 text-2xl md:text-3xl">Assets & maintenance</h1>
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+            Give every item a printable QR identity. Scan it to see details, service history and add
+            timestamped evidence.
           </p>
         </div>
-        {canEdit && (
-          <button onClick={() => setOpen((o) => !o)} className="btn-alert-solid text-sm">
-            <PlusCircle size={14} className="inline mr-1.5" />
-            {t("Gerät hinzufügen", "Add asset")}
-          </button>
-        )}
-      </div>
+        <div className="flex flex-wrap gap-2">
+          {rows.length > 0 && (
+            <button onClick={() => void printLabels()} className="btn-secondary text-xs">
+              <Printer size={14} /> Print QR labels
+            </button>
+          )}
+          {canManage && (
+            <button onClick={() => setOpen((value) => !value)} className="btn-alert-solid text-xs">
+              <Plus size={14} /> Add asset
+            </button>
+          )}
+        </div>
+      </header>
 
-      <div className="grid md:grid-cols-4 gap-4">
-        <Kpi label={t("Geräte", "Assets")} value={String(rows.length)} icon={Thermometer} />
+      <section className="no-print grid grid-cols-3 gap-3">
         <Kpi
-          label={t("Fällig", "Due")}
-          value={String(due)}
-          icon={Clock}
-          tone={due > 0 ? "warning" : undefined}
+          label="Active assets"
+          value={rows.filter((asset) => !asset.retired_at).length}
+          icon={Wrench}
         />
+        <Kpi label="Due ≤ 30 days" value={due} icon={Clock} tone={due ? "warn" : "ok"} />
         <Kpi
-          label={t("Überfällig", "Overdue")}
-          value={String(overdue)}
+          label="Needs action"
+          value={attention}
           icon={AlertTriangle}
-          tone={overdue > 0 ? "destructive" : undefined}
+          tone={attention ? "danger" : "ok"}
         />
-        <Kpi
-          label={t("Compliance", "Compliance")}
-          value={`${compliance}%`}
-          icon={CheckCircle2}
-          tone="success"
-        />
-      </div>
+      </section>
 
-      {open && canEdit && (
-        <div className="surface p-5 grid md:grid-cols-5 gap-3">
-          <input
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            placeholder={t("Name", "Name")}
-            className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
-          />
-          <select
-            value={form.category}
-            onChange={(e) => setForm({ ...form, category: e.target.value })}
-            className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
-          >
-            <option value="fridge">{t("Kühlschrank", "Fridge")}</option>
-            <option value="freezer">{t("Tiefkühler", "Freezer")}</option>
-            <option value="oven">{t("Ofen", "Oven")}</option>
-            <option value="dishwasher">{t("Spülmaschine", "Dishwasher")}</option>
-            <option value="hood">{t("Abzugshaube", "Extractor")}</option>
-          </select>
-          <input
-            value={form.location}
-            onChange={(e) => setForm({ ...form, location: e.target.value })}
-            placeholder={t("Standort", "Location")}
-            className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
-          />
-          <input
-            value={form.serial}
-            onChange={(e) => setForm({ ...form, serial: e.target.value })}
-            placeholder={t("Serien-Nr.", "Serial")}
-            className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
-          />
-          <input
-            type="date"
-            value={form.next_service_at}
-            onChange={(e) => setForm({ ...form, next_service_at: e.target.value })}
-            className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
-          />
+      {open && canManage && (
+        <section className="no-print surface grid gap-3 p-4 md:grid-cols-4">
+          <label className="text-xs font-medium">
+            Asset code
+            <input
+              className="field mt-1"
+              value={form.asset_code}
+              onChange={(event) => setForm({ ...form, asset_code: event.target.value })}
+              maxLength={32}
+            />
+          </label>
+          <label className="text-xs font-medium md:col-span-2">
+            Equipment name
+            <input
+              className="field mt-1"
+              value={form.name}
+              onChange={(event) => setForm({ ...form, name: event.target.value })}
+              placeholder="Walk-in fridge 1"
+            />
+          </label>
+          <label className="text-xs font-medium">
+            Category
+            <select
+              className="field mt-1"
+              value={form.category}
+              onChange={(event) => setForm({ ...form, category: event.target.value })}
+            >
+              <option value="fridge">Fridge</option>
+              <option value="freezer">Freezer</option>
+              <option value="probe">Temperature probe</option>
+              <option value="oven">Oven</option>
+              <option value="dishwasher">Dishwasher</option>
+              <option value="extractor">Extractor</option>
+              <option value="mixer">Mixer/prep equipment</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+          <label className="text-xs font-medium">
+            Area/location
+            <input
+              className="field mt-1"
+              value={form.location}
+              onChange={(event) => setForm({ ...form, location: event.target.value })}
+              placeholder="Main kitchen"
+            />
+          </label>
+          <label className="text-xs font-medium">
+            Manufacturer
+            <input
+              className="field mt-1"
+              value={form.manufacturer}
+              onChange={(event) => setForm({ ...form, manufacturer: event.target.value })}
+            />
+          </label>
+          <label className="text-xs font-medium">
+            Model
+            <input
+              className="field mt-1"
+              value={form.model}
+              onChange={(event) => setForm({ ...form, model: event.target.value })}
+            />
+          </label>
+          <label className="text-xs font-medium">
+            Serial number
+            <input
+              className="field mt-1"
+              value={form.serial}
+              onChange={(event) => setForm({ ...form, serial: event.target.value })}
+            />
+          </label>
+          <label className="text-xs font-medium">
+            Next service/check
+            <input
+              className="field mt-1"
+              type="date"
+              value={form.next_service_at}
+              onChange={(event) => setForm({ ...form, next_service_at: event.target.value })}
+            />
+          </label>
           <button
-            onClick={submit}
+            className="btn-alert-solid self-end text-xs md:col-span-3"
+            onClick={() => void submit()}
             disabled={busy}
-            className="btn-alert-solid text-sm md:col-span-5"
           >
-            {busy ? (
-              <Loader2 size={14} className="inline animate-spin mr-1" />
-            ) : (
-              <PlusCircle size={14} className="inline mr-1" />
-            )}
-            {t("Speichern", "Save")}
+            {busy ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />} Save and
+            create QR
           </button>
+        </section>
+      )}
+
+      {error && (
+        <div
+          role="alert"
+          className="no-print rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive"
+        >
+          {error}
         </div>
       )}
 
-      {err && (
-        <div className="rounded-lg bg-destructive/10 text-destructive text-sm px-3 py-2">{err}</div>
-      )}
-
-      <div className="surface overflow-hidden">
-        <div className="hidden md:grid grid-cols-12 text-xs uppercase tracking-widest text-muted-foreground bg-secondary/60 px-5 py-3">
-          <div className="col-span-4">{t("Gerät", "Asset")}</div>
-          <div className="col-span-2">{t("Serien-Nr.", "Serial")}</div>
-          <div className="col-span-2">{t("Letzte Wartung", "Last service")}</div>
-          <div className="col-span-2">{t("Nächste fällig", "Next due")}</div>
-          <div className="col-span-2 text-right">{t("Status", "Status")}</div>
+      <section className="no-print surface overflow-hidden">
+        <div className="border-b border-border p-3">
+          <label className="relative block max-w-md">
+            <Search size={14} className="absolute left-3 top-2.5 text-muted-foreground" />
+            <input
+              className="field pl-9"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search equipment, code, serial or area"
+            />
+          </label>
         </div>
         {loading ? (
           <div className="p-10 text-center text-sm text-muted-foreground">
-            <Loader2 size={16} className="inline animate-spin mr-2" />
-            {t("Lade…", "Loading…")}
+            <Loader2 size={16} className="mr-2 inline animate-spin" />
+            Loading equipment…
           </div>
-        ) : rows.length === 0 ? (
-          <div className="p-10 text-center text-sm text-muted-foreground">
-            {t("Noch keine Geräte erfasst.", "No assets recorded yet.")}
+        ) : filtered.length === 0 ? (
+          <div className="p-10 text-center">
+            <QrCode className="mx-auto text-muted-foreground" />
+            <div className="mt-2 text-sm font-semibold">No matching equipment</div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Owners and managers can add the first asset and print its QR label.
+            </p>
           </div>
         ) : (
           <ul className="divide-y divide-border">
-            {rows.map((a) => {
-              const st = computedStatus(a.next_service_at);
-              const days = daysUntil(a.next_service_at);
-              return (
-                <li
-                  key={a.id}
-                  className="grid grid-cols-1 md:grid-cols-12 items-center px-5 py-3 text-sm gap-2 group"
-                >
-                  <div className="md:col-span-4 flex items-center gap-2.5">
-                    <span className="h-9 w-9 rounded-lg bg-secondary grid place-items-center">
-                      <Wrench size={16} />
-                    </span>
-                    <div>
-                      <div className="font-medium">{a.name}</div>
-                      <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                        {a.category} {a.location && `· ${a.location}`}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="md:col-span-2 font-mono text-xs">{a.serial || "–"}</div>
-                  <div className="md:col-span-2 text-xs text-muted-foreground">
-                    {a.last_service_at
-                      ? new Date(a.last_service_at).toLocaleDateString(
-                          lang === "de" ? "de-DE" : "en-GB",
-                        )
-                      : "–"}
-                  </div>
-                  <div className="md:col-span-2 text-xs font-mono">
-                    {days === null ? (
-                      "–"
-                    ) : days < 0 ? (
-                      <span className="text-destructive font-bold">
-                        {Math.abs(days)}d {t("überfällig", "overdue")}
-                      </span>
-                    ) : (
-                      <span
-                        className={days <= 14 ? "text-warning-foreground" : "text-muted-foreground"}
-                      >
-                        {days}d
-                      </span>
-                    )}
-                  </div>
-                  <div className="md:col-span-2 text-right flex items-center justify-end gap-2">
-                    {st === "ok" && <CheckCircle2 size={16} className="text-success" />}
-                    {st === "due" && <Clock size={16} className="text-warning-foreground" />}
-                    {st === "overdue" && <AlertTriangle size={16} className="text-destructive" />}
-                    {canEdit && (
-                      <>
-                        <button
-                          onClick={() => markServiced(a.id)}
-                          className="text-xs text-primary opacity-0 group-hover:opacity-100"
-                        >
-                          {t("Gewartet", "Serviced")}
-                        </button>
-                        <button
-                          onClick={() => remove(a.id)}
-                          className="text-destructive opacity-0 group-hover:opacity-100"
-                        >
-                          <Trash2 size={12} />
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
+            {filtered.map((asset) => (
+              <AssetRow key={asset.id} asset={asset} />
+            ))}
           </ul>
         )}
-      </div>
+      </section>
+
+      <section className="asset-label-sheet">
+        {labels.map((asset) => (
+          <article className="asset-label" key={asset.id}>
+            <img src={asset.qr} alt="" />
+            <div>
+              <strong>Haccora</strong>
+              <h2>{asset.name}</h2>
+              <p>{asset.asset_code}</p>
+              <p>{asset.location || "Site equipment"}</p>
+              <small>Scan to inspect, report or view history</small>
+            </div>
+          </article>
+        ))}
+      </section>
     </div>
+  );
+}
+
+function AssetRow({ asset }: { asset: Asset }) {
+  const status = statusOf(asset);
+  const due = daysUntil(asset.next_service_at);
+  const tone =
+    status === "ok"
+      ? "text-success"
+      : status === "retired"
+        ? "text-muted-foreground"
+        : "text-destructive";
+  return (
+    <li>
+      <Link
+        to="/app/assets/$assetId"
+        params={{ assetId: asset.qr_token }}
+        className="grid items-center gap-2 px-4 py-3 text-sm hover:bg-secondary/50 md:grid-cols-[2fr_1fr_1fr_auto]"
+      >
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-secondary">
+            <QrCode size={16} />
+          </span>
+          <div className="min-w-0">
+            <div className="truncate font-semibold">{asset.name}</div>
+            <div className="truncate text-[10px] uppercase tracking-wider text-muted-foreground">
+              {asset.asset_code} · {asset.category || "equipment"} · {asset.location || "No area"}
+            </div>
+          </div>
+        </div>
+        <div className="text-xs">
+          <span className="text-muted-foreground">Serial</span>
+          <br />
+          {asset.serial || "Not recorded"}
+        </div>
+        <div className="text-xs">
+          <span className="text-muted-foreground">Next due</span>
+          <br />
+          {due === null ? "Not scheduled" : due < 0 ? `${Math.abs(due)}d overdue` : `${due}d`}
+        </div>
+        <span className={`text-xs font-bold capitalize ${tone}`}>{status.replace("_", " ")} ›</span>
+      </Link>
+    </li>
   );
 }
 
 function Kpi({
   label,
   value,
-  tone,
   icon: Icon,
+  tone,
 }: {
   label: string;
-  value: string;
-  tone?: "success" | "warning" | "destructive";
+  value: number;
   icon: typeof Wrench;
+  tone?: "ok" | "warn" | "danger";
 }) {
-  const toneClass =
-    tone === "success"
-      ? "text-success"
-      : tone === "warning"
+  const colour =
+    tone === "danger"
+      ? "text-destructive"
+      : tone === "warn"
         ? "text-warning-foreground"
-        : tone === "destructive"
-          ? "text-destructive"
+        : tone === "ok"
+          ? "text-success"
           : "";
   return (
-    <div className="surface p-5">
-      <div className="flex items-center justify-between">
-        <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</div>
-        <Icon size={14} className={`opacity-60 ${toneClass}`} />
+    <div className="surface p-3">
+      <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-muted-foreground">
+        <span>{label}</span>
+        <Icon size={13} className={colour} />
       </div>
-      <div className={`font-display text-3xl mt-2 ${toneClass}`}>{value}</div>
+      <div className={`mt-1 text-2xl font-bold ${colour}`}>{value}</div>
     </div>
   );
 }

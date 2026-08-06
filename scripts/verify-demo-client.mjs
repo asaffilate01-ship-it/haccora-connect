@@ -17,6 +17,8 @@ const expectations = new Map([
   ["expiry_items", 1],
   ["training_records", 1],
   ["documents", 2],
+  ["assets", 2],
+  ["asset_events", 2],
 ]);
 let failed = false;
 for (const [table, minimum] of expectations) {

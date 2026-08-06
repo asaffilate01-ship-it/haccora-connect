@@ -8,6 +8,7 @@ const groups = [
       ["Allergen lookup", "/allergens"],
       ["PPDS labels", "/ppds"],
       ["Evidence readiness", "/inspection-readiness"],
+      ["Equipment & QR history", "/assets"],
     ],
   ],
   [

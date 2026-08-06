@@ -191,6 +191,7 @@ export type Database = {
       }
       assets: {
         Row: {
+          asset_code: string
           category: string | null
           created_at: string
           created_by: string | null
@@ -199,14 +200,22 @@ export type Database = {
           last_service_at: string | null
           location: string | null
           location_id: string | null
+          manufacturer: string | null
+          model: string | null
           name: string
           next_service_at: string | null
+          notes: string | null
           organization_id: string | null
+          purchase_date: string | null
+          qr_token: string
+          retired_at: string | null
           serial: string | null
           status: string
           updated_at: string
+          warranty_expires_at: string | null
         }
         Insert: {
+          asset_code?: string
           category?: string | null
           created_at?: string
           created_by?: string | null
@@ -215,14 +224,22 @@ export type Database = {
           last_service_at?: string | null
           location?: string | null
           location_id?: string | null
+          manufacturer?: string | null
+          model?: string | null
           name: string
           next_service_at?: string | null
+          notes?: string | null
           organization_id?: string | null
+          purchase_date?: string | null
+          qr_token?: string
+          retired_at?: string | null
           serial?: string | null
           status?: string
           updated_at?: string
+          warranty_expires_at?: string | null
         }
         Update: {
+          asset_code?: string
           category?: string | null
           created_at?: string
           created_by?: string | null
@@ -231,12 +248,19 @@ export type Database = {
           last_service_at?: string | null
           location?: string | null
           location_id?: string | null
+          manufacturer?: string | null
+          model?: string | null
           name?: string
           next_service_at?: string | null
+          notes?: string | null
           organization_id?: string | null
+          purchase_date?: string | null
+          qr_token?: string
+          retired_at?: string | null
           serial?: string | null
           status?: string
           updated_at?: string
+          warranty_expires_at?: string | null
         }
         Relationships: [
           {
@@ -255,6 +279,78 @@ export type Database = {
           },
           {
             foreignKeyName: "fk_assets_location_organization"
+            columns: ["location_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id", "organization_id"]
+          },
+        ]
+      }
+      asset_events: {
+        Row: {
+          asset_id: string
+          created_at: string
+          event_type: string
+          id: string
+          idempotency_key: string | null
+          location_id: string | null
+          measured_unit: string | null
+          measured_value: number | null
+          next_due_at: string | null
+          notes: string | null
+          organization_id: string
+          outcome: string
+          recorded_at: string
+          recorded_by: string
+          recorded_by_name: string
+          title: string
+        }
+        Insert: {
+          asset_id: string
+          created_at?: string
+          event_type: string
+          id?: string
+          idempotency_key?: string | null
+          location_id?: string | null
+          measured_unit?: string | null
+          measured_value?: number | null
+          next_due_at?: string | null
+          notes?: string | null
+          organization_id: string
+          outcome: string
+          recorded_at?: string
+          recorded_by?: string
+          recorded_by_name?: string
+          title: string
+        }
+        Update: {
+          asset_id?: string
+          created_at?: string
+          event_type?: string
+          id?: string
+          idempotency_key?: string | null
+          location_id?: string | null
+          measured_unit?: string | null
+          measured_value?: number | null
+          next_due_at?: string | null
+          notes?: string | null
+          organization_id?: string
+          outcome?: string
+          recorded_at?: string
+          recorded_by?: string
+          recorded_by_name?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asset_events_asset_org"
+            columns: ["asset_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "asset_events_location_org"
             columns: ["location_id", "organization_id"]
             isOneToOne: false
             referencedRelation: "locations"
@@ -782,43 +878,7 @@ export type Database = {
           task_area_snapshot?: string
           task_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "cleaning_completion_location_org"
-            columns: ["location_id", "organization_id"]
-            isOneToOne: false
-            referencedRelation: "locations"
-            referencedColumns: ["id", "organization_id"]
-          },
-          {
-            foreignKeyName: "cleaning_completion_task_org"
-            columns: ["task_id", "organization_id"]
-            isOneToOne: false
-            referencedRelation: "cleaning_tasks"
-            referencedColumns: ["id", "organization_id"]
-          },
-          {
-            foreignKeyName: "cleaning_completions_location_id_fkey"
-            columns: ["location_id"]
-            isOneToOne: false
-            referencedRelation: "locations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "cleaning_completions_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "cleaning_completions_task_id_fkey"
-            columns: ["task_id"]
-            isOneToOne: false
-            referencedRelation: "cleaning_tasks"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       cleaning_tasks: {
         Row: {
@@ -866,29 +926,7 @@ export type Database = {
           organization_id?: string
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "cleaning_task_location_org"
-            columns: ["location_id", "organization_id"]
-            isOneToOne: false
-            referencedRelation: "locations"
-            referencedColumns: ["id", "organization_id"]
-          },
-          {
-            foreignKeyName: "cleaning_tasks_location_id_fkey"
-            columns: ["location_id"]
-            isOneToOne: false
-            referencedRelation: "locations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "cleaning_tasks_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       complaints: {
         Row: {
@@ -1385,7 +1423,6 @@ export type Database = {
           archived_at: string | null
           category: string
           created_at: string
-          document_kind: string | null
           expires_at: string | null
           file_size: number | null
           file_url: string | null
@@ -1394,6 +1431,7 @@ export type Database = {
           issued_on: string | null
           location_id: string | null
           mime_type: string | null
+          document_kind: string | null
           organization_id: string | null
           sha256: string | null
           storage_path: string | null
@@ -1406,7 +1444,6 @@ export type Database = {
           archived_at?: string | null
           category: string
           created_at?: string
-          document_kind?: string | null
           expires_at?: string | null
           file_size?: number | null
           file_url?: string | null
@@ -1415,6 +1452,7 @@ export type Database = {
           issued_on?: string | null
           location_id?: string | null
           mime_type?: string | null
+          document_kind?: string | null
           organization_id?: string | null
           sha256?: string | null
           storage_path?: string | null
@@ -1427,7 +1465,6 @@ export type Database = {
           archived_at?: string | null
           category?: string
           created_at?: string
-          document_kind?: string | null
           expires_at?: string | null
           file_size?: number | null
           file_url?: string | null
@@ -1436,6 +1473,7 @@ export type Database = {
           issued_on?: string | null
           location_id?: string | null
           mime_type?: string | null
+          document_kind?: string | null
           organization_id?: string | null
           sha256?: string | null
           storage_path?: string | null
@@ -1615,9 +1653,9 @@ export type Database = {
           allergen_label_ok: boolean | null
           batch_lot: string | null
           best_before: string | null
-          condition_ok: boolean | null
-          corrective_action: string | null
           created_at: string
+          corrective_action: string | null
+          condition_ok: boolean | null
           delivery_reference: string | null
           delivery_temp_c: number | null
           id: string
@@ -1642,9 +1680,9 @@ export type Database = {
           allergen_label_ok?: boolean | null
           batch_lot?: string | null
           best_before?: string | null
-          condition_ok?: boolean | null
-          corrective_action?: string | null
           created_at?: string
+          corrective_action?: string | null
+          condition_ok?: boolean | null
           delivery_reference?: string | null
           delivery_temp_c?: number | null
           id?: string
@@ -1669,9 +1707,9 @@ export type Database = {
           allergen_label_ok?: boolean | null
           batch_lot?: string | null
           best_before?: string | null
-          condition_ok?: boolean | null
-          corrective_action?: string | null
           created_at?: string
+          corrective_action?: string | null
+          condition_ok?: boolean | null
           delivery_reference?: string | null
           delivery_temp_c?: number | null
           id?: string
@@ -4269,73 +4307,6 @@ export type Database = {
           },
         ]
       }
-      staff_induction_assignments: {
-        Row: {
-          acknowledged_at: string | null
-          acknowledgement_version: string
-          assigned_by: string
-          created_at: string
-          due_at: string | null
-          id: string
-          instructions: string | null
-          location_id: string | null
-          organization_id: string
-          title: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          acknowledged_at?: string | null
-          acknowledgement_version?: string
-          assigned_by: string
-          created_at?: string
-          due_at?: string | null
-          id?: string
-          instructions?: string | null
-          location_id?: string | null
-          organization_id: string
-          title: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          acknowledged_at?: string | null
-          acknowledgement_version?: string
-          assigned_by?: string
-          created_at?: string
-          due_at?: string | null
-          id?: string
-          instructions?: string | null
-          location_id?: string | null
-          organization_id?: string
-          title?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "staff_induction_assignments_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "staff_induction_location_org_fk"
-            columns: ["organization_id", "location_id"]
-            isOneToOne: false
-            referencedRelation: "locations"
-            referencedColumns: ["organization_id", "id"]
-          },
-          {
-            foreignKeyName: "staff_induction_member_fk"
-            columns: ["organization_id", "user_id"]
-            isOneToOne: false
-            referencedRelation: "organization_memberships"
-            referencedColumns: ["organization_id", "user_id"]
-          },
-        ]
-      }
       stock_items: {
         Row: {
           category: string | null
@@ -5040,7 +5011,6 @@ export type Database = {
           required: boolean
           title_de: string
           title_en: string
-          updated_at: string
         }
         Insert: {
           created_at?: string
@@ -5051,7 +5021,6 @@ export type Database = {
           required?: boolean
           title_de: string
           title_en: string
-          updated_at?: string
         }
         Update: {
           created_at?: string
@@ -5062,11 +5031,63 @@ export type Database = {
           required?: boolean
           title_de?: string
           title_en?: string
-          updated_at?: string
         }
         Relationships: [
           {
             foreignKeyName: "training_courses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_induction_assignments: {
+        Row: {
+          acknowledgement_version: string
+          acknowledged_at: string | null
+          assigned_by: string
+          created_at: string
+          due_at: string | null
+          id: string
+          instructions: string | null
+          location_id: string | null
+          organization_id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          acknowledgement_version?: string
+          acknowledged_at?: string | null
+          assigned_by: string
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          instructions?: string | null
+          location_id?: string | null
+          organization_id: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          acknowledgement_version?: string
+          acknowledged_at?: string | null
+          assigned_by?: string
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          instructions?: string | null
+          location_id?: string | null
+          organization_id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_induction_assignments_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -5275,8 +5296,8 @@ export type Database = {
       }
       user_experience_preferences: {
         Row: {
-          biometric_lock: boolean
           compact_mode: boolean
+          biometric_lock: boolean
           default_station: string | null
           glove_mode: boolean
           high_contrast: boolean
@@ -5287,8 +5308,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          biometric_lock?: boolean
           compact_mode?: boolean
+          biometric_lock?: boolean
           default_station?: string | null
           glove_mode?: boolean
           high_contrast?: boolean
@@ -5299,8 +5320,8 @@ export type Database = {
           user_id: string
         }
         Update: {
-          biometric_lock?: boolean
           compact_mode?: boolean
+          biometric_lock?: boolean
           default_station?: string | null
           glove_mode?: boolean
           high_contrast?: boolean
@@ -5884,14 +5905,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      acknowledge_my_induction: {
+        Args: { p_assignment_id: string }
+        Returns: string
+      }
+      clear_health_exclusion: {
+        Args: { p_clearance_note?: string; p_record_id: string }
+        Returns: string
+      }
       accept_inspector_invitation: { Args: { p_token: string }; Returns: Json }
       accept_organization_invitation: {
         Args: { p_token: string }
         Returns: Json
-      }
-      acknowledge_my_induction: {
-        Args: { p_assignment_id: string }
-        Returns: string
       }
       bootstrap_my_organization: {
         Args: {
@@ -5972,10 +5997,6 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
-      }
-      clear_health_exclusion: {
-        Args: { p_clearance_note?: string; p_record_id: string }
-        Returns: string
       }
       complete_workflow_run: {
         Args: { p_run_id: string }
