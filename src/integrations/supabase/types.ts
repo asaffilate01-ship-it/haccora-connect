@@ -742,6 +742,154 @@ export type Database = {
           },
         ]
       }
+      cleaning_completions: {
+        Row: {
+          completed_at: string
+          completed_by: string
+          created_at: string
+          id: string
+          idempotency_key: string | null
+          location_id: string | null
+          notes: string | null
+          organization_id: string
+          result: string
+          task_area_snapshot: string
+          task_id: string | null
+        }
+        Insert: {
+          completed_at?: string
+          completed_by: string
+          created_at?: string
+          id?: string
+          idempotency_key?: string | null
+          location_id?: string | null
+          notes?: string | null
+          organization_id: string
+          result?: string
+          task_area_snapshot: string
+          task_id?: string | null
+        }
+        Update: {
+          completed_at?: string
+          completed_by?: string
+          created_at?: string
+          id?: string
+          idempotency_key?: string | null
+          location_id?: string | null
+          notes?: string | null
+          organization_id?: string
+          result?: string
+          task_area_snapshot?: string
+          task_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cleaning_completion_location_org"
+            columns: ["location_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "cleaning_completion_task_org"
+            columns: ["task_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "cleaning_tasks"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "cleaning_completions_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cleaning_completions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cleaning_completions_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "cleaning_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cleaning_tasks: {
+        Row: {
+          active: boolean
+          area: string
+          chemical: string | null
+          colour_code: string | null
+          contact_minutes: number | null
+          created_at: string
+          created_by: string
+          frequency: string
+          id: string
+          instruction: string
+          location_id: string | null
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          area: string
+          chemical?: string | null
+          colour_code?: string | null
+          contact_minutes?: number | null
+          created_at?: string
+          created_by: string
+          frequency?: string
+          id?: string
+          instruction: string
+          location_id?: string | null
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          area?: string
+          chemical?: string | null
+          colour_code?: string | null
+          contact_minutes?: number | null
+          created_at?: string
+          created_by?: string
+          frequency?: string
+          id?: string
+          instruction?: string
+          location_id?: string | null
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cleaning_task_location_org"
+            columns: ["location_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "cleaning_tasks_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cleaning_tasks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       complaints: {
         Row: {
           channel: string | null
