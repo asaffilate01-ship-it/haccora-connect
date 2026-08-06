@@ -1464,9 +1464,13 @@ export type Database = {
       }
       goods_in_logs: {
         Row: {
+          allergen_label_ok: boolean | null
           batch_lot: string | null
           best_before: string | null
+          condition_ok: boolean | null
+          corrective_action: string | null
           created_at: string
+          delivery_reference: string | null
           delivery_temp_c: number | null
           id: string
           idempotency_key: string | null
@@ -1483,12 +1487,17 @@ export type Database = {
           temp_ok: boolean | null
           unit: string | null
           updated_at: string
+          use_by: string | null
           user_id: string
         }
         Insert: {
+          allergen_label_ok?: boolean | null
           batch_lot?: string | null
           best_before?: string | null
+          condition_ok?: boolean | null
+          corrective_action?: string | null
           created_at?: string
+          delivery_reference?: string | null
           delivery_temp_c?: number | null
           id?: string
           idempotency_key?: string | null
@@ -1505,12 +1514,17 @@ export type Database = {
           temp_ok?: boolean | null
           unit?: string | null
           updated_at?: string
+          use_by?: string | null
           user_id: string
         }
         Update: {
+          allergen_label_ok?: boolean | null
           batch_lot?: string | null
           best_before?: string | null
+          condition_ok?: boolean | null
+          corrective_action?: string | null
           created_at?: string
+          delivery_reference?: string | null
           delivery_temp_c?: number | null
           id?: string
           idempotency_key?: string | null
@@ -1527,6 +1541,7 @@ export type Database = {
           temp_ok?: boolean | null
           unit?: string | null
           updated_at?: string
+          use_by?: string | null
           user_id?: string
         }
         Relationships: [
