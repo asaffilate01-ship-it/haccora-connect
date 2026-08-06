@@ -4798,6 +4798,7 @@ export type Database = {
           required: boolean
           title_de: string
           title_en: string
+          updated_at: string
         }
         Insert: {
           created_at?: string
@@ -4808,6 +4809,7 @@ export type Database = {
           required?: boolean
           title_de: string
           title_en: string
+          updated_at?: string
         }
         Update: {
           created_at?: string
@@ -4818,6 +4820,7 @@ export type Database = {
           required?: boolean
           title_de?: string
           title_en?: string
+          updated_at?: string
         }
         Relationships: [
           {
@@ -4831,15 +4834,18 @@ export type Database = {
       }
       training_records: {
         Row: {
+          certificate_reference: string | null
           certificate_valid_to: string | null
           completed_at: string | null
           course_id: string | null
+          course_name: string | null
           created_at: string
           id: string
           idempotency_key: string | null
           location_id: string | null
           organization_id: string | null
           progress: number
+          provider: string | null
           score: number | null
           updated_at: string
           user_id: string
@@ -4848,15 +4854,18 @@ export type Database = {
           verified_by: string | null
         }
         Insert: {
+          certificate_reference?: string | null
           certificate_valid_to?: string | null
           completed_at?: string | null
           course_id?: string | null
+          course_name?: string | null
           created_at?: string
           id?: string
           idempotency_key?: string | null
           location_id?: string | null
           organization_id?: string | null
           progress?: number
+          provider?: string | null
           score?: number | null
           updated_at?: string
           user_id: string
@@ -4865,15 +4874,18 @@ export type Database = {
           verified_by?: string | null
         }
         Update: {
+          certificate_reference?: string | null
           certificate_valid_to?: string | null
           completed_at?: string | null
           course_id?: string | null
+          course_name?: string | null
           created_at?: string
           id?: string
           idempotency_key?: string | null
           location_id?: string | null
           organization_id?: string | null
           progress?: number
+          provider?: string | null
           score?: number | null
           updated_at?: string
           user_id?: string

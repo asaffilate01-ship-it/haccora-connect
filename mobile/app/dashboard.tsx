@@ -125,6 +125,10 @@ export default function Dashboard() {
             </Text>
           </Pressable>
         )}
+        <Pressable style={styles.card} onPress={() => router.push("/training" as never)}>
+          <Text style={styles.cardTitle}>Training</Text>
+          <Text style={styles.cardBody}>Review courses, certificates and renewal dates.</Text>
+        </Pressable>
         <Pressable style={styles.card} onPress={() => router.push("/safe-methods")}>
           <Text style={styles.cardTitle}>Safe methods</Text>
           <Text style={styles.cardBody}>Review site-adopted UK food-safety controls.</Text>
