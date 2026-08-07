@@ -370,7 +370,9 @@ test("CI runs browser accessibility and fresh-database tenant isolation gates", 
   assert.match(ci, /npm run test:e2e/);
   assert.match(ci, /npm run export:check/);
   assert.match(browser, /AxeBuilder/);
-  assert.match(browser, /\/legal\/imprint/);
+  assert.match(browser, /\/legal\/company-details/);
+  assert.match(browser, /\/legal\/data-processing/);
+  assert.match(browser, /\/legal\/accessibility/);
   assert.match(browser, /browserErrors/);
   assert.match(database, /supabase db start/);
   assert.match(database, /supabase test db/);

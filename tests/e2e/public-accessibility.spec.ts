@@ -7,7 +7,9 @@ const publicRoutes = [
   "/legal/privacy",
   "/legal/terms",
   "/legal/cookies",
-  "/legal/imprint",
+  "/legal/company-details",
+  "/legal/data-processing",
+  "/legal/accessibility",
   "/legal/complaints",
 ];
 

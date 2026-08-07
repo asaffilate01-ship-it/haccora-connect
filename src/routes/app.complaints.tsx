@@ -27,18 +27,18 @@ interface Row {
 }
 
 const KIND: Record<Kind, [string, string]> = {
-  quality: ["Qualität", "Quality"],
-  allergen: ["Allergen-Verstoß", "Allergen breach"],
-  foreign_body: ["Fremdkörper", "Foreign body"],
-  illness: ["Erkrankung", "Illness"],
+  quality: ["Quality", "Quality"],
+  allergen: ["Allergen breach", "Allergen breach"],
+  foreign_body: ["Foreign body", "Foreign body"],
+  illness: ["Illness", "Illness"],
   service: ["Service", "Service"],
-  other: ["Sonstiges", "Other"],
+  other: ["Other", "Other"],
 };
 
 function ComplaintsPage() {
   const { lang } = useI18n();
   const { user } = useAuth();
-  const t = (de: string, en: string) => (lang === "de" ? de : en);
+  const t = (_legacy: string, english: string) => english;
   const [items, setItems] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -119,27 +119,22 @@ function ComplaintsPage() {
     <div className="p-6 md:p-10 space-y-8">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <div className="eyebrow">{t("Gastkommunikation", "Guest communication")}</div>
-          <h1 className="mt-1 text-3xl md:text-4xl">
-            {t("Beschwerderegister", "Complaints register")}
-          </h1>
+          <div className="eyebrow">{"Guest communication"}</div>
+          <h1 className="mt-1 text-3xl md:text-4xl">{"Complaints register"}</h1>
           <p className="text-muted-foreground mt-1 max-w-2xl">
-            {t(
-              "Gastbeschwerden zentral erfassen, kategorisieren und mit Lösung dokumentieren.",
-              "Log guest complaints, categorise them and record the investigation and resolution.",
-            )}
+            {"Log guest complaints, categorise them and record the investigation and resolution."}
           </p>
         </div>
         <button onClick={() => setOpen((o) => !o)} className="btn-alert-solid text-sm">
           <PlusCircle size={16} className="inline mr-1.5" />
-          {t("Beschwerde erfassen", "Log complaint")}
+          {"Log complaint"}
         </button>
       </div>
 
       <div className="grid md:grid-cols-3 gap-4">
-        <Kpi label={t("Offen", "Open")} value={openCount} tone="warn" />
-        <Kpi label={t("Hohe Priorität", "High severity")} value={high} tone="danger" />
-        <Kpi label={t("Gesamt", "Total")} value={items.length} tone="neutral" />
+        <Kpi label={"Open"} value={openCount} tone="warn" />
+        <Kpi label={"High severity"} value={high} tone="danger" />
+        <Kpi label={"Total"} value={items.length} tone="neutral" />
       </div>
 
       {err && (
@@ -151,13 +146,13 @@ function ComplaintsPage() {
           <input
             value={f.guest_name}
             onChange={(e) => setF({ ...f, guest_name: e.target.value })}
-            placeholder={t("Gast (optional)", "Guest (optional)")}
+            placeholder={"Guest (optional)"}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm md:col-span-2"
           />
           <input
             value={f.contact}
             onChange={(e) => setF({ ...f, contact: e.target.value })}
-            placeholder={t("Kontakt", "Contact")}
+            placeholder={"Contact"}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm md:col-span-2"
           />
           <select
@@ -165,11 +160,11 @@ function ComplaintsPage() {
             onChange={(e) => setF({ ...f, channel: e.target.value as Channel })}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
           >
-            <option value="in_person">{t("Persönlich", "In person")}</option>
-            <option value="phone">{t("Telefon", "Phone")}</option>
+            <option value="in_person">{"In person"}</option>
+            <option value="phone">{"Phone"}</option>
             <option value="email">E-Mail</option>
-            <option value="review">{t("Bewertung", "Review")}</option>
-            <option value="other">{t("Sonstiges", "Other")}</option>
+            <option value="review">{"Review"}</option>
+            <option value="other">{"Other"}</option>
           </select>
           <select
             value={f.kind}
@@ -178,7 +173,7 @@ function ComplaintsPage() {
           >
             {(Object.keys(KIND) as Kind[]).map((k) => (
               <option key={k} value={k}>
-                {KIND[k][lang === "de" ? 0 : 1]}
+                {KIND[k][1]}
               </option>
             ))}
           </select>
@@ -187,20 +182,20 @@ function ComplaintsPage() {
             onChange={(e) => setF({ ...f, severity: e.target.value as Sev })}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
           >
-            <option value="low">{t("Niedrig", "Low")}</option>
-            <option value="medium">{t("Mittel", "Medium")}</option>
-            <option value="high">{t("Hoch", "High")}</option>
+            <option value="low">{"Low"}</option>
+            <option value="medium">{"Medium"}</option>
+            <option value="high">{"High"}</option>
           </select>
           <textarea
             value={f.description}
             onChange={(e) => setF({ ...f, description: e.target.value })}
-            placeholder={t("Was ist passiert?", "What happened?")}
+            placeholder={"What happened?"}
             className="md:col-span-4 rounded-lg border border-border bg-card px-3 py-2 text-sm min-h-[70px]"
           />
           <input
             value={f.resolution}
             onChange={(e) => setF({ ...f, resolution: e.target.value })}
-            placeholder={t("Lösung / Reaktion", "Resolution")}
+            placeholder={"Resolution"}
             className="md:col-span-4 rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
           <button
@@ -209,7 +204,7 @@ function ComplaintsPage() {
             className="btn-alert-solid text-sm md:col-span-4 inline-flex items-center justify-center gap-2"
           >
             {busy && <Loader2 size={14} className="animate-spin" />}
-            {t("Speichern", "Save")}
+            {"Save"}
           </button>
         </div>
       )}
@@ -218,11 +213,11 @@ function ComplaintsPage() {
         {loading ? (
           <div className="p-10 text-center text-sm text-muted-foreground">
             <Loader2 size={16} className="inline animate-spin mr-2" />
-            {t("Lade…", "Loading…")}
+            {"Loading…"}
           </div>
         ) : items.length === 0 ? (
           <div className="p-10 text-center text-sm text-muted-foreground">
-            {t("Noch keine Beschwerden.", "No complaints yet.")}
+            {"No complaints yet."}
           </div>
         ) : (
           <ul className="divide-y divide-border">
@@ -235,20 +230,18 @@ function ComplaintsPage() {
                 </span>
                 <div className="flex-1 min-w-0">
                   <div className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">
-                    {KIND[i.kind][lang === "de" ? 0 : 1]}
+                    {KIND[i.kind][1]}
                   </div>
-                  <div className="font-display text-base mt-0.5">
-                    {i.guest_name ?? t("Anonym", "Anonymous")}
-                  </div>
+                  <div className="font-display text-base mt-0.5">{i.guest_name ?? "Anonymous"}</div>
                   <div className="text-sm text-muted-foreground mt-1">{i.description}</div>
                   {i.resolution && (
                     <div className="text-xs mt-2 bg-secondary/60 rounded-lg px-3 py-2">
-                      <b>{t("Lösung", "Resolution")}: </b>
+                      <b>{"Resolution"}: </b>
                       {i.resolution}
                     </div>
                   )}
                   <div className="text-xs text-muted-foreground mt-1">
-                    {new Date(i.occurred_at).toLocaleString(lang === "de" ? "de-DE" : "en-GB")}
+                    {new Date(i.occurred_at).toLocaleString("en-GB")}
                   </div>
                 </div>
                 {i.status !== "closed" && (
@@ -257,7 +250,7 @@ function ComplaintsPage() {
                     className="shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full bg-success text-success-foreground hover:brightness-110"
                   >
                     <CheckCircle2 size={12} className="inline mr-1" />
-                    {t("Abschließen", "Close")}
+                    {"Close"}
                   </button>
                 )}
               </li>

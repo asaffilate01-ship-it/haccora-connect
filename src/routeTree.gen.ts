@@ -21,9 +21,11 @@ import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
 import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
-import { Route as LegalImprintRouteImport } from './routes/legal.imprint'
+import { Route as LegalDataProcessingRouteImport } from './routes/legal.data-processing'
 import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
 import { Route as LegalComplaintsRouteImport } from './routes/legal.complaints'
+import { Route as LegalCompanyDetailsRouteImport } from './routes/legal.company-details'
+import { Route as LegalAccessibilityRouteImport } from './routes/legal.accessibility'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as AppWorkflowsRouteImport } from './routes/app.workflows'
 import { Route as AppWasteRouteImport } from './routes/app.waste'
@@ -134,9 +136,9 @@ const LegalPrivacyRoute = LegalPrivacyRouteImport.update({
   path: '/privacy',
   getParentRoute: () => LegalRoute,
 } as any)
-const LegalImprintRoute = LegalImprintRouteImport.update({
-  id: '/imprint',
-  path: '/imprint',
+const LegalDataProcessingRoute = LegalDataProcessingRouteImport.update({
+  id: '/data-processing',
+  path: '/data-processing',
   getParentRoute: () => LegalRoute,
 } as any)
 const LegalCookiesRoute = LegalCookiesRouteImport.update({
@@ -147,6 +149,16 @@ const LegalCookiesRoute = LegalCookiesRouteImport.update({
 const LegalComplaintsRoute = LegalComplaintsRouteImport.update({
   id: '/complaints',
   path: '/complaints',
+  getParentRoute: () => LegalRoute,
+} as any)
+const LegalCompanyDetailsRoute = LegalCompanyDetailsRouteImport.update({
+  id: '/company-details',
+  path: '/company-details',
+  getParentRoute: () => LegalRoute,
+} as any)
+const LegalAccessibilityRoute = LegalAccessibilityRouteImport.update({
+  id: '/accessibility',
+  path: '/accessibility',
   getParentRoute: () => LegalRoute,
 } as any)
 const BlogSlugRoute = BlogSlugRouteImport.update({
@@ -452,9 +464,11 @@ export interface FileRoutesByFullPath {
   '/app/waste': typeof AppWasteRoute
   '/app/workflows': typeof AppWorkflowsRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/legal/accessibility': typeof LegalAccessibilityRoute
+  '/legal/company-details': typeof LegalCompanyDetailsRoute
   '/legal/complaints': typeof LegalComplaintsRoute
   '/legal/cookies': typeof LegalCookiesRoute
-  '/legal/imprint': typeof LegalImprintRoute
+  '/legal/data-processing': typeof LegalDataProcessingRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
   '/app/': typeof AppIndexRoute
@@ -516,9 +530,11 @@ export interface FileRoutesByTo {
   '/app/waste': typeof AppWasteRoute
   '/app/workflows': typeof AppWorkflowsRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/legal/accessibility': typeof LegalAccessibilityRoute
+  '/legal/company-details': typeof LegalCompanyDetailsRoute
   '/legal/complaints': typeof LegalComplaintsRoute
   '/legal/cookies': typeof LegalCookiesRoute
-  '/legal/imprint': typeof LegalImprintRoute
+  '/legal/data-processing': typeof LegalDataProcessingRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
   '/app': typeof AppIndexRoute
@@ -583,9 +599,11 @@ export interface FileRoutesById {
   '/app/waste': typeof AppWasteRoute
   '/app/workflows': typeof AppWorkflowsRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/legal/accessibility': typeof LegalAccessibilityRoute
+  '/legal/company-details': typeof LegalCompanyDetailsRoute
   '/legal/complaints': typeof LegalComplaintsRoute
   '/legal/cookies': typeof LegalCookiesRoute
-  '/legal/imprint': typeof LegalImprintRoute
+  '/legal/data-processing': typeof LegalDataProcessingRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
   '/app/': typeof AppIndexRoute
@@ -651,9 +669,11 @@ export interface FileRouteTypes {
     | '/app/waste'
     | '/app/workflows'
     | '/blog/$slug'
+    | '/legal/accessibility'
+    | '/legal/company-details'
     | '/legal/complaints'
     | '/legal/cookies'
-    | '/legal/imprint'
+    | '/legal/data-processing'
     | '/legal/privacy'
     | '/legal/terms'
     | '/app/'
@@ -715,9 +735,11 @@ export interface FileRouteTypes {
     | '/app/waste'
     | '/app/workflows'
     | '/blog/$slug'
+    | '/legal/accessibility'
+    | '/legal/company-details'
     | '/legal/complaints'
     | '/legal/cookies'
-    | '/legal/imprint'
+    | '/legal/data-processing'
     | '/legal/privacy'
     | '/legal/terms'
     | '/app'
@@ -781,9 +803,11 @@ export interface FileRouteTypes {
     | '/app/waste'
     | '/app/workflows'
     | '/blog/$slug'
+    | '/legal/accessibility'
+    | '/legal/company-details'
     | '/legal/complaints'
     | '/legal/cookies'
-    | '/legal/imprint'
+    | '/legal/data-processing'
     | '/legal/privacy'
     | '/legal/terms'
     | '/app/'
@@ -888,11 +912,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LegalPrivacyRouteImport
       parentRoute: typeof LegalRoute
     }
-    '/legal/imprint': {
-      id: '/legal/imprint'
-      path: '/imprint'
-      fullPath: '/legal/imprint'
-      preLoaderRoute: typeof LegalImprintRouteImport
+    '/legal/data-processing': {
+      id: '/legal/data-processing'
+      path: '/data-processing'
+      fullPath: '/legal/data-processing'
+      preLoaderRoute: typeof LegalDataProcessingRouteImport
       parentRoute: typeof LegalRoute
     }
     '/legal/cookies': {
@@ -907,6 +931,20 @@ declare module '@tanstack/react-router' {
       path: '/complaints'
       fullPath: '/legal/complaints'
       preLoaderRoute: typeof LegalComplaintsRouteImport
+      parentRoute: typeof LegalRoute
+    }
+    '/legal/company-details': {
+      id: '/legal/company-details'
+      path: '/company-details'
+      fullPath: '/legal/company-details'
+      preLoaderRoute: typeof LegalCompanyDetailsRouteImport
+      parentRoute: typeof LegalRoute
+    }
+    '/legal/accessibility': {
+      id: '/legal/accessibility'
+      path: '/accessibility'
+      fullPath: '/legal/accessibility'
+      preLoaderRoute: typeof LegalAccessibilityRouteImport
       parentRoute: typeof LegalRoute
     }
     '/blog/$slug': {
@@ -1384,17 +1422,21 @@ const BlogRouteChildren: BlogRouteChildren = {
 const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
 
 interface LegalRouteChildren {
+  LegalAccessibilityRoute: typeof LegalAccessibilityRoute
+  LegalCompanyDetailsRoute: typeof LegalCompanyDetailsRoute
   LegalComplaintsRoute: typeof LegalComplaintsRoute
   LegalCookiesRoute: typeof LegalCookiesRoute
-  LegalImprintRoute: typeof LegalImprintRoute
+  LegalDataProcessingRoute: typeof LegalDataProcessingRoute
   LegalPrivacyRoute: typeof LegalPrivacyRoute
   LegalTermsRoute: typeof LegalTermsRoute
 }
 
 const LegalRouteChildren: LegalRouteChildren = {
+  LegalAccessibilityRoute: LegalAccessibilityRoute,
+  LegalCompanyDetailsRoute: LegalCompanyDetailsRoute,
   LegalComplaintsRoute: LegalComplaintsRoute,
   LegalCookiesRoute: LegalCookiesRoute,
-  LegalImprintRoute: LegalImprintRoute,
+  LegalDataProcessingRoute: LegalDataProcessingRoute,
   LegalPrivacyRoute: LegalPrivacyRoute,
   LegalTermsRoute: LegalTermsRoute,
 }
@@ -1414,3 +1456,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

@@ -63,7 +63,14 @@ for (const relative of trackedFiles) {
 
   if (!textExtensions.has(path.extname(name)) && !name.startsWith(".env")) continue;
   const absolute = path.join(root, relative);
-  if ((await stat(absolute)).size > 1024 * 1024) continue;
+  let metadata;
+  try {
+    metadata = await stat(absolute);
+  } catch (error) {
+    if (error?.code === "ENOENT") continue;
+    throw error;
+  }
+  if (metadata.size > 1024 * 1024) continue;
   const content = await readFile(absolute, "utf8");
 
   if (

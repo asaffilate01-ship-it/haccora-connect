@@ -27,7 +27,7 @@ type Delivery = {
 
 function IntegrationsPage() {
   const { lang } = useI18n();
-  const tr = useCallback((de: string, en: string) => (lang === "de" ? de : en), [lang]);
+  const tr = useCallback((_legacy: string, english: string) => english, []);
   const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
   const [name, setName] = useState("");
@@ -67,8 +67,7 @@ function IntegrationsPage() {
       },
     });
     setBusy(false);
-    if (error || !data?.signing_secret)
-      toast.error(tr("Endpoint konnte nicht erstellt werden.", "Endpoint could not be created."));
+    if (error || !data?.signing_secret) toast.error("Endpoint could not be created.");
     else {
       setSecret(data.signing_secret);
       setName("");
@@ -80,22 +79,19 @@ function IntegrationsPage() {
     const { error } = await supabase.functions.invoke("integration-admin", {
       body: { action: "test_endpoint", endpoint_id: id },
     });
-    if (error) toast.error(tr("Test konnte nicht geplant werden.", "Test could not be queued."));
+    if (error) toast.error("Test could not be queued.");
     else {
-      toast.success(tr("Signierter Test geplant.", "Signed test queued."));
+      toast.success("Signed test queued.");
       void load();
     }
   };
   return (
     <div className="p-5 md:p-10 space-y-6">
       <div>
-        <div className="eyebrow">{tr("Integrationen", "Integrations")}</div>
-        <h1 className="mt-1 text-3xl md:text-4xl">{tr("Signierte Webhooks", "Signed webhooks")}</h1>
+        <div className="eyebrow">{"Integrations"}</div>
+        <h1 className="mt-1 text-3xl md:text-4xl">{"Signed webhooks"}</h1>
         <p className="mt-1 text-muted-foreground">
-          {tr(
-            "Idempotente Events, HMAC-Signaturen, Wiederholungen und Dead-Letter-Status.",
-            "Idempotent events, HMAC signatures, retries and dead-letter status.",
-          )}
+          {"Idempotent events, HMAC signatures, retries and dead-letter status."}
         </p>
       </div>
       {secret && (
@@ -105,14 +101,9 @@ function IntegrationsPage() {
         >
           <div className="flex gap-2 font-bold">
             <ShieldAlert size={18} />
-            {tr("Secret jetzt sicher speichern", "Save this secret now")}
+            {"Save this secret now"}
           </div>
-          <p className="mt-1 text-sm">
-            {tr(
-              "Es wird nur einmal angezeigt und verschlüsselt gespeichert.",
-              "It is shown once and stored encrypted.",
-            )}
-          </p>
+          <p className="mt-1 text-sm">{"It is shown once and stored encrypted."}</p>
           <div className="mt-3 flex gap-2">
             <code className="min-w-0 flex-1 overflow-auto rounded-lg bg-white p-3 text-xs">
               {secret}
@@ -125,7 +116,7 @@ function IntegrationsPage() {
             </button>
           </div>
           <button onClick={() => setSecret(null)} className="mt-3 text-xs font-bold underline">
-            {tr("Ich habe es gespeichert", "I saved it")}
+            {"I saved it"}
           </button>
         </div>
       )}
@@ -134,13 +125,13 @@ function IntegrationsPage() {
           <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary text-primary-foreground">
             <PlugZap size={18} />
           </span>
-          <div className="font-display text-xl">{tr("Endpoint hinzufügen", "Add endpoint")}</div>
+          <div className="font-display text-xl">{"Add endpoint"}</div>
         </div>
         <div className="grid gap-3 md:grid-cols-2">
           <input
             value={name}
             onChange={(event) => setName(event.target.value)}
-            placeholder={tr("Name", "Name")}
+            placeholder={"Name"}
             className="min-h-11 rounded-xl border border-input bg-background px-3 text-sm"
           />
           <input
@@ -156,22 +147,14 @@ function IntegrationsPage() {
           onClick={() => void create()}
           className="min-h-11 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground disabled:opacity-50"
         >
-          {busy ? (
-            <Loader2 className="inline animate-spin" />
-          ) : (
-            tr("Endpoint erstellen", "Create endpoint")
-          )}
+          {busy ? <Loader2 className="inline animate-spin" /> : "Create endpoint"}
         </button>
       </section>
       <div className="grid gap-5 lg:grid-cols-2">
         <section className="surface overflow-hidden">
-          <div className="border-b border-border p-5 font-display text-xl">
-            {tr("Endpoints", "Endpoints")}
-          </div>
+          <div className="border-b border-border p-5 font-display text-xl">{"Endpoints"}</div>
           {endpoints.length === 0 ? (
-            <div className="p-10 text-center text-sm text-muted-foreground">
-              {tr("Keine Endpoints.", "No endpoints.")}
-            </div>
+            <div className="p-10 text-center text-sm text-muted-foreground">{"No endpoints."}</div>
           ) : (
             <ul className="divide-y divide-border">
               {endpoints.map((endpoint) => (
@@ -184,12 +167,12 @@ function IntegrationsPage() {
                       {endpoint.enabled ? (
                         <span className="text-success">
                           <CheckCircle2 className="mr-1 inline" size={12} />
-                          {tr("Aktiv", "Active")}
+                          {"Active"}
                         </span>
                       ) : (
-                        tr("Deaktiviert", "Disabled")
+                        "Disabled"
                       )}{" "}
-                      · {endpoint.failure_count} {tr("Fehler", "failures")}
+                      · {endpoint.failure_count} {"failures"}
                     </div>
                   </div>
                   <button
@@ -197,7 +180,7 @@ function IntegrationsPage() {
                     className="min-h-10 rounded-xl border border-border px-3 text-xs font-bold"
                   >
                     <Send className="mr-1 inline" size={13} />
-                    {tr("Test", "Test")}
+                    {"Test"}
                   </button>
                 </li>
               ))}
@@ -205,9 +188,7 @@ function IntegrationsPage() {
           )}
         </section>
         <section className="surface overflow-hidden">
-          <div className="border-b border-border p-5 font-display text-xl">
-            {tr("Zustellungen", "Deliveries")}
-          </div>
+          <div className="border-b border-border p-5 font-display text-xl">{"Deliveries"}</div>
           <ul className="divide-y divide-border">
             {deliveries.map((delivery) => (
               <li key={delivery.id} className="p-4">
@@ -218,8 +199,8 @@ function IntegrationsPage() {
                   </span>
                 </div>
                 <div className="mt-1 text-xs text-muted-foreground">
-                  {tr("Versuche", "Attempts")}: {delivery.attempts} ·{" "}
-                  {new Date(delivery.created_at).toLocaleString(lang === "de" ? "de-DE" : "en-GB")}
+                  {"Attempts"}: {delivery.attempts} ·{" "}
+                  {new Date(delivery.created_at).toLocaleString("en-GB")}
                 </div>
               </li>
             ))}

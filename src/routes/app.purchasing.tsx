@@ -23,7 +23,7 @@ function PurchasingPage() {
   const { lang } = useI18n();
   const { user } = useAuth();
   const role = user?.role ?? "staff";
-  const t = (de: string, en: string) => (lang === "de" ? de : en);
+  const t = (_legacy: string, english: string) => english;
   const canManage = can(role, "purchasing.approvePO") || can(role, "purchasing.receive");
 
   const [rows, setRows] = useState<Row[]>([]);
@@ -61,7 +61,7 @@ function PurchasingPage() {
     load();
   };
   const remove = async (id: string) => {
-    if (!confirm(t("Bestellung löschen?", "Delete PO?"))) return;
+    if (!confirm("Delete PO?")) return;
     await supabase.from("purchase_orders").delete().eq("id", id);
     load();
   };
@@ -79,44 +79,33 @@ function PurchasingPage() {
     <div className="p-6 md:p-10 space-y-8">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <div className="eyebrow">{t("Beschaffung", "Procurement")}</div>
-          <h1 className="mt-1 text-3xl md:text-4xl">
-            {t("Einkauf & Wareneingang", "Purchasing & receiving")}
-          </h1>
+          <div className="eyebrow">{"Procurement"}</div>
+          <h1 className="mt-1 text-3xl md:text-4xl">{"Purchasing & receiving"}</h1>
           <p className="text-muted-foreground mt-1">
-            {t(
-              "Bestellungen erstellen, Lieferungen prüfen und Chargen nachvollziehbar erfassen.",
-              "Raise purchase orders, verify deliveries and record batches traceably.",
-            )}
+            {"Raise purchase orders, verify deliveries and record batches traceably."}
           </p>
         </div>
         {canManage && (
           <button onClick={() => setShowForm(true)} className="btn-alert-solid text-sm">
             <PlusCircle size={16} className="inline mr-1.5" />
-            {t("Neue Bestellung", "New PO")}
+            {"New PO"}
           </button>
         )}
       </div>
 
       <div className="grid md:grid-cols-4 gap-4">
-        <Kpi label={t("Offen", "Open")} value={String(open)} tone="warning" />
+        <Kpi label={"Open"} value={String(open)} tone="warning" />
+        <Kpi label={"Deliveries today"} value={String(dueToday)} tone="info" />
+        <Kpi label={"Spend"} value={`£${spend.toFixed(0)}`} />
         <Kpi
-          label={t("Heute Anlieferung", "Deliveries today")}
-          value={String(dueToday)}
-          tone="info"
-        />
-        <Kpi label={t("Ausgaben", "Spend")} value={`£${spend.toFixed(0)}`} />
-        <Kpi
-          label={t("Annahmequote", "Acceptance rate")}
+          label={"Acceptance rate"}
           value={`${Math.round((received / total) * 100)}%`}
           tone="success"
         />
       </div>
 
       <section>
-        <div className="text-sm font-display mb-3">
-          {t("Aktive Bestellungen", "Active purchase orders")}
-        </div>
+        <div className="text-sm font-display mb-3">{"Active purchase orders"}</div>
         <div className="surface overflow-hidden">
           {loading ? (
             <div className="p-10 text-center text-sm text-muted-foreground">
@@ -125,17 +114,17 @@ function PurchasingPage() {
           ) : rows.length === 0 ? (
             <div className="p-10 text-center text-sm text-muted-foreground">
               <ShoppingCart size={20} className="inline opacity-40 mr-2" />
-              {t("Keine Bestellungen.", "No purchase orders yet.")}
+              {"No purchase orders yet."}
             </div>
           ) : (
             <>
               <div className="hidden md:grid grid-cols-12 text-xs uppercase tracking-widest text-muted-foreground bg-secondary/60 px-5 py-3">
-                <div className="col-span-2">{t("Bestellung", "PO")}</div>
-                <div className="col-span-3">{t("Lieferant", "Supplier")}</div>
+                <div className="col-span-2">{"PO"}</div>
+                <div className="col-span-3">{"Supplier"}</div>
                 <div className="col-span-2">ETA</div>
-                <div className="col-span-1 text-right">{t("Zeilen", "Lines")}</div>
-                <div className="col-span-2 text-right">{t("Summe", "Total")}</div>
-                <div className="col-span-2 text-right">{t("Status", "Status")}</div>
+                <div className="col-span-1 text-right">{"Lines"}</div>
+                <div className="col-span-2 text-right">{"Total"}</div>
+                <div className="col-span-2 text-right">{"Status"}</div>
               </div>
               <ul className="divide-y divide-border">
                 {rows.map((po) => (
@@ -250,12 +239,12 @@ function POForm({
     <div className="fixed inset-0 z-50 grid place-items-center bg-foreground/40 backdrop-blur-sm p-4">
       <form onSubmit={save} className="surface w-full max-w-md p-6 space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-xl">{t("Neue Bestellung", "New PO")}</h2>
+          <h2 className="font-display text-xl">{"New PO"}</h2>
           <button type="button" onClick={onClose} className="text-muted-foreground">
             <X size={18} />
           </button>
         </div>
-        <Field label={t("Lieferant", "Supplier")}>
+        <Field label={"Supplier"}>
           <input
             required
             value={supplier}
@@ -264,7 +253,7 @@ function POForm({
           />
         </Field>
         <div className="grid grid-cols-2 gap-3">
-          <Field label={t("Summe £", "Total £")}>
+          <Field label={"Total £"}>
             <input
               type="number"
               step="0.01"
@@ -273,7 +262,7 @@ function POForm({
               className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
             />
           </Field>
-          <Field label={t("Zeilen", "Lines")}>
+          <Field label={"Lines"}>
             <input
               type="number"
               value={lines}
@@ -296,11 +285,11 @@ function POForm({
             onClick={onClose}
             className="text-sm px-4 py-2 rounded-full border border-border"
           >
-            {t("Abbrechen", "Cancel")}
+            {"Cancel"}
           </button>
           <button type="submit" disabled={saving} className="btn-alert-solid text-sm">
             {saving ? <Loader2 size={14} className="inline animate-spin mr-1" /> : null}
-            {t("Speichern", "Save")}
+            {"Save"}
           </button>
         </div>
       </form>
@@ -341,18 +330,18 @@ function Kpi({
   );
 }
 
-function StatusBadge({ status, t }: { status: POStatus; t: (a: string, b: string) => string }) {
-  const map: Record<POStatus, { cls: string; deL: string; enL: string }> = {
-    draft: { cls: "bg-secondary text-muted-foreground", deL: "Entwurf", enL: "Draft" },
-    sent: { cls: "bg-primary/10 text-primary", deL: "Gesendet", enL: "Sent" },
-    partial: { cls: "bg-warning/20 text-warning-foreground", deL: "Teilweise", enL: "Partial" },
-    received: { cls: "bg-success/15 text-success", deL: "Erhalten", enL: "Received" },
-    rejected: { cls: "bg-destructive/15 text-destructive", deL: "Abgelehnt", enL: "Rejected" },
+function StatusBadge({ status }: { status: POStatus; t?: (a: string, b: string) => string }) {
+  const map: Record<POStatus, { cls: string; label: string }> = {
+    draft: { cls: "bg-secondary text-muted-foreground", label: "Draft" },
+    sent: { cls: "bg-primary/10 text-primary", label: "Sent" },
+    partial: { cls: "bg-warning/20 text-warning-foreground", label: "Partial" },
+    received: { cls: "bg-success/15 text-success", label: "Received" },
+    rejected: { cls: "bg-destructive/15 text-destructive", label: "Rejected" },
   };
   const m = map[status];
   return (
     <span className={`inline-flex text-[10px] font-bold uppercase px-2 py-0.5 rounded ${m.cls}`}>
-      {t(m.deL, m.enL)}
+      {m.label}
     </span>
   );
 }

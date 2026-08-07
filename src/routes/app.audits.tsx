@@ -30,7 +30,7 @@ function AuditsPage() {
   const { lang } = useI18n();
   const { user } = useAuth();
   const role = user?.role;
-  const t = (de: string, en: string) => (lang === "de" ? de : en);
+  const t = (_legacy: string, english: string) => english;
   const canEdit = role === "owner" || role === "manager" || role === "chef";
 
   const [rows, setRows] = useState<Audit[]>([]);
@@ -57,7 +57,7 @@ function AuditsPage() {
 
   const submit = async () => {
     if (!form.title.trim()) {
-      setErr(t("Titel ist Pflicht.", "Title is required."));
+      setErr("Title is required.");
       return;
     }
     setBusy(true);
@@ -91,43 +91,36 @@ function AuditsPage() {
     <div className="p-6 md:p-10 space-y-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <div className="eyebrow">{t("Interne Kontrolle", "Internal control")}</div>
-          <h1 className="mt-1 text-3xl md:text-4xl">{t("Interne Audits", "Internal audits")}</h1>
+          <div className="eyebrow">{"Internal control"}</div>
+          <h1 className="mt-1 text-3xl md:text-4xl">{"Internal audits"}</h1>
           <p className="text-muted-foreground mt-1">
-            {t(
-              "Selbstkontrollen erfassen, Findings dokumentieren, Score verfolgen.",
-              "Log self-checks, capture findings, track score over time.",
-            )}
+            {"Log self-checks, capture findings, track score over time."}
           </p>
         </div>
         {canEdit && (
           <button onClick={() => setOpen((o) => !o)} className="btn-alert-solid text-sm">
             <PlusCircle size={14} className="inline mr-1.5" />
-            {t("Audit erfassen", "Log audit")}
+            {"Log audit"}
           </button>
         )}
       </div>
 
       <div className="grid md:grid-cols-4 gap-4">
         <Kpi
-          label={t("Ø Score", "Avg score")}
+          label={"Avg score"}
           value={completed.length ? `${avg}%` : "–"}
           tone="success"
           icon={Award}
         />
+        <Kpi label={"Total audits"} value={String(rows.length)} icon={ClipboardList} />
         <Kpi
-          label={t("Audits gesamt", "Total audits")}
-          value={String(rows.length)}
-          icon={ClipboardList}
-        />
-        <Kpi
-          label={t("Kritisch (<70)", "Critical (<70)")}
+          label={"Critical (<70)"}
           value={String(critical)}
           tone={critical > 0 ? "destructive" : undefined}
           icon={AlertTriangle}
         />
         <Kpi
-          label={t("Abgeschlossen", "Completed")}
+          label={"Completed"}
           value={String(completed.length)}
           tone="success"
           icon={TrendingUp}
@@ -139,7 +132,7 @@ function AuditsPage() {
           <input
             value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
-            placeholder={t("Titel (z. B. Küchenrundgang)", "Title (e.g. Kitchen walkthrough)")}
+            placeholder={"Title (e.g. Kitchen walkthrough)"}
             className="md:col-span-2 rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
           <select
@@ -147,11 +140,11 @@ function AuditsPage() {
             onChange={(e) => setForm({ ...form, audit_type: e.target.value })}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
           >
-            <option value="internal">{t("Intern", "Internal")}</option>
+            <option value="internal">{"Internal"}</option>
             <option value="food_hygiene">Food hygiene review</option>
             <option value="sfbb">Safer Food, Better Business review</option>
             <option value="traceability">Traceability exercise</option>
-            <option value="allergen">{t("Allergene", "Allergen")}</option>
+            <option value="allergen">{"Allergen"}</option>
           </select>
           <input
             type="number"
@@ -159,13 +152,13 @@ function AuditsPage() {
             max="100"
             value={form.score}
             onChange={(e) => setForm({ ...form, score: e.target.value })}
-            placeholder={t("Score %", "Score %")}
+            placeholder={"Score %"}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
           <input
             value={form.notes}
             onChange={(e) => setForm({ ...form, notes: e.target.value })}
-            placeholder={t("Notizen (optional)", "Notes (optional)")}
+            placeholder={"Notes (optional)"}
             className="md:col-span-3 rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
           <button onClick={submit} disabled={busy} className="btn-alert-solid text-sm">
@@ -174,7 +167,7 @@ function AuditsPage() {
             ) : (
               <PlusCircle size={14} className="inline mr-1" />
             )}
-            {t("Speichern", "Save")}
+            {"Save"}
           </button>
         </div>
       )}
@@ -185,20 +178,20 @@ function AuditsPage() {
 
       <div className="surface overflow-hidden">
         <div className="hidden md:grid grid-cols-12 text-xs uppercase tracking-widest text-muted-foreground bg-secondary/60 px-5 py-3">
-          <div className="col-span-4">{t("Titel", "Title")}</div>
-          <div className="col-span-2">{t("Typ", "Type")}</div>
-          <div className="col-span-3">{t("Datum", "Date")}</div>
-          <div className="col-span-1 text-right">{t("Status", "Status")}</div>
-          <div className="col-span-2 text-right">{t("Score", "Score")}</div>
+          <div className="col-span-4">{"Title"}</div>
+          <div className="col-span-2">{"Type"}</div>
+          <div className="col-span-3">{"Date"}</div>
+          <div className="col-span-1 text-right">{"Status"}</div>
+          <div className="col-span-2 text-right">{"Score"}</div>
         </div>
         {loading ? (
           <div className="p-10 text-center text-sm text-muted-foreground">
             <Loader2 size={16} className="inline animate-spin mr-2" />
-            {t("Lade…", "Loading…")}
+            {"Loading…"}
           </div>
         ) : rows.length === 0 ? (
           <div className="p-10 text-center text-sm text-muted-foreground">
-            {t("Noch keine Audits erfasst.", "No audits recorded yet.")}
+            {"No audits recorded yet."}
           </div>
         ) : (
           <ul className="divide-y divide-border">
@@ -215,13 +208,13 @@ function AuditsPage() {
                   {a.audit_type}
                 </div>
                 <div className="md:col-span-3 text-xs text-muted-foreground">
-                  {new Date(a.performed_at).toLocaleString(lang === "de" ? "de-DE" : "en-GB")}
+                  {new Date(a.performed_at).toLocaleString("en-GB")}
                 </div>
                 <div className="md:col-span-1 text-right">
                   <span
                     className={`inline-flex text-[10px] font-bold uppercase px-2 py-0.5 rounded ${a.status === "completed" ? "bg-success/15 text-success" : "bg-primary/15 text-primary"}`}
                   >
-                    {a.status === "completed" ? t("Fertig", "Done") : t("Läuft", "In progress")}
+                    {a.status === "completed" ? "Done" : "In progress"}
                   </span>
                 </div>
                 <div className="md:col-span-2 text-right">

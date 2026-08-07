@@ -22,7 +22,7 @@ interface Row {
 function OilPage() {
   const { lang } = useI18n();
   const { user } = useAuth();
-  const t = (de: string, en: string) => (lang === "de" ? de : en);
+  const t = (_legacy: string, english: string) => english;
   const [items, setItems] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -79,27 +79,24 @@ function OilPage() {
     <div className="p-6 md:p-10 space-y-8">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <div className="eyebrow">{t("Küche & Qualität", "Kitchen & quality")}</div>
-          <h1 className="mt-1 text-3xl md:text-4xl">
-            {t("Frittier-Ölqualität (TPM)", "Frying oil quality (TPM)")}
-          </h1>
+          <div className="eyebrow">{"Kitchen & quality"}</div>
+          <h1 className="mt-1 text-3xl md:text-4xl">{"Frying oil quality (TPM)"}</h1>
           <p className="text-muted-foreground mt-1 max-w-2xl">
-            {t(
-              "Regelmäßige TPM-Messungen. Grenzwert: 24 % polare Anteile (§ 2 food hygiene, DGF-Empfehlung).",
-              "Regular TPM checks. Legal limit: 24 % total polar material (§ 2 food hygiene, DGF guidance).",
-            )}
+            {
+              "Trend total polar material (TPM) against the oil manufacturer's discard limit and your documented site procedure."
+            }
           </p>
         </div>
         <button onClick={() => setOpen((o) => !o)} className="btn-alert-solid text-sm">
           <PlusCircle size={16} className="inline mr-1.5" />
-          {t("Messung erfassen", "Log test")}
+          {"Log test"}
         </button>
       </div>
 
       <div className="grid md:grid-cols-3 gap-4">
-        <Kpi label={t("Wechsel bald nötig", "Change soon")} value={changeSoon} tone="warn" />
-        <Kpi label={t("Über Grenzwert", "Over limit")} value={rejected} tone="danger" />
-        <Kpi label={t("Messungen gesamt", "Total tests")} value={items.length} tone="neutral" />
+        <Kpi label={"Change soon"} value={changeSoon} tone="warn" />
+        <Kpi label={"Over limit"} value={rejected} tone="danger" />
+        <Kpi label={"Total tests"} value={items.length} tone="neutral" />
       </div>
 
       {err && (
@@ -111,7 +108,7 @@ function OilPage() {
           <input
             value={f.fryer}
             onChange={(e) => setF({ ...f, fryer: e.target.value })}
-            placeholder={t("Fritteuse", "Fryer")}
+            placeholder={"Fryer"}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm md:col-span-2"
           />
           <input
@@ -133,7 +130,7 @@ function OilPage() {
           <input
             value={f.notes}
             onChange={(e) => setF({ ...f, notes: e.target.value })}
-            placeholder={t("Notiz", "Note")}
+            placeholder={"Note"}
             className="md:col-span-4 rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
           <button
@@ -142,7 +139,7 @@ function OilPage() {
             className="btn-alert-solid text-sm md:col-span-4 inline-flex items-center justify-center gap-2"
           >
             {busy && <Loader2 size={14} className="animate-spin" />}
-            {t("Speichern", "Save")}
+            {"Save"}
           </button>
         </div>
       )}
@@ -151,12 +148,10 @@ function OilPage() {
         {loading ? (
           <div className="p-10 text-center text-sm text-muted-foreground">
             <Loader2 size={16} className="inline animate-spin mr-2" />
-            {t("Lade…", "Loading…")}
+            {"Loading…"}
           </div>
         ) : items.length === 0 ? (
-          <div className="p-10 text-center text-sm text-muted-foreground">
-            {t("Noch keine Messungen.", "No tests yet.")}
-          </div>
+          <div className="p-10 text-center text-sm text-muted-foreground">{"No tests yet."}</div>
         ) : (
           <ul className="divide-y divide-border">
             {items.map((i) => (
@@ -190,9 +185,7 @@ function OilPage() {
                       </span>
                     )}
                     {i.temperature_c != null && <span>{i.temperature_c} °C</span>}
-                    <span>
-                      {new Date(i.tested_at).toLocaleString(lang === "de" ? "de-DE" : "en-GB")}
-                    </span>
+                    <span>{new Date(i.tested_at).toLocaleString("en-GB")}</span>
                   </div>
                   {i.notes && <div className="text-xs text-muted-foreground mt-1">{i.notes}</div>}
                 </div>

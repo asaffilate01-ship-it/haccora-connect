@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import {
   CheckCircle2,
@@ -19,16 +18,14 @@ export const Route = createFileRoute("/app/routines")({ component: RoutinesPage 
 
 type Step = {
   id: string;
-  deK: string;
-  enK: string;
+  label: string;
   type: "check" | "temp" | "clean";
   expect?: string;
 };
 type Phase = {
   id: "open" | "service" | "close";
   icon: typeof Sun;
-  deTitle: string;
-  enTitle: string;
+  title: string;
   steps: Step[];
 };
 
@@ -36,84 +33,72 @@ const PHASES: Phase[] = [
   {
     id: "open",
     icon: Sun,
-    deTitle: "Öffnen",
-    enTitle: "Opening",
+    title: "Opening",
     steps: [
       {
         id: "o1",
-        deK: "Kühlraum Temperatur prüfen",
-        enK: "Check walk-in fridge temp",
+        label: "Check walk-in fridge temp",
         type: "temp",
         expect: "≤ 4 °C",
       },
       {
         id: "o2",
-        deK: "Handwaschstationen bestückt",
-        enK: "Handwash stations stocked",
+        label: "Handwash stations stocked",
         type: "check",
       },
-      { id: "o3", deK: "Oberflächen desinfiziert", enK: "Surfaces sanitised", type: "clean" },
+      { id: "o3", label: "Surfaces sanitised", type: "clean" },
       {
         id: "o4",
-        deK: "Gesundheitszustand Team (Food-handler fitness-to-work)",
-        enK: "Team health check (Food-handler fitness-to-work)",
+        label: "Team health check (Food-handler fitness-to-work)",
         type: "check",
       },
-      { id: "o5", deK: "Warenannahme-Bereich frei", enK: "Delivery area clear", type: "check" },
+      { id: "o5", label: "Delivery area clear", type: "check" },
     ],
   },
   {
     id: "service",
     icon: ChefHat,
-    deTitle: "Service",
-    enTitle: "Service",
+    title: "Service",
     steps: [
       {
         id: "s1",
-        deK: "Heißhaltung ≥ 65 °C",
-        enK: "Hot hold ≥ 65 °C",
+        label: "Hot hold ≥ 63 °C",
         type: "temp",
-        expect: "≥ 65 °C",
+        expect: "≥ 63 °C",
       },
       {
         id: "s2",
-        deK: "Kaltbuffet ≤ 7 °C",
-        enK: "Cold buffet ≤ 7 °C",
+        label: "Chilled display target ≤ 5 °C",
         type: "temp",
-        expect: "≤ 7 °C",
+        expect: "≤ 5 °C",
       },
-      { id: "s3", deK: "Allergen-Karte sichtbar", enK: "Allergen menu visible", type: "check" },
-      { id: "s4", deK: "Fritteusenöl Sichtprüfung", enK: "Fryer oil visual check", type: "check" },
+      { id: "s3", label: "Allergen menu visible", type: "check" },
+      { id: "s4", label: "Fryer oil visual check", type: "check" },
     ],
   },
   {
     id: "close",
     icon: Moon,
-    deTitle: "Schließen",
-    enTitle: "Closing",
+    title: "Closing",
     steps: [
       {
         id: "c1",
-        deK: "Reste kennzeichnen & kühlen",
-        enK: "Label & cool leftovers",
+        label: "Label & cool leftovers",
         type: "clean",
       },
       {
         id: "c2",
-        deK: "Reinigungsplan abgezeichnet",
-        enK: "Cleaning schedule signed off",
+        label: "Cleaning schedule signed off",
         type: "clean",
       },
-      { id: "c3", deK: "Kühlgeräte Endtemperaturen", enK: "Fridge end-of-day temps", type: "temp" },
-      { id: "c4", deK: "Fettabscheider geleert", enK: "Grease trap emptied", type: "check" },
-      { id: "c5", deK: "Alarmanlage aktiviert", enK: "Alarm system armed", type: "check" },
+      { id: "c3", label: "Fridge end-of-day temps", type: "temp" },
+      { id: "c4", label: "Grease trap emptied", type: "check" },
+      { id: "c5", label: "Alarm system armed", type: "check" },
     ],
   },
 ];
 
 function RoutinesPage() {
-  const { lang } = useI18n();
-  const t = (de: string, en: string) => (lang === "de" ? de : en);
   const [activePhase, setActivePhase] = useState<Phase["id"]>("open");
   const [done, setDone] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
@@ -178,15 +163,10 @@ function RoutinesPage() {
   return (
     <div className="p-6 md:p-10 space-y-8">
       <div>
-        <div className="eyebrow">{t("Betrieb", "Operations")}</div>
-        <h1 className="mt-1 text-3xl md:text-4xl">
-          {t("Öffnen · Service · Schließen", "Open · Service · Close")}
-        </h1>
+        <div className="eyebrow">{"Operations"}</div>
+        <h1 className="mt-1 text-3xl md:text-4xl">{"Open · Service · Close"}</h1>
         <p className="text-muted-foreground mt-1">
-          {t(
-            "Ein geführter Ablauf – Temperaturen, Kontrollen und Reinigung in einer Routine.",
-            "A guided flow — temperatures, checks and cleaning in one routine.",
-          )}
+          {"A guided flow — temperatures, checks and cleaning in one routine."}
         </p>
       </div>
 
@@ -217,7 +197,7 @@ function RoutinesPage() {
           <div className="absolute inset-0 grid place-items-center text-sm font-bold">{pct}%</div>
         </div>
         <div className="flex-1">
-          <div className="font-display text-lg">{t("Heutige Routine", "Today's routine")}</div>
+          <div className="font-display text-lg">{"Today's routine"}</div>
           <div className="text-xs text-muted-foreground">
             {loading ? (
               <>
@@ -225,7 +205,7 @@ function RoutinesPage() {
               </>
             ) : (
               <>
-                {totalDone} / {totalSteps} {t("Schritte abgeschlossen", "steps complete")}
+                {totalDone} / {totalSteps} {"steps complete"}
               </>
             )}
           </div>
@@ -250,7 +230,7 @@ function RoutinesPage() {
                   <Icon size={18} />
                 </span>
                 <div className="flex-1">
-                  <div className="font-display">{t(p.deTitle, p.enTitle)}</div>
+                  <div className="font-display">{p.title}</div>
                   <div className="text-xs text-muted-foreground">
                     {doneCount}/{p.steps.length}
                   </div>
@@ -264,8 +244,7 @@ function RoutinesPage() {
 
       <div className="surface overflow-hidden">
         <div className="px-5 py-3 border-b border-border bg-secondary/50 flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
-          <ClipboardCheck size={14} /> {t(phase.deTitle, phase.enTitle)} · {phase.steps.length}{" "}
-          {t("Schritte", "steps")}
+          <ClipboardCheck size={14} /> {phase.title} · {phase.steps.length} {"steps"}
         </div>
         <ul className="divide-y divide-border">
           {phase.steps.map((s) => {
@@ -292,11 +271,11 @@ function RoutinesPage() {
                     <div
                       className={`text-sm font-medium ${isDone ? "line-through text-muted-foreground" : ""}`}
                     >
-                      {t(s.deK, s.enK)}
+                      {s.label}
                     </div>
                     {s.expect && (
                       <div className="text-[11px] text-muted-foreground mt-0.5">
-                        {t("Grenzwert", "Limit")}: {s.expect}
+                        {"Limit"}: {s.expect}
                       </div>
                     )}
                   </div>

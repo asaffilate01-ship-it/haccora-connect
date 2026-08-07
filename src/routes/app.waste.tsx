@@ -18,20 +18,12 @@ interface Row {
   user_id: string;
 }
 
-const REASONS_DE = [
-  "MHD überschritten",
-  "Kühlkette",
-  "Welk",
-  "Überproduktion",
-  "Gastreste",
-  "Verbrannt",
-];
 const REASONS_EN = ["Past use-by", "Chain broken", "Wilted", "Over-prep", "Guest waste", "Burnt"];
 
 function WastePage() {
   const { lang } = useI18n();
   const { user } = useAuth();
-  const t = (de: string, en: string) => (lang === "de" ? de : en);
+  const t = (_legacy: string, english: string) => english;
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -90,37 +82,26 @@ function WastePage() {
     <div className="p-6 md:p-10 space-y-6">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <div className="eyebrow">{t("Nachhaltigkeit", "Sustainability")}</div>
-          <h1 className="mt-1 text-3xl md:text-4xl">{t("Abfallprotokoll", "Waste log")}</h1>
+          <div className="eyebrow">{"Sustainability"}</div>
+          <h1 className="mt-1 text-3xl md:text-4xl">{"Waste log"}</h1>
           <p className="text-muted-foreground mt-1">
-            {t(
-              "Live gespeichert · Kosten & Menge auf einen Blick.",
-              "Live storage · cost & volume at a glance.",
-            )}
+            {"Live storage · cost & volume at a glance."}
           </p>
         </div>
         <button onClick={() => setOpen((o) => !o)} className="btn-alert-solid text-sm">
           <PlusCircle size={16} className="inline mr-1.5" />
-          {t("Eintrag", "New entry")}
+          {"New entry"}
         </button>
       </div>
 
       <div className="grid md:grid-cols-3 gap-4">
         <Kpi
-          label={t("Kostenverlust (Woche)", "Cost loss (week)")}
+          label={"Cost loss (week)"}
           value={`£${weekCost.toFixed(2)}`}
-          hint={`${week.length} ${t("Einträge", "entries")}`}
+          hint={`${week.length} ${"entries"}`}
         />
-        <Kpi
-          label={t("Menge (Woche)", "Volume (week)")}
-          value={`${weekQty.toFixed(1)} kg`}
-          hint={t("Ziel < 25 kg", "Target < 25 kg")}
-        />
-        <Kpi
-          label={t("Gesamt (30 T.)", "Total (30d)")}
-          value={String(rows.length)}
-          hint={t("Einträge", "entries")}
-        />
+        <Kpi label={"Volume (week)"} value={`${weekQty.toFixed(1)} kg`} hint={"Target < 25 kg"} />
+        <Kpi label={"Total (30d)"} value={String(rows.length)} hint={"entries"} />
       </div>
 
       {open && (
@@ -128,13 +109,13 @@ function WastePage() {
           <input
             value={form.item}
             onChange={(e) => setForm((f) => ({ ...f, item: e.target.value }))}
-            placeholder={t("Artikel", "Item")}
+            placeholder={"Item"}
             className="md:col-span-2 rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
           <input
             value={form.qty}
             onChange={(e) => setForm((f) => ({ ...f, qty: e.target.value }))}
-            placeholder={t("Menge", "Qty")}
+            placeholder={"Qty"}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
           <input
@@ -148,8 +129,8 @@ function WastePage() {
             onChange={(e) => setForm((f) => ({ ...f, reason: e.target.value }))}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
           >
-            {(lang === "de" ? REASONS_DE : REASONS_EN).map((r, i) => (
-              <option key={r} value={lang === "de" ? REASONS_EN[i] : r}>
+            {REASONS_EN.map((r, i) => (
+              <option key={r} value={r}>
                 {r}
               </option>
             ))}
@@ -166,7 +147,7 @@ function WastePage() {
             className="btn-alert-solid text-sm md:col-span-6 inline-flex items-center justify-center gap-2"
           >
             {busy ? <Loader2 size={14} className="animate-spin" /> : <PlusCircle size={14} />}
-            {t("Speichern", "Save")}
+            {"Save"}
           </button>
           {err && (
             <div className="md:col-span-6 rounded-lg bg-destructive/10 text-destructive text-sm px-3 py-2">
@@ -180,26 +161,24 @@ function WastePage() {
         {loading ? (
           <div className="p-10 text-center text-sm text-muted-foreground">
             <Loader2 size={16} className="inline animate-spin mr-2" />
-            {t("Lade…", "Loading…")}
+            {"Loading…"}
           </div>
         ) : rows.length === 0 ? (
-          <div className="p-10 text-center text-sm text-muted-foreground">
-            {t("Keine Einträge.", "Nothing here.")}
-          </div>
+          <div className="p-10 text-center text-sm text-muted-foreground">{"Nothing here."}</div>
         ) : (
           <>
             <div className="grid grid-cols-12 text-xs uppercase tracking-widest text-muted-foreground bg-secondary/60 px-5 py-3">
-              <div className="col-span-2">{t("Datum", "Date")}</div>
-              <div className="col-span-3">{t("Artikel", "Item")}</div>
-              <div className="col-span-2">{t("Menge", "Qty")}</div>
-              <div className="col-span-3">{t("Grund", "Reason")}</div>
-              <div className="col-span-2 text-right">{t("Kosten", "Cost")}</div>
+              <div className="col-span-2">{"Date"}</div>
+              <div className="col-span-3">{"Item"}</div>
+              <div className="col-span-2">{"Qty"}</div>
+              <div className="col-span-3">{"Reason"}</div>
+              <div className="col-span-2 text-right">{"Cost"}</div>
             </div>
             <ul className="divide-y divide-border">
               {rows.map((e) => (
                 <li key={e.id} className="grid grid-cols-12 items-center px-5 py-3 text-sm">
                   <div className="col-span-2 text-xs text-muted-foreground">
-                    {new Date(e.logged_at).toLocaleDateString(lang === "de" ? "de-DE" : "en-GB")}
+                    {new Date(e.logged_at).toLocaleDateString("en-GB")}
                   </div>
                   <div className="col-span-3 flex items-center gap-2">
                     <Trash2 size={14} className="text-destructive" />

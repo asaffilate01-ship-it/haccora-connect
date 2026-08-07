@@ -37,51 +37,45 @@ interface Record_ {
 
 const QUIZ = [
   {
-    deQ: "Bei welcher Kerntemperatur ist Geflügel sicher gegart?",
-    enQ: "At which core temperature is poultry safely cooked?",
-    a: ["63 °C", "70 °C", "74 °C", "82 °C"],
-    correct: 2,
+    enQ: "Which cooking treatment is an FSA-recognised safe time and temperature combination?",
+    a: ["63 °C for 30 seconds", "70 °C for 2 minutes", "74 °C for 1 second", "82 °C for 1 second"],
+    correct: 1,
   },
   {
-    deQ: "Wie viele EU-Hauptallergene müssen deklariert werden?",
-    enQ: "How many EU main allergens must be declared?",
+    enQ: "How many regulated food allergens must UK food businesses declare?",
     a: ["8", "10", "12", "14"],
     correct: 3,
   },
   {
-    deQ: "Kaltbuffet – welche maximale Temperatur ist erlaubt?",
-    enQ: "Cold buffet — what maximum temperature is allowed?",
-    a: ["4 °C", "7 °C", "10 °C", "12 °C"],
+    enQ: "What is the legal maximum temperature for most chilled food in England, Wales and Northern Ireland?",
+    a: ["5 °C", "8 °C", "10 °C", "12 °C"],
     correct: 1,
   },
   {
-    deQ: "Wann müssen Hände gewaschen werden?",
     enQ: "When must hands be washed?",
     a: [
-      "Nur bei Schichtbeginn",
-      "Nach Kontamination und Tätigkeitswechsel",
-      "Einmal pro Stunde",
-      "Nur nach Pausen",
+      "Only at the start of a shift",
+      "After contamination and when changing tasks",
+      "Once per hour",
+      "Only after breaks",
     ],
     correct: 1,
   },
   {
-    deQ: "Was ist bei einer CCP-Abweichung erforderlich?",
     enQ: "What is required after a CCP deviation?",
     a: [
-      "Eintrag löschen",
-      "Nur den Wert wiederholen",
-      "Korrekturmaßnahme dokumentieren",
-      "Bis zum Tagesende warten",
+      "Delete the record",
+      "Only repeat the reading",
+      "Record the corrective action",
+      "Wait until the end of the day",
     ],
     correct: 2,
   },
 ];
 
 function TrainingPage() {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
   const { user } = useAuth();
-  const tt = (de: string, en: string) => (lang === "de" ? de : en);
   const role = user?.role ?? "staff";
   const canSeeAll = role === "owner" || role === "manager" || role === "inspector";
   const canVerify = role === "owner" || role === "manager";
@@ -184,27 +178,27 @@ function TrainingPage() {
           on={tab === "courses"}
           onClick={() => setTab("courses")}
           icon={BookOpen}
-          label={tt("Kurse", "Courses")}
+          label={"Courses"}
         />
         {canSeeAll && (
           <TabBtn
             on={tab === "team"}
             onClick={() => setTab("team")}
             icon={ShieldCheck}
-            label={tt("Team", "Team")}
+            label={"Team"}
           />
         )}
         <TabBtn
           on={tab === "quiz"}
           onClick={() => setTab("quiz")}
           icon={GraduationCap}
-          label={tt("Wissenstest", "Knowledge test")}
+          label={"Knowledge test"}
         />
         <TabBtn
           on={tab === "certs"}
           onClick={() => setTab("certs")}
           icon={Award}
-          label={tt("Zertifikate", "Certificates")}
+          label={"Certificates"}
         />
       </div>
 
@@ -222,29 +216,27 @@ function TrainingPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                      {c.minutes} min · {c.modules} {tt("Module", "modules")}
+                      {c.minutes} min · {c.modules} {"modules"}
                     </div>
-                    <div className="font-display text-lg leading-tight mt-0.5">
-                      {lang === "de" ? c.title_de : c.title_en}
-                    </div>
+                    <div className="font-display text-lg leading-tight mt-0.5">{c.title_en}</div>
                   </div>
                   <span
                     className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded ${c.required ? "bg-destructive/15 text-destructive" : "bg-secondary text-muted-foreground"}`}
                   >
-                    {c.required ? tt("Pflicht", "Required") : tt("Empfohlen", "Recommended")}
+                    {c.required ? "Required" : "Recommended"}
                   </span>
                 </div>
                 <div className="mt-4 h-2 rounded-full bg-secondary overflow-hidden">
                   <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
                 </div>
                 <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
-                  <span>{rec?.completed_at ? tt("Abgeschlossen", "Completed") : `${pct}%`}</span>
+                  <span>{rec?.completed_at ? "Completed" : `${pct}%`}</span>
                   <button
                     onClick={() => startCourse(c)}
                     className="text-primary font-semibold inline-flex items-center gap-1"
                   >
                     <PlayCircle size={12} />
-                    {rec?.completed_at ? tt("Wiederholen", "Retake") : tt("Starten", "Start")}
+                    {rec?.completed_at ? "Retake" : "Start"}
                   </button>
                 </div>
               </div>
@@ -254,25 +246,21 @@ function TrainingPage() {
       ) : tab === "team" && canSeeAll ? (
         <div className="surface overflow-hidden">
           <div className="hidden md:grid grid-cols-12 text-xs uppercase tracking-widest text-muted-foreground bg-secondary/60 px-5 py-3">
-            <div className="col-span-4">{tt("Mitarbeiter", "Staff")}</div>
-            <div className="col-span-3">{tt("Kurs", "Course")}</div>
-            <div className="col-span-2">{tt("Fortschritt", "Progress")}</div>
-            <div className="col-span-3">{tt("Gültig bis", "Valid to")}</div>
+            <div className="col-span-4">{"Staff"}</div>
+            <div className="col-span-3">{"Course"}</div>
+            <div className="col-span-2">{"Progress"}</div>
+            <div className="col-span-3">{"Valid to"}</div>
           </div>
           <ul className="divide-y divide-border">
             {records.length === 0 && (
-              <li className="p-6 text-sm text-muted-foreground text-center">
-                {tt("Keine Datensätze.", "No records yet.")}
-              </li>
+              <li className="p-6 text-sm text-muted-foreground text-center">{"No records yet."}</li>
             )}
             {records.map((r) => {
               const c = courses.find((x) => x.id === r.course_id);
               return (
                 <li key={r.id} className="grid grid-cols-12 items-center px-5 py-3 text-sm">
                   <div className="col-span-4">{profiles[r.user_id] ?? r.user_id.slice(0, 8)}</div>
-                  <div className="col-span-3 text-xs">
-                    {c ? (lang === "de" ? c.title_de : c.title_en) : "—"}
-                  </div>
+                  <div className="col-span-3 text-xs">{c?.title_en ?? "—"}</div>
                   <div className="col-span-2">
                     <div className="h-2 rounded-full bg-secondary overflow-hidden">
                       <div className="h-full bg-primary" style={{ width: `${r.progress}%` }} />
@@ -286,10 +274,10 @@ function TrainingPage() {
                         onClick={() => verifyRecord(r)}
                         className="font-semibold text-primary"
                       >
-                        {tt("Prüfen", "Verify")}
+                        {"Verify"}
                       </button>
                     ) : (
-                      tt("Ausstehend", "Pending")
+                      "Pending"
                     )}
                   </div>
                 </li>
@@ -299,30 +287,24 @@ function TrainingPage() {
         </div>
       ) : tab === "quiz" ? (
         activeCourse ? (
-          <QuizView
-            key={activeCourse.id}
-            tt={tt}
-            lang={lang}
-            course={activeCourse}
-            onComplete={completeQuiz}
-          />
+          <QuizView key={activeCourse.id} course={activeCourse} onComplete={completeQuiz} />
         ) : (
           <div className="surface p-8 text-center text-sm text-muted-foreground">
-            {tt("Starten Sie zuerst einen Kurs.", "Start a course first.")}
+            {"Start a course first."}
           </div>
         )
       ) : (
         <div className="surface overflow-hidden">
           <div className="grid grid-cols-12 text-xs uppercase tracking-widest text-muted-foreground bg-secondary/60 px-5 py-3">
-            <div className="col-span-4">{tt("Mitarbeiter", "Staff")}</div>
-            <div className="col-span-4">{tt("Zertifikat", "Certificate")}</div>
-            <div className="col-span-2">{tt("Abgeschlossen", "Completed")}</div>
-            <div className="col-span-2">{tt("Gültig bis", "Valid to")}</div>
+            <div className="col-span-4">{"Staff"}</div>
+            <div className="col-span-4">{"Certificate"}</div>
+            <div className="col-span-2">{"Completed"}</div>
+            <div className="col-span-2">{"Valid to"}</div>
           </div>
           <ul className="divide-y divide-border">
             {records.filter((r) => r.verified_at).length === 0 && (
               <li className="p-6 text-sm text-muted-foreground text-center">
-                {tt("Noch keine geprüften Nachweise.", "No verified records yet.")}
+                {"No verified records yet."}
               </li>
             )}
             {records
@@ -335,14 +317,12 @@ function TrainingPage() {
                       <Award size={14} className="text-primary" />
                       {profiles[r.user_id] ?? "—"}
                     </div>
-                    <div className="col-span-4">
-                      {c ? (lang === "de" ? c.title_de : c.title_en) : "—"}
-                    </div>
+                    <div className="col-span-4">{c?.title_en ?? "—"}</div>
                     <div className="col-span-2 text-xs font-mono">
                       {r.completed_at?.slice(0, 10)}
                     </div>
                     <div className="col-span-2 text-xs font-mono">
-                      {r.certificate_valid_to ?? tt("Extern", "External")}
+                      {r.certificate_valid_to ?? "External"}
                     </div>
                   </li>
                 );
@@ -355,10 +335,9 @@ function TrainingPage() {
         <ShieldCheck size={20} className="text-primary" />
         <p className="text-xs text-muted-foreground">
           {t("training.privacy")}{" "}
-          {tt(
-            "Interne Kursabschlüsse ersetzen keine behördliche Food-handler health-Belehrung; externe Nachweise müssen hochgeladen und geprüft werden.",
-            "Internal course completion does not replace an official Food-handler health briefing; external evidence must be uploaded and verified.",
-          )}
+          {
+            "Internal course completion does not replace an official Food-handler health briefing; external evidence must be uploaded and verified."
+          }
         </p>
       </div>
     </div>
@@ -388,13 +367,9 @@ function TabBtn({
 }
 
 function QuizView({
-  tt,
-  lang,
   course,
   onComplete,
 }: {
-  tt: (a: string, b: string) => string;
-  lang: "de" | "en";
   course: Course;
   onComplete: (score: number) => Promise<void>;
 }) {
@@ -415,18 +390,13 @@ function QuizView({
           className={`mx-auto mb-2 ${passed ? "text-success" : "text-warning"}`}
         />
         <div className="text-xs uppercase tracking-widest text-muted-foreground">
-          {lang === "de" ? course.title_de : course.title_en}
+          {course.title_en}
         </div>
         <div className="font-display text-2xl">
-          {tt("Ergebnis", "Result")}: {percentage}%
+          {"Result"}: {percentage}%
         </div>
         <p className="mt-2 text-sm text-muted-foreground">
-          {passed
-            ? tt("Bestanden – wartet auf Prüfung.", "Passed – awaiting verification.")
-            : tt(
-                "Nicht bestanden. Mindestens 80 % erforderlich.",
-                "Not passed. At least 80% is required.",
-              )}
+          {passed ? "Passed – awaiting verification." : "Not passed. At least 80% is required."}
         </p>
         {!saved && (
           <button
@@ -436,7 +406,7 @@ function QuizView({
               setSaved(true);
             }}
           >
-            {tt("Ergebnis speichern", "Save result")}
+            {"Save result"}
           </button>
         )}
         <button
@@ -448,7 +418,7 @@ function QuizView({
             setSaved(false);
           }}
         >
-          {tt("Neu starten", "Restart")}
+          {"Restart"}
         </button>
       </div>
     );
@@ -457,9 +427,9 @@ function QuizView({
   return (
     <div className="surface p-6 space-y-4 max-w-2xl">
       <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
-        {tt("Frage", "Question")} {i + 1} / {QUIZ.length}
+        {"Question"} {i + 1} / {QUIZ.length}
       </div>
-      <div className="font-display text-xl">{lang === "de" ? q.deQ : q.enQ}</div>
+      <div className="font-display text-xl">{q.enQ}</div>
       <div className="grid gap-2">
         {q.a.map((a, idx) => {
           const isPicked = picked === idx;
@@ -492,7 +462,7 @@ function QuizView({
             setI((n) => n + 1);
           }}
         >
-          {tt("Weiter", "Next")}
+          {"Next"}
         </button>
       )}
     </div>

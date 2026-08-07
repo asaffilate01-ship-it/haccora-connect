@@ -65,9 +65,7 @@ export function ExperienceController() {
       className="sticky top-9 z-40 flex min-h-10 items-center justify-center gap-2 bg-amber-300 px-4 text-xs font-bold text-amber-950"
     >
       <CloudOff size={15} />
-      {lang === "de"
-        ? "Offline: Keine Daten werden als gespeichert angezeigt, bis der Server bestätigt."
-        : "Offline: nothing is shown as saved until the server confirms it."}
+      {"Offline: nothing is shown as saved until the server confirms it."}
       <RefreshCw size={13} className="animate-pulse" />
     </div>
   );

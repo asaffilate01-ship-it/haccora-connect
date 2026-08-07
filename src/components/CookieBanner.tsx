@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 
-const KEY = "gs-cookie-consent";
+const KEY = "haccora-storage-notice-v1";
 
 type Consent = { necessary: true; ts: number };
 
@@ -63,13 +63,13 @@ export function CookieBanner() {
               onClick={() => setShowDetails((s) => !s)}
               className="text-xs font-bold px-3 py-2 rounded-full border border-black/15 hover:bg-black/5"
             >
-              {t("cookie.customize")}
+              {t("cookie.details")}
             </button>
             <button
               onClick={acknowledge}
               className="text-xs font-black px-4 py-2 rounded-full bg-[color:var(--color-alert-green)] text-white hover:brightness-110"
             >
-              {t("cookie.accept")}
+              {t("cookie.continue")}
             </button>
           </div>
         </div>

@@ -23,17 +23,17 @@ interface Row {
   notes: string | null;
 }
 
-const METHOD: Record<Method, [string, string]> = {
-  ice_bath: ["Eiswasser (0 °C)", "Ice bath (0 °C)"],
-  boiling: ["Siedeprüfung (100 °C)", "Boiling (100 °C)"],
-  reference: ["Referenzthermometer", "Reference thermometer"],
-  service: ["Wartungsservice", "Service calibration"],
+const METHOD: Record<Method, string> = {
+  ice_bath: "Ice bath (0 °C)",
+  boiling: "Boiling point check (adjust for altitude)",
+  reference: "Reference thermometer",
+  service: "Service calibration",
 };
 
 function CalibrationPage() {
   const { lang } = useI18n();
   const { user } = useAuth();
-  const t = (de: string, en: string) => (lang === "de" ? de : en);
+  const t = (_legacy: string, english: string) => english;
   const [items, setItems] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
@@ -114,27 +114,22 @@ function CalibrationPage() {
     <div className="p-6 md:p-10 space-y-8">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <div className="eyebrow">{t("Messmittel & Prüfung", "Instruments & verification")}</div>
-          <h1 className="mt-1 text-3xl md:text-4xl">
-            {t("Thermometer-Kalibrierung", "Thermometer calibration")}
-          </h1>
+          <div className="eyebrow">{"Instruments & verification"}</div>
+          <h1 className="mt-1 text-3xl md:text-4xl">{"Thermometer calibration"}</h1>
           <p className="text-muted-foreground mt-1 max-w-2xl">
-            {t(
-              "Prüfungen Ihrer Kern-, Kühl- und Handmessgeräte nachvollziehbar dokumentieren.",
-              "Keep a traceable record of core, cold-store and handheld probe checks.",
-            )}
+            {"Keep a traceable record of core, cold-store and handheld probe checks."}
           </p>
         </div>
         <button onClick={() => setOpen((o) => !o)} className="btn-alert-solid text-sm">
           <PlusCircle size={16} className="inline mr-1.5" />
-          {t("Prüfung erfassen", "Log calibration")}
+          {"Log calibration"}
         </button>
       </div>
 
       <div className="grid md:grid-cols-3 gap-4">
-        <Kpi label={t("Fällig ≤ 30 T", "Due ≤ 30 d")} value={dueSoon} tone="warn" />
-        <Kpi label={t("Fehlgeschlagen", "Failed")} value={failed} tone="danger" />
-        <Kpi label={t("Prüfungen gesamt", "Total tests")} value={items.length} tone="neutral" />
+        <Kpi label={"Due ≤ 30 d"} value={dueSoon} tone="warn" />
+        <Kpi label={"Failed"} value={failed} tone="danger" />
+        <Kpi label={"Total tests"} value={items.length} tone="neutral" />
       </div>
 
       {err && (
@@ -146,13 +141,13 @@ function CalibrationPage() {
           <input
             value={f.device}
             onChange={(e) => setF({ ...f, device: e.target.value })}
-            placeholder={t("Gerät (z. B. Kernthermometer #1)", "Device (e.g. probe #1)")}
+            placeholder={"Device (e.g. probe #1)"}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm md:col-span-2"
           />
           <input
             value={f.serial_no}
             onChange={(e) => setF({ ...f, serial_no: e.target.value })}
-            placeholder={t("Seriennr.", "Serial no.")}
+            placeholder={"Serial no."}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
           <select
@@ -162,7 +157,7 @@ function CalibrationPage() {
           >
             {(Object.keys(METHOD) as Method[]).map((k) => (
               <option key={k} value={k}>
-                {METHOD[k][lang === "de" ? 0 : 1]}
+                {METHOD[k]}
               </option>
             ))}
           </select>
@@ -171,7 +166,7 @@ function CalibrationPage() {
             onChange={(e) => setF({ ...f, reference_c: e.target.value })}
             type="number"
             step="0.1"
-            placeholder={t("Referenz °C", "Ref °C")}
+            placeholder={"Ref °C"}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
           <input
@@ -179,7 +174,7 @@ function CalibrationPage() {
             onChange={(e) => setF({ ...f, measured_c: e.target.value })}
             type="number"
             step="0.1"
-            placeholder={t("Gemessen °C", "Measured °C")}
+            placeholder={"Measured °C"}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
           <input
@@ -191,13 +186,13 @@ function CalibrationPage() {
           <input
             value={f.performed_by}
             onChange={(e) => setF({ ...f, performed_by: e.target.value })}
-            placeholder={t("Durch", "Performed by")}
+            placeholder={"Performed by"}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
           <input
             value={f.notes}
             onChange={(e) => setF({ ...f, notes: e.target.value })}
-            placeholder={t("Notiz", "Note")}
+            placeholder={"Note"}
             className="md:col-span-3 rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
           <button
@@ -206,7 +201,7 @@ function CalibrationPage() {
             className="btn-alert-solid text-sm md:col-span-4 inline-flex items-center justify-center gap-2"
           >
             {busy && <Loader2 size={14} className="animate-spin" />}
-            {t("Speichern", "Save")}
+            {"Save"}
           </button>
         </div>
       )}
@@ -215,11 +210,11 @@ function CalibrationPage() {
         {loading ? (
           <div className="p-10 text-center text-sm text-muted-foreground">
             <Loader2 size={16} className="inline animate-spin mr-2" />
-            {t("Lade…", "Loading…")}
+            {"Loading…"}
           </div>
         ) : items.length === 0 ? (
           <div className="p-10 text-center text-sm text-muted-foreground">
-            {t("Noch keine Kalibrierungen erfasst.", "No calibrations logged yet.")}
+            {"No calibrations logged yet."}
           </div>
         ) : (
           <ul className="divide-y divide-border">
@@ -238,7 +233,7 @@ function CalibrationPage() {
                     )}
                   </div>
                   <div className="text-xs text-muted-foreground mt-1 flex flex-wrap gap-x-4 gap-y-1">
-                    <span>{METHOD[i.method][lang === "de" ? 0 : 1]}</span>
+                    <span>{METHOD[i.method]}</span>
                     {i.reference_c != null && i.measured_c != null && (
                       <span>
                         {i.reference_c} → <b className="text-foreground">{i.measured_c} °C</b> (Δ{" "}
@@ -247,15 +242,10 @@ function CalibrationPage() {
                     )}
                     {i.next_due && (
                       <span>
-                        {t("Nächste Prüfung", "Next due")}:{" "}
-                        <b className="text-foreground">{i.next_due}</b>
+                        {"Next due"}: <b className="text-foreground">{i.next_due}</b>
                       </span>
                     )}
-                    <span>
-                      {new Date(i.performed_at).toLocaleDateString(
-                        lang === "de" ? "de-DE" : "en-GB",
-                      )}
-                    </span>
+                    <span>{new Date(i.performed_at).toLocaleDateString("en-GB")}</span>
                   </div>
                   {i.notes && <div className="text-xs text-muted-foreground mt-1">{i.notes}</div>}
                 </div>

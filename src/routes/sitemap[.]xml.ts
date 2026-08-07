@@ -12,7 +12,11 @@ export const Route = createFileRoute("/sitemap.xml")({
           { path: "/blog", changefreq: "weekly", priority: "0.8" },
           { path: "/legal/privacy", changefreq: "monthly", priority: "0.3" },
           { path: "/legal/terms", changefreq: "monthly", priority: "0.3" },
-          { path: "/legal/imprint", changefreq: "monthly", priority: "0.3" },
+          { path: "/legal/cookies", changefreq: "monthly", priority: "0.3" },
+          { path: "/legal/company-details", changefreq: "monthly", priority: "0.3" },
+          { path: "/legal/data-processing", changefreq: "monthly", priority: "0.3" },
+          { path: "/legal/accessibility", changefreq: "monthly", priority: "0.3" },
+          { path: "/legal/complaints", changefreq: "monthly", priority: "0.3" },
         ];
         const urls = entries.map((e) =>
           [

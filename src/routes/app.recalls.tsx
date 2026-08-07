@@ -28,7 +28,7 @@ function RecallsPage() {
   const { lang } = useI18n();
   const { user } = useAuth();
   const role = user?.role;
-  const t = (de: string, en: string) => (lang === "de" ? de : en);
+  const t = (_legacy: string, english: string) => english;
   const canEdit = role === "owner" || role === "manager" || role === "chef";
 
   const [rows, setRows] = useState<Recall[]>([]);
@@ -55,7 +55,7 @@ function RecallsPage() {
 
   const submit = async () => {
     if (!form.product.trim() || !form.reason.trim()) {
-      setErr(t("Produkt und Grund sind Pflicht.", "Product and reason are required."));
+      setErr("Product and reason are required.");
       return;
     }
     setBusy(true);
@@ -91,40 +91,35 @@ function RecallsPage() {
     <div className="p-6 md:p-10 space-y-8">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <div className="eyebrow">{t("Sicherheit · § 44 LFGB", "Safety · § 44 LFGB")}</div>
-          <h1 className="mt-1 text-3xl md:text-4xl">
-            {t("Rückrufe & Quarantäne", "Recalls & quarantine")}
-          </h1>
+          <div className="eyebrow">{"UK food safety · withdrawals and recalls"}</div>
+          <h1 className="mt-1 text-3xl md:text-4xl">{"Recalls & quarantine"}</h1>
           <p className="text-muted-foreground mt-1">
-            {t(
-              "BVL/RASFF-Warnungen erfassen, Chargen sperren, betroffene Kunden benachrichtigen.",
-              "Track BVL/RASFF alerts, block batches, notify affected customers.",
-            )}
+            {"Track BVL/RASFF alerts, block batches, notify affected customers."}
           </p>
         </div>
         {canEdit && (
           <button onClick={() => setOpen((o) => !o)} className="btn-alert-solid text-sm">
             <PlusCircle size={16} className="inline mr-1.5" />
-            {t("Rückruf melden", "Report recall")}
+            {"Report recall"}
           </button>
         )}
       </div>
 
       <div className="grid md:grid-cols-3 gap-4">
         <Kpi
-          label={t("Offene Rückrufe", "Open recalls")}
+          label={"Open recalls"}
           value={String(active)}
           tone={active > 0 ? "destructive" : undefined}
           icon={AlertTriangle}
         />
         <Kpi
-          label={t("Quarantäne", "Quarantined")}
+          label={"Quarantined"}
           value={String(quarantined)}
           tone={quarantined > 0 ? "warning" : undefined}
           icon={ShieldAlert}
         />
         <Kpi
-          label={t("Geschlossen", "Closed")}
+          label={"Closed"}
           value={String(rows.filter((r) => r.status === "closed").length)}
           tone="success"
           icon={CheckCircle2}
@@ -136,13 +131,13 @@ function RecallsPage() {
           <input
             value={form.product}
             onChange={(e) => setForm({ ...form, product: e.target.value })}
-            placeholder={t("Produkt", "Product")}
+            placeholder={"Product"}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
           <input
             value={form.batch}
             onChange={(e) => setForm({ ...form, batch: e.target.value })}
-            placeholder={t("Chargen-Nr.", "Lot #")}
+            placeholder={"Lot #"}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
           <select
@@ -150,9 +145,9 @@ function RecallsPage() {
             onChange={(e) => setForm({ ...form, severity: e.target.value })}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
           >
-            <option value="high">{t("Hoch", "High")}</option>
-            <option value="medium">{t("Mittel", "Medium")}</option>
-            <option value="low">{t("Niedrig", "Low")}</option>
+            <option value="high">{"High"}</option>
+            <option value="medium">{"Medium"}</option>
+            <option value="low">{"Low"}</option>
           </select>
           <button onClick={submit} disabled={busy} className="btn-alert-solid text-sm">
             {busy ? (
@@ -160,12 +155,12 @@ function RecallsPage() {
             ) : (
               <PlusCircle size={14} className="inline mr-1" />
             )}
-            {t("Sperren", "Report")}
+            {"Report"}
           </button>
           <input
             value={form.reason}
             onChange={(e) => setForm({ ...form, reason: e.target.value })}
-            placeholder={t("Grund", "Reason")}
+            placeholder={"Reason"}
             className="md:col-span-4 rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
         </div>
@@ -177,20 +172,20 @@ function RecallsPage() {
 
       <div className="surface overflow-hidden">
         <div className="hidden md:grid grid-cols-12 text-xs uppercase tracking-widest text-muted-foreground bg-secondary/60 px-5 py-3">
-          <div className="col-span-3">{t("Produkt", "Product")}</div>
-          <div className="col-span-2">{t("Charge", "Lot")}</div>
-          <div className="col-span-4">{t("Grund", "Reason")}</div>
-          <div className="col-span-1 text-right">{t("Prio", "Sev")}</div>
-          <div className="col-span-2 text-right">{t("Status", "Status")}</div>
+          <div className="col-span-3">{"Product"}</div>
+          <div className="col-span-2">{"Lot"}</div>
+          <div className="col-span-4">{"Reason"}</div>
+          <div className="col-span-1 text-right">{"Sev"}</div>
+          <div className="col-span-2 text-right">{"Status"}</div>
         </div>
         {loading ? (
           <div className="p-10 text-center text-sm text-muted-foreground">
             <Loader2 size={16} className="inline animate-spin mr-2" />
-            {t("Lade…", "Loading…")}
+            {"Loading…"}
           </div>
         ) : rows.length === 0 ? (
           <div className="p-10 text-center text-sm text-muted-foreground">
-            {t("Keine Rückrufe erfasst.", "No recalls recorded.")}
+            {"No recalls recorded."}
           </div>
         ) : (
           <ul className="divide-y divide-border">
@@ -207,9 +202,7 @@ function RecallsPage() {
                   <div>
                     <div className="font-medium">{r.product}</div>
                     <div className="text-[11px] text-muted-foreground">
-                      {new Date(r.initiated_at).toLocaleDateString(
-                        lang === "de" ? "de-DE" : "en-GB",
-                      )}
+                      {new Date(r.initiated_at).toLocaleDateString("en-GB")}
                     </div>
                   </div>
                 </div>
@@ -229,13 +222,13 @@ function RecallsPage() {
                       onChange={(e) => updateStatus(r.id, e.target.value)}
                       className="text-[10px] font-bold uppercase rounded border border-border bg-card px-2 py-0.5"
                     >
-                      <option value="open">{t("Offen", "Open")}</option>
-                      <option value="quarantined">{t("Quarantäne", "Quarantine")}</option>
-                      <option value="closed">{t("Geschlossen", "Closed")}</option>
+                      <option value="open">{"Open"}</option>
+                      <option value="quarantined">{"Quarantine"}</option>
+                      <option value="closed">{"Closed"}</option>
                     </select>
                   ) : (
                     <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-success/15 text-success">
-                      {t("Geschlossen", "Closed")}
+                      {"Closed"}
                     </span>
                   )}
                 </div>

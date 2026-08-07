@@ -24,7 +24,7 @@ interface Row {
 function ChemicalsPage() {
   const { lang } = useI18n();
   const { user } = useAuth();
-  const t = (de: string, en: string) => (lang === "de" ? de : en);
+  const t = (_legacy: string, english: string) => english;
   const [items, setItems] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -100,39 +100,24 @@ function ChemicalsPage() {
     <div className="p-6 md:p-10 space-y-8">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <div className="eyebrow">{t("Chemikalien & SDS", "Chemicals & SDS")}</div>
-          <h1 className="mt-1 text-3xl md:text-4xl">
-            {t("Gefahrstoffregister (COSHH/GHS)", "Chemicals register (COSHH/GHS)")}
-          </h1>
+          <div className="eyebrow">{"Chemicals & SDS"}</div>
+          <h1 className="mt-1 text-3xl md:text-4xl">{"Chemicals register (COSHH/GHS)"}</h1>
           <p className="text-muted-foreground mt-1 max-w-2xl">
-            {t(
-              "Reinigungsmittel, Desinfektion und Gefahrstoffe mit Sicherheitsdatenblatt und PSA erfassen (GefStoffV, TRGS 555).",
-              "Detergents, sanitisers and hazardous substances with SDS link and PPE — per GefStoffV / TRGS 555.",
-            )}
+            {
+              "Detergents, sanitisers and hazardous substances with SDS link and PPE — per GefStoffV / TRGS 555."
+            }
           </p>
         </div>
         <button onClick={() => setOpen((o) => !o)} className="btn-alert-solid text-sm">
           <PlusCircle size={16} className="inline mr-1.5" />
-          {t("Stoff hinzufügen", "Add substance")}
+          {"Add substance"}
         </button>
       </div>
 
       <div className="grid md:grid-cols-3 gap-4">
-        <Kpi
-          label={t("Erfasste Stoffe", "Substances registered")}
-          value={items.length}
-          tone="neutral"
-        />
-        <Kpi
-          label={t("Prüfung ≤ 30 T fällig", "Review due ≤ 30 d")}
-          value={dueReview}
-          tone="warn"
-        />
-        <Kpi
-          label={t("Mit SDS-Link", "With SDS link")}
-          value={items.filter((i) => i.sds_url).length}
-          tone="ok"
-        />
+        <Kpi label={"Substances registered"} value={items.length} tone="neutral" />
+        <Kpi label={"Review due ≤ 30 d"} value={dueReview} tone="warn" />
+        <Kpi label={"With SDS link"} value={items.filter((i) => i.sds_url).length} tone="ok" />
       </div>
 
       {err && (
@@ -144,37 +129,37 @@ function ChemicalsPage() {
           <input
             value={f.name}
             onChange={(e) => setF({ ...f, name: e.target.value })}
-            placeholder={t("Bezeichnung", "Name")}
+            placeholder={"Name"}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm md:col-span-2"
           />
           <input
             value={f.supplier}
             onChange={(e) => setF({ ...f, supplier: e.target.value })}
-            placeholder={t("Lieferant", "Supplier")}
+            placeholder={"Supplier"}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm md:col-span-2"
           />
           <input
             value={f.hazard_class}
             onChange={(e) => setF({ ...f, hazard_class: e.target.value })}
-            placeholder={t("Gefahrenklasse (H-Sätze)", "Hazard class (H-statements)")}
+            placeholder={"Hazard class (H-statements)"}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm md:col-span-2"
           />
           <input
             value={f.storage_location}
             onChange={(e) => setF({ ...f, storage_location: e.target.value })}
-            placeholder={t("Lagerort", "Storage location")}
+            placeholder={"Storage location"}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm md:col-span-2"
           />
           <input
             value={f.ppe_required}
             onChange={(e) => setF({ ...f, ppe_required: e.target.value })}
-            placeholder={t("PSA (Handschuhe, Brille…)", "PPE (gloves, goggles…)")}
+            placeholder={"PPE (gloves, goggles…)"}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm md:col-span-2"
           />
           <input
             value={f.sds_url}
             onChange={(e) => setF({ ...f, sds_url: e.target.value })}
-            placeholder={t("SDS URL", "SDS URL")}
+            placeholder={"SDS URL"}
             type="url"
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm md:col-span-2"
           />
@@ -182,13 +167,13 @@ function ChemicalsPage() {
             value={f.next_review}
             onChange={(e) => setF({ ...f, next_review: e.target.value })}
             type="date"
-            placeholder={t("Nächste Prüfung", "Next review")}
+            placeholder={"Next review"}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
           <input
             value={f.notes}
             onChange={(e) => setF({ ...f, notes: e.target.value })}
-            placeholder={t("Notiz", "Note")}
+            placeholder={"Note"}
             className="md:col-span-3 rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
           <button
@@ -197,7 +182,7 @@ function ChemicalsPage() {
             className="btn-alert-solid text-sm md:col-span-4 inline-flex items-center justify-center gap-2"
           >
             {busy && <Loader2 size={14} className="animate-spin" />}
-            {t("Speichern", "Save")}
+            {"Save"}
           </button>
         </div>
       )}
@@ -206,11 +191,11 @@ function ChemicalsPage() {
         {loading ? (
           <div className="p-10 text-center text-sm text-muted-foreground">
             <Loader2 size={16} className="inline animate-spin mr-2" />
-            {t("Lade…", "Loading…")}
+            {"Loading…"}
           </div>
         ) : items.length === 0 ? (
           <div className="p-10 text-center text-sm text-muted-foreground">
-            {t("Noch keine Stoffe erfasst.", "No substances registered yet.")}
+            {"No substances registered yet."}
           </div>
         ) : (
           <ul className="divide-y divide-border">
@@ -232,13 +217,13 @@ function ChemicalsPage() {
                     )}
                     {i.storage_location && (
                       <span>
-                        {t("Lager", "Storage")}: {i.storage_location}
+                        {"Storage"}: {i.storage_location}
                       </span>
                     )}
                     {i.ppe_required && <span>PSA: {i.ppe_required}</span>}
                     {i.next_review && (
                       <span>
-                        {t("Prüfung", "Review")}: <b className="text-foreground">{i.next_review}</b>
+                        {"Review"}: <b className="text-foreground">{i.next_review}</b>
                       </span>
                     )}
                   </div>

@@ -19,16 +19,27 @@ export const PUBLIC_CONFIG = {
     companyName: value("VITE_LEGAL_COMPANY_NAME"),
     addressLine1: value("VITE_LEGAL_ADDRESS_LINE_1"),
     postalCity: value("VITE_LEGAL_POSTAL_CITY"),
+    registeredIn: value("VITE_LEGAL_REGISTERED_IN"),
+    companyNumber: value("VITE_LEGAL_COMPANY_NUMBER"),
     email: value("VITE_LEGAL_EMAIL"),
     phone: value("VITE_LEGAL_PHONE"),
-    register: value("VITE_LEGAL_REGISTER"),
     vatId: value("VITE_LEGAL_VAT_ID"),
-    managingDirector: value("VITE_LEGAL_MANAGING_DIRECTOR"),
+    icoRegistration: value("VITE_LEGAL_ICO_REGISTRATION"),
   },
   supportUrl: httpsUrl("VITE_SUPPORT_URL"),
   statusUrl: httpsUrl("VITE_STATUS_URL"),
 };
 
-export const legalIdentityComplete = Object.values(PUBLIC_CONFIG.legal).every(Boolean);
+const requiredLegalIdentity = [
+  PUBLIC_CONFIG.legal.companyName,
+  PUBLIC_CONFIG.legal.addressLine1,
+  PUBLIC_CONFIG.legal.postalCity,
+  PUBLIC_CONFIG.legal.registeredIn,
+  PUBLIC_CONFIG.legal.companyNumber,
+  PUBLIC_CONFIG.legal.email,
+  PUBLIC_CONFIG.legal.phone,
+];
+
+export const legalIdentityComplete = requiredLegalIdentity.every(Boolean);
 export const legalPublishReady =
   legalIdentityComplete && value("VITE_LEGAL_CONTENT_APPROVED") === "true";

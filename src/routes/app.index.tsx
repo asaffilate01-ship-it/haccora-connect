@@ -58,7 +58,7 @@ interface DashCounts {
 }
 
 function Dashboard() {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
   const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -109,7 +109,7 @@ function Dashboard() {
         id: r.id,
         title: r.title,
         kind: r.kind,
-        time: created.toLocaleTimeString(lang === "de" ? "de-DE" : "en-GB", {
+        time: created.toLocaleTimeString("en-GB", {
           hour: "2-digit",
           minute: "2-digit",
         }),
@@ -195,7 +195,7 @@ function Dashboard() {
       poSpend: Math.round(spend),
     });
     setLoading(false);
-  }, [user, lang]);
+  }, [user]);
 
   useEffect(() => {
     load();
@@ -222,7 +222,7 @@ function Dashboard() {
   if (!user) return null;
 
   const firstName = user.name.split(" ")[0];
-  const dateStr = new Date().toLocaleDateString(lang === "de" ? "de-DE" : "en-GB", {
+  const dateStr = new Date().toLocaleDateString("en-GB", {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -380,7 +380,7 @@ function OwnerView({
   done: (id: string) => void;
   counts: DashCounts;
 }) {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
   const tempScore =
     counts.tempTotal > 0 ? Math.round((counts.tempOk / counts.tempTotal) * 100) : 100;
   const checksScore =
@@ -388,7 +388,7 @@ function OwnerView({
       ? Math.round((tasks.filter((x) => x.status === "done").length / tasks.length) * 100)
       : 100;
   const complianceScore = Math.round(tempScore * 0.5 + checksScore * 0.5);
-  const spendFmt = new Intl.NumberFormat(lang === "de" ? "de-DE" : "en-GB", {
+  const spendFmt = new Intl.NumberFormat("en-GB", {
     style: "currency",
     currency: "GBP",
     maximumFractionDigits: 0,
@@ -778,7 +778,7 @@ function TasksCard({
 }
 
 function ActionsCard() {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
   const [items, setItems] = useState<LiveAction[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -817,7 +817,7 @@ function ActionsCard() {
   const rel = (iso: string) => {
     const diff = Date.now() - new Date(iso).getTime();
     const m = Math.floor(diff / 60000);
-    if (m < 1) return lang === "de" ? "jetzt" : "now";
+    if (m < 1) return "now";
     if (m < 60) return `${m}m`;
     const h = Math.floor(m / 60);
     if (h < 24) return `${h}h`;
@@ -837,7 +837,7 @@ function ActionsCard() {
         {!loading && items.length === 0 && (
           <div className="text-xs text-muted-foreground py-6 text-center inline-flex items-center gap-2 w-full justify-center">
             <CheckCircle2 size={14} className="text-success" />
-            {lang === "de" ? "Keine offenen Alerts" : "No open alerts"}
+            {"No open alerts"}
           </div>
         )}
         {items.map((a) => (

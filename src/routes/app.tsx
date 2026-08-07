@@ -389,8 +389,7 @@ function AppShell() {
           id: a.id,
           sev: sevMap(a.severity),
           title: a.title,
-          meta:
-            a.message ?? new Date(a.created_at).toLocaleString(lang === "de" ? "de-DE" : "en-GB"),
+          meta: a.message ?? new Date(a.created_at).toLocaleString("en-GB"),
           to: KIND_TO_ROUTE[a.kind] ?? "/app/alerts",
         })),
       );
@@ -425,7 +424,7 @@ function AppShell() {
         <div className="px-4 md:px-6 h-9 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
             <span className="inline-flex items-center rounded-full bg-[color:var(--color-alert-red)] px-2 py-0.5 text-[10px] font-black uppercase tracking-widest shrink-0">
-              {lang === "de" ? "Aktiver Betrieb" : "Active workspace"}
+              {"Active workspace"}
             </span>
             <span className="truncate text-white/80 hidden sm:inline">
               {user.organizationName ?? user.location} · {user.location} · {t(`role.${user.role}`)}
@@ -437,7 +436,7 @@ function AppShell() {
               onClick={() => signOut()}
               className="hidden md:inline-flex items-center gap-1 rounded-full border border-white/20 px-3 py-1 text-[11px] font-semibold hover:bg-white/10 transition"
             >
-              {lang === "de" ? "Konto wechseln" : "Switch account"}
+              {"Switch account"}
             </Link>
             <button
               onClick={() => {
@@ -446,7 +445,7 @@ function AppShell() {
               }}
               className="inline-flex items-center gap-1 rounded-full bg-white text-black px-3 py-1 text-[11px] font-bold hover:bg-white/90 transition"
             >
-              <LogOut size={12} /> {lang === "de" ? "Abmelden" : "Sign out"}
+              <LogOut size={12} /> {"Sign out"}
             </button>
           </div>
         </div>

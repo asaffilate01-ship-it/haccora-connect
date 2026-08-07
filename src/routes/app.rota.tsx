@@ -42,8 +42,8 @@ function RotaPage() {
   const { lang } = useI18n();
   const { user } = useAuth();
   const role = user?.role ?? "staff";
-  const t = (de: string, en: string) => (lang === "de" ? de : en);
-  const days = lang === "de" ? DAYS_DE : DAYS_EN;
+  const t = (_legacy: string, english: string) => english;
+  const days = DAYS_EN;
   const canManage = role === "owner" || role === "manager";
 
   const [tab, setTab] = useState<"rota" | "clock">("rota");
@@ -135,10 +135,8 @@ function RotaPage() {
     <div className="p-6 md:p-10 space-y-8">
       <div className="flex items-end justify-between gap-4 flex-wrap">
         <div>
-          <div className="eyebrow">{t("Personal", "Workforce")}</div>
-          <h1 className="mt-1 text-3xl md:text-4xl">
-            {t("Dienstplan & Stempeluhr", "Rota & clock-in")}
-          </h1>
+          <div className="eyebrow">{"Workforce"}</div>
+          <h1 className="mt-1 text-3xl md:text-4xl">{"Rota & clock-in"}</h1>
           <p className="text-muted-foreground mt-1">
             {t(
               `Week beginning ${weekStart.toLocaleDateString("en-GB")} · Basic duration and rest checks are active.`,
@@ -149,7 +147,7 @@ function RotaPage() {
         {canManage && tab === "rota" && (
           <button onClick={() => setShowForm(true)} className="btn-alert-solid text-sm">
             <Plus size={16} className="inline mr-1.5" />
-            {t("Schicht hinzufügen", "Add shift")}
+            {"Add shift"}
           </button>
         )}
       </div>
@@ -160,14 +158,14 @@ function RotaPage() {
           className={`px-4 py-1.5 rounded-full ${tab === "rota" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
         >
           <CalendarDays size={14} className="inline mr-1.5" />
-          {t("Dienstplan", "Rota")}
+          {"Rota"}
         </button>
         <button
           onClick={() => setTab("clock")}
           className={`px-4 py-1.5 rounded-full ${tab === "clock" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
         >
           <Clock size={14} className="inline mr-1.5" />
-          {t("Stempeluhr", "Clock-in")}
+          {"Clock-in"}
         </button>
       </div>
 
@@ -179,16 +177,14 @@ function RotaPage() {
         ) : byStaff.length === 0 ? (
           <div className="surface p-10 text-center text-sm text-muted-foreground">
             <CalendarDays size={20} className="inline opacity-40 mr-2" />
-            {t("Noch keine Schichten diese Woche.", "No shifts scheduled this week.")}
+            {"No shifts scheduled this week."}
           </div>
         ) : (
           <div className="surface overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
                 <tr className="bg-secondary/60 text-muted-foreground uppercase tracking-widest">
-                  <th className="text-left p-3 font-semibold min-w-[10rem]">
-                    {t("Mitarbeiter", "Staff")}
-                  </th>
+                  <th className="text-left p-3 font-semibold min-w-[10rem]">{"Staff"}</th>
                   {days.map((d, i) => (
                     <th key={d} className="p-3 font-semibold text-center">
                       {d} <span className="opacity-50">{weekDates[i].getDate()}</span>
@@ -253,19 +249,17 @@ function RotaPage() {
               <User size={18} />
             </span>
             <div className="flex-1 min-w-0">
-              <div className="font-display">{t("Ich", "Me")}</div>
+              <div className="font-display">{"Me"}</div>
               <div className="text-xs text-muted-foreground">
                 {myOpen ? (
                   <>
-                    {t("Eingestempelt seit", "Clocked in since")}{" "}
+                    {"Clocked in since"}{" "}
                     <span className="font-mono">
-                      {new Date(myOpen.clock_in).toLocaleTimeString(
-                        lang === "de" ? "de-DE" : "en-GB",
-                      )}
+                      {new Date(myOpen.clock_in).toLocaleTimeString("en-GB")}
                     </span>
                   </>
                 ) : (
-                  t("Nicht eingestempelt", "Not clocked in")
+                  "Not clocked in"
                 )}
               </div>
             </div>
@@ -280,7 +274,7 @@ function RotaPage() {
                 ) : (
                   <Square size={12} className="inline mr-1" />
                 )}
-                {t("Aus", "Out")}
+                {"Out"}
               </button>
             ) : (
               <button
@@ -293,18 +287,16 @@ function RotaPage() {
                 ) : (
                   <Play size={12} className="inline mr-1" />
                 )}
-                {t("Ein", "In")}
+                {"In"}
               </button>
             )}
           </div>
           {canManage && (
             <div>
-              <div className="text-sm font-display mb-3">
-                {t("Team-Aktivität", "Team activity")}
-              </div>
+              <div className="text-sm font-display mb-3">{"Team activity"}</div>
               {clocks.length === 0 ? (
                 <div className="surface p-6 text-center text-sm text-muted-foreground">
-                  {t("Noch keine Stempelvorgänge.", "No clock entries yet.")}
+                  {"No clock entries yet."}
                 </div>
               ) : (
                 <div className="grid md:grid-cols-2 gap-3">
@@ -317,22 +309,18 @@ function RotaPage() {
                         <div className="text-sm font-medium">{c.profile_name || "—"}</div>
                         <div className="text-xs text-muted-foreground">
                           <span className="font-mono">
-                            {new Date(c.clock_in).toLocaleString(lang === "de" ? "de-DE" : "en-GB")}
+                            {new Date(c.clock_in).toLocaleString("en-GB")}
                           </span>
                           {c.clock_out ? (
                             <>
                               {" "}
                               →{" "}
                               <span className="font-mono">
-                                {new Date(c.clock_out).toLocaleTimeString(
-                                  lang === "de" ? "de-DE" : "en-GB",
-                                )}
+                                {new Date(c.clock_out).toLocaleTimeString("en-GB")}
                               </span>
                             </>
                           ) : (
-                            <span className="ml-2 text-success font-semibold">
-                              ● {t("aktiv", "live")}
-                            </span>
+                            <span className="ml-2 text-success font-semibold">● {"live"}</span>
                           )}
                         </div>
                       </div>
@@ -388,12 +376,7 @@ function ShiftForm({
     const hours = (endAt.getTime() - startAt.getTime()) / 3600000;
     if (!Number.isFinite(hours) || hours <= 0 || hours > 10) {
       setSaving(false);
-      setError(
-        t(
-          "Schichten müssen am selben Tag enden und dürfen 10 Stunden nicht überschreiten.",
-          "Shifts must end on the same day and may not exceed 10 hours.",
-        ),
-      );
+      setError("Shifts must end on the same day and may not exceed 10 hours.");
       return;
     }
     const rangeStart = new Date(startAt);
@@ -419,12 +402,7 @@ function ShiftForm({
     });
     if (conflict) {
       setSaving(false);
-      setError(
-        t(
-          "Überschneidung oder weniger als 11 Stunden Ruhezeit erkannt.",
-          "An overlap or less than 11 hours of rest was detected.",
-        ),
-      );
+      setError("An overlap or less than 11 hours of rest was detected.");
       return;
     }
     const {
@@ -450,12 +428,12 @@ function ShiftForm({
     <div className="fixed inset-0 z-50 grid place-items-center bg-foreground/40 backdrop-blur-sm p-4">
       <form onSubmit={save} className="surface w-full max-w-md p-6 space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-xl">{t("Neue Schicht", "New shift")}</h2>
+          <h2 className="font-display text-xl">{"New shift"}</h2>
           <button type="button" onClick={onClose} className="text-muted-foreground">
             <X size={18} />
           </button>
         </div>
-        <FF label={t("Mitarbeiter", "Staff")}>
+        <FF label={"Staff"}>
           <input
             required
             value={staff}
@@ -464,7 +442,7 @@ function ShiftForm({
           />
         </FF>
         <div className="grid grid-cols-3 gap-3">
-          <FF label={t("Datum", "Date")}>
+          <FF label={"Date"}>
             <input
               type="date"
               required
@@ -473,7 +451,7 @@ function ShiftForm({
               className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
             />
           </FF>
-          <FF label={t("Von", "From")}>
+          <FF label={"From"}>
             <input
               type="time"
               required
@@ -482,7 +460,7 @@ function ShiftForm({
               className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
             />
           </FF>
-          <FF label={t("Bis", "To")}>
+          <FF label={"To"}>
             <input
               type="time"
               required
@@ -492,11 +470,11 @@ function ShiftForm({
             />
           </FF>
         </div>
-        <FF label={t("Rolle", "Role")}>
+        <FF label={"Role"}>
           <input
             value={roleLabel}
             onChange={(e) => setRoleLabel(e.target.value)}
-            placeholder={t("z.B. Küche", "e.g. Kitchen")}
+            placeholder={"e.g. Kitchen"}
             className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
         </FF>
@@ -509,10 +487,9 @@ function ShiftForm({
           </div>
         )}
         <p className="text-xs text-muted-foreground">
-          {t(
-            "Diese automatische Prüfung ersetzt keine arbeitsrechtliche Beratung oder die Prüfung von Pausen, Ausnahmen und Ausgleichszeiträumen.",
-            "This automated check does not replace employment-law advice or review of breaks, exceptions and compensation periods.",
-          )}
+          {
+            "This automated check does not replace employment-law advice or review of breaks, exceptions and compensation periods."
+          }
         </p>
         <div className="flex justify-end gap-2 pt-2">
           <button
@@ -520,11 +497,11 @@ function ShiftForm({
             onClick={onClose}
             className="text-sm px-4 py-2 rounded-full border border-border"
           >
-            {t("Abbrechen", "Cancel")}
+            {"Cancel"}
           </button>
           <button type="submit" disabled={saving} className="btn-alert-solid text-sm">
             {saving ? <Loader2 size={14} className="inline animate-spin mr-1" /> : null}
-            {t("Speichern", "Save")}
+            {"Save"}
           </button>
         </div>
       </form>

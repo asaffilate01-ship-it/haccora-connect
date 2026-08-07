@@ -1,6 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { LanguageToggle } from "@/components/LanguageToggle";
@@ -28,11 +27,11 @@ export const Route = createFileRoute("/onboarding")({
 });
 
 const VERTICALS = [
-  { id: "restaurant", icon: Utensils, deL: "Restaurant", enL: "Restaurant" },
-  { id: "cafe", icon: Coffee, deL: "Café / Bäckerei", enL: "Café / bakery" },
-  { id: "hotel", icon: Hotel, deL: "Hotel-Gastronomie", enL: "Hotel catering" },
-  { id: "canteen", icon: Building2, deL: "Kantine / GV", enL: "Canteen / catering" },
-  { id: "takeaway", icon: Store, deL: "Take-away / Kiosk", enL: "Take-away / kiosk" },
+  { id: "restaurant", icon: Utensils, label: "Restaurant" },
+  { id: "cafe", icon: Coffee, label: "Café / bakery" },
+  { id: "hotel", icon: Hotel, label: "Hotel catering" },
+  { id: "canteen", icon: Building2, label: "Canteen / catering" },
+  { id: "takeaway", icon: Store, label: "Take-away / kiosk" },
 ];
 
 const MODULES = [
@@ -47,8 +46,7 @@ const MODULES = [
 ] as const;
 
 function OnboardingPage() {
-  const { lang } = useI18n();
-  const t = (de: string, en: string) => (lang === "de" ? de : en);
+  const t = (_legacy: string, english: string) => english;
   const navigate = useNavigate();
   const { user: authUser, hydrated, refresh } = useAuth();
   const [step, setStep] = useState(0);
@@ -68,18 +66,12 @@ function OnboardingPage() {
     if (hydrated && authUser?.organizationId) navigate({ to: "/app", replace: true });
   }, [authUser, hydrated, navigate]);
 
-  const steps = [
-    t("Betriebstyp", "Business type"),
-    t("Betrieb", "Business"),
-    t("Team & Standorte", "Team & locations"),
-    t("Module", "Modules"),
-    t("Fertig", "Done"),
-  ];
+  const steps = ["Business type", "Business", "Team & locations", "Modules", "Done"];
   const last = step === steps.length - 1;
 
   const persistAndFinish = async () => {
     if (!name.trim()) {
-      setError(t("Bitte geben Sie einen Firmennamen ein.", "Please enter a company name."));
+      setError("Please enter a company name.");
       setStep(1);
       return;
     }
@@ -133,7 +125,7 @@ function OnboardingPage() {
           <div className="leading-tight">
             <span className="font-display block">Haccora</span>
             <span className="text-[9px] font-bold tracking-[0.1em] text-muted-foreground uppercase">
-              {t("Sicher. Sauber. Nachweisbar.", "Safe. Clean. Traceable.")}
+              {"Safe. Clean. Traceable."}
             </span>
           </div>
         </Link>
@@ -163,7 +155,7 @@ function OnboardingPage() {
           ))}
         </div>
         <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
-          {t("Schritt", "Step")} {step + 1} / {steps.length}
+          {"Step"} {step + 1} / {steps.length}
         </div>
         <h1 className="text-3xl md:text-4xl mt-1">{steps[step]}</h1>
 
@@ -180,7 +172,7 @@ function OnboardingPage() {
                     className={`p-5 rounded-xl border text-left transition ${on ? "border-primary bg-primary/5" : "border-border hover:bg-secondary/50"}`}
                   >
                     <Icon size={22} className={on ? "text-primary" : "text-muted-foreground"} />
-                    <div className="font-medium mt-3">{lang === "de" ? v.deL : v.enL}</div>
+                    <div className="font-medium mt-3">{v.label}</div>
                   </button>
                 );
               })}
@@ -191,7 +183,7 @@ function OnboardingPage() {
             <div className="space-y-4 max-w-md">
               <label className="block">
                 <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1.5">
-                  {t("Firmenname", "Company name")}
+                  {"Company name"}
                 </div>
                 <input
                   value={name}
@@ -202,7 +194,7 @@ function OnboardingPage() {
               </label>
               <label className="block">
                 <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1.5">
-                  {t("Umsatzsteuer-ID (optional)", "VAT ID (optional)")}
+                  {"VAT ID (optional)"}
                 </div>
                 <input
                   value={vatId}
@@ -233,7 +225,7 @@ function OnboardingPage() {
             <div className="grid md:grid-cols-2 gap-6">
               <label className="block">
                 <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1.5">
-                  {t("Teamgröße", "Team size")}
+                  {"Team size"}
                 </div>
                 <select
                   value={size}
@@ -248,7 +240,7 @@ function OnboardingPage() {
               </label>
               <label className="block">
                 <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1.5">
-                  {t("Standorte", "Locations")}
+                  {"Locations"}
                 </div>
                 <input
                   type="number"
@@ -304,14 +296,9 @@ function OnboardingPage() {
               <div className="mx-auto h-16 w-16 rounded-full bg-success/15 text-success grid place-items-center">
                 <CheckCircle2 size={30} />
               </div>
-              <h2 className="font-display text-2xl mt-4">
-                {t("Alles bereit!", "You're all set!")}
-              </h2>
+              <h2 className="font-display text-2xl mt-4">{"You're all set!"}</h2>
               <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
-                {t(
-                  `${name || "Ihr Betrieb"} wird als geschützter Arbeitsbereich eingerichtet. Sie starten als Inhaber und können Ihr Team sicher einladen.`,
-                  `${name || "Your business"} will be created as a protected workspace. You start as owner and can invite your team securely.`,
-                )}
+                {`${name || "Your business"} will be created as a protected workspace. You start as owner and can invite your team securely.`}
               </p>
               <button
                 onClick={persistAndFinish}
@@ -321,10 +308,10 @@ function OnboardingPage() {
                 {saving ? (
                   <>
                     <Loader2 size={14} className="inline animate-spin mr-1" />
-                    {t("Speichere…", "Saving…")}
+                    {"Saving…"}
                   </>
                 ) : (
-                  t("Weiter zur App", "Continue to app")
+                  "Continue to app"
                 )}
               </button>
             </div>
@@ -348,7 +335,7 @@ function OnboardingPage() {
               className="inline-flex items-center gap-1 text-sm text-muted-foreground disabled:opacity-40"
             >
               <ChevronLeft size={14} />
-              {t("Zurück", "Back")}
+              {"Back"}
             </button>
             <button
               onClick={() => setStep((s) => s + 1)}
@@ -359,7 +346,7 @@ function OnboardingPage() {
               }
               className="btn-alert-solid text-sm disabled:opacity-50"
             >
-              {t("Weiter", "Continue")}
+              {"Continue"}
               <ChevronRight size={14} className="inline ml-1" />
             </button>
           </div>
