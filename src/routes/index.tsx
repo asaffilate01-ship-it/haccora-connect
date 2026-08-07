@@ -150,7 +150,7 @@ function TopBar() {
             />
           </div>
           <LanguageToggle variant="dark" />
-          <Link to="/app" className="btn-red-outline hidden sm:inline-flex">
+          <Link to="/login" className="btn-red-outline hidden sm:inline-flex">
             {t("nav.login") ?? "Login"}
           </Link>
           <a href="#contact" className="btn-red !px-3 !py-2 !text-xs md:!px-5 md:!py-3 md:!text-sm">
