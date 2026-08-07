@@ -3,6 +3,9 @@ import {
   DEMO_LOCATION_ID,
   DEMO_ORGANIZATION_ID,
   DEMO_ORGANIZATION_SLUG,
+  ISOLATION_LOCATION_ID,
+  ISOLATION_ORGANIZATION_ID,
+  ISOLATION_ORGANIZATION_SLUG,
   demoEmails,
   requireDemoEnvironment,
 } from "./demo-client-config.mjs";
@@ -66,10 +69,28 @@ async function insertOnce(table, rows, onConflict = "id") {
 }
 
 const users = {
+  platformOwner: await ensureUser(emails.platformOwner, "Morgan Reed"),
   owner: await ensureUser(emails.owner, "Alex Morgan"),
   manager: await ensureUser(emails.manager, "Samira Khan"),
+  chef: await ensureUser(emails.chef, "Priya Shah"),
   staff: await ensureUser(emails.staff, "Jamie Evans"),
+  inspector: await ensureUser(emails.inspector, "Taylor Brooks"),
+  isolationOwner: await ensureUser(emails.isolationOwner, "Robin Clarke"),
 };
+
+await upsert(
+  "platform_operators",
+  [
+    {
+      user_id: users.platformOwner.id,
+      role: "platform_owner",
+      status: "active",
+      display_name: "Haccora SaaS Owner",
+      created_by: users.platformOwner.id,
+    },
+  ],
+  "user_id",
+);
 
 await upsert("organizations", [
   {
@@ -77,6 +98,15 @@ await upsert("organizations", [
     name: "Riverside Kitchen Demo Ltd",
     slug: DEMO_ORGANIZATION_SLUG,
     created_by: users.owner.id,
+    country_code: "GB",
+    timezone: "Europe/London",
+    enabled_modules: ["food_safety", "allergens", "training", "documents", "team"],
+  },
+  {
+    id: ISOLATION_ORGANIZATION_ID,
+    name: "Harbour Café Isolation Demo Ltd",
+    slug: ISOLATION_ORGANIZATION_SLUG,
+    created_by: users.isolationOwner.id,
     country_code: "GB",
     timezone: "Europe/London",
     enabled_modules: ["food_safety", "allergens", "training", "documents", "team"],
@@ -94,6 +124,20 @@ await upsert("locations", [
       city: "London",
       postcode: "NW1 8AH",
       local_authority: "London Borough of Camden",
+      country: "United Kingdom",
+    },
+  },
+  {
+    id: ISOLATION_LOCATION_ID,
+    organization_id: ISOLATION_ORGANIZATION_ID,
+    name: "Harbour Café – Bristol",
+    timezone: "Europe/London",
+    business_state: "England",
+    address: {
+      line1: "5 Harbour Walk",
+      city: "Bristol",
+      postcode: "BS1 5UH",
+      local_authority: "Bristol City Council",
       country: "United Kingdom",
     },
   },
@@ -122,6 +166,16 @@ await upsert("organization_memberships", [
   {
     id: id(12),
     organization_id: DEMO_ORGANIZATION_ID,
+    user_id: users.chef.id,
+    role: "chef",
+    status: "active",
+    accepted_at: now.toISOString(),
+    invited_by: users.owner.id,
+    default_location_id: DEMO_LOCATION_ID,
+  },
+  {
+    id: id(13),
+    organization_id: DEMO_ORGANIZATION_ID,
     user_id: users.staff.id,
     role: "staff",
     status: "active",
@@ -129,17 +183,75 @@ await upsert("organization_memberships", [
     invited_by: users.owner.id,
     default_location_id: DEMO_LOCATION_ID,
   },
+  {
+    id: id(14),
+    organization_id: ISOLATION_ORGANIZATION_ID,
+    user_id: users.isolationOwner.id,
+    role: "owner",
+    status: "active",
+    accepted_at: now.toISOString(),
+    default_location_id: ISOLATION_LOCATION_ID,
+  },
 ]);
 await upsert(
   "profiles",
-  Object.entries(users).map(([role, user]) => ({
-    id: user.id,
-    full_name:
-      role === "owner" ? "Alex Morgan" : role === "manager" ? "Samira Khan" : "Jamie Evans",
-    current_organization_id: DEMO_ORGANIZATION_ID,
-    current_location_id: DEMO_LOCATION_ID,
-    restaurant_name: "Riverside Kitchen Demo Ltd",
-    location: "Camden, London",
+  [
+    ["platformOwner", "Morgan Reed", null, null, "Haccora", "United Kingdom"],
+    [
+      "owner",
+      "Alex Morgan",
+      DEMO_ORGANIZATION_ID,
+      DEMO_LOCATION_ID,
+      "Riverside Kitchen Demo Ltd",
+      "Camden, London",
+    ],
+    [
+      "manager",
+      "Samira Khan",
+      DEMO_ORGANIZATION_ID,
+      DEMO_LOCATION_ID,
+      "Riverside Kitchen Demo Ltd",
+      "Camden, London",
+    ],
+    [
+      "chef",
+      "Priya Shah",
+      DEMO_ORGANIZATION_ID,
+      DEMO_LOCATION_ID,
+      "Riverside Kitchen Demo Ltd",
+      "Camden, London",
+    ],
+    [
+      "staff",
+      "Jamie Evans",
+      DEMO_ORGANIZATION_ID,
+      DEMO_LOCATION_ID,
+      "Riverside Kitchen Demo Ltd",
+      "Camden, London",
+    ],
+    [
+      "inspector",
+      "Taylor Brooks",
+      DEMO_ORGANIZATION_ID,
+      DEMO_LOCATION_ID,
+      "Riverside Kitchen Demo Ltd",
+      "Camden, London",
+    ],
+    [
+      "isolationOwner",
+      "Robin Clarke",
+      ISOLATION_ORGANIZATION_ID,
+      ISOLATION_LOCATION_ID,
+      "Harbour Café Isolation Demo Ltd",
+      "Bristol",
+    ],
+  ].map(([key, fullName, organizationId, locationId, restaurantName, location]) => ({
+    id: users[key].id,
+    full_name: fullName,
+    current_organization_id: organizationId,
+    current_location_id: locationId,
+    restaurant_name: restaurantName,
+    location,
     language: "en",
     vertical: "restaurant",
     business_state: "England",
@@ -147,6 +259,59 @@ await upsert(
     push_alerts: true,
     email_alerts: true,
   })),
+);
+
+await upsert("inspector_access_grants", [
+  {
+    id: id(15),
+    organization_id: DEMO_ORGANIZATION_ID,
+    inspector_user_id: users.inspector.id,
+    location_ids: [DEMO_LOCATION_ID],
+    evidence_scopes: [
+      "haccp",
+      "temperature",
+      "cleaning",
+      "allergens",
+      "training",
+      "traceability",
+      "audits",
+      "documents",
+      "incidents",
+      "equipment",
+    ],
+    valid_from: isoDaysFromNow(-1),
+    valid_until: isoDaysFromNow(30),
+    granted_by: users.owner.id,
+    revoked_at: null,
+    reason: "Seeded read-only UK food-safety inspection demonstration",
+  },
+]);
+
+await upsert(
+  "subscriptions",
+  [
+    {
+      organization_id: DEMO_ORGANIZATION_ID,
+      plan: "complete",
+      status: "trialing",
+      seats: 5,
+      trial_ends_at: isoDaysFromNow(12),
+      current_period_end: isoDaysFromNow(12),
+      currency: "gbp",
+      billing_email: emails.owner,
+    },
+    {
+      organization_id: ISOLATION_ORGANIZATION_ID,
+      plan: "essential",
+      status: "trialing",
+      seats: 2,
+      trial_ends_at: isoDaysFromNow(9),
+      current_period_end: isoDaysFromNow(9),
+      currency: "gbp",
+      billing_email: emails.isolationOwner,
+    },
+  ],
+  "organization_id",
 );
 
 await upsert("checks", [
@@ -195,6 +360,18 @@ await upsert("temperature_logs", [
     target_max: -18,
     status: "alert",
     note: "Demo exception: investigate and record corrective action",
+  },
+  {
+    id: id(32),
+    user_id: users.isolationOwner.id,
+    organization_id: ISOLATION_ORGANIZATION_ID,
+    location_id: ISOLATION_LOCATION_ID,
+    location: "Harbour display fridge",
+    reading: 3.6,
+    target_min: 0,
+    target_max: 5,
+    status: "ok",
+    note: "Isolation-control record; Riverside users must never see this row.",
   },
 ]);
 await upsert("cleaning_tasks", [
@@ -445,7 +622,17 @@ await insertOnce("asset_events", [
   },
 ]);
 
+const loginLabels = {
+  platformOwner: "SaaS owner",
+  owner: "Tenant admin",
+  manager: "Manager",
+  chef: "Chef",
+  staff: "Staff",
+  inspector: "Inspector",
+  isolationOwner: "Isolation owner",
+};
 process.stdout.write("\nDemo client ready. Sign in with one of these test-only accounts:\n");
-for (const [role, email] of Object.entries(emails))
-  process.stdout.write(`  ${role.padEnd(7)} ${email}\n`);
+for (const [key, email] of Object.entries(emails))
+  process.stdout.write(`  ${loginLabels[key].padEnd(16)} ${email}\n`);
 process.stdout.write("Password: the private DEMO_PASSWORD value you supplied (not printed).\n");
+process.stdout.write("Run `npm run demo:access` to verify every login and RLS boundary.\n");

@@ -1,10 +1,14 @@
 export const DEMO_ORGANIZATION_ID = "d0000000-0000-4000-8000-000000000001";
 export const DEMO_LOCATION_ID = "d0000000-0000-4000-8000-000000000002";
 export const DEMO_ORGANIZATION_SLUG = "riverside-kitchen-demo";
+export const ISOLATION_ORGANIZATION_ID = "d0000000-0000-4000-8000-000000000003";
+export const ISOLATION_LOCATION_ID = "d0000000-0000-4000-8000-000000000004";
+export const ISOLATION_ORGANIZATION_SLUG = "harbour-cafe-isolation-demo";
 
 export function requireDemoEnvironment() {
   const required = [
     "SUPABASE_URL",
+    "SUPABASE_PUBLISHABLE_KEY",
     "SUPABASE_SERVICE_ROLE_KEY",
     "DEMO_ALLOWED_SUPABASE_URL",
     "DEMO_SEED_CONFIRM",
@@ -26,6 +30,7 @@ export function requireDemoEnvironment() {
   }
   return {
     url: process.env.SUPABASE_URL,
+    publishableKey: process.env.SUPABASE_PUBLISHABLE_KEY,
     serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
   };
 }
@@ -34,8 +39,12 @@ export function demoEmails() {
   const domain = process.env.DEMO_EMAIL_DOMAIN ?? "example.test";
   if (!/^[a-z0-9.-]+$/i.test(domain)) throw new Error("DEMO_EMAIL_DOMAIN is invalid.");
   return {
-    owner: `owner@${domain}`,
+    platformOwner: `saas-owner@${domain}`,
+    owner: `tenant-admin@${domain}`,
     manager: `manager@${domain}`,
+    chef: `chef@${domain}`,
     staff: `staff@${domain}`,
+    inspector: `inspector@${domain}`,
+    isolationOwner: `isolation-owner@${domain}`,
   };
 }

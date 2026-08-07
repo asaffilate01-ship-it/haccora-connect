@@ -25,6 +25,8 @@ All eight are under `supabase/migrations/`. The two commercial files repeated sc
 
 Earlier dated migrations remain in place and run before this sequence. The reconciliation migration changes only `get_my_entitlements()` so it respects `effective_from`; it does not recreate commercial tables, policies or triggers.
 
+Published platform-generated timestamps that replayed an earlier named phase remain in the ledger as minimal deltas. In particular, `20260807163905_f24a7a5a-889a-4eb2-8fd9-84abb1e67f53.sql` retains only the service-role grant added after the canonical Phase 22 migration `20260807110000_asset_check_schedules_and_rls.sql`; it must not recreate the Phase 22 functions or policies.
+
 ## Safe reconciliation procedure
 
 1. Back up the linked Supabase database and storage before changing migration history.

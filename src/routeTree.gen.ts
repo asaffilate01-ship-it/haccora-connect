@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as PlatformRouteImport } from './routes/platform'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LegalRouteImport } from './routes/legal'
@@ -80,6 +81,11 @@ import { Route as AppAssetsAssetIdRouteImport } from './routes/app.assets.$asset
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlatformRoute = PlatformRouteImport.update({
+  id: '/platform',
+  path: '/platform',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -421,6 +427,7 @@ export interface FileRoutesByFullPath {
   '/legal': typeof LegalRouteWithChildren
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
+  '/platform': typeof PlatformRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/assets': typeof AppAssetsRouteWithChildren
@@ -488,6 +495,7 @@ export interface FileRoutesByTo {
   '/legal': typeof LegalRouteWithChildren
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
+  '/platform': typeof PlatformRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/assets': typeof AppAssetsRouteWithChildren
@@ -558,6 +566,7 @@ export interface FileRoutesById {
   '/legal': typeof LegalRouteWithChildren
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
+  '/platform': typeof PlatformRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/assets': typeof AppAssetsRouteWithChildren
@@ -629,6 +638,7 @@ export interface FileRouteTypes {
     | '/legal'
     | '/login'
     | '/onboarding'
+    | '/platform'
     | '/sitemap.xml'
     | '/app/alerts'
     | '/app/assets'
@@ -696,6 +706,7 @@ export interface FileRouteTypes {
     | '/legal'
     | '/login'
     | '/onboarding'
+    | '/platform'
     | '/sitemap.xml'
     | '/app/alerts'
     | '/app/assets'
@@ -765,6 +776,7 @@ export interface FileRouteTypes {
     | '/legal'
     | '/login'
     | '/onboarding'
+    | '/platform'
     | '/sitemap.xml'
     | '/app/alerts'
     | '/app/assets'
@@ -835,6 +847,7 @@ export interface RootRouteChildren {
   LegalRoute: typeof LegalRouteWithChildren
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
+  PlatformRoute: typeof PlatformRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
 
@@ -845,6 +858,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/platform': {
+      id: '/platform'
+      path: '/platform'
+      fullPath: '/platform'
+      preLoaderRoute: typeof PlatformRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -1472,6 +1492,7 @@ const rootRouteChildren: RootRouteChildren = {
   LegalRoute: LegalRouteWithChildren,
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
+  PlatformRoute: PlatformRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
 }
 export const routeTree = rootRouteImport

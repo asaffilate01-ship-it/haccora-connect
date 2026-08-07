@@ -54,6 +54,8 @@ npm run store:check
 - `docs/UK_PRODUCT_BLUEPRINT.md`
 - `docs/UK_COMPLIANCE_VALIDATION.md`
 - `docs/GO_LIVE_CHECKLIST.md`
+- `docs/GO_LIVE_STATUS_2026-08-07.md`
+- `docs/DEMO-CLIENT-TEST-PLAYBOOK.md`
 - `docs/PRODUCTION_READINESS.md`
 - `docs/DEPLOYMENT.md`
 - `mobile/store/STORE_RELEASE_CHECKLIST.md`

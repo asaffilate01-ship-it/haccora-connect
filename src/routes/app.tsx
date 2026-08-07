@@ -201,6 +201,8 @@ function AppShell() {
   useEffect(() => {
     if (hydrated && !user) {
       navigate({ to: "/login", search: { redirect: pathname } as never });
+    } else if (hydrated && user?.platformRole && !user.organizationId) {
+      navigate({ to: "/platform", replace: true });
     } else if (hydrated && user && !user.organizationId) {
       navigate({ to: "/onboarding", replace: true });
     }
