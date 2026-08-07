@@ -74,6 +74,7 @@ import { Route as AppBillingRouteImport } from './routes/app.billing'
 import { Route as AppAuditsRouteImport } from './routes/app.audits'
 import { Route as AppAssetsRouteImport } from './routes/app.assets'
 import { Route as AppAlertsRouteImport } from './routes/app.alerts'
+import { Route as AppAssetsScanRouteImport } from './routes/app.assets.scan'
 import { Route as AppAssetsAssetIdRouteImport } from './routes/app.assets.$assetId'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -401,6 +402,11 @@ const AppAlertsRoute = AppAlertsRouteImport.update({
   path: '/alerts',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAssetsScanRoute = AppAssetsScanRouteImport.update({
+  id: '/scan',
+  path: '/scan',
+  getParentRoute: () => AppAssetsRoute,
+} as any)
 const AppAssetsAssetIdRoute = AppAssetsAssetIdRouteImport.update({
   id: '/$assetId',
   path: '/$assetId',
@@ -474,6 +480,7 @@ export interface FileRoutesByFullPath {
   '/app/': typeof AppIndexRoute
   '/blog/': typeof BlogIndexRoute
   '/app/assets/$assetId': typeof AppAssetsAssetIdRoute
+  '/app/assets/scan': typeof AppAssetsScanRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -540,6 +547,7 @@ export interface FileRoutesByTo {
   '/app': typeof AppIndexRoute
   '/blog': typeof BlogIndexRoute
   '/app/assets/$assetId': typeof AppAssetsAssetIdRoute
+  '/app/assets/scan': typeof AppAssetsScanRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -609,6 +617,7 @@ export interface FileRoutesById {
   '/app/': typeof AppIndexRoute
   '/blog/': typeof BlogIndexRoute
   '/app/assets/$assetId': typeof AppAssetsAssetIdRoute
+  '/app/assets/scan': typeof AppAssetsScanRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -679,6 +688,7 @@ export interface FileRouteTypes {
     | '/app/'
     | '/blog/'
     | '/app/assets/$assetId'
+    | '/app/assets/scan'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -745,6 +755,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/blog'
     | '/app/assets/$assetId'
+    | '/app/assets/scan'
   id:
     | '__root__'
     | '/'
@@ -813,6 +824,7 @@ export interface FileRouteTypes {
     | '/app/'
     | '/blog/'
     | '/app/assets/$assetId'
+    | '/app/assets/scan'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1283,6 +1295,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAlertsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/assets/scan': {
+      id: '/app/assets/scan'
+      path: '/scan'
+      fullPath: '/app/assets/scan'
+      preLoaderRoute: typeof AppAssetsScanRouteImport
+      parentRoute: typeof AppAssetsRoute
+    }
     '/app/assets/$assetId': {
       id: '/app/assets/$assetId'
       path: '/$assetId'
@@ -1295,10 +1314,12 @@ declare module '@tanstack/react-router' {
 
 interface AppAssetsRouteChildren {
   AppAssetsAssetIdRoute: typeof AppAssetsAssetIdRoute
+  AppAssetsScanRoute: typeof AppAssetsScanRoute
 }
 
 const AppAssetsRouteChildren: AppAssetsRouteChildren = {
   AppAssetsAssetIdRoute: AppAssetsAssetIdRoute,
+  AppAssetsScanRoute: AppAssetsScanRoute,
 }
 
 const AppAssetsRouteWithChildren = AppAssetsRoute._addFileChildren(
@@ -1456,13 +1477,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
