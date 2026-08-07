@@ -21,7 +21,6 @@ import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
 import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
-import { Route as LegalImprintRouteImport } from './routes/legal.imprint'
 import { Route as LegalDataProcessingRouteImport } from './routes/legal.data-processing'
 import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
 import { Route as LegalComplaintsRouteImport } from './routes/legal.complaints'
@@ -135,11 +134,6 @@ const LegalTermsRoute = LegalTermsRouteImport.update({
 const LegalPrivacyRoute = LegalPrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
-  getParentRoute: () => LegalRoute,
-} as any)
-const LegalImprintRoute = LegalImprintRouteImport.update({
-  id: '/imprint',
-  path: '/imprint',
   getParentRoute: () => LegalRoute,
 } as any)
 const LegalDataProcessingRoute = LegalDataProcessingRouteImport.update({
@@ -475,7 +469,6 @@ export interface FileRoutesByFullPath {
   '/legal/complaints': typeof LegalComplaintsRoute
   '/legal/cookies': typeof LegalCookiesRoute
   '/legal/data-processing': typeof LegalDataProcessingRoute
-  '/legal/imprint': typeof LegalImprintRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
   '/app/': typeof AppIndexRoute
@@ -542,7 +535,6 @@ export interface FileRoutesByTo {
   '/legal/complaints': typeof LegalComplaintsRoute
   '/legal/cookies': typeof LegalCookiesRoute
   '/legal/data-processing': typeof LegalDataProcessingRoute
-  '/legal/imprint': typeof LegalImprintRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
   '/app': typeof AppIndexRoute
@@ -612,7 +604,6 @@ export interface FileRoutesById {
   '/legal/complaints': typeof LegalComplaintsRoute
   '/legal/cookies': typeof LegalCookiesRoute
   '/legal/data-processing': typeof LegalDataProcessingRoute
-  '/legal/imprint': typeof LegalImprintRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
   '/app/': typeof AppIndexRoute
@@ -683,7 +674,6 @@ export interface FileRouteTypes {
     | '/legal/complaints'
     | '/legal/cookies'
     | '/legal/data-processing'
-    | '/legal/imprint'
     | '/legal/privacy'
     | '/legal/terms'
     | '/app/'
@@ -750,7 +740,6 @@ export interface FileRouteTypes {
     | '/legal/complaints'
     | '/legal/cookies'
     | '/legal/data-processing'
-    | '/legal/imprint'
     | '/legal/privacy'
     | '/legal/terms'
     | '/app'
@@ -819,7 +808,6 @@ export interface FileRouteTypes {
     | '/legal/complaints'
     | '/legal/cookies'
     | '/legal/data-processing'
-    | '/legal/imprint'
     | '/legal/privacy'
     | '/legal/terms'
     | '/app/'
@@ -922,13 +910,6 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/legal/privacy'
       preLoaderRoute: typeof LegalPrivacyRouteImport
-      parentRoute: typeof LegalRoute
-    }
-    '/legal/imprint': {
-      id: '/legal/imprint'
-      path: '/imprint'
-      fullPath: '/legal/imprint'
-      preLoaderRoute: typeof LegalImprintRouteImport
       parentRoute: typeof LegalRoute
     }
     '/legal/data-processing': {
@@ -1446,7 +1427,6 @@ interface LegalRouteChildren {
   LegalComplaintsRoute: typeof LegalComplaintsRoute
   LegalCookiesRoute: typeof LegalCookiesRoute
   LegalDataProcessingRoute: typeof LegalDataProcessingRoute
-  LegalImprintRoute: typeof LegalImprintRoute
   LegalPrivacyRoute: typeof LegalPrivacyRoute
   LegalTermsRoute: typeof LegalTermsRoute
 }
@@ -1457,7 +1437,6 @@ const LegalRouteChildren: LegalRouteChildren = {
   LegalComplaintsRoute: LegalComplaintsRoute,
   LegalCookiesRoute: LegalCookiesRoute,
   LegalDataProcessingRoute: LegalDataProcessingRoute,
-  LegalImprintRoute: LegalImprintRoute,
   LegalPrivacyRoute: LegalPrivacyRoute,
   LegalTermsRoute: LegalTermsRoute,
 }
@@ -1477,3 +1456,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
