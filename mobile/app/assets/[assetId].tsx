@@ -41,6 +41,18 @@ type Event = {
   recorded_at: string;
   measured_value: number | null;
   measured_unit: string | null;
+  corrective_action: string | null;
+};
+type Schedule = {
+  id: string;
+  name: string;
+  instructions: string | null;
+  event_type: string;
+  frequency_days: number;
+  measured_unit: string | null;
+  minimum_value: number | null;
+  maximum_value: number | null;
+  next_due_at: string;
 };
 
 export default function AssetDetail() {
@@ -48,11 +60,16 @@ export default function AssetDetail() {
   const { session, loading, role } = useSession();
   const [asset, setAsset] = useState<Asset | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [type, setType] = useState("inspection");
   const [outcome, setOutcome] = useState("pass");
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
+  const [measuredValue, setMeasuredValue] = useState("");
+  const [measuredUnit, setMeasuredUnit] = useState("");
+  const [correctiveAction, setCorrectiveAction] = useState("");
+  const [scheduleId, setScheduleId] = useState<string | null>(null);
   const load = useCallback(async () => {
     if (!assetId) return;
     setRefreshing(true);
@@ -66,15 +83,26 @@ export default function AssetDetail() {
     const next = result.data as Asset | null;
     setAsset(next);
     if (next) {
-      const history = await supabase
-        .from("asset_events")
-        .select(
-          "id,event_type,outcome,title,notes,recorded_by_name,recorded_at,measured_value,measured_unit",
-        )
-        .eq("asset_id", next.id)
-        .order("recorded_at", { ascending: false })
-        .limit(250);
+      const [history, scheduleResult] = await Promise.all([
+        supabase
+          .from("asset_events")
+          .select(
+            "id,event_type,outcome,title,notes,recorded_by_name,recorded_at,measured_value,measured_unit,corrective_action",
+          )
+          .eq("asset_id", next.id)
+          .order("recorded_at", { ascending: false })
+          .limit(250),
+        supabase
+          .from("asset_check_schedules")
+          .select(
+            "id,name,instructions,event_type,frequency_days,measured_unit,minimum_value,maximum_value,next_due_at",
+          )
+          .eq("asset_id", next.id)
+          .eq("active", true)
+          .order("next_due_at"),
+      ]);
       setEvents((history.data ?? []) as Event[]);
+      setSchedules((scheduleResult.data ?? []) as Schedule[]);
     }
     setRefreshing(false);
   }, [assetId]);
@@ -93,22 +121,56 @@ export default function AssetDetail() {
       </View>
     );
   if (!asset) return null;
+  const selectedSchedule = schedules.find((item) => item.id === scheduleId);
+  const currentReading = measuredValue.trim() ? Number(measuredValue) : null;
+  const readingOutsideRange =
+    selectedSchedule &&
+    currentReading !== null &&
+    Number.isFinite(currentReading) &&
+    ((selectedSchedule.minimum_value !== null && currentReading < selectedSchedule.minimum_value) ||
+      (selectedSchedule.maximum_value !== null && currentReading > selectedSchedule.maximum_value));
+  const needsCorrectiveAction = ["fail", "open"].includes(outcome) || Boolean(readingOutsideRange);
   const save = async () => {
     if (title.trim().length < 2)
       return Alert.alert("Add a title", "Briefly describe what was checked or done.");
+    const reading = measuredValue.trim() ? Number(measuredValue) : null;
+    const schedule = schedules.find((item) => item.id === scheduleId);
+    const expectsReading =
+      schedule && (schedule.minimum_value !== null || schedule.maximum_value !== null);
+    if (expectsReading && !Number.isFinite(reading))
+      return Alert.alert("Reading required", "Enter the reading expected by this check.");
+    const outsideRange =
+      schedule &&
+      reading !== null &&
+      ((schedule.minimum_value !== null && reading < schedule.minimum_value) ||
+        (schedule.maximum_value !== null && reading > schedule.maximum_value));
+    const finalOutcome = outsideRange ? "fail" : outcome;
+    if (["fail", "open"].includes(finalOutcome) && correctiveAction.trim().length < 2)
+      return Alert.alert(
+        "Corrective action required",
+        "Record what was made safe and what happens next.",
+      );
     try {
       await enqueue("asset_events", {
         organization_id: asset.organization_id,
         location_id: asset.location_id,
         asset_id: asset.id,
         event_type: type,
-        outcome,
+        outcome: finalOutcome,
         title: title.trim(),
         notes: notes.trim() || null,
+        schedule_id: scheduleId,
+        measured_value: Number.isFinite(reading) ? reading : null,
+        measured_unit: measuredUnit.trim() || null,
+        corrective_action: correctiveAction.trim() || null,
         recorded_by: session.user.id,
       });
       setTitle("");
       setNotes("");
+      setMeasuredValue("");
+      setMeasuredUnit("");
+      setCorrectiveAction("");
+      setScheduleId(null);
       Alert.alert(
         "Equipment record saved",
         "The timestamped record is saved or securely queued for sync.",
@@ -151,6 +213,51 @@ export default function AssetDetail() {
           }
         />
       </View>
+      <View style={styles.history}>
+        <Text style={styles.formTitle}>Due QR checks</Text>
+        <Text style={styles.audit}>Tap a check to load its instructions and expected reading.</Text>
+        {schedules.map((schedule) => {
+          const overdue = new Date(schedule.next_due_at).getTime() < Date.now();
+          return (
+            <Pressable
+              key={schedule.id}
+              style={[styles.schedule, scheduleId === schedule.id && styles.scheduleOn]}
+              onPress={() => {
+                setScheduleId(schedule.id);
+                setType(schedule.event_type);
+                setTitle(schedule.name);
+                setMeasuredUnit(schedule.measured_unit || "");
+              }}
+            >
+              <View style={styles.flex}>
+                <Text style={styles.scheduleTitle}>{schedule.name}</Text>
+                <Text style={[styles.scheduleDue, overdue && styles.bad]}>
+                  {overdue ? "OVERDUE" : "DUE"}{" "}
+                  {new Date(schedule.next_due_at).toLocaleDateString("en-GB")} · every{" "}
+                  {schedule.frequency_days} days
+                </Text>
+                {schedule.instructions && (
+                  <Text style={styles.eventNotes}>{schedule.instructions}</Text>
+                )}
+                {(schedule.measured_unit ||
+                  schedule.minimum_value !== null ||
+                  schedule.maximum_value !== null) && (
+                  <Text style={styles.eventMeta}>
+                    Expected {schedule.minimum_value ?? "—"}–{schedule.maximum_value ?? "—"}{" "}
+                    {schedule.measured_unit}
+                  </Text>
+                )}
+              </View>
+              <Text style={styles.start}>
+                {scheduleId === schedule.id ? "SELECTED" : "START ›"}
+              </Text>
+            </Pressable>
+          );
+        })}
+        {schedules.length === 0 && (
+          <Text style={styles.empty}>No recurring checks are scheduled for this item.</Text>
+        )}
+      </View>
       {role !== "inspector" && !asset.retired_at && (
         <View style={styles.form}>
           <Text style={styles.formTitle}>Add timestamped record</Text>
@@ -188,6 +295,21 @@ export default function AssetDetail() {
             onChangeText={setTitle}
             placeholder="What was checked or done?"
           />
+          <View style={styles.readingRow}>
+            <TextInput
+              style={[styles.input, styles.flex]}
+              value={measuredValue}
+              onChangeText={setMeasuredValue}
+              placeholder="Reading"
+              keyboardType="decimal-pad"
+            />
+            <TextInput
+              style={[styles.input, styles.unitInput]}
+              value={measuredUnit}
+              onChangeText={setMeasuredUnit}
+              placeholder="Unit (°C)"
+            />
+          </View>
           <TextInput
             style={[styles.input, styles.multiline]}
             value={notes}
@@ -195,6 +317,20 @@ export default function AssetDetail() {
             placeholder="Finding, repair or corrective action"
             multiline
           />
+          {needsCorrectiveAction && (
+            <View>
+              {readingOutsideRange && (
+                <Text style={styles.rangeWarning}>Reading is outside the safe range.</Text>
+              )}
+              <TextInput
+                style={[styles.input, styles.multiline, styles.dangerInput]}
+                value={correctiveAction}
+                onChangeText={setCorrectiveAction}
+                placeholder="Corrective action required: what was made safe and what happens next?"
+                multiline
+              />
+            </View>
+          )}
           <Pressable style={styles.save} onPress={() => void save()}>
             <Text style={styles.saveText}>Save record</Text>
           </Pressable>
@@ -218,6 +354,14 @@ export default function AssetDetail() {
               {event.event_type} · {event.recorded_by_name}
             </Text>
             {event.notes && <Text style={styles.eventNotes}>{event.notes}</Text>}
+            {event.measured_value !== null && (
+              <Text style={styles.reading}>
+                {event.measured_value} {event.measured_unit}
+              </Text>
+            )}
+            {event.corrective_action && (
+              <Text style={styles.correction}>Corrective action: {event.corrective_action}</Text>
+            )}
           </View>
         ))}
         {events.length === 0 && <Text style={styles.empty}>No equipment events recorded yet.</Text>}
@@ -237,16 +381,17 @@ function Summary({ label, value }: { label: string; value: string }) {
 const styles = StyleSheet.create({
   page: { gap: 11, padding: 18, paddingBottom: 90 },
   center: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24 },
+  flex: { flex: 1 },
   eyebrow: {
     color: "#c8102e",
-    fontSize: 9,
+    fontSize: 12,
     fontWeight: "900",
     letterSpacing: 1.4,
     textTransform: "uppercase",
   },
-  title: { fontSize: 22, fontWeight: "800" },
-  name: { fontSize: 16, fontWeight: "800" },
-  intro: { color: "#666", fontSize: 11, lineHeight: 16 },
+  title: { fontSize: 25, fontWeight: "800" },
+  name: { fontSize: 18, fontWeight: "800" },
+  intro: { color: "#666", fontSize: 14, lineHeight: 20 },
   summary: {
     backgroundColor: "#fff",
     borderColor: "#ddd",
@@ -255,9 +400,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     overflow: "hidden",
   },
-  summaryCell: { borderRightColor: "#eee", borderRightWidth: 1, flex: 1, padding: 11 },
-  summaryLabel: { color: "#777", fontSize: 8, textTransform: "uppercase" },
-  summaryValue: { fontSize: 10, fontWeight: "800", marginTop: 4, textTransform: "capitalize" },
+  summaryCell: { borderRightColor: "#eee", borderRightWidth: 1, flex: 1, padding: 13 },
+  summaryLabel: { color: "#777", fontSize: 11, fontWeight: "700", textTransform: "uppercase" },
+  summaryValue: { fontSize: 13, fontWeight: "800", marginTop: 5, textTransform: "capitalize" },
   form: {
     backgroundColor: "#fff",
     borderColor: "#ddd",
@@ -266,29 +411,38 @@ const styles = StyleSheet.create({
     gap: 8,
     padding: 13,
   },
-  formTitle: { fontSize: 13, fontWeight: "800" },
+  formTitle: { fontSize: 16, fontWeight: "800" },
   choices: { flexDirection: "row", flexWrap: "wrap", gap: 5 },
   choice: {
     borderColor: "#ccc",
     borderRadius: 20,
     borderWidth: 1,
-    paddingHorizontal: 9,
-    paddingVertical: 6,
+    minHeight: 42,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
   },
   choiceOn: { backgroundColor: "#c8102e", borderColor: "#c8102e" },
-  choiceText: { color: "#555", fontSize: 9, fontWeight: "800", textTransform: "capitalize" },
+  choiceText: { color: "#555", fontSize: 12, fontWeight: "800", textTransform: "capitalize" },
   choiceTextOn: { color: "#fff" },
   input: {
     backgroundColor: "#fafafa",
     borderColor: "#ddd",
     borderRadius: 9,
     borderWidth: 1,
-    fontSize: 11,
-    padding: 10,
+    fontSize: 14,
+    minHeight: 46,
+    padding: 12,
   },
   multiline: { minHeight: 70, textAlignVertical: "top" },
-  save: { alignItems: "center", backgroundColor: "#176b3a", borderRadius: 9, padding: 10 },
-  saveText: { color: "#fff", fontSize: 11, fontWeight: "900" },
+  save: {
+    alignItems: "center",
+    backgroundColor: "#176b3a",
+    borderRadius: 9,
+    minHeight: 48,
+    justifyContent: "center",
+    padding: 12,
+  },
+  saveText: { color: "#fff", fontSize: 14, fontWeight: "900" },
   history: {
     backgroundColor: "#fff",
     borderColor: "#ddd",
@@ -296,14 +450,41 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 13,
   },
-  audit: { color: "#777", fontSize: 9, marginBottom: 5 },
+  audit: { color: "#777", fontSize: 12, lineHeight: 17, marginBottom: 5 },
   event: { borderTopColor: "#eee", borderTopWidth: 1, paddingVertical: 10 },
   eventTop: { flexDirection: "row", justifyContent: "space-between" },
-  outcome: { color: "#176b3a", fontSize: 9, fontWeight: "900" },
+  outcome: { color: "#176b3a", fontSize: 12, fontWeight: "900" },
   bad: { color: "#b42318" },
-  time: { color: "#777", fontSize: 8 },
-  eventTitle: { fontSize: 11, fontWeight: "800", marginTop: 4 },
-  eventMeta: { color: "#777", fontSize: 9, marginTop: 2, textTransform: "capitalize" },
-  eventNotes: { color: "#444", fontSize: 10, lineHeight: 15, marginTop: 5 },
-  empty: { color: "#777", fontSize: 10, paddingVertical: 18, textAlign: "center" },
+  time: { color: "#777", fontSize: 11 },
+  eventTitle: { fontSize: 14, fontWeight: "800", marginTop: 5 },
+  eventMeta: { color: "#777", fontSize: 12, marginTop: 3, textTransform: "capitalize" },
+  eventNotes: { color: "#444", fontSize: 13, lineHeight: 19, marginTop: 6 },
+  empty: { color: "#777", fontSize: 13, paddingVertical: 18, textAlign: "center" },
+  schedule: {
+    alignItems: "center",
+    borderTopColor: "#eee",
+    borderTopWidth: 1,
+    flexDirection: "row",
+    gap: 8,
+    minHeight: 62,
+    paddingVertical: 12,
+  },
+  scheduleOn: { backgroundColor: "#fff5f3" },
+  scheduleTitle: { fontSize: 14, fontWeight: "800" },
+  scheduleDue: { color: "#176b3a", fontSize: 11, fontWeight: "800", marginTop: 3 },
+  start: { color: "#c8102e", fontSize: 11, fontWeight: "900" },
+  readingRow: { flexDirection: "row", gap: 8 },
+  unitInput: { width: 110 },
+  dangerInput: { borderColor: "#b42318" },
+  rangeWarning: { color: "#b42318", fontSize: 12, fontWeight: "800", marginBottom: 6 },
+  reading: { fontSize: 13, fontWeight: "800", marginTop: 6 },
+  correction: {
+    backgroundColor: "#fff0ed",
+    borderRadius: 7,
+    color: "#b42318",
+    fontSize: 12,
+    lineHeight: 18,
+    marginTop: 7,
+    padding: 8,
+  },
 });

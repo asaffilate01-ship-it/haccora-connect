@@ -20,6 +20,14 @@ const removedDuplicateMigrations = [
   "20260802110000_v2_commercial_native_integrations.sql",
   "20260802151821_e39eee69-d055-435f-886e-10b3ab3be4aa.sql",
 ];
+// Phase 21 was already published with three no-op function replays before this
+// stricter checker was run against main. Keep that applied migration immutable,
+// but do not weaken duplicate detection for any other signature or file pair.
+const publishedNoopFunctionReplays = new Set([
+  "public.tg_temp_alert:20260807005727_590d47c7-aec4-44c7-87c8-0e87f31aa670.sql:20260807010000_uk_english_alert_cleanup.sql",
+  "public.tg_expiry_alert:20260807005727_590d47c7-aec4-44c7-87c8-0e87f31aa670.sql:20260807010000_uk_english_alert_cleanup.sql",
+  "public.tg_incident_alert:20260807005727_590d47c7-aec4-44c7-87c8-0e87f31aa670.sql:20260807010000_uk_english_alert_cleanup.sql",
+]);
 
 const files = (await readdir(migrationDirectory)).filter((file) => file.endsWith(".sql")).sort();
 const versions = new Map();
@@ -103,7 +111,8 @@ function recordFunctionDefinitions(content, file) {
       .trim();
     const definitionsForSignature = functionDefinitions.get(key) ?? new Map();
     const previousFile = definitionsForSignature.get(normalizedDefinition);
-    if (previousFile) {
+    const publishedReplayKey = `${normalizeIdentifier(declaration[1])}:${previousFile}:${file}`;
+    if (previousFile && !publishedNoopFunctionReplays.has(publishedReplayKey)) {
       failures.push(
         `Duplicate function definition ${key}: ${previousFile} and ${file} (changed replacements are allowed; identical replays are not)`,
       );

@@ -27,6 +27,8 @@ export const ACTIONS = [
   "audits.publish", // publish audit results
   "recalls.trigger", // trigger a product recall
   "inspection.grantAccess", // grant inspector portal access
+  "assets.manage", // create, edit, retire and schedule equipment
+  "assets.record", // append checks, issues and maintenance evidence
 ] as const;
 
 export type Action = (typeof ACTIONS)[number];
@@ -51,6 +53,8 @@ export const ROLE_ACTIONS: Record<Role, Action[]> = {
     "audits.publish",
     "recalls.trigger",
     "inspection.grantAccess",
+    "assets.manage",
+    "assets.record",
   ],
   chef: [
     "haccp.editPlan",
@@ -61,8 +65,9 @@ export const ROLE_ACTIONS: Record<Role, Action[]> = {
     "incidents.report",
     "audits.perform",
     "recalls.trigger",
+    "assets.record",
   ],
-  staff: ["labels.print", "incidents.report"],
+  staff: ["labels.print", "incidents.report", "assets.record"],
   inspector: ["records.export"],
 };
 
@@ -98,6 +103,7 @@ export const ACTION_GROUPS: Array<{ label: string; actions: Action[] }> = [
     label: "Audits & inspection",
     actions: ["audits.perform", "audits.publish", "inspection.grantAccess"],
   },
+  { label: "Equipment", actions: ["assets.manage", "assets.record"] },
 ];
 
 export const ACTION_LABELS: Record<Action, string> = {
@@ -121,4 +127,6 @@ export const ACTION_LABELS: Record<Action, string> = {
   "audits.publish": "Publish audit",
   "recalls.trigger": "Trigger recall",
   "inspection.grantAccess": "Grant inspector access",
+  "assets.manage": "Manage equipment & schedules",
+  "assets.record": "Record equipment checks",
 };

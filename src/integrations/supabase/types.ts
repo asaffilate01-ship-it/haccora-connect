@@ -189,9 +189,99 @@ export type Database = {
           },
         ]
       }
+      asset_check_schedules: {
+        Row: {
+          active: boolean
+          asset_id: string
+          created_at: string
+          created_by: string
+          event_type: string
+          frequency_days: number
+          id: string
+          instructions: string | null
+          last_completed_at: string | null
+          location_id: string | null
+          maximum_value: number | null
+          measured_unit: string | null
+          minimum_value: number | null
+          name: string
+          next_due_at: string
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          asset_id: string
+          created_at?: string
+          created_by?: string
+          event_type?: string
+          frequency_days: number
+          id?: string
+          instructions?: string | null
+          last_completed_at?: string | null
+          location_id?: string | null
+          maximum_value?: number | null
+          measured_unit?: string | null
+          minimum_value?: number | null
+          name: string
+          next_due_at: string
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          asset_id?: string
+          created_at?: string
+          created_by?: string
+          event_type?: string
+          frequency_days?: number
+          id?: string
+          instructions?: string | null
+          last_completed_at?: string | null
+          location_id?: string | null
+          maximum_value?: number | null
+          measured_unit?: string | null
+          minimum_value?: number | null
+          name?: string
+          next_due_at?: string
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asset_check_schedules_asset_org"
+            columns: ["asset_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "asset_check_schedules_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asset_check_schedules_location_org"
+            columns: ["location_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "asset_check_schedules_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       asset_events: {
         Row: {
           asset_id: string
+          corrective_action: string | null
           created_at: string
           event_type: string
           id: string
@@ -206,10 +296,12 @@ export type Database = {
           recorded_at: string
           recorded_by: string
           recorded_by_name: string
+          schedule_id: string | null
           title: string
         }
         Insert: {
           asset_id: string
+          corrective_action?: string | null
           created_at?: string
           event_type: string
           id?: string
@@ -224,10 +316,12 @@ export type Database = {
           recorded_at?: string
           recorded_by?: string
           recorded_by_name?: string
+          schedule_id?: string | null
           title: string
         }
         Update: {
           asset_id?: string
+          corrective_action?: string | null
           created_at?: string
           event_type?: string
           id?: string
@@ -242,6 +336,7 @@ export type Database = {
           recorded_at?: string
           recorded_by?: string
           recorded_by_name?: string
+          schedule_id?: string | null
           title?: string
         }
         Relationships: [
@@ -272,6 +367,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asset_events_schedule_org"
+            columns: ["schedule_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "asset_check_schedules"
+            referencedColumns: ["id", "organization_id"]
           },
         ]
       }

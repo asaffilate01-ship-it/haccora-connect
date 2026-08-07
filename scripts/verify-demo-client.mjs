@@ -18,6 +18,7 @@ const expectations = new Map([
   ["training_records", 1],
   ["documents", 2],
   ["assets", 2],
+  ["asset_check_schedules", 2],
   ["asset_events", 2],
 ]);
 let failed = false;

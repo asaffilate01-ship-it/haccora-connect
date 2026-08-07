@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { can } from "@/lib/permissions";
 import { renderQrDataUrl } from "@/lib/qr";
 
 export const Route = createFileRoute("/app/assets")({ component: AssetsPage });
@@ -62,7 +63,7 @@ function statusOf(asset: Asset): "ok" | "due" | "overdue" | "attention" | "retir
 
 function AssetsPage() {
   const { user } = useAuth();
-  const canManage = user?.role === "owner" || user?.role === "manager";
+  const canManage = user ? can(user.role, "assets.manage") : false;
   const [rows, setRows] = useState<Asset[]>([]);
   const [labels, setLabels] = useState<Label[]>([]);
   const [loading, setLoading] = useState(true);
@@ -159,6 +160,9 @@ function AssetsPage() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Link to="/app/assets/scan" className="btn-secondary text-xs">
+            <QrCode size={14} /> Scan QR
+          </Link>
           {rows.length > 0 && (
             <button onClick={() => void printLabels()} className="btn-secondary text-xs">
               <Printer size={14} /> Print QR labels
@@ -330,6 +334,7 @@ function AssetsPage() {
               <p>{asset.asset_code}</p>
               <p>{asset.location || "Site equipment"}</p>
               <small>Scan to inspect, report or view history</small>
+              <small className="font-mono">{asset.qr_token}</small>
             </div>
           </article>
         ))}
@@ -360,7 +365,7 @@ function AssetRow({ asset }: { asset: Asset }) {
           </span>
           <div className="min-w-0">
             <div className="truncate font-semibold">{asset.name}</div>
-            <div className="truncate text-[10px] uppercase tracking-wider text-muted-foreground">
+            <div className="truncate text-xs uppercase tracking-wide text-muted-foreground">
               {asset.asset_code} · {asset.category || "equipment"} · {asset.location || "No area"}
             </div>
           </div>
@@ -402,7 +407,7 @@ function Kpi({
           : "";
   return (
     <div className="surface p-3">
-      <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-muted-foreground">
+      <div className="flex items-center justify-between text-xs uppercase tracking-wide text-muted-foreground">
         <span>{label}</span>
         <Icon size={13} className={colour} />
       </div>
