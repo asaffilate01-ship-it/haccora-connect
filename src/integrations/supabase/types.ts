@@ -3166,60 +3166,6 @@ export type Database = {
           },
         ]
       }
-      platform_audit_events: {
-        Row: {
-          actor_id: string
-          event_type: string
-          id: string
-          metadata: Json
-          occurred_at: string
-        }
-        Insert: {
-          actor_id: string
-          event_type: string
-          id?: string
-          metadata?: Json
-          occurred_at?: string
-        }
-        Update: {
-          actor_id?: string
-          event_type?: string
-          id?: string
-          metadata?: Json
-          occurred_at?: string
-        }
-        Relationships: []
-      }
-      platform_operators: {
-        Row: {
-          created_at: string
-          created_by: string | null
-          display_name: string
-          role: Database["public"]["Enums"]["platform_operator_role"]
-          status: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          created_by?: string | null
-          display_name: string
-          role: Database["public"]["Enums"]["platform_operator_role"]
-          status?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          created_by?: string | null
-          display_name?: string
-          role?: Database["public"]["Enums"]["platform_operator_role"]
-          status?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       ppds_label_versions: {
         Row: {
           allergens: string[]
@@ -6317,23 +6263,6 @@ export type Database = {
       }
       get_my_context: { Args: never; Returns: Json }
       get_my_entitlements: { Args: never; Returns: Json }
-      get_my_platform_context: { Args: never; Returns: Json }
-      get_platform_customers: {
-        Args: never
-        Returns: {
-          active_locations: number
-          active_memberships: number
-          created_at: string
-          current_period_end: string
-          organization_id: string
-          organization_name: string
-          organization_slug: string
-          plan: string
-          subscription_status: string
-          trial_ends_at: string
-        }[]
-      }
-      get_platform_overview: { Args: never; Returns: Json }
       has_org_role: {
         Args: {
           p_organization_id: string
@@ -6366,13 +6295,6 @@ export type Database = {
       }
       is_inspector: { Args: { _user_id: string }; Returns: boolean }
       is_manager_or_owner: { Args: { _user_id: string }; Returns: boolean }
-      is_platform_operator: {
-        Args: {
-          p_roles?: Database["public"]["Enums"]["platform_operator_role"][]
-          p_user_id: string
-        }
-        Returns: boolean
-      }
       is_valid_profile_context: {
         Args: { p_location_id: string; p_organization_id: string }
         Returns: boolean
@@ -6472,10 +6394,6 @@ export type Database = {
     }
     Enums: {
       app_role: "owner" | "manager" | "chef" | "staff" | "inspector"
-      platform_operator_role:
-        | "platform_owner"
-        | "platform_support"
-        | "platform_auditor"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -6604,11 +6522,6 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["owner", "manager", "chef", "staff", "inspector"],
-      platform_operator_role: [
-        "platform_owner",
-        "platform_support",
-        "platform_auditor",
-      ],
     },
   },
 } as const
