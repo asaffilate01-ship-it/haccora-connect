@@ -35,6 +35,8 @@ test("demo client covers the primary operational journey", () => {
     "expiry_items",
     "training_records",
     "documents",
+    "assets",
+    "asset_check_schedules",
   ]) {
     assert.match(seed, new RegExp(`upsert\\(\\"${table}\\"`), `${table} must be seeded`);
   }

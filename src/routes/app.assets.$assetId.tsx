@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   ArrowLeft,
+  CalendarCheck,
   CheckCircle2,
   Clock,
   History,
@@ -16,6 +17,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { can } from "@/lib/permissions";
 import { renderQrDataUrl } from "@/lib/qr";
 
 export const Route = createFileRoute("/app/assets/$assetId")({ component: AssetDetailPage });
@@ -49,8 +51,23 @@ type AssetEvent = {
   measured_value: number | null;
   measured_unit: string | null;
   next_due_at: string | null;
+  corrective_action: string | null;
+  schedule_id: string | null;
   recorded_by_name: string;
   recorded_at: string;
+};
+type AssetCheckSchedule = {
+  id: string;
+  name: string;
+  instructions: string | null;
+  event_type: string;
+  frequency_days: number;
+  measured_unit: string | null;
+  minimum_value: number | null;
+  maximum_value: number | null;
+  last_completed_at: string | null;
+  next_due_at: string;
+  active: boolean;
 };
 
 const emptyEvent = {
@@ -61,21 +78,37 @@ const emptyEvent = {
   measured_value: "",
   measured_unit: "",
   next_due_at: "",
+  corrective_action: "",
+  schedule_id: "",
+};
+
+const emptySchedule = {
+  name: "",
+  instructions: "",
+  event_type: "inspection",
+  frequency_days: "7",
+  measured_unit: "",
+  minimum_value: "",
+  maximum_value: "",
+  next_due_at: new Date().toISOString().slice(0, 10),
 };
 
 function AssetDetailPage() {
   const { assetId } = Route.useParams();
   const { user } = useAuth();
-  const canManage = user?.role === "owner" || user?.role === "manager";
-  const readOnly = user?.role === "inspector";
+  const canManage = user ? can(user.role, "assets.manage") : false;
+  const canRecord = user ? can(user.role, "assets.record") : false;
   const [asset, setAsset] = useState<Asset | null>(null);
   const [events, setEvents] = useState<AssetEvent[]>([]);
+  const [schedules, setSchedules] = useState<AssetCheckSchedule[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [eventOpen, setEventOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
   const [form, setForm] = useState(emptyEvent);
+  const [scheduleForm, setScheduleForm] = useState(emptySchedule);
   const [edit, setEdit] = useState({
     name: "",
     location: "",
@@ -103,16 +136,27 @@ function AssetDetailPage() {
       return;
     }
     const nextAsset = assetResult.data as Asset;
-    const eventResult = await supabase
-      .from("asset_events")
-      .select(
-        "id,event_type,outcome,title,notes,measured_value,measured_unit,next_due_at,recorded_by_name,recorded_at",
-      )
-      .eq("asset_id", nextAsset.id)
-      .order("recorded_at", { ascending: false })
-      .limit(250);
+    const [eventResult, scheduleResult] = await Promise.all([
+      supabase
+        .from("asset_events")
+        .select(
+          "id,event_type,outcome,title,notes,measured_value,measured_unit,next_due_at,corrective_action,schedule_id,recorded_by_name,recorded_at",
+        )
+        .eq("asset_id", nextAsset.id)
+        .order("recorded_at", { ascending: false })
+        .limit(250),
+      supabase
+        .from("asset_check_schedules")
+        .select(
+          "id,name,instructions,event_type,frequency_days,measured_unit,minimum_value,maximum_value,last_completed_at,next_due_at,active",
+        )
+        .eq("asset_id", nextAsset.id)
+        .eq("active", true)
+        .order("next_due_at"),
+    ]);
     setAsset(nextAsset);
     setEvents((eventResult.data ?? []) as AssetEvent[]);
+    setSchedules((scheduleResult.data ?? []) as AssetCheckSchedule[]);
     setEdit({
       name: nextAsset.name,
       location: nextAsset.location || "",
@@ -122,7 +166,10 @@ function AssetDetailPage() {
       next_service_at: nextAsset.next_service_at || "",
       notes: nextAsset.notes || "",
     });
-    if (eventResult.error) setError(eventResult.error.message);
+    if (eventResult.error || scheduleResult.error)
+      setError(
+        eventResult.error?.message || scheduleResult.error?.message || "Unable to load checks.",
+      );
     setLoading(false);
   }, [assetId]);
 
@@ -142,17 +189,38 @@ function AssetDetailPage() {
     setBusy(true);
     setError(null);
     const measured = form.measured_value.trim() ? Number(form.measured_value) : null;
+    const schedule = schedules.find((item) => item.id === form.schedule_id);
+    const expectsReading =
+      schedule && (schedule.minimum_value !== null || schedule.maximum_value !== null);
+    if (expectsReading && !Number.isFinite(measured)) {
+      setBusy(false);
+      setError("Enter the required reading for this scheduled check.");
+      return;
+    }
+    const outsideRange =
+      schedule &&
+      measured !== null &&
+      ((schedule.minimum_value !== null && measured < schedule.minimum_value) ||
+        (schedule.maximum_value !== null && measured > schedule.maximum_value));
+    const finalOutcome = outsideRange ? "fail" : form.outcome;
+    if (["fail", "open"].includes(finalOutcome) && form.corrective_action.trim().length < 2) {
+      setBusy(false);
+      setError("Record the corrective action before saving a failed or open result.");
+      return;
+    }
     const { error: insertError } = await supabase.from("asset_events").insert({
       organization_id: asset.organization_id,
       location_id: asset.location_id,
       asset_id: asset.id,
       event_type: form.event_type,
-      outcome: form.outcome,
+      outcome: finalOutcome,
       title: form.title.trim(),
       notes: form.notes.trim() || null,
       measured_value: Number.isFinite(measured) ? measured : null,
       measured_unit: form.measured_unit.trim() || null,
       next_due_at: form.next_due_at ? new Date(`${form.next_due_at}T12:00:00`).toISOString() : null,
+      corrective_action: form.corrective_action.trim() || null,
+      schedule_id: form.schedule_id || null,
       recorded_by: user.id,
     });
     setBusy(false);
@@ -163,6 +231,55 @@ function AssetDetailPage() {
     setForm(emptyEvent);
     setEventOpen(false);
     await load();
+  };
+
+  const createSchedule = async () => {
+    if (!asset?.organization_id || !user || scheduleForm.name.trim().length < 2) return;
+    const frequency = Number(scheduleForm.frequency_days);
+    if (!Number.isInteger(frequency) || frequency < 1 || frequency > 3660) {
+      setError("Frequency must be between 1 and 3,660 days.");
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    const parseOptional = (value: string) => {
+      if (!value.trim()) return null;
+      const number = Number(value);
+      return Number.isFinite(number) ? number : null;
+    };
+    const { error: insertError } = await supabase.from("asset_check_schedules").insert({
+      organization_id: asset.organization_id,
+      location_id: asset.location_id,
+      asset_id: asset.id,
+      name: scheduleForm.name.trim(),
+      instructions: scheduleForm.instructions.trim() || null,
+      event_type: scheduleForm.event_type,
+      frequency_days: frequency,
+      measured_unit: scheduleForm.measured_unit.trim() || null,
+      minimum_value: parseOptional(scheduleForm.minimum_value),
+      maximum_value: parseOptional(scheduleForm.maximum_value),
+      next_due_at: new Date(`${scheduleForm.next_due_at}T12:00:00`).toISOString(),
+      created_by: user.id,
+    });
+    setBusy(false);
+    if (insertError) setError(insertError.message);
+    else {
+      setScheduleForm(emptySchedule);
+      setScheduleOpen(false);
+      await load();
+    }
+  };
+
+  const beginScheduledCheck = (schedule: AssetCheckSchedule) => {
+    setForm({
+      ...emptyEvent,
+      schedule_id: schedule.id,
+      event_type: schedule.event_type,
+      title: schedule.name,
+      measured_unit: schedule.measured_unit || "",
+    });
+    setEventOpen(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const saveDetails = async () => {
@@ -206,6 +323,16 @@ function AssetDetailPage() {
     () => events.map((event, index) => ({ ...event, latest: index === 0 })),
     [events],
   );
+  const selectedSchedule = schedules.find((item) => item.id === form.schedule_id);
+  const currentReading = form.measured_value.trim() ? Number(form.measured_value) : null;
+  const readingOutsideRange =
+    selectedSchedule &&
+    currentReading !== null &&
+    Number.isFinite(currentReading) &&
+    ((selectedSchedule.minimum_value !== null && currentReading < selectedSchedule.minimum_value) ||
+      (selectedSchedule.maximum_value !== null && currentReading > selectedSchedule.maximum_value));
+  const needsCorrectiveAction =
+    ["fail", "open"].includes(form.outcome) || Boolean(readingOutsideRange);
 
   if (loading)
     return (
@@ -256,7 +383,15 @@ function AssetDetailPage() {
               <Wrench size={14} /> Edit details
             </button>
           )}
-          {!readOnly && !asset.retired_at && (
+          {canManage && !asset.retired_at && (
+            <button
+              className="btn-secondary text-xs"
+              onClick={() => setScheduleOpen((value) => !value)}
+            >
+              <CalendarCheck size={14} /> Schedule check
+            </button>
+          )}
+          {canRecord && !asset.retired_at && (
             <button
               className="btn-alert-solid text-xs"
               onClick={() => setEventOpen((value) => !value)}
@@ -280,7 +415,7 @@ function AssetDetailPage() {
         <div className="surface p-4 text-center">
           <img className="mx-auto h-36 w-36" src={qr} alt={`QR code for ${asset.name}`} />
           <div className="mt-2 font-mono text-xs font-bold">{asset.asset_code}</div>
-          <p className="mt-1 text-[10px] text-muted-foreground">
+          <p className="mt-1 text-xs text-muted-foreground">
             The QR opens this protected record. Sign-in and tenant permissions are still required.
           </p>
         </div>
@@ -383,7 +518,151 @@ function AssetDetailPage() {
         </section>
       )}
 
-      {eventOpen && !readOnly && (
+      {scheduleOpen && canManage && (
+        <section className="no-print surface grid gap-3 p-4 md:grid-cols-4">
+          <div className="md:col-span-4">
+            <h2 className="text-sm font-bold">Create recurring equipment check</h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Operators see this check after scanning the QR. Completion remains in the immutable
+              equipment history.
+            </p>
+          </div>
+          <Field
+            label="Check name"
+            value={scheduleForm.name}
+            set={(value) => setScheduleForm({ ...scheduleForm, name: value })}
+            placeholder="Weekly seal inspection"
+          />
+          <label className="text-xs font-medium">
+            Check type
+            <select
+              className="field mt-1"
+              value={scheduleForm.event_type}
+              onChange={(event) =>
+                setScheduleForm({ ...scheduleForm, event_type: event.target.value })
+              }
+            >
+              <option value="inspection">Inspection</option>
+              <option value="maintenance">Maintenance</option>
+              <option value="calibration">Calibration</option>
+              <option value="cleaning">Deep clean</option>
+              <option value="service">Service</option>
+            </select>
+          </label>
+          <Field
+            label="Repeat every (days)"
+            value={scheduleForm.frequency_days}
+            set={(value) => setScheduleForm({ ...scheduleForm, frequency_days: value })}
+          />
+          <label className="text-xs font-medium">
+            First due
+            <input
+              className="field mt-1"
+              type="date"
+              value={scheduleForm.next_due_at}
+              onChange={(event) =>
+                setScheduleForm({ ...scheduleForm, next_due_at: event.target.value })
+              }
+            />
+          </label>
+          <Field
+            label="Reading unit"
+            value={scheduleForm.measured_unit}
+            set={(value) => setScheduleForm({ ...scheduleForm, measured_unit: value })}
+            placeholder="°C, ppm, bar…"
+          />
+          <Field
+            label="Minimum"
+            value={scheduleForm.minimum_value}
+            set={(value) => setScheduleForm({ ...scheduleForm, minimum_value: value })}
+          />
+          <Field
+            label="Maximum"
+            value={scheduleForm.maximum_value}
+            set={(value) => setScheduleForm({ ...scheduleForm, maximum_value: value })}
+          />
+          <label className="text-xs font-medium md:col-span-4">
+            Instructions
+            <textarea
+              className="field mt-1 min-h-20"
+              value={scheduleForm.instructions}
+              onChange={(event) =>
+                setScheduleForm({ ...scheduleForm, instructions: event.target.value })
+              }
+              placeholder="What to inspect, how to take the reading and the safe result."
+              maxLength={2000}
+            />
+          </label>
+          <button
+            className="btn-alert-solid text-xs md:col-span-4"
+            disabled={busy}
+            onClick={() => void createSchedule()}
+          >
+            <CalendarCheck size={14} /> Save recurring check
+          </button>
+        </section>
+      )}
+
+      <section className="no-print surface overflow-hidden">
+        <div className="flex items-center justify-between border-b border-border px-4 py-3">
+          <div>
+            <h2 className="text-sm font-bold">Recurring QR checks</h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              The next actions for this exact item, ordered by due date.
+            </p>
+          </div>
+          <CalendarCheck size={17} className="text-muted-foreground" />
+        </div>
+        {schedules.length === 0 ? (
+          <p className="p-5 text-xs text-muted-foreground">
+            No recurring checks yet. Managers can schedule calibration, cleaning, service or
+            inspection work.
+          </p>
+        ) : (
+          <div className="grid gap-3 p-3 md:grid-cols-2">
+            {schedules.map((schedule) => {
+              const overdue = new Date(schedule.next_due_at).getTime() < Date.now();
+              return (
+                <article key={schedule.id} className="rounded-xl border border-border p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="text-sm font-bold">{schedule.name}</div>
+                      <div
+                        className={`mt-1 text-xs font-semibold ${overdue ? "text-destructive" : "text-muted-foreground"}`}
+                      >
+                        {overdue ? "Overdue" : "Due"}{" "}
+                        {new Date(schedule.next_due_at).toLocaleDateString("en-GB")}
+                        {` · every ${schedule.frequency_days} days`}
+                      </div>
+                    </div>
+                    {canRecord && !asset.retired_at && (
+                      <button
+                        className="btn-alert-solid shrink-0 text-xs"
+                        onClick={() => beginScheduledCheck(schedule)}
+                      >
+                        Start check
+                      </button>
+                    )}
+                  </div>
+                  {schedule.instructions && (
+                    <p className="mt-3 text-xs text-muted-foreground">{schedule.instructions}</p>
+                  )}
+                  {(schedule.measured_unit ||
+                    schedule.minimum_value !== null ||
+                    schedule.maximum_value !== null) && (
+                    <p className="mt-2 text-xs">
+                      Reading: {schedule.minimum_value ?? "—"}–{schedule.maximum_value ?? "—"}{" "}
+                      {schedule.measured_unit}
+                    </p>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      {eventOpen && canRecord && (
         <section className="no-print surface grid gap-3 p-4 md:grid-cols-4">
           <label className="text-xs font-medium">
             Record type
@@ -463,6 +742,21 @@ function AssetDetailPage() {
               placeholder="What was checked, found and done?"
             />
           </label>
+          {needsCorrectiveAction && (
+            <label className="text-xs font-medium md:col-span-4">
+              Corrective action (required)
+              {readingOutsideRange && (
+                <span className="ml-2 text-destructive">Reading is outside the safe range.</span>
+              )}
+              <textarea
+                className="field mt-1 min-h-20 border-destructive"
+                value={form.corrective_action}
+                onChange={(event) => setForm({ ...form, corrective_action: event.target.value })}
+                maxLength={4000}
+                placeholder="What was made safe, who was informed and what happens next?"
+              />
+            </label>
+          )}
           <button
             className="btn-alert-solid text-xs md:col-span-4"
             disabled={busy}
@@ -478,7 +772,7 @@ function AssetDetailPage() {
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <div>
             <h2 className="text-sm font-bold">Complete history</h2>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Append-only records; staff cannot edit or delete saved evidence.
             </p>
           </div>
@@ -501,7 +795,7 @@ function AssetDetailPage() {
                   >
                     {event.outcome}
                   </span>
-                  <div className="mt-1 text-[10px] capitalize text-muted-foreground">
+                  <div className="mt-1 text-xs capitalize text-muted-foreground">
                     {event.event_type}
                   </div>
                 </div>
@@ -510,13 +804,18 @@ function AssetDetailPage() {
                   {event.notes && (
                     <p className="mt-1 whitespace-pre-wrap text-muted-foreground">{event.notes}</p>
                   )}
+                  {event.corrective_action && (
+                    <p className="mt-2 rounded-md bg-destructive/10 p-2 text-destructive">
+                      <strong>Corrective action:</strong> {event.corrective_action}
+                    </p>
+                  )}
                   {event.measured_value !== null && (
                     <p className="mt-1 font-mono">
                       {event.measured_value} {event.measured_unit}
                     </p>
                   )}
                 </div>
-                <div className="text-right text-[10px] text-muted-foreground">
+                <div className="text-right text-xs text-muted-foreground">
                   <div>{new Date(event.recorded_at).toLocaleString("en-GB")}</div>
                   <div className="mt-1">{event.recorded_by_name}</div>
                   {event.next_due_at && (
@@ -540,6 +839,7 @@ function AssetDetailPage() {
             <p>{asset.asset_code}</p>
             <p>{asset.location || "Site equipment"}</p>
             <small>Scan to inspect, report or view history</small>
+            <small className="font-mono">{asset.qr_token}</small>
           </div>
         </article>
       </section>
@@ -550,7 +850,7 @@ function AssetDetailPage() {
 function Fact({ label, value, icon: Icon }: { label: string; value: string; icon: typeof Clock }) {
   return (
     <div className="bg-card p-4">
-      <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+      <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>{label}</span>
         <Icon size={13} />
       </div>

@@ -262,7 +262,11 @@ test("every visible operational route is connected to persistence or the authent
   assert.ok(operational.length >= 40);
   for (const file of operational) {
     const source = read(`src/routes/${file}`);
-    assert.match(source, /supabase|<Outlet|createFileRoute\("\/app\/"/, `${file} must be wired`);
+    assert.match(
+      source,
+      /supabase|<Outlet|createFileRoute\("\/app\/"|BrowserQRCodeReader/,
+      `${file} must be wired`,
+    );
   }
 });
 

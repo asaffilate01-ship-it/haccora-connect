@@ -54,7 +54,8 @@ The seed command prints the owner, manager and staff email addresses. All use th
 5. Complete a cleaning task and confirm the completion is shown in history.
 6. Search allergens for “Chicken tikka wrap” and confirm milk and gluten are shown.
 7. Check that management-only configuration is not available.
-8. Open Equipment, scan a printed demo QR, add an inspection record, then reconnect and confirm it appears only once in history.
+8. Open Equipment and scan a printed demo QR. Start the overdue fridge check, enter an in-range reading and confirm the attributed timestamp appears once in history.
+9. Repeat with an out-of-range reading. Confirm the UI and server require a corrective action and the equipment changes to attention status.
 
 ### Manager journey
 
@@ -64,7 +65,8 @@ The seed command prints the owner, manager and staff email addresses. All use th
 4. Add a cleaning schedule item and confirm staff can see it.
 5. Review expiring documents and generate the inspection evidence export.
 6. Confirm manager access does not silently become owner/billing access.
-7. Add equipment, print its label sheet, record maintenance and confirm the last-service/next-due summary updates without overwriting history.
+7. Add equipment, attach a recurring check with a safe reading range and print its label sheet. Complete it as staff and confirm the next-due summary advances without overwriting history.
+8. Switch the staff profile to a second test location and confirm the first location's equipment and history are not exposed; switch back and confirm they return.
 
 ### Owner journey
 

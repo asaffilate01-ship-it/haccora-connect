@@ -1,6 +1,6 @@
 begin;
 
-select plan(9);
+select plan(12);
 
 select ok(
   (select relrowsecurity from pg_class where oid = 'public.organizations'::regclass),
@@ -53,6 +53,11 @@ insert into auth.users (
     '20000000-0000-0000-0000-000000000002', 'authenticated', 'authenticated',
     'owner-b@example.test', '', now(), '{"provider":"email","providers":["email"]}',
     '{}', now(), now()
+  ),
+  (
+    '10000000-0000-0000-0000-000000000003', 'authenticated', 'authenticated',
+    'staff-a@example.test', '', now(), '{"provider":"email","providers":["email"]}',
+    '{}', now(), now()
   );
 
 insert into public.organizations (id, name, slug, created_by) values
@@ -67,6 +72,18 @@ insert into public.organizations (id, name, slug, created_by) values
     'Tenant B',
     'tenant-b-test',
     '20000000-0000-0000-0000-000000000002'
+  );
+
+insert into public.locations (id, organization_id, name) values
+  (
+    'a0000000-0000-0000-0000-000000000011',
+    'a0000000-0000-0000-0000-000000000001',
+    'Tenant A kitchen'
+  ),
+  (
+    'a0000000-0000-0000-0000-000000000012',
+    'a0000000-0000-0000-0000-000000000001',
+    'Tenant A second site'
   );
 
 insert into public.organization_memberships (
@@ -85,6 +102,48 @@ insert into public.organization_memberships (
     'owner',
     'active',
     now()
+  ),
+  (
+    'a0000000-0000-0000-0000-000000000001',
+    '10000000-0000-0000-0000-000000000003',
+    'staff',
+    'active',
+    now()
+  );
+
+update public.organization_memberships
+set default_location_id = 'a0000000-0000-0000-0000-000000000011'
+where organization_id = 'a0000000-0000-0000-0000-000000000001'
+  and user_id in (
+    '10000000-0000-0000-0000-000000000001',
+    '10000000-0000-0000-0000-000000000003'
+  );
+update public.profiles
+set current_organization_id = 'a0000000-0000-0000-0000-000000000001',
+    current_location_id = 'a0000000-0000-0000-0000-000000000011'
+where id in (
+  '10000000-0000-0000-0000-000000000001',
+  '10000000-0000-0000-0000-000000000003'
+);
+
+insert into public.assets (
+  id, organization_id, location_id, asset_code, name, created_by
+) values
+  (
+    'a2000000-0000-0000-0000-000000000001',
+    'a0000000-0000-0000-0000-000000000001',
+    'a0000000-0000-0000-0000-000000000011',
+    'EQ-RLS-001',
+    'Tenant A kitchen fridge',
+    '10000000-0000-0000-0000-000000000001'
+  ),
+  (
+    'a2000000-0000-0000-0000-000000000002',
+    'a0000000-0000-0000-0000-000000000001',
+    'a0000000-0000-0000-0000-000000000012',
+    'EQ-RLS-002',
+    'Tenant A second-site fridge',
+    '10000000-0000-0000-0000-000000000001'
   );
 
 insert into public.temperature_logs (
@@ -109,6 +168,53 @@ select is(
   (select count(*) from public.temperature_logs),
   1::bigint,
   'Tenant A owner can read Tenant A temperature evidence'
+);
+
+reset role;
+set local role authenticated;
+select set_config(
+  'request.jwt.claim.sub',
+  '10000000-0000-0000-0000-000000000003',
+  true
+);
+select set_config('request.jwt.claim.role', 'authenticated', true);
+select is(
+  (select count(*) from public.assets),
+  1::bigint,
+  'Tenant A staff sees equipment only at the selected location'
+);
+
+update public.assets
+set name = 'Staff attempted master-data change'
+where id = 'a2000000-0000-0000-0000-000000000001';
+
+insert into public.asset_events (
+  id, organization_id, location_id, asset_id, event_type, outcome, title, recorded_by
+) values (
+  'a3000000-0000-0000-0000-000000000001',
+  'b0000000-0000-0000-0000-000000000002',
+  'a0000000-0000-0000-0000-000000000012',
+  'a2000000-0000-0000-0000-000000000001',
+  'inspection',
+  'pass',
+  'RLS derivation check',
+  '10000000-0000-0000-0000-000000000003'
+);
+
+reset role;
+select is(
+  (select name from public.assets where id = 'a2000000-0000-0000-0000-000000000001'),
+  'Tenant A kitchen fridge',
+  'Tenant A staff cannot alter equipment master data'
+);
+select is(
+  (
+    select organization_id
+    from public.asset_events
+    where id = 'a3000000-0000-0000-0000-000000000001'
+  ),
+  'a0000000-0000-0000-0000-000000000001'::uuid,
+  'equipment events derive tenant and location from the protected asset'
 );
 
 reset role;

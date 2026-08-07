@@ -259,7 +259,11 @@ const { stdout: trackedOutput } = await run("git", ["ls-files", "-z"], {
 // The hosting platform generates a root .env holding only publishable client
 // configuration; it cannot be untracked there, so it is tolerated while every
 // declaration stays publishable. Anything else still fails the gate.
-const exampleEnvironmentFiles = new Set([".env.example", "mobile/.env.example"]);
+const exampleEnvironmentFiles = new Set([
+  ".env.example",
+  ".env.demo.example",
+  "mobile/.env.example",
+]);
 const publishableEnvironmentDeclaration =
   /^(?:VITE_)?SUPABASE_(?:URL|PROJECT_ID|PUBLISHABLE_KEY|ANON_KEY)\s*=/;
 const trackedEnvironmentCandidates = trackedOutput

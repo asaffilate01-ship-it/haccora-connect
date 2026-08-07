@@ -381,6 +381,40 @@ await upsert("assets", [
     status: "ok",
   },
 ]);
+await upsert("asset_check_schedules", [
+  {
+    id: id(130),
+    organization_id: DEMO_ORGANIZATION_ID,
+    location_id: DEMO_LOCATION_ID,
+    asset_id: id(100),
+    name: "Daily fridge condition and display check",
+    instructions:
+      "Check the displayed temperature, door seals, cleanliness and signs of damage. Record the reading and action any exception before leaving this screen.",
+    event_type: "inspection",
+    frequency_days: 1,
+    measured_unit: "°C",
+    minimum_value: 0,
+    maximum_value: 8,
+    next_due_at: isoDaysFromNow(-1),
+    created_by: users.manager.id,
+  },
+  {
+    id: id(131),
+    organization_id: DEMO_ORGANIZATION_ID,
+    location_id: DEMO_LOCATION_ID,
+    asset_id: id(101),
+    name: "Monthly ice-point probe check",
+    instructions:
+      "Use a properly prepared ice slurry. Clean and sanitise the probe after the check.",
+    event_type: "calibration",
+    frequency_days: 30,
+    measured_unit: "°C",
+    minimum_value: -1,
+    maximum_value: 1,
+    next_due_at: isoDaysFromNow(14),
+    created_by: users.manager.id,
+  },
+]);
 await insertOnce("asset_events", [
   {
     id: id(120),

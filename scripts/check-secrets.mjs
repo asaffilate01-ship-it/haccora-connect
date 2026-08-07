@@ -6,7 +6,11 @@ import { promisify } from "node:util";
 const run = promisify(execFile);
 const root = process.cwd();
 const findings = [];
-const allowedEnvironmentFiles = new Set([".env.example", "mobile/.env.example"]);
+const allowedEnvironmentFiles = new Set([
+  ".env.example",
+  ".env.demo.example",
+  "mobile/.env.example",
+]);
 // The hosting platform generates a root .env containing only publishable client
 // configuration and it cannot be untracked from that environment. Such a file is
 // tolerated only while every declaration is a known publishable value; anything
