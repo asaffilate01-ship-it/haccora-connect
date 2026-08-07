@@ -62,7 +62,7 @@ jobs:
       LEGAL_COUNSEL_APPROVED_AT: ${{ vars.LEGAL_COUNSEL_APPROVED_AT }}
       LEGAL_ICO_FEE_STATUS_CONFIRMED: ${{ vars.LEGAL_ICO_FEE_STATUS_CONFIRMED }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v6
         with:
           node-version: 22
