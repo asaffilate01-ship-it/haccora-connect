@@ -38,7 +38,7 @@ function BillingPage() {
     if (error || !data?.url) toast.error("Billing request failed.");
     else window.location.assign(data.url);
   };
-  const manager = user?.role === "owner" || user?.role === "manager";
+  const canManageBilling = user?.role === "owner";
   return (
     <div className="p-5 md:p-10 space-y-6 max-w-5xl">
       <div>
@@ -82,7 +82,7 @@ function BillingPage() {
               </li>
             ))}
           </ul>
-          {manager && (
+          {canManageBilling && (
             <div className="mt-6 flex flex-wrap gap-2">
               <button
                 disabled={!!busy}

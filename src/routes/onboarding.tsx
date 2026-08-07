@@ -63,6 +63,7 @@ function OnboardingPage() {
   useEffect(() => {
     if (hydrated && !authUser)
       navigate({ to: "/login", search: { redirect: "/onboarding" } as never });
+    if (hydrated && authUser?.platformRole) navigate({ to: "/platform", replace: true });
     if (hydrated && authUser?.organizationId) navigate({ to: "/app", replace: true });
   }, [authUser, hydrated, navigate]);
 

@@ -90,9 +90,11 @@ function LoginPage() {
       }
       if ((search?.invite || search?.inspectorInvite) && !user.organizationId) return;
       navigate({
-        to: user.organizationId
-          ? (search?.redirect as string) || homeFor(user.role)
-          : "/onboarding",
+        to: user.platformRole
+          ? "/platform"
+          : user.organizationId
+            ? (search?.redirect as string) || homeFor(user.role)
+            : "/onboarding",
       });
     }
   }, [acceptingInvite, hydrated, inviteAttempted, lang, navigate, refresh, search, user]);

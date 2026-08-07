@@ -248,6 +248,31 @@ test("v2 billing trusts signed provider events rather than client plan writes", 
   assert.match(edge, /provider_event_id/);
 });
 
+test("tenant billing is owner-only in navigation, RLS and the Stripe function", async () => {
+  const auth = await readFile("src/lib/auth.tsx", "utf8");
+  const billing = await readFile("supabase/functions/billing/index.ts", "utf8");
+  const migration = await readFile(
+    "supabase/migrations/20260807190000_platform_operator_and_demo_role_access.sql",
+    "utf8",
+  );
+  const managerPermissions = auth.slice(auth.indexOf("manager: ["), auth.indexOf("chef: ["));
+  assert.doesNotMatch(managerPermissions, /"billing"/);
+  assert.match(billing, /String\(workspace\.role\) !== "owner"/);
+  assert.match(migration, /subscriptions_owner_read/);
+  assert.match(migration, /array\['owner'\]::public\.app_role\[\]/);
+});
+
+test("Phase 23 aligns the equipment inspector scope with database constraints", async () => {
+  const migration = await readFile(
+    "supabase/migrations/20260807190000_platform_operator_and_demo_role_access.sql",
+    "utf8",
+  );
+  assert.match(migration, /inspector_access_grants_evidence_scopes_v2_check/);
+  assert.match(migration, /inspector_access_invitations_evidence_scopes_v2_check/);
+  assert.match(migration, /'equipment'/);
+  assert.match(migration, /cardinality\(evidence_scopes\) between 1 and 11/);
+});
+
 test("v2 integration secrets are encrypted and omitted from browser column grants", async () => {
   const migration = await readFile(
     "supabase/migrations/20260802103319_63102a85-216e-4527-ab82-2f9dc19862bb.sql",

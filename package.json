@@ -25,11 +25,12 @@
     "release:evidence": "node scripts/generate-release-evidence.mjs",
     "release:sbom": "node scripts/generate-sboms.mjs",
     "release:record-deployment": "node scripts/report-github-deployment.mjs",
-    "demo:seed": "node scripts/seed-demo-client.mjs",
-    "demo:verify": "node scripts/verify-demo-client.mjs",
+    "demo:seed": "node --env-file-if-exists=.env.demo scripts/seed-demo-client.mjs",
+    "demo:verify": "node --env-file-if-exists=.env.demo scripts/verify-demo-client.mjs",
     "smoke:worker": "node scripts/check-built-worker.mjs",
     "launch:preflight": "node --env-file-if-exists=.env scripts/verify-launch-env.mjs",
-    "quality": "npm run verify && npm run migrations:check && npm run secrets:check && npm run typecheck && npm test && npm run lint:check && npm run format:check && npm run build"
+    "quality": "npm run verify && npm run migrations:check && npm run secrets:check && npm run typecheck && npm test && npm run lint:check && npm run format:check && npm run build",
+    "demo:access": "node --env-file-if-exists=.env.demo scripts/check-demo-role-access.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

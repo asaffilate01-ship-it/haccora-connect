@@ -44,7 +44,7 @@ async function authenticatedAction(request: Request) {
     ? workspace.organization_id
     : null;
   if (
-    !organizationId || !["owner", "manager"].includes(String(workspace.role))
+    !organizationId || String(workspace.role) !== "owner"
   ) {
     return json(request, { error: "forbidden" }, 403);
   }

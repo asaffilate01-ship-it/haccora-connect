@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { supabase } from "@/integrations/supabase/client";
 
 export type Role = "owner" | "manager" | "chef" | "staff" | "inspector";
+export type PlatformRole = "platform_owner" | "platform_support" | "platform_auditor";
 
 export interface AuthUser {
   id: string;
@@ -9,6 +10,7 @@ export interface AuthUser {
   email: string;
   initials: string;
   role: Role;
+  platformRole: PlatformRole | null;
   location: string;
   organizationId: string | null;
   locationId: string | null;
@@ -135,7 +137,6 @@ export const ROLE_PERMISSIONS: Record<Role, NavKey[]> = {
     "security",
     "control",
     "workflows",
-    "billing",
     "integrations",
     "preferences",
   ],
@@ -248,7 +249,8 @@ export function canAccess(role: Role, key: NavKey, inspectorScopes: string[] = [
   const requiredScope = INSPECTOR_SCOPE_BY_NAV[key];
   return !!requiredScope && inspectorScopes.includes(requiredScope);
 }
-export function homeFor(role: Role): string {
+export function homeFor(role: Role, platformRole: PlatformRole | null = null): string {
+  if (platformRole) return "/platform";
   return role === "inspector" ? "/app/inspection" : "/app";
 }
 
@@ -264,19 +266,29 @@ function initialsOf(name: string) {
 }
 
 async function fetchAuthUser(userId: string, email: string): Promise<AuthUser | null> {
-  const [{ data: profile }, { data: context }] = await Promise.all([
+  const [{ data: profile }, { data: context }, { data: platformContext }] = await Promise.all([
     supabase
       .from("profiles")
       .select("full_name, location, restaurant_name")
       .eq("id", userId)
       .maybeSingle(),
     supabase.rpc("get_my_context"),
+    (supabase as any).rpc("get_my_platform_context"),
   ]);
   const workspace =
     context && typeof context === "object" && !Array.isArray(context)
       ? (context as Record<string, unknown>)
       : {};
   const name = profile?.full_name || email.split("@")[0];
+  const platform =
+    platformContext && typeof platformContext === "object" && !Array.isArray(platformContext)
+      ? (platformContext as Record<string, unknown>)
+      : {};
+  const platformRole =
+    typeof platform.role === "string" &&
+    ["platform_owner", "platform_support", "platform_auditor"].includes(platform.role)
+      ? (platform.role as PlatformRole)
+      : null;
   const role = (workspace.role ?? "staff") as Role;
   const organizationName =
     typeof workspace.organization_name === "string" ? workspace.organization_name : null;
@@ -295,6 +307,7 @@ async function fetchAuthUser(userId: string, email: string): Promise<AuthUser | 
     email,
     initials: initialsOf(name),
     role,
+    platformRole,
     location,
     organizationId:
       typeof workspace.organization_id === "string" ? workspace.organization_id : null,
