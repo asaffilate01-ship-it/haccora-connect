@@ -71,42 +71,36 @@ export function can(role: Role, action: Action): boolean {
 }
 
 /** Grouping used by the Settings > Permissions matrix. */
-export const ACTION_GROUPS: Array<{ groupDe: string; groupEn: string; actions: Action[] }> = [
+export const ACTION_GROUPS: Array<{ label: string; actions: Action[] }> = [
   {
-    groupDe: "Records & evidence",
-    groupEn: "Records & evidence",
+    label: "Records & evidence",
     actions: ["records.export", "records.signOff", "records.deleteLog"],
   },
-  { groupDe: "HACCP", groupEn: "HACCP", actions: ["haccp.editPlan", "haccp.approvePlan"] },
+  { label: "HACCP", actions: ["haccp.editPlan", "haccp.approvePlan"] },
   {
-    groupDe: "Team & roles",
-    groupEn: "Team & roles",
+    label: "Team & roles",
     actions: ["team.manageRoles", "team.invite"],
   },
-  { groupDe: "Rota", groupEn: "Rota", actions: ["rota.publish", "rota.approveSwap"] },
+  { label: "Rota", actions: ["rota.publish", "rota.approveSwap"] },
   {
-    groupDe: "Purchasing & receiving",
-    groupEn: "Purchasing & receiving",
+    label: "Purchasing & receiving",
     actions: ["purchasing.approvePO", "purchasing.receive"],
   },
   {
-    groupDe: "Kitchen & menu",
-    groupEn: "Kitchen & menu",
+    label: "Kitchen & menu",
     actions: ["recipes.cost", "menu.editAllergens", "labels.print"],
   },
   {
-    groupDe: "Incidents & recalls",
-    groupEn: "Incidents & recalls",
+    label: "Incidents & recalls",
     actions: ["incidents.report", "incidents.close", "recalls.trigger"],
   },
   {
-    groupDe: "Audits & inspection",
-    groupEn: "Audits & inspection",
+    label: "Audits & inspection",
     actions: ["audits.perform", "audits.publish", "inspection.grantAccess"],
   },
 ];
 
-export const ACTION_LABEL_DE: Record<Action, string> = {
+export const ACTION_LABELS: Record<Action, string> = {
   "records.export": "Export evidence",
   "records.signOff": "Sign off checks",
   "records.deleteLog": "Delete / amend entries",
@@ -118,29 +112,6 @@ export const ACTION_LABEL_DE: Record<Action, string> = {
   "rota.approveSwap": "Approve shift swap",
   "purchasing.approvePO": "Approve purchase order",
   "purchasing.receive": "Receive goods",
-  "recipes.cost": "View cost & margin",
-  "menu.editAllergens": "Edit allergens",
-  "labels.print": "Print labels",
-  "incidents.report": "Report incident",
-  "incidents.close": "Close incident",
-  "audits.perform": "Perform audit",
-  "audits.publish": "Publish audit",
-  "recalls.trigger": "Trigger recall",
-  "inspection.grantAccess": "Grant inspector access",
-};
-
-export const ACTION_LABEL_EN: Record<Action, string> = {
-  "records.export": "Export evidence",
-  "records.signOff": "Sign off checks",
-  "records.deleteLog": "Delete / amend entries",
-  "haccp.editPlan": "Edit HACCP plan",
-  "haccp.approvePlan": "Approve HACCP plan",
-  "team.manageRoles": "Manage roles",
-  "team.invite": "Invite team members",
-  "rota.publish": "Publish rota",
-  "rota.approveSwap": "Approve shift swap",
-  "purchasing.approvePO": "Approve PO",
-  "purchasing.receive": "Receive deliveries",
   "recipes.cost": "View cost & margin",
   "menu.editAllergens": "Edit allergens",
   "labels.print": "Print labels",

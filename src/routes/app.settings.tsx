@@ -2,13 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Fragment, useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth, canAccess, ROLES, type Role } from "@/lib/auth";
-import {
-  ACTION_GROUPS,
-  ACTION_LABEL_DE,
-  ACTION_LABEL_EN,
-  ROLE_ACTIONS,
-  type Action,
-} from "@/lib/permissions";
+import { ACTION_GROUPS, ACTION_LABELS, ROLE_ACTIONS, type Action } from "@/lib/permissions";
 import { supabase } from "@/integrations/supabase/client";
 import { disableWebPush, registerWebPush } from "@/lib/web-push";
 import {
@@ -192,9 +186,7 @@ function SettingsPage() {
     setInspectorError("");
     if (!user?.locationId) {
       setInspectorState("error");
-      setInspectorError(
-        lang === "de" ? "Wählen Sie zuerst einen Standort." : "Select a location first.",
-      );
+      setInspectorError("Select a location first.");
       return;
     }
     const { error } = await supabase.functions.invoke("inspector-invite", {
@@ -239,9 +231,7 @@ function SettingsPage() {
     const max = Number(sensorMax.replace(",", "."));
     if (!user?.locationId || !Number.isFinite(min) || !Number.isFinite(max) || min >= max) {
       setSensorState("error");
-      setSensorError(
-        lang === "de" ? "Standort und Grenzwerte prüfen." : "Check location and limits.",
-      );
+      setSensorError("Check location and limits.");
       return;
     }
     const { data, error } = await supabase.functions.invoke("sensor-provision", {
@@ -292,14 +282,10 @@ function SettingsPage() {
         <section className="surface p-6">
           <div className="flex items-center gap-2 mb-2">
             <UserPlus size={18} className="text-primary" />
-            <h2 className="font-display text-lg">
-              {lang === "de" ? "Team sicher einladen" : "Invite team securely"}
-            </h2>
+            <h2 className="font-display text-lg">{"Invite team securely"}</h2>
           </div>
           <p className="text-sm text-muted-foreground mb-4">
-            {lang === "de"
-              ? "Rollen werden serverseitig vergeben; öffentliche Registrierung kann keine Berechtigungen wählen."
-              : "Roles are assigned server-side; public sign-up cannot choose permissions."}
+            {"Roles are assigned server-side; public sign-up cannot choose permissions."}
           </p>
           <form onSubmit={sendInvite} className="grid gap-3 sm:grid-cols-[1fr_10rem_auto]">
             <input
@@ -328,12 +314,12 @@ function SettingsPage() {
               ) : (
                 <Send size={14} />
               )}{" "}
-              {lang === "de" ? "Einladen" : "Invite"}
+              {"Invite"}
             </button>
           </form>
           {inviteState === "sent" && (
             <div role="status" className="mt-3 text-sm text-success">
-              {lang === "de" ? "Einladung gesendet." : "Invitation sent."}
+              {"Invitation sent."}
             </div>
           )}
           {inviteState === "error" && (
@@ -348,14 +334,10 @@ function SettingsPage() {
         <section className="surface p-6">
           <div className="flex items-center gap-2 mb-2">
             <Shield size={18} className="text-primary" />
-            <h2 className="font-display text-lg">
-              {lang === "de" ? "Zeitlich begrenzter Prüfzugang" : "Time-limited inspector access"}
-            </h2>
+            <h2 className="font-display text-lg">{"Time-limited inspector access"}</h2>
           </div>
           <p className="text-sm text-muted-foreground mb-4">
-            {lang === "de"
-              ? `Nur-Lese-Zugriff für ${user.location}; Umfang und Ablauf werden serverseitig erzwungen.`
-              : `Read-only access for ${user.location}; scope and expiry are enforced server-side.`}
+            {`Read-only access for ${user.location}; scope and expiry are enforced server-side.`}
           </p>
           <form
             onSubmit={sendInspectorInvite}
@@ -406,12 +388,12 @@ function SettingsPage() {
               ) : (
                 <Send size={14} />
               )}{" "}
-              {lang === "de" ? "Zugang senden" : "Send access"}
+              {"Send access"}
             </button>
           </form>
           {inspectorState === "sent" && (
             <div role="status" className="mt-3 text-sm text-success">
-              {lang === "de" ? "Prüfzugang gesendet." : "Inspector access sent."}
+              {"Inspector access sent."}
             </div>
           )}
           {inspectorState === "error" && (
@@ -421,9 +403,7 @@ function SettingsPage() {
           )}
           {inspectorGrants.length > 0 && (
             <div className="mt-5 border-t border-border pt-4">
-              <div className="text-sm font-semibold">
-                {lang === "de" ? "Aktive Zugänge" : "Active access grants"}
-              </div>
+              <div className="text-sm font-semibold">{"Active access grants"}</div>
               <div className="mt-2 space-y-2">
                 {inspectorGrants.map((grant) => (
                   <div
@@ -433,9 +413,7 @@ function SettingsPage() {
                     <span className="font-mono">{grant.inspector_user_id.slice(0, 8)}…</span>
                     <span>{grant.evidence_scopes.join(", ")}</span>
                     <span className="text-muted-foreground">
-                      {new Date(grant.valid_until).toLocaleString(
-                        lang === "de" ? "de-DE" : "en-GB",
-                      )}
+                      {new Date(grant.valid_until).toLocaleString("en-GB")}
                     </span>
                     <button
                       type="button"
@@ -448,7 +426,7 @@ function SettingsPage() {
                       ) : (
                         <X size={12} />
                       )}
-                      {lang === "de" ? "Widerrufen" : "Revoke"}
+                      {"Revoke"}
                     </button>
                   </div>
                 ))}
@@ -462,14 +440,10 @@ function SettingsPage() {
         <section className="surface p-6">
           <div className="flex items-center gap-2 mb-2">
             <KeyRound size={18} className="text-primary" />
-            <h2 className="font-display text-lg">
-              {lang === "de" ? "Temperatursensor bereitstellen" : "Provision temperature sensor"}
-            </h2>
+            <h2 className="font-display text-lg">{"Provision temperature sensor"}</h2>
           </div>
           <p className="text-sm text-muted-foreground mb-4">
-            {lang === "de"
-              ? `Gerät für ${user.location} anlegen. Das Geheimnis wird nur einmal angezeigt.`
-              : `Create a device for ${user.location}. Its secret is shown only once.`}
+            {`Create a device for ${user.location}. Its secret is shown only once.`}
           </p>
           <form
             onSubmit={provisionSensor}
@@ -481,7 +455,7 @@ function SettingsPage() {
               maxLength={160}
               value={sensorName}
               onChange={(event) => setSensorName(event.target.value)}
-              placeholder={lang === "de" ? "Gerätename" : "Device name"}
+              placeholder={"Device name"}
               className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
             />
             <input
@@ -498,7 +472,7 @@ function SettingsPage() {
               inputMode="decimal"
               value={sensorMin}
               onChange={(event) => setSensorMin(event.target.value)}
-              aria-label={lang === "de" ? "Minimum Celsius" : "Minimum Celsius"}
+              aria-label={"Minimum Celsius"}
               className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
             />
             <input
@@ -506,7 +480,7 @@ function SettingsPage() {
               inputMode="decimal"
               value={sensorMax}
               onChange={(event) => setSensorMax(event.target.value)}
-              aria-label={lang === "de" ? "Maximum Celsius" : "Maximum Celsius"}
+              aria-label={"Maximum Celsius"}
               className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
             />
             <button
@@ -518,7 +492,7 @@ function SettingsPage() {
               ) : (
                 <KeyRound size={14} />
               )}{" "}
-              {lang === "de" ? "Anlegen" : "Provision"}
+              {"Provision"}
             </button>
           </form>
           {sensorState === "created" && sensorSecret && (
@@ -527,9 +501,7 @@ function SettingsPage() {
               className="mt-4 rounded-lg border border-warning/40 bg-warning/10 p-3"
             >
               <div className="text-sm font-semibold">
-                {lang === "de"
-                  ? "Jetzt sicher kopieren; dieser Wert wird nicht erneut angezeigt."
-                  : "Copy securely now; this value will not be shown again."}
+                {"Copy securely now; this value will not be shown again."}
               </div>
               <code className="mt-2 block break-all text-xs select-all">{sensorSecret}</code>
             </div>
@@ -563,20 +535,16 @@ function SettingsPage() {
             {saveState === "saving" && (
               <>
                 <Loader2 size={12} className="animate-spin" />
-                {t("app.saving") ?? (lang === "de" ? "Speichere…" : "Saving…")}
+                {t("app.saving") ?? "Saving…"}
               </>
             )}
             {saveState === "saved" && (
               <>
                 <Check size={12} className="text-success" />
-                {lang === "de" ? "Gespeichert" : "Saved"}
+                {"Saved"}
               </>
             )}
-            {saveState === "error" && (
-              <span className="text-destructive">
-                {lang === "de" ? "Speichern fehlgeschlagen" : "Save failed"}
-              </span>
-            )}
+            {saveState === "error" && <span className="text-destructive">{"Save failed"}</span>}
           </span>
         </div>
         <div className="divide-y divide-border">
@@ -734,8 +702,8 @@ function Toggle({
 }
 
 function PermissionsMatrix({ currentRole }: { currentRole: Role }) {
-  const { t, lang } = useI18n();
-  const labels = lang === "de" ? ACTION_LABEL_DE : ACTION_LABEL_EN;
+  const { t } = useI18n();
+  const labels = ACTION_LABELS;
   const roleLabel = (r: Role) => t(`role.${r}`);
   return (
     <section className="surface p-6">
@@ -781,13 +749,13 @@ function PermissionsMatrix({ currentRole }: { currentRole: Role }) {
           </thead>
           <tbody>
             {ACTION_GROUPS.map((g) => (
-              <Fragment key={g.groupEn}>
+              <Fragment key={g.label}>
                 <tr>
                   <td
                     colSpan={ROLES.length + 1}
                     className="pt-4 pb-1 text-[10px] uppercase tracking-widest font-bold text-foreground/60"
                   >
-                    {lang === "de" ? g.groupDe : g.groupEn}
+                    {g.label}
                   </td>
                 </tr>
                 {g.actions.map((a) => (

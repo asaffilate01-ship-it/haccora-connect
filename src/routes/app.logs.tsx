@@ -99,7 +99,7 @@ function LogsPage() {
                 className="grid grid-cols-1 md:grid-cols-12 px-5 py-3 items-center gap-3 text-sm"
               >
                 <div className="md:col-span-3 font-mono text-xs text-muted-foreground">
-                  {new Date(e.created_at).toLocaleString(lang === "de" ? "de-DE" : "en-GB")}
+                  {new Date(e.created_at).toLocaleString("en-GB")}
                 </div>
                 <div className="md:col-span-3 truncate">{names[e.user_id] ?? "—"}</div>
                 <div className="md:col-span-2">

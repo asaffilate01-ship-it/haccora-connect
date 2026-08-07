@@ -37,7 +37,7 @@ interface Row {
 }
 
 function RecipesPage() {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
   const { user } = useAuth();
   const role = user?.role ?? "staff";
   const canCost = can(role, "recipes.cost");
@@ -63,7 +63,7 @@ function RecipesPage() {
   }, [load]);
 
   const remove = async (id: string) => {
-    if (!confirm(lang === "de" ? "Rezept löschen?" : "Delete recipe?")) return;
+    if (!confirm("Delete recipe?")) return;
     await supabase.from("recipes").delete().eq("id", id);
     load();
   };
@@ -79,7 +79,7 @@ function RecipesPage() {
         {canEdit && (
           <button onClick={() => setShowForm(true)} className="btn-alert-solid text-sm">
             <Plus size={16} className="inline mr-1.5" />
-            {lang === "de" ? "Rezept hinzufügen" : "Add recipe"}
+            {"Add recipe"}
           </button>
         )}
       </div>
@@ -91,7 +91,7 @@ function RecipesPage() {
       ) : rows.length === 0 ? (
         <div className="surface p-10 text-center text-sm text-muted-foreground">
           <Wheat size={20} className="inline opacity-40 mr-2" />
-          {lang === "de" ? "Noch keine Rezepte." : "No recipes yet."}
+          {"No recipes yet."}
         </div>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -170,7 +170,6 @@ function RecipesPage() {
             setShowForm(false);
             load();
           }}
-          lang={lang}
         />
       )}
     </div>
@@ -197,13 +196,11 @@ function RecipeForm({
   saving,
   setSaving,
   onSaved,
-  lang,
 }: {
   onClose: () => void;
   saving: boolean;
   setSaving: (b: boolean) => void;
   onSaved: () => void;
-  lang: "de" | "en";
 }) {
   const [name, setName] = useState("");
   const [cost, setCost] = useState("");
@@ -235,14 +232,14 @@ function RecipeForm({
     <div className="fixed inset-0 z-50 grid place-items-center bg-foreground/40 backdrop-blur-sm p-4">
       <form onSubmit={save} className="surface w-full max-w-lg p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-xl">{lang === "de" ? "Neues Rezept" : "New recipe"}</h2>
+          <h2 className="font-display text-xl">{"New recipe"}</h2>
           <button type="button" onClick={onClose} className="text-muted-foreground">
             <X size={18} />
           </button>
         </div>
         <div>
           <label className="text-[10px] uppercase tracking-widest text-muted-foreground">
-            {lang === "de" ? "Name" : "Name"}
+            {"Name"}
           </label>
           <input
             value={name}
@@ -254,7 +251,7 @@ function RecipeForm({
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="text-[10px] uppercase tracking-widest text-muted-foreground">
-              {lang === "de" ? "Kosten £" : "Cost £"}
+              {"Cost £"}
             </label>
             <input
               type="number"
@@ -279,7 +276,7 @@ function RecipeForm({
         </div>
         <div>
           <label className="text-[10px] uppercase tracking-widest text-muted-foreground">
-            {lang === "de" ? "Allergene" : "Allergens"}
+            {"Allergens"}
           </label>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {ALLERGENS.map((a) => (
@@ -300,11 +297,11 @@ function RecipeForm({
             onClick={onClose}
             className="text-sm px-4 py-2 rounded-full border border-border"
           >
-            {lang === "de" ? "Abbrechen" : "Cancel"}
+            {"Cancel"}
           </button>
           <button type="submit" disabled={saving} className="btn-alert-solid text-sm">
             {saving ? <Loader2 size={14} className="inline animate-spin mr-1" /> : null}
-            {lang === "de" ? "Speichern" : "Save"}
+            {"Save"}
           </button>
         </div>
       </form>

@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/app/security")({ component: SecurityCentre });
 
@@ -58,8 +57,6 @@ async function digest(value: string) {
 
 function SecurityCentre() {
   const { user } = useAuth();
-  const { lang } = useI18n();
-  const de = lang === "de";
   const [aal, setAal] = useState("aal1");
   const [factors, setFactors] = useState<Factor[]>([]);
   const [sessions, setSessions] = useState<DeviceSession[]>([]);
@@ -148,9 +145,7 @@ function SecurityCentre() {
 
   const verifyMfa = async () => {
     if (!enrolment || !/^\d{6}$/.test(verificationCode)) {
-      return toast.error(
-        de ? "Geben Sie den sechsstelligen Code ein." : "Enter the six-digit code.",
-      );
+      return toast.error("Enter the six-digit code.");
     }
     const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({
       factorId: enrolment.id,
@@ -165,12 +160,12 @@ function SecurityCentre() {
     await db.rpc("record_security_event", { p_event_type: "mfa_enrolled" });
     setEnrolment(null);
     setVerificationCode("");
-    toast.success(de ? "Zwei-Faktor-Schutz aktiviert." : "Two-factor protection enabled.");
+    toast.success("Two-factor protection enabled.");
     await load();
   };
 
   const removeFactor = async (factorId: string) => {
-    if (!window.confirm(de ? "Diesen MFA-Faktor entfernen?" : "Remove this MFA factor?")) return;
+    if (!window.confirm("Remove this MFA factor?")) return;
     const { error } = await supabase.auth.mfa.unenroll({ factorId });
     if (error) return toast.error(error.message);
     await db.rpc("record_security_event", { p_event_type: "mfa_removed" });
@@ -182,7 +177,7 @@ function SecurityCentre() {
       body: sessionId ? { action: "revoke_session", sessionId } : { action: "sign_out_others" },
     });
     if (error) return toast.error(error.message);
-    toast.success(de ? "Andere Sitzungen wurden beendet." : "Other sessions were signed out.");
+    toast.success("Other sessions were signed out.");
     await load();
   };
 
@@ -197,7 +192,7 @@ function SecurityCentre() {
   };
 
   const decide = async (id: string, approve: boolean) => {
-    const reason = window.prompt(de ? "Begründung der Entscheidung" : "Decision reason");
+    const reason = window.prompt("Decision reason");
     if (!reason) return;
     const { error } = await db.rpc("decide_high_risk_action", {
       p_request_id: id,
@@ -212,9 +207,7 @@ function SecurityCentre() {
     <div className="p-4 md:p-8 space-y-6 max-w-6xl mx-auto">
       <header>
         <div className="eyebrow">Account & privacy</div>
-        <h1 className="mt-1 text-3xl md:text-4xl">
-          {de ? "Sicherheitszentrum" : "Security centre"}
-        </h1>
+        <h1 className="mt-1 text-3xl md:text-4xl">{"Security centre"}</h1>
         <p className="mt-2 text-muted-foreground max-w-3xl">
           MFA, active devices, privacy requests and sensitive approvals in one place.
         </p>
@@ -223,19 +216,19 @@ function SecurityCentre() {
       <div className="grid gap-4 md:grid-cols-3">
         <Metric
           icon={aal === "aal2" ? ShieldCheck : ShieldAlert}
-          label={de ? "Sicherheitsstufe" : "Assurance level"}
+          label={"Assurance level"}
           value={aal.toUpperCase()}
           good={aal === "aal2"}
         />
         <Metric
           icon={KeyRound}
-          label={de ? "Bestätigte MFA-Faktoren" : "Verified MFA factors"}
+          label={"Verified MFA factors"}
           value={String(factors.filter((factor) => factor.status === "verified").length)}
           good={factors.some((factor) => factor.status === "verified")}
         />
         <Metric
           icon={Laptop}
-          label={de ? "Aktive Geräte" : "Active devices"}
+          label={"Active devices"}
           value={String(sessions.filter((session) => !session.revoked_at).length)}
           good
         />
@@ -244,30 +237,24 @@ function SecurityCentre() {
       <section className="surface p-5 md:p-7">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-xl font-display">
-              {de ? "Zwei-Faktor-Authentifizierung" : "Two-factor authentication"}
-            </h2>
+            <h2 className="text-xl font-display">{"Two-factor authentication"}</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              {de
-                ? "Verwenden Sie eine TOTP-App. Wiederherstellungscodes sicher außerhalb Haccora aufbewahren."
-                : "Use a TOTP authenticator. Store recovery information securely outside Haccora."}
+              {"Use a TOTP authenticator. Store recovery information securely outside Haccora."}
             </p>
           </div>
           <button className="btn-primary" onClick={startMfa}>
-            <KeyRound size={15} /> {de ? "Faktor hinzufügen" : "Add factor"}
+            <KeyRound size={15} /> {"Add factor"}
           </button>
         </div>
         {enrolment && (
           <div className="mt-5 grid md:grid-cols-[180px_1fr] gap-5 rounded-2xl bg-secondary p-5">
             <img
               src={enrolment.qr}
-              alt={de ? "QR-Code für Authenticator" : "Authenticator QR code"}
+              alt={"Authenticator QR code"}
               className="h-44 w-44 bg-white p-2 rounded-xl"
             />
             <div>
-              <div className="font-semibold">
-                {de ? "Code scannen und bestätigen" : "Scan and verify"}
-              </div>
+              <div className="font-semibold">{"Scan and verify"}</div>
               <p className="text-xs text-muted-foreground mt-2 break-all">{enrolment.secret}</p>
               <div className="mt-4 flex gap-2">
                 <input
@@ -279,7 +266,7 @@ function SecurityCentre() {
                   placeholder="000000"
                 />
                 <button className="btn-primary" onClick={verifyMfa}>
-                  {de ? "Bestätigen" : "Verify"}
+                  {"Verify"}
                 </button>
               </div>
             </div>
@@ -316,15 +303,13 @@ function SecurityCentre() {
       <section className="surface p-5 md:p-7">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-xl font-display">
-              {de ? "Geräte und Sitzungen" : "Devices and sessions"}
-            </h2>
+            <h2 className="text-xl font-display">{"Devices and sessions"}</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              {de ? "Unbekannte Geräte sofort abmelden." : "Sign out unknown devices immediately."}
+              {"Sign out unknown devices immediately."}
             </p>
           </div>
           <button className="btn-outline" onClick={() => signOutOthers()}>
-            {de ? "Alle anderen abmelden" : "Sign out all others"}
+            {"Sign out all others"}
           </button>
         </div>
         <div className="mt-4 divide-y divide-border">
@@ -335,7 +320,7 @@ function SecurityCentre() {
                 <div>
                   <div className="text-sm font-semibold">{session.device_label}</div>
                   <div className="text-xs text-muted-foreground">
-                    {session.assurance_level.toUpperCase()} · {de ? "Zuletzt" : "Last seen"}{" "}
+                    {session.assurance_level.toUpperCase()} · {"Last seen"}{" "}
                     {new Date(session.last_seen_at).toLocaleString()}
                   </div>
                 </div>
@@ -345,16 +330,14 @@ function SecurityCentre() {
                   className="btn-ghost text-destructive"
                   onClick={() => signOutOthers(session.id)}
                 >
-                  {de ? "Widerrufen" : "Revoke"}
+                  {"Revoke"}
                 </button>
               )}
             </div>
           ))}
           {!loading && sessions.length === 0 && (
             <p className="py-6 text-sm text-muted-foreground">
-              {de
-                ? "Dieses Gerät wird nach der nächsten Aktualisierung angezeigt."
-                : "This device will appear after the next refresh."}
+              {"This device will appear after the next refresh."}
             </p>
           )}
         </div>
@@ -363,9 +346,9 @@ function SecurityCentre() {
       <section className="surface p-5 md:p-7">
         <h2 className="text-xl font-display">Privacy rights</h2>
         <p className="text-sm text-muted-foreground mt-1">
-          {de
-            ? "Anfragen werden dokumentiert und vor Ausführung geprüft. Gesetzliche Aufbewahrungspflichten können eine Löschung begrenzen."
-            : "Requests are recorded and reviewed before execution. Legal retention duties may restrict deletion."}
+          {
+            "Requests are recorded and reviewed before execution. Legal retention duties may restrict deletion."
+          }
         </p>
         <div className="mt-4 grid md:grid-cols-[220px_1fr_auto] gap-3">
           <select
@@ -373,22 +356,22 @@ function SecurityCentre() {
             value={requestType}
             onChange={(event) => setRequestType(event.target.value)}
           >
-            <option value="export">{de ? "Datenexport" : "Data export"}</option>
-            <option value="access">{de ? "Auskunft" : "Access"}</option>
-            <option value="rectification">{de ? "Berichtigung" : "Rectification"}</option>
-            <option value="restriction">{de ? "Einschränkung" : "Restriction"}</option>
-            <option value="deletion">{de ? "Kontolöschung" : "Account deletion"}</option>
-            <option value="objection">{de ? "Widerspruch" : "Objection"}</option>
+            <option value="export">{"Data export"}</option>
+            <option value="access">{"Access"}</option>
+            <option value="rectification">{"Rectification"}</option>
+            <option value="restriction">{"Restriction"}</option>
+            <option value="deletion">{"Account deletion"}</option>
+            <option value="objection">{"Objection"}</option>
           </select>
           <input
             className="input"
             maxLength={2000}
             value={requestDetails}
             onChange={(event) => setRequestDetails(event.target.value)}
-            placeholder={de ? "Optionale Angaben" : "Optional details"}
+            placeholder={"Optional details"}
           />
           <button className="btn-primary" onClick={submitPrivacyRequest}>
-            {de ? "Einreichen" : "Submit"}
+            {"Submit"}
           </button>
         </div>
         <div className="mt-4 grid gap-2">
@@ -400,7 +383,7 @@ function SecurityCentre() {
               <span className="font-semibold">{request.request_type}</span>
               <span>{request.status}</span>
               <span className="text-muted-foreground">
-                {de ? "Fällig" : "Due"}: {new Date(request.due_at).toLocaleDateString()}
+                {"Due"}: {new Date(request.due_at).toLocaleDateString()}
               </span>
             </div>
           ))}
@@ -411,14 +394,10 @@ function SecurityCentre() {
         <section className="surface p-5 md:p-7">
           <div className="flex items-center gap-2">
             <LockKeyhole size={20} />
-            <h2 className="text-xl font-display">
-              {de ? "Sensible Freigaben" : "Sensitive approvals"}
-            </h2>
+            <h2 className="text-xl font-display">{"Sensitive approvals"}</h2>
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            {de
-              ? "Die anfragende Person kann die eigene Anfrage nicht freigeben."
-              : "The requester cannot approve their own request."}
+            {"The requester cannot approve their own request."}
           </p>
           <div className="mt-4 space-y-3">
             {approvals.map((approval) => (
@@ -430,32 +409,29 @@ function SecurityCentre() {
                   <div className="font-semibold">{approval.action.replaceAll("_", " ")}</div>
                   <div className="text-sm text-muted-foreground mt-1">{approval.reason}</div>
                   <div className="text-xs text-muted-foreground mt-1">
-                    {de ? "Läuft ab" : "Expires"}: {new Date(approval.expires_at).toLocaleString()}
+                    {"Expires"}: {new Date(approval.expires_at).toLocaleString()}
                   </div>
                 </div>
                 <div className="flex gap-2">
                   <button className="btn-outline" onClick={() => decide(approval.id, false)}>
-                    {de ? "Ablehnen" : "Reject"}
+                    {"Reject"}
                   </button>
                   <button className="btn-primary" onClick={() => decide(approval.id, true)}>
                     <CheckCircle2 size={15} />
-                    {de ? "Freigeben" : "Approve"}
+                    {"Approve"}
                   </button>
                 </div>
               </div>
             ))}
             {!loading && approvals.length === 0 && (
-              <p className="text-sm text-muted-foreground py-3">
-                {de ? "Keine offenen Freigaben." : "No pending approvals."}
-              </p>
+              <p className="text-sm text-muted-foreground py-3">{"No pending approvals."}</p>
             )}
           </div>
         </section>
       )}
 
       <button className="btn-ghost" onClick={load} disabled={loading}>
-        <RefreshCw size={15} className={loading ? "animate-spin" : ""} />{" "}
-        {de ? "Aktualisieren" : "Refresh"}
+        <RefreshCw size={15} className={loading ? "animate-spin" : ""} /> {"Refresh"}
       </button>
     </div>
   );

@@ -16,7 +16,7 @@ type Counts = {
 export function LiveMetrics() {
   const { lang } = useI18n();
   const [c, setC] = useState<Counts | null>(null);
-  const t = (de: string, en: string) => (lang === "de" ? de : en);
+  const t = (_legacy: string, english: string) => english;
 
   useEffect(() => {
     let mounted = true;
@@ -76,7 +76,7 @@ export function LiveMetrics() {
   if (!c)
     return (
       <div className="surface p-5 flex items-center gap-2 text-sm text-muted-foreground">
-        <Loader2 size={14} className="animate-spin" /> {t("Lade Live-Daten…", "Loading live data…")}
+        <Loader2 size={14} className="animate-spin" /> {"Loading live data…"}
       </div>
     );
 
@@ -85,7 +85,7 @@ export function LiveMetrics() {
       <Tile
         to="/app/incidents"
         icon={<AlertOctagon size={16} />}
-        label={t("Offene Vorfälle", "Open incidents")}
+        label={"Open incidents"}
         value={c.incidents}
         accent={c.incidentsHigh > 0 ? "danger" : "neutral"}
         hint={
@@ -95,7 +95,7 @@ export function LiveMetrics() {
       <Tile
         to="/app/temperature"
         icon={<Thermometer size={16} />}
-        label={t("Temp-Messungen 24h", "Temp readings 24h")}
+        label={"Temp readings 24h"}
         value={c.temp}
         accent={c.tempAlert > 0 ? "warn" : "neutral"}
         hint={
@@ -107,14 +107,14 @@ export function LiveMetrics() {
       <Tile
         to="/app/alerts"
         icon={<Bell size={16} />}
-        label={t("Ungelesene Alerts", "Unread alerts")}
+        label={"Unread alerts"}
         value={c.alerts}
         accent={c.alerts > 0 ? "warn" : "neutral"}
       />
       <Tile
         to="/app/checks"
         icon={<ClipboardCheck size={16} />}
-        label={t("Checks heute", "Checks today")}
+        label={"Checks today"}
         value={c.checksDone}
         accent="ok"
       />

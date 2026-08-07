@@ -2,7 +2,9 @@ import type { ReactNode } from "react";
 import type { Language } from "@/lib/i18n";
 import { PUBLIC_CONFIG, legalIdentityComplete } from "@/lib/public-config";
 
-export type LegalKey = "imprint" | "privacy" | "terms" | "cookies" | "complaints";
+export type LegalKey =
+  "company" | "privacy" | "terms" | "cookies" | "dataProcessing" | "accessibility" | "complaints";
+
 export interface LegalDoc {
   title: string;
   updated: string;
@@ -10,227 +12,323 @@ export interface LegalDoc {
 }
 
 const H = ({ children }: { children: ReactNode }) => (
-  <h2 className="display-black text-2xl md:text-3xl mt-10 first:mt-0">{children}</h2>
+  <h2 className="mt-9 first:mt-0 text-xl font-black tracking-tight md:text-2xl">{children}</h2>
 );
 const P = ({ children }: { children: ReactNode }) => (
-  <p className="mt-3 text-[15px] leading-relaxed text-black/75">{children}</p>
+  <p className="mt-3 text-sm leading-6 text-black/75">{children}</p>
 );
 const UL = ({ children }: { children: ReactNode }) => (
-  <ul className="mt-3 space-y-1.5 list-disc pl-5 text-[15px] text-black/75">{children}</ul>
+  <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm leading-6 text-black/75">{children}</ul>
 );
+const A = ({ href, children }: { href: string; children: ReactNode }) => (
+  <a className="font-semibold underline underline-offset-2" href={href} rel="noreferrer">
+    {children}
+  </a>
+);
+
 type LegalField = keyof typeof PUBLIC_CONFIG.legal;
 const ConfiguredLegalValue = ({ field, fallback }: { field: LegalField; fallback: string }) => (
   <>{PUBLIC_CONFIG.legal[field] ?? fallback}</>
 );
-const ConfiguredLegalAddress = ({
-  fallback,
-  separator = ", ",
-  includeEmail = false,
-}: {
-  fallback: string;
-  separator?: string;
-  includeEmail?: boolean;
-}) => {
+const ConfiguredLegalAddress = ({ includeEmail = false }: { includeEmail?: boolean }) => {
   const values = [
     PUBLIC_CONFIG.legal.companyName,
     PUBLIC_CONFIG.legal.addressLine1,
     PUBLIC_CONFIG.legal.postalCity,
     ...(includeEmail ? [PUBLIC_CONFIG.legal.email] : []),
   ];
-  return <>{values.filter(Boolean).join(separator) || fallback}</>;
+  return <>{values.filter(Boolean).join(" · ") || "Configure the legal identity before launch"}</>;
 };
-const Address = ({ lang = "de" }: { lang?: Language }) => (
-  <address className="not-italic mt-3 text-[15px] text-black/75">
+
+const CompanyAddress = () => (
+  <address className="mt-3 not-italic text-sm leading-6 text-black/75">
     {!legalIdentityComplete && (
-      <strong className="block rounded-lg bg-destructive/10 p-3 text-destructive">
-        {lang === "de"
-          ? "Nicht veröffentlichen: Rechtsträgerdaten fehlen in der Produktionskonfiguration."
-          : "Do not publish: legal entity details are missing from production configuration."}
+      <strong className="mb-4 block rounded-lg bg-destructive/10 p-3 text-destructive">
+        Do not publish: the production legal identity is incomplete.
       </strong>
     )}
-    {PUBLIC_CONFIG.legal.companyName ?? "—"}
+    <strong>{PUBLIC_CONFIG.legal.companyName ?? "Legal company name not configured"}</strong>
     <br />
-    {PUBLIC_CONFIG.legal.addressLine1 ?? "—"}
+    {PUBLIC_CONFIG.legal.addressLine1 ?? "Registered office not configured"}
     <br />
-    {PUBLIC_CONFIG.legal.postalCity ?? "—"}
+    {PUBLIC_CONFIG.legal.postalCity ?? "Postcode and town/city not configured"}
     <br />
     <br />
-    {lang === "de" ? "E-Mail" : "Email"}: {PUBLIC_CONFIG.legal.email ?? "—"}
+    Registered in: {PUBLIC_CONFIG.legal.registeredIn ?? "Not configured"}
     <br />
-    {lang === "de" ? "Tel." : "Phone"}: {PUBLIC_CONFIG.legal.phone ?? "—"}
+    Company number: {PUBLIC_CONFIG.legal.companyNumber ?? "Not configured"}
     <br />
-    {lang === "de" ? "Handelsregister" : "Company number / register"}:{" "}
-    {PUBLIC_CONFIG.legal.register ?? "—"}
+    {PUBLIC_CONFIG.legal.vatId && (
+      <>
+        VAT registration number: {PUBLIC_CONFIG.legal.vatId}
+        <br />
+      </>
+    )}
+    {PUBLIC_CONFIG.legal.icoRegistration && (
+      <>
+        ICO registration reference: {PUBLIC_CONFIG.legal.icoRegistration}
+        <br />
+      </>
+    )}
+    Email: {PUBLIC_CONFIG.legal.email ?? "Not configured"}
     <br />
-    {lang === "de" ? "USt-IdNr." : "VAT ID"}: {PUBLIC_CONFIG.legal.vatId ?? "—"}
-    <br />
-    {lang === "de" ? "Geschäftsführung" : "Responsible company officer"}:{" "}
-    {PUBLIC_CONFIG.legal.managingDirector ?? "—"}
+    Phone: {PUBLIC_CONFIG.legal.phone ?? "Not configured"}
   </address>
 );
 
-const UPDATED = "01.08.2026";
+const UPDATED = "7 August 2026";
 
-/* ── UK ENGLISH ─────────────────────────────────────────────────────────────── */
-const en: Record<LegalKey, LegalDoc> = {
-  imprint: {
-    title: "Company information",
+const content: Record<LegalKey, LegalDoc> = {
+  company: {
+    title: "Company details",
     updated: UPDATED,
     body: (
       <>
-        <H>Company information</H>
-        <Address lang="en" />
-        <H>Contact</H>
-        <P>Use the configured email or postal address for legal and customer-service notices.</P>
-        <H>Liability for content</H>
         <P>
-          We are responsible for content we publish. Links and third-party services remain subject
-          to their own terms and responsibilities.
+          Haccora is a UK business-to-business software service. The provider and contact details
+          below apply to the Haccora website, web application and mobile applications.
+        </P>
+        <H>Service provider</H>
+        <CompanyAddress />
+        <H>Customer and legal notices</H>
+        <P>
+          Send customer-service, contractual and legal notices to the email or registered-office
+          address above. Include your organisation name and account email so the request can be
+          routed securely.
+        </P>
+        <H>Trading disclosure</H>
+        <P>
+          These details must be checked against the live Companies House record before publication
+          and after any company change.
         </P>
       </>
     ),
   },
   privacy: {
-    title: "Privacy notice (GDPR)",
+    title: "Privacy notice",
     updated: UPDATED,
     body: (
       <>
         <P>
-          This draft describes use of the Haccora platform and the configured public website. Before
-          publication it must be aligned with the actual data flows, providers and legal bases, then
-          approved by qualified counsel.
+          This notice explains how Haccora handles personal data under the UK GDPR, the Data
+          Protection Act 2018 and, where electronic communications or device storage are involved,
+          the Privacy and Electronic Communications Regulations. It covers our public website,
+          account administration, support, web app and native apps.
         </P>
-        <H>1. Controller</H>
-        <address className="not-italic mt-3 text-[15px] text-black/75">
-          <ConfiguredLegalAddress
-            fallback="Legal identity must be configured before publication"
-            separator=" · "
-            includeEmail
-          />
-        </address>
-        <H>2. Data protection officer</H>
+        <H>1. Who is responsible for your data</H>
         <P>
-          The privacy contact is available at the email address configured in the imprint. Details
-          of an appointed data protection officer will be added before publication.
+          For website visitors, account contacts, billing contacts and direct support requests, the
+          controller is <ConfiguredLegalAddress includeEmail />.
         </P>
-        <H>3. Data we process and purposes</H>
+        <P>
+          A subscribing food business is normally the controller for staff records, fitness-to-work
+          reports, training records and operational food-safety evidence entered in its workspace.
+          Haccora normally processes that data on the customer's documented instructions.
+        </P>
+        <H>2. Personal data we handle</H>
         <UL>
+          <li>Identity and account data, including name, work email, role and site membership.</li>
+          <li>Subscription, invoice and transaction references.</li>
           <li>
-            Master data (name, email, role, location) — contract performance, Art. 6(1)(b) GDPR.
+            Checks, temperatures, cleaning, delivery, allergen, equipment, corrective-action and
+            audit evidence.
           </li>
-          <li>
-            Usage data (tasks, HACCP records, temperatures) — compliance documentation, Art. 6(1)(b)
-            and (c) GDPR.
-          </li>
-          <li>
-            Log and security data — legitimate interest in operational security, Art. 6(1)(f) GDPR.
-          </li>
-          <li>Contact form data — handling your enquiry, Art. 6(1)(b)/(f) GDPR.</li>
+          <li>Induction, training, certificate-expiry and limited fitness-to-work information.</li>
+          <li>Documents, photographs and files that authorised users choose to upload.</li>
+          <li>Device, sign-in, security, diagnostic, notification-token and audit-log data.</li>
         </UL>
-        <H>4. Recipients and processors</H>
+        <H>3. Sensitive information</H>
         <P>
-          The final version will list the processors actually used, processing locations, Art. 28
-          GDPR agreements and any safeguards for international transfers before publication.
+          Fitness-to-work information may reveal health data, which is special-category personal
+          data. The customer must document a valid UK GDPR Article 6 basis and Article 9 condition,
+          restrict access and avoid collecting unnecessary medical detail.
         </P>
-        <H>5. Retention</H>
-        <P>
-          A reviewed retention and deletion schedule will be configured for every data category
-          before launch, reflecting contract purposes, data-subject rights and the legal obligations
-          that actually apply.
-        </P>
-        <H>6. Your rights</H>
+        <H>4. Why we use data</H>
         <UL>
-          <li>Access (Art. 15 GDPR)</li>
-          <li>Rectification (Art. 16 GDPR)</li>
-          <li>Erasure (Art. 17 GDPR)</li>
-          <li>Restriction (Art. 18 GDPR)</li>
-          <li>Portability (Art. 20 GDPR)</li>
-          <li>Objection (Art. 21 GDPR)</li>
-          <li>Complaint to the UK Information Commissioner’s Office.</li>
+          <li>Provide, secure and administer the service and authorised user accounts.</li>
+          <li>Process subscriptions, invoices, support, service notices and customer requests.</li>
+          <li>Detect misuse, investigate incidents and maintain audit evidence.</li>
+          <li>Meet tax, accounting, legal and regulatory duties that apply to Haccora.</li>
+          <li>Send marketing only where permitted and always provide an opt-out.</li>
         </UL>
-        <H>7. Cookies and tracking</H>
         <P>
-          We only use strictly necessary cookies by default. Any non-necessary cookies (e.g.
-          analytics) are only set after your consent under the Privacy and Electronic Communications
-          Regulations. See "Cookies" for details.
+          Depending on the activity, our controller bases are contract performance, legitimate
+          interests, legal obligation or consent. When acting as processor, the customer determines
+          the relevant legal bases.
+        </P>
+        <H>5. Recipients and international transfers</H>
+        <P>
+          Access is limited to authorised customer users and suppliers needed for hosting,
+          authentication, storage, payments, email, push notifications, malware scanning, support
+          and monitoring. Where data leaves the UK, a lawful transfer mechanism and supplementary
+          safeguards are used where required.
+        </P>
+        <H>6. Retention and security</H>
+        <P>
+          Data is retained only as long as needed for its purpose, legal claims, security,
+          accounting or the customer's documented retention schedule. Haccora uses tenant-scoped
+          controls, role and location permissions, private storage, encryption in transit,
+          attributable timestamps and audit logging.
+        </P>
+        <H>7. Your rights</H>
+        <UL>
+          <li>Access, rectification and, where applicable, erasure.</li>
+          <li>Restriction, objection and portability where the legal conditions apply.</li>
+          <li>Withdrawal of consent without affecting earlier lawful processing.</li>
+          <li>A complaint to the Information Commissioner's Office.</li>
+        </UL>
+        <P>
+          Contact <ConfiguredLegalValue field="email" fallback="the configured privacy email" />. If
+          the request concerns your employer's workspace, contact that organisation first. You can
+          also read the{" "}
+          <A href="https://ico.org.uk/make-a-complaint/data-protection-complaints/">
+            ICO complaints guidance
+          </A>
+          .
         </P>
       </>
     ),
   },
   terms: {
-    title: "Terms and Conditions",
+    title: "Business terms of service",
     updated: UPDATED,
     body: (
       <>
-        <H>§ 1 Scope</H>
         <P>
-          These T&Cs govern all contracts for the use of the SaaS solution "Haccora" between the
-          provider identified in the company information and the customer acting for business
-          purposes.
+          These terms apply to Haccora subscriptions purchased by businesses and should be read with
+          the accepted order, plan description and data-processing agreement.
         </P>
-        <H>§ 2 Scope of services</H>
+        <H>1. Business use and accounts</H>
         <P>
-          The Provider makes Haccora available as a web application. The specific feature set
-          depends on the chosen plan. No guarantee of legal compliance of individual records is
-          given; responsibility for food-law obligations remains with the customer.
+          The customer confirms it acts for business purposes and is responsible for accurate
+          information, authorised roles, account security and prompt removal of leavers. Accounts
+          must not be shared in a way that prevents attribution.
         </P>
-        <H>§ 3 Term and termination</H>
+        <H>2. Trial, subscription and payment</H>
         <P>
-          Term, renewal and notice periods are set out in the accepted quote or order. The right to
-          extraordinary termination remains unaffected.
+          The seven-day trial does not require card details. A paid subscription starts only at
+          checkout or when an order is accepted. Monthly plans renew monthly until cancelled. The
+          customer may cancel before renewal through the billing portal. Plan prices are per site,
+          per month and VAT is added where applicable.
         </P>
-        <H>§ 4 Fees and payment</H>
+        <H>3. Service and food-safety responsibility</H>
         <P>
-          Prices, taxes, payment methods and due dates are those agreed in the accepted quote or
-          order.
+          Haccora provides digital workflows, reminders, records, exports and role-based access. It
+          supports record keeping and inspection preparation but is not a regulator, certification
+          body or substitute for competent food-safety judgment. The food business remains
+          responsible for registration, HACCP-based procedures, safe methods, allergens, staff
+          competence, corrective action and applicable law.
         </P>
-        <H>§ 5 Customer obligations</H>
-        <UL>
-          <li>Truthful information on registration and data upkeep.</li>
-          <li>Secure storage of access credentials.</li>
-          <li>Compliance with applicable food and data protection law.</li>
-        </UL>
-        <H>§ 6 Availability</H>
+        <H>4. Customer data and acceptable use</H>
         <P>
-          Availability, maintenance windows and any service levels are set out in the accepted quote
-          or a separate SLA.
+          The customer retains its rights in customer data and grants Haccora limited permission to
+          provide and secure the service. Users must not bypass access controls, probe another
+          tenant, introduce malicious code or submit fabricated, backdated or falsely attributed
+          evidence.
         </P>
-        <H>§ 7 Liability</H>
+        <H>5. Suspension, export and termination</H>
         <P>
-          The Provider is liable without limitation for intent and gross negligence and for injury
-          to life, body and health. For simple negligence, liability is limited to typically
-          foreseeable damage. Nothing in these terms excludes liability that cannot lawfully be
-          excluded under the laws of England and Wales.
+          Access may be suspended where reasonably necessary for security, unlawful use, material
+          breach or overdue payment. Customers can export supported evidence while access is active
+          and should do so before closure. Return and deletion follow the order and DPA.
         </P>
-        <H>§ 8 Final provisions</H>
+        <H>6. Warranties and liability</H>
         <P>
-          Applicable law and jurisdiction will be set in the final legally approved version using
-          the provider's actual registered location.
+          We provide the service with reasonable care and skill but do not guarantee a particular
+          inspection result, hygiene rating or legal compliance. Liability limits must be set in the
+          accepted order. Nothing excludes liability that cannot lawfully be excluded.
+        </P>
+        <H>7. Law and disputes</H>
+        <P>
+          These terms and non-contractual obligations are governed by the law of England and Wales.
+          The courts of England and Wales have exclusive jurisdiction unless an enterprise order
+          expressly agrees otherwise.
         </P>
       </>
     ),
   },
   cookies: {
-    title: "Cookie Policy",
+    title: "Cookie and device-storage policy",
     updated: UPDATED,
     body: (
       <>
         <P>
-          We currently use only technically necessary local storage and authentication mechanisms,
-          in line with UK GDPR and the Privacy and Electronic Communications Regulations.
+          Haccora currently uses only storage necessary to deliver requested website and app
+          functions. We do not currently set advertising cookies. Optional analytics or marketing
+          tools must remain off until required consent is obtained.
         </P>
-        <H>Categories</H>
+        <H>What we use</H>
         <UL>
+          <li>Authentication storage for secure sign-in and session refresh.</li>
+          <li>Security storage for request integrity and abuse prevention.</li>
           <li>
-            <strong>Necessary:</strong> language selection, login state and acknowledgement of this
-            cookie notice. Used only where necessary to provide the requested service.
+            User-requested accessibility, compact-layout, navigation and notification settings.
           </li>
-          <li>
-            <strong>Marketing:</strong> not currently used.
-          </li>
+          <li>A notice acknowledgement so this message does not appear on every visit.</li>
+          <li>Offline app storage for supported records awaiting synchronisation.</li>
         </UL>
-        <H>Managing your choices</H>
-        <P>Cookies and local website data can be blocked or deleted in your browser.</P>
+        <H>Your controls</H>
+        <P>
+          Browser and operating-system settings can remove local data or block storage. Blocking
+          necessary storage may prevent sign-in, persistence or queued evidence from working.
+        </P>
+      </>
+    ),
+  },
+  dataProcessing: {
+    title: "Data-processing terms summary",
+    updated: UPDATED,
+    body: (
+      <>
+        <P>
+          This page summarises Haccora's processor commitments and does not replace the executed
+          data-processing agreement included with a subscription order.
+        </P>
+        <H>Roles and instructions</H>
+        <P>
+          The customer is normally controller for personal data placed in its workspace and Haccora
+          is processor. We process it only to provide, secure and support the contracted service on
+          documented lawful instructions.
+        </P>
+        <H>Processor commitments</H>
+        <UL>
+          <li>Confidentiality and access limited by role, tenant and location.</li>
+          <li>Appropriate technical and organisational security measures.</li>
+          <li>Controlled subprocessors with equivalent obligations.</li>
+          <li>Assistance with rights requests, risk assessments and regulator enquiries.</li>
+          <li>Prompt notice and cooperation for confirmed personal-data breaches.</li>
+          <li>Return or deletion at the end of services, subject to law and backup rotation.</li>
+        </UL>
+        <H>Customer responsibilities</H>
+        <P>
+          The customer must provide lawful instructions, required privacy information, suitable
+          retention, user-access controls and an assessment of special-category health processing.
+        </P>
+      </>
+    ),
+  },
+  accessibility: {
+    title: "Accessibility statement",
+    updated: UPDATED,
+    body: (
+      <>
+        <P>
+          Haccora is designed for fast use in busy food businesses, including with keyboards, screen
+          readers, zoom and reduced-motion settings. WCAG 2.2 Level AA is the product benchmark;
+          this statement is not a certification of perfect conformance.
+        </P>
+        <H>Supported access</H>
+        <UL>
+          <li>Keyboard-operable public and core application navigation.</li>
+          <li>Named form controls, visible focus and non-colour-only alerts.</li>
+          <li>Responsive layouts, text zoom and optional compact workspace.</li>
+          <li>Reduced-motion and higher-contrast preferences where supported.</li>
+        </UL>
+        <H>Report a problem</H>
+        <P>
+          Contact <ConfiguredLegalValue field="email" fallback="the configured support email" />
+          with the page, device, browser, assistive technology and the task affected.
+        </P>
       </>
     ),
   },
@@ -239,38 +337,28 @@ const en: Record<LegalKey, LegalDoc> = {
     updated: UPDATED,
     body: (
       <>
-        <P>
-          We take complaints seriously. This policy explains how you can send us criticism,
-          suggestions or complaints — including anonymously.
-        </P>
-        <H>1. How to reach us</H>
+        <P>We take complaints seriously and use them to improve the service.</P>
+        <H>How to contact us</H>
         <UL>
           <li>
-            Email: <ConfiguredLegalValue field="email" fallback="configure before publication" />
+            Email: <ConfiguredLegalValue field="email" fallback="configure before launch" />
           </li>
           <li>
-            Post: <ConfiguredLegalAddress fallback="configure before publication" />
+            Post: <ConfiguredLegalAddress />
           </li>
           <li>
-            Phone: <ConfiguredLegalValue field="phone" fallback="configure before publication" />
+            Phone: <ConfiguredLegalValue field="phone" fallback="configure before launch" />
           </li>
         </UL>
-        <H>2. Response times</H>
+        <H>Response targets</H>
         <P>
-          Binding response and escalation times will be set before launch using the actual support
-          capacity and customer contracts.
+          We aim to acknowledge complaints within two business days and provide a substantive
+          response within ten business days, or explain why more time is required.
         </P>
-        <H>3. Escalation</H>
+        <H>Escalation</H>
         <P>
-          If you are not satisfied with the outcome, you can escalate the matter to management using
-          the contact named in the imprint. Data protection complaints can also be submitted
-          directly to a the UK Information Commissioner’s Office.
-        </P>
-        <H>4. Whistleblower protection</H>
-        <P>
-          If the statutory conditions for an internal reporting channel apply, a suitable
-          confidential process with dedicated contact details will be published before launch. The
-          general contact form does not replace that process.
+          Ask for management review if you are dissatisfied. Data-protection complaints may also be
+          submitted to the Information Commissioner's Office.
         </P>
       </>
     ),
@@ -278,5 +366,5 @@ const en: Record<LegalKey, LegalDoc> = {
 };
 
 export function legalContent(_lang: Language): Record<LegalKey, LegalDoc> {
-  return en;
+  return content;
 }

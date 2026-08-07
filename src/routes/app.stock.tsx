@@ -21,7 +21,7 @@ function StockPage() {
   const { lang } = useI18n();
   const { user } = useAuth();
   const role = user?.role ?? "staff";
-  const t = (de: string, en: string) => (lang === "de" ? de : en);
+  const t = (_legacy: string, english: string) => english;
   const canEdit = role === "owner" || role === "manager" || role === "chef";
 
   const [rows, setRows] = useState<Item[]>([]);
@@ -39,7 +39,7 @@ function StockPage() {
   }, [load]);
 
   const remove = async (id: string) => {
-    if (!confirm(t("Artikel löschen?", "Delete item?"))) return;
+    if (!confirm("Delete item?")) return;
     await supabase.from("stock_items").delete().eq("id", id);
     load();
   };
@@ -50,36 +50,28 @@ function StockPage() {
     <div className="p-6 md:p-10 space-y-8">
       <div className="flex items-end justify-between gap-4 flex-wrap">
         <div>
-          <div className="eyebrow">{t("Bestand", "Inventory")}</div>
-          <h1 className="mt-1 text-3xl md:text-4xl">
-            {t("Bestand & Inventur", "Stock & stock-take")}
-          </h1>
+          <div className="eyebrow">{"Inventory"}</div>
+          <h1 className="mt-1 text-3xl md:text-4xl">{"Stock & stock-take"}</h1>
           <p className="text-muted-foreground mt-1">
-            {t(
-              "Bestände live, Par-Level-Warnungen und Inventurabgleich.",
-              "Live stock, par-level alerts and stock-take reconciliation.",
-            )}
+            {"Live stock, par-level alerts and stock-take reconciliation."}
           </p>
         </div>
         {canEdit && (
           <button onClick={() => setShowForm(true)} className="btn-alert-solid text-sm">
             <Plus size={16} className="inline mr-1.5" />
-            {t("Artikel hinzufügen", "Add item")}
+            {"Add item"}
           </button>
         )}
       </div>
 
       <div className="grid md:grid-cols-3 gap-4">
-        <Kpi label={t("Artikel", "Items")} value={String(rows.length)} />
+        <Kpi label={"Items"} value={String(rows.length)} />
         <Kpi
-          label={t("Niedrig", "Low stock")}
+          label={"Low stock"}
           value={String(lowCount)}
           tone={lowCount > 0 ? "warning" : "success"}
         />
-        <Kpi
-          label={t("Kategorien", "Categories")}
-          value={String(new Set(rows.map((r) => r.category || "")).size)}
-        />
+        <Kpi label={"Categories"} value={String(new Set(rows.map((r) => r.category || "")).size)} />
       </div>
 
       <div className="surface overflow-hidden">
@@ -90,16 +82,16 @@ function StockPage() {
         ) : rows.length === 0 ? (
           <div className="p-10 text-center text-sm text-muted-foreground">
             <ClipboardList size={20} className="inline opacity-40 mr-2" />
-            {t("Noch keine Artikel.", "No stock items yet.")}
+            {"No stock items yet."}
           </div>
         ) : (
           <>
             <div className="hidden md:grid grid-cols-12 text-xs uppercase tracking-widest text-muted-foreground bg-secondary/60 px-5 py-3">
-              <div className="col-span-4">{t("Artikel", "Item")}</div>
-              <div className="col-span-2">{t("Kategorie", "Category")}</div>
-              <div className="col-span-2">{t("Bestand", "On hand")}</div>
-              <div className="col-span-2">{t("Par", "Par")}</div>
-              <div className="col-span-2">{t("Lieferant", "Supplier")}</div>
+              <div className="col-span-4">{"Item"}</div>
+              <div className="col-span-2">{"Category"}</div>
+              <div className="col-span-2">{"On hand"}</div>
+              <div className="col-span-2">{"Par"}</div>
+              <div className="col-span-2">{"Supplier"}</div>
             </div>
             <ul className="divide-y divide-border">
               {rows.map((s) => {
@@ -124,7 +116,7 @@ function StockPage() {
                       </span>
                       {low && (
                         <span className="ml-2 text-[10px] font-bold uppercase text-destructive">
-                          {t("Niedrig", "Low")}
+                          {"Low"}
                         </span>
                       )}
                     </div>
@@ -204,12 +196,12 @@ function StockForm({
     <div className="fixed inset-0 z-50 grid place-items-center bg-foreground/40 backdrop-blur-sm p-4">
       <form onSubmit={save} className="surface w-full max-w-md p-6 space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-xl">{t("Neuer Artikel", "New item")}</h2>
+          <h2 className="font-display text-xl">{"New item"}</h2>
           <button type="button" onClick={onClose} className="text-muted-foreground">
             <X size={18} />
           </button>
         </div>
-        <F label={t("Name", "Name")}>
+        <F label={"Name"}>
           <input
             required
             value={name}
@@ -218,14 +210,14 @@ function StockForm({
           />
         </F>
         <div className="grid grid-cols-2 gap-3">
-          <F label={t("Kategorie", "Category")}>
+          <F label={"Category"}>
             <input
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
             />
           </F>
-          <F label={t("Lieferant", "Supplier")}>
+          <F label={"Supplier"}>
             <input
               value={supplier}
               onChange={(e) => setSupplier(e.target.value)}
@@ -234,7 +226,7 @@ function StockForm({
           </F>
         </div>
         <div className="grid grid-cols-3 gap-3">
-          <F label={t("Menge", "Qty")}>
+          <F label={"Qty"}>
             <input
               type="number"
               step="0.01"
@@ -243,7 +235,7 @@ function StockForm({
               className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
             />
           </F>
-          <F label={t("Einheit", "Unit")}>
+          <F label={"Unit"}>
             <input
               value={unit}
               onChange={(e) => setUnit(e.target.value)}
@@ -266,11 +258,11 @@ function StockForm({
             onClick={onClose}
             className="text-sm px-4 py-2 rounded-full border border-border"
           >
-            {t("Abbrechen", "Cancel")}
+            {"Cancel"}
           </button>
           <button type="submit" disabled={saving} className="btn-alert-solid text-sm">
             {saving ? <Loader2 size={14} className="inline animate-spin mr-1" /> : null}
-            {t("Speichern", "Save")}
+            {"Save"}
           </button>
         </div>
       </form>

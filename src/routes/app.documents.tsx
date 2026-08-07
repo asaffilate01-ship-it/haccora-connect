@@ -114,22 +114,14 @@ function DocumentsPage() {
         if (external.protocol !== "https:") throw new Error();
       } catch {
         setBusy(false);
-        setErr(
-          lang === "de"
-            ? "Externe URLs müssen gültige HTTPS-Adressen sein."
-            : "External URLs must be valid HTTPS addresses.",
-        );
+        setErr("External URLs must be valid HTTPS addresses.");
         return;
       }
     }
     if (file) {
       if (!ALLOWED_FILE_TYPES.has(file.type) || file.size > MAX_FILE_BYTES) {
         setBusy(false);
-        setErr(
-          lang === "de"
-            ? "Nur PDF, JPG, PNG, WebP oder CSV bis 10 MB."
-            : "Only PDF, JPG, PNG, WebP or CSV files up to 10 MB.",
-        );
+        setErr("Only PDF, JPG, PNG, WebP or CSV files up to 10 MB.");
         return;
       }
       const ext = file.name.split(".").pop() || "bin";
@@ -189,14 +181,7 @@ function DocumentsPage() {
   };
 
   const remove = async (r: Row) => {
-    if (
-      !confirm(
-        lang === "de"
-          ? "Dokument archivieren? Der Nachweis und seine Änderungshistorie bleiben erhalten."
-          : "Archive document? The evidence remains retained for audit.",
-      )
-    )
-      return;
+    if (!confirm("Archive document? The evidence remains retained for audit.")) return;
     await supabase
       .from("documents")
       .update({ archived_at: new Date().toISOString() } as any)
@@ -213,12 +198,8 @@ function DocumentsPage() {
       if (scan.error || scan.data !== "clean") {
         setErr(
           scan.data === "infected"
-            ? lang === "de"
-              ? "Die Datei wurde blockiert. Bitte laden Sie eine saubere Datei hoch."
-              : "The file was blocked. Upload a clean replacement."
-            : lang === "de"
-              ? "Die Sicherheitsprüfung der Datei ist noch nicht abgeschlossen."
-              : "The file security scan has not completed yet.",
+            ? "The file was blocked. Upload a clean replacement."
+            : "The file security scan has not completed yet.",
         );
         return;
       }
@@ -226,10 +207,7 @@ function DocumentsPage() {
         .from("documents")
         .createSignedUrl(row.storage_path, 5 * 60);
       if (signed.error || !signed.data?.signedUrl) {
-        setErr(
-          signed.error?.message ??
-            (lang === "de" ? "Dokument konnte nicht geöffnet werden." : "Could not open document."),
-        );
+        setErr(signed.error?.message ?? "Could not open document.");
         return;
       }
       window.open(signed.data.signedUrl, "_blank", "noopener,noreferrer");
@@ -264,7 +242,7 @@ function DocumentsPage() {
         <input
           value={form.title}
           onChange={(e) => setForm({ ...form, title: e.target.value })}
-          placeholder={lang === "de" ? "Titel" : "Title"}
+          placeholder={"Title"}
           className="md:col-span-2 rounded-lg border border-border bg-card px-3 py-2 text-sm"
         />
         <select
@@ -328,14 +306,12 @@ function DocumentsPage() {
         <input
           value={form.version}
           onChange={(e) => setForm({ ...form, version: e.target.value })}
-          placeholder={lang === "de" ? "Version" : "Version"}
+          placeholder={"Version"}
           className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
         />
         <label className="rounded-lg border border-dashed border-border bg-card px-3 py-2 text-sm inline-flex items-center gap-2 cursor-pointer hover:bg-secondary/40 truncate">
           <Upload size={14} />
-          <span className="truncate">
-            {file ? file.name : lang === "de" ? "Datei wählen" : "Choose file"}
-          </span>
+          <span className="truncate">{file ? file.name : "Choose file"}</span>
           <input
             type="file"
             className="hidden"
@@ -353,7 +329,7 @@ function DocumentsPage() {
         <input
           value={form.file_url}
           onChange={(e) => setForm({ ...form, file_url: e.target.value })}
-          placeholder={lang === "de" ? "…oder externe URL" : "…or external URL"}
+          placeholder={"…or external URL"}
           className="md:col-span-6 rounded-lg border border-border bg-card px-3 py-2 text-xs"
         />
       </div>
@@ -468,7 +444,7 @@ function DocumentsPage() {
                           <button
                             onClick={() => remove(d)}
                             className="text-muted-foreground hover:text-destructive"
-                            title={lang === "de" ? "Archivieren" : "Archive"}
+                            title={"Archive"}
                           >
                             <Trash2 size={13} />
                           </button>

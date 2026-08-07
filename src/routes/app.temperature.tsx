@@ -1,18 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Thermometer, CheckCircle2, AlertTriangle, Loader2, PlusCircle } from "lucide-react";
 
 export const Route = createFileRoute("/app/temperature")({ component: TemperaturePage });
 
-type Preset = { id: string; nameDe: string; nameEn: string; min: number; max: number };
+type Preset = { id: string; name: string; min: number; max: number };
 const PRESETS: Preset[] = [
-  { id: "cold1", nameDe: "Kühlhaus 1", nameEn: "Cold room 1", min: 0, max: 5 },
-  { id: "cold2", nameDe: "Kühlhaus 2", nameEn: "Cold room 2", min: 0, max: 5 },
-  { id: "freezer", nameDe: "Tiefkühler", nameEn: "Freezer", min: -22, max: -18 },
-  { id: "hot", nameDe: "Warmhaltung", nameEn: "Hot holding", min: 65, max: 90 },
+  { id: "cold1", name: "Cold room 1", min: 0, max: 5 },
+  { id: "cold2", name: "Cold room 2", min: 0, max: 5 },
+  { id: "freezer", name: "Freezer", min: -22, max: -18 },
+  { id: "hot", name: "Hot holding", min: 63, max: 90 },
 ];
 
 interface Row {
@@ -28,9 +27,7 @@ interface Row {
 }
 
 function TemperaturePage() {
-  const { lang } = useI18n();
   const { user } = useAuth();
-  const t = (de: string, en: string) => (lang === "de" ? de : en);
 
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,7 +56,7 @@ function TemperaturePage() {
     if (!user) return;
     const v = parseFloat(value);
     if (!Number.isFinite(v) || v < -100 || v > 300) {
-      setErr(t("Temperatur zwischen -100 und 300 °C eingeben.", "Enter -100 to 300 °C."));
+      setErr("Enter -100 to 300 °C.");
       return;
     }
     setBusy(true);
@@ -67,7 +64,7 @@ function TemperaturePage() {
     const status = v >= preset.min && v <= preset.max ? "in_range" : "out_of_range";
     const { error } = await supabase.from("temperature_logs").insert({
       user_id: user.id,
-      location: lang === "de" ? preset.nameDe : preset.nameEn,
+      location: preset.name,
       reading: v,
       target_min: preset.min,
       target_max: preset.max,
@@ -88,13 +85,10 @@ function TemperaturePage() {
   return (
     <div className="p-6 md:p-10 space-y-8">
       <div>
-        <div className="eyebrow">{t("Monitoring", "Monitoring")}</div>
-        <h1 className="mt-1 text-3xl md:text-4xl">{t("Temperaturen", "Temperatures")}</h1>
+        <div className="eyebrow">{"Monitoring"}</div>
+        <h1 className="mt-1 text-3xl md:text-4xl">{"Temperatures"}</h1>
         <p className="text-muted-foreground mt-1">
-          {t(
-            "Live gespeichert mit Ziel-Toleranzen – CCP-Nachweis.",
-            "Stored live with target tolerances — CCP evidence.",
-          )}
+          {"Stored live with target tolerances — CCP evidence."}
         </p>
       </div>
 
@@ -106,7 +100,7 @@ function TemperaturePage() {
         >
           {PRESETS.map((p) => (
             <option key={p.id} value={p.id}>
-              {lang === "de" ? p.nameDe : p.nameEn} ({p.min}…{p.max} °C)
+              {p.name} ({p.min}…{p.max} °C)
             </option>
           ))}
         </select>
@@ -121,7 +115,7 @@ function TemperaturePage() {
         <input
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          placeholder={t("Notiz (optional)", "Note (optional)")}
+          placeholder={"Note (optional)"}
           className="md:col-span-2 rounded-lg border border-border bg-card px-3 py-2 text-sm"
         />
         <button
@@ -130,7 +124,7 @@ function TemperaturePage() {
           className="btn-alert-solid text-sm inline-flex items-center justify-center gap-2"
         >
           {busy ? <Loader2 size={14} className="animate-spin" /> : <PlusCircle size={14} />}
-          {t("Speichern", "Save")}
+          {"Save"}
         </button>
       </div>
 
@@ -142,14 +136,11 @@ function TemperaturePage() {
         {loading ? (
           <div className="p-10 text-center text-sm text-muted-foreground">
             <Loader2 size={16} className="inline animate-spin mr-2" />
-            {t("Lade…", "Loading…")}
+            {"Loading…"}
           </div>
         ) : rows.length === 0 ? (
           <div className="p-10 text-center text-sm text-muted-foreground">
-            {t(
-              "Noch keine Messungen. Erfassen Sie oben die erste.",
-              "No readings yet. Log the first one above.",
-            )}
+            {"No readings yet. Log the first one above."}
           </div>
         ) : (
           <ul className="divide-y divide-border">
@@ -166,7 +157,7 @@ function TemperaturePage() {
                     <div className="font-medium text-sm">{r.location}</div>
                     <div className="text-xs text-muted-foreground">
                       {r.target_min ?? "–"}…{r.target_max ?? "–"} °C ·{" "}
-                      {new Date(r.logged_at).toLocaleString(lang === "de" ? "de-DE" : "en-GB")}
+                      {new Date(r.logged_at).toLocaleString("en-GB")}
                     </div>
                     {r.note && <div className="text-xs text-muted-foreground mt-0.5">{r.note}</div>}
                   </div>

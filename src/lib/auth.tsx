@@ -313,7 +313,7 @@ type Ctx = {
     password: string;
     name: string;
     restaurant?: string;
-    language?: "de" | "en";
+    language?: "en";
   }) => Promise<{ error?: string; needsEmailConfirmation?: boolean }>;
   requestPasswordReset: (email: string) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
@@ -386,7 +386,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       password,
       options: {
         emailRedirectTo: redirectTo,
-        data: { full_name: name, restaurant_name: restaurant ?? null, language: language ?? "de" },
+        data: { full_name: name, restaurant_name: restaurant ?? null, language: language ?? "en" },
       },
     });
     if (error) return { error: error.message };

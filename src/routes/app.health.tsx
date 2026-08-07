@@ -34,7 +34,7 @@ function HealthPage() {
   const { lang } = useI18n();
   const { user } = useAuth();
   const manager = user?.role === "owner" || user?.role === "manager";
-  const t = (de: string, en: string) => (lang === "de" ? de : en);
+  const t = (_legacy: string, english: string) => english;
   const [items, setItems] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -145,18 +145,14 @@ function HealthPage() {
           className="btn-alert-solid text-sm"
         >
           <PlusCircle size={16} className="inline mr-1.5" />
-          {t("Eintrag erfassen", "New entry")}
+          {"New entry"}
         </button>
       </div>
 
       <div className="grid md:grid-cols-3 gap-4">
-        <Kpi label={t("Belehrungen aktiv", "Active briefings")} value={active} tone="ok" />
-        <Kpi label={t("Läuft ≤ 60 T ab", "Expiring ≤ 60 d")} value={expiringSoon} tone="warn" />
-        <Kpi
-          label={t("Aktuell ausgeschlossen", "Currently excluded")}
-          value={excluded}
-          tone="danger"
-        />
+        <Kpi label={"Active briefings"} value={active} tone="ok" />
+        <Kpi label={"Expiring ≤ 60 d"} value={expiringSoon} tone="warn" />
+        <Kpi label={"Currently excluded"} value={excluded} tone="danger" />
       </div>
 
       {err && (
@@ -168,7 +164,7 @@ function HealthPage() {
           <input
             value={f.staff_name}
             onChange={(e) => setF({ ...f, staff_name: e.target.value })}
-            placeholder={t("Mitarbeiter:in", "Staff name")}
+            placeholder={"Staff name"}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm md:col-span-2"
           />
           <select
@@ -180,7 +176,7 @@ function HealthPage() {
               .filter((k) => manager || k === "sick_leave")
               .map((k) => (
                 <option key={k} value={k}>
-                  {KIND[k][lang === "de" ? 0 : 1]}
+                  {KIND[k][1]}
                 </option>
               ))}
           </select>
@@ -188,28 +184,28 @@ function HealthPage() {
             value={f.issued_on}
             onChange={(e) => setF({ ...f, issued_on: e.target.value })}
             type="date"
-            placeholder={t("Ausgestellt am", "Issued on")}
+            placeholder={"Issued on"}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
           <input
             value={f.expires_on}
             onChange={(e) => setF({ ...f, expires_on: e.target.value })}
             type="date"
-            placeholder={t("Läuft ab am", "Expires on")}
+            placeholder={"Expires on"}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
           {(f.kind === "sick_leave" || f.kind === "exclusion") && (
             <input
               value={f.symptoms}
               onChange={(e) => setF({ ...f, symptoms: e.target.value })}
-              placeholder={t("Symptome / Grund", "Symptoms / reason")}
+              placeholder={"Symptoms / reason"}
               className="md:col-span-2 rounded-lg border border-border bg-card px-3 py-2 text-sm"
             />
           )}
           <input
             value={f.notes}
             onChange={(e) => setF({ ...f, notes: e.target.value })}
-            placeholder={t("Notiz", "Note")}
+            placeholder={"Note"}
             className="md:col-span-4 rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
           <button
@@ -218,7 +214,7 @@ function HealthPage() {
             className="btn-alert-solid text-sm md:col-span-4 inline-flex items-center justify-center gap-2"
           >
             {busy && <Loader2 size={14} className="animate-spin" />}
-            {t("Speichern", "Save")}
+            {"Save"}
           </button>
         </div>
       )}
@@ -227,12 +223,10 @@ function HealthPage() {
         {loading ? (
           <div className="p-10 text-center text-sm text-muted-foreground">
             <Loader2 size={16} className="inline animate-spin mr-2" />
-            {t("Lade…", "Loading…")}
+            {"Loading…"}
           </div>
         ) : items.length === 0 ? (
-          <div className="p-10 text-center text-sm text-muted-foreground">
-            {t("Noch keine Einträge.", "No entries yet.")}
-          </div>
+          <div className="p-10 text-center text-sm text-muted-foreground">{"No entries yet."}</div>
         ) : (
           <ul className="divide-y divide-border">
             {items.map((i) => (
@@ -251,27 +245,27 @@ function HealthPage() {
                 <div className="flex-1 min-w-0">
                   <div className="font-display text-lg">{i.staff_name}</div>
                   <div className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground mt-0.5">
-                    {KIND[i.kind][lang === "de" ? 0 : 1]}
+                    {KIND[i.kind][1]}
                   </div>
                   <div className="text-xs text-muted-foreground mt-1 flex flex-wrap gap-x-4 gap-y-1">
                     {i.issued_on && (
                       <span>
-                        {t("Ausg.", "Issued")}: <b className="text-foreground">{i.issued_on}</b>
+                        {"Issued"}: <b className="text-foreground">{i.issued_on}</b>
                       </span>
                     )}
                     {i.expires_on && (
                       <span>
-                        {t("Bis", "Until")}: <b className="text-foreground">{i.expires_on}</b>
+                        {"Until"}: <b className="text-foreground">{i.expires_on}</b>
                       </span>
                     )}
                     {i.symptoms && (
                       <span>
-                        {t("Symptome", "Symptoms")}: {i.symptoms}
+                        {"Symptoms"}: {i.symptoms}
                       </span>
                     )}
                     {i.fitness_cleared_on && (
                       <span>
-                        {t("Freigegeben", "Cleared")}: {i.fitness_cleared_on}
+                        {"Cleared"}: {i.fitness_cleared_on}
                       </span>
                     )}
                   </div>
@@ -282,7 +276,7 @@ function HealthPage() {
                     onClick={() => clearReturn(i.id)}
                     className="shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full bg-success text-success-foreground hover:brightness-110"
                   >
-                    {t("Freigeben", "Clear to return")}
+                    {"Clear to return"}
                   </button>
                 )}
               </li>

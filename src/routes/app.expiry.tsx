@@ -38,7 +38,7 @@ function daysUntil(iso: string) {
 function ExpiryPage() {
   const { lang } = useI18n();
   const { user } = useAuth();
-  const t = (de: string, en: string) => (lang === "de" ? de : en);
+  const t = (_legacy: string, english: string) => english;
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"all" | "expired" | "soon" | "ok">("soon");
@@ -122,17 +122,15 @@ function ExpiryPage() {
     <div className="p-6 md:p-10 space-y-6">
       <div className="flex items-start justify-between gap-6 flex-wrap">
         <div>
-          <div className="eyebrow">{t("Traceability", "Traceability")}</div>
-          <h1 className="mt-1 text-3xl md:text-4xl">{t("MHD & Chargen", "Use-by & batches")}</h1>
-          <p className="text-muted-foreground mt-1">
-            {t("Live gespeichert · Filter nach Fälligkeit.", "Live storage · filter by urgency.")}
-          </p>
+          <div className="eyebrow">{"Traceability"}</div>
+          <h1 className="mt-1 text-3xl md:text-4xl">{"Use-by & batches"}</h1>
+          <p className="text-muted-foreground mt-1">{"Live storage · filter by urgency."}</p>
         </div>
         <button
           onClick={() => setOpen((o) => !o)}
           className="btn-alert-solid text-sm inline-flex items-center gap-2"
         >
-          <Plus size={14} /> {t("Artikel", "New item")}
+          <Plus size={14} /> {"New item"}
         </button>
       </div>
 
@@ -141,25 +139,25 @@ function ExpiryPage() {
           <input
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            placeholder={t("Artikel", "Item")}
+            placeholder={"Item"}
             className="md:col-span-2 rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
           <input
             value={form.location}
             onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
-            placeholder={t("Ort", "Location")}
+            placeholder={"Location"}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
           <input
             value={form.batch}
             onChange={(e) => setForm((f) => ({ ...f, batch: e.target.value }))}
-            placeholder={t("Charge", "Batch")}
+            placeholder={"Batch"}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
           <input
             value={form.qty}
             onChange={(e) => setForm((f) => ({ ...f, qty: e.target.value }))}
-            placeholder={t("Menge", "Qty")}
+            placeholder={"Qty"}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
           <input
@@ -173,8 +171,7 @@ function ExpiryPage() {
             disabled={busy || !form.name.trim() || !form.expires_on}
             className="btn-alert-solid text-sm md:col-span-6 inline-flex items-center justify-center gap-2"
           >
-            {busy ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}{" "}
-            {t("Speichern", "Save")}
+            {busy ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />} {"Save"}
           </button>
           {err && (
             <div className="md:col-span-6 rounded-lg bg-destructive/10 text-destructive text-sm px-3 py-2">
@@ -185,19 +182,9 @@ function ExpiryPage() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Tile
-          tone="critical"
-          icon={AlertTriangle}
-          value={stats.expired}
-          label={t("Abgelaufen", "Expired")}
-        />
-        <Tile
-          tone="warning"
-          icon={CalendarClock}
-          value={stats.soon}
-          label={t("Bald fällig (≤3 T.)", "Due soon (≤3d)")}
-        />
-        <Tile tone="ok" icon={CheckCircle2} value={stats.ok} label={t("Im Zeitplan", "On track")} />
+        <Tile tone="critical" icon={AlertTriangle} value={stats.expired} label={"Expired"} />
+        <Tile tone="warning" icon={CalendarClock} value={stats.soon} label={"Due soon (≤3d)"} />
+        <Tile tone="ok" icon={CheckCircle2} value={stats.ok} label={"On track"} />
       </div>
 
       <div className="flex items-center gap-1 rounded-full border border-border bg-card p-1 w-fit">
@@ -207,13 +194,7 @@ function ExpiryPage() {
             onClick={() => setTab(k)}
             className={`text-xs px-3 py-1.5 rounded-full font-semibold uppercase tracking-wide transition ${tab === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
           >
-            {k === "soon"
-              ? t("Bald", "Soon")
-              : k === "expired"
-                ? t("Abgelaufen", "Expired")
-                : k === "ok"
-                  ? t("Ok", "Ok")
-                  : t("Alle", "All")}
+            {k === "soon" ? "Soon" : k === "expired" ? "Expired" : k === "ok" ? "Ok" : "All"}
           </button>
         ))}
       </div>
@@ -222,11 +203,11 @@ function ExpiryPage() {
         {loading ? (
           <div className="p-10 text-center text-sm text-muted-foreground">
             <Loader2 size={16} className="inline animate-spin mr-2" />
-            {t("Lade…", "Loading…")}
+            {"Loading…"}
           </div>
         ) : filtered.length === 0 ? (
           <div className="px-5 py-10 text-center text-sm text-muted-foreground">
-            {t("Keine Einträge.", "Nothing here.")}
+            {"Nothing here."}
           </div>
         ) : (
           <div className="divide-y divide-border">

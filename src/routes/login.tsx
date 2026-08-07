@@ -62,9 +62,7 @@ function LoginPage() {
           .then(async ({ error: inviteError }) => {
             if (inviteError) {
               setError(
-                lang === "de"
-                  ? "Prüfzugang ist ungültig, abgelaufen oder für eine andere E-Mail-Adresse. Verwenden Sie ein separates Prüferkonto."
-                  : "Inspection access is invalid, expired, or belongs to another email. Use a separate inspector account.",
+                "Inspection access is invalid, expired, or belongs to another email. Use a separate inspector account.",
               );
               setAcceptingInvite(false);
               return;
@@ -81,11 +79,7 @@ function LoginPage() {
           .rpc("accept_organization_invitation", { p_token: search.invite })
           .then(async ({ error: inviteError }) => {
             if (inviteError) {
-              setError(
-                lang === "de"
-                  ? "Einladung ist ungültig, abgelaufen oder für eine andere E-Mail-Adresse."
-                  : "The invitation is invalid, expired, or belongs to another email address.",
-              );
+              setError("The invitation is invalid, expired, or belongs to another email address.");
               setAcceptingInvite(false);
               return;
             }
@@ -114,11 +108,7 @@ function LoginPage() {
         if (error) setError(error);
       } else {
         if (password.length < 12) {
-          setError(
-            lang === "de"
-              ? "Passwort mindestens 12 Zeichen."
-              : "Password must be at least 12 characters.",
-          );
+          setError("Password must be at least 12 characters.");
           return;
         }
         const { error, needsEmailConfirmation } = await signUpWithEmail({
@@ -130,17 +120,9 @@ function LoginPage() {
         });
         if (error) setError(error);
         else if (needsEmailConfirmation) {
-          setInfo(
-            lang === "de"
-              ? "Bestätigungslink gesendet. Bitte prüfen Sie Ihr Postfach."
-              : "Confirmation link sent. Please check your inbox.",
-          );
+          setInfo("Confirmation link sent. Please check your inbox.");
         } else {
-          setInfo(
-            lang === "de"
-              ? "Konto erstellt. Richten Sie jetzt Ihren Betrieb ein."
-              : "Account created. Set up your business next.",
-          );
+          setInfo("Account created. Set up your business next.");
         }
       }
     } finally {
@@ -209,36 +191,31 @@ function LoginPage() {
               onClick={() => setMode("signin")}
               className={`flex-1 py-2 rounded-full transition ${mode === "signin" ? "bg-white shadow" : "text-muted-foreground"}`}
             >
-              {lang === "de" ? "Anmelden" : "Sign in"}
+              {"Sign in"}
             </button>
             <button
               type="button"
               onClick={() => setMode("signup")}
               className={`flex-1 py-2 rounded-full transition ${mode === "signup" ? "bg-white shadow" : "text-muted-foreground"}`}
             >
-              {lang === "de" ? "Registrieren" : "Sign up"}
+              {"Sign up"}
             </button>
           </div>
 
           <div className="mt-5 space-y-3">
             {mode === "signup" && (
               <>
+                <Field label={"Name"} value={name} onChange={setName} placeholder={"Full name"} />
                 <Field
-                  label={lang === "de" ? "Name" : "Name"}
-                  value={name}
-                  onChange={setName}
-                  placeholder={lang === "de" ? "Vollständiger Name" : "Full name"}
-                />
-                <Field
-                  label={lang === "de" ? "Betrieb" : "Restaurant"}
+                  label={"Restaurant"}
                   value={restaurant}
                   onChange={setRestaurant}
                   placeholder="e.g. Riverside Kitchen"
                 />
                 <p className="rounded-lg border border-black/10 bg-secondary/40 px-3 py-2 text-xs text-muted-foreground">
-                  {lang === "de"
-                    ? "Neue Konten erstellen einen geschützten Betriebsbereich. Team- und Prüferrollen werden anschließend per Einladung vergeben."
-                    : "New accounts create a protected business workspace. Team and inspector roles are assigned later by invitation."}
+                  {
+                    "New accounts create a protected business workspace. Team and inspector roles are assigned later by invitation."
+                  }
                 </p>
               </>
             )}
@@ -250,7 +227,7 @@ function LoginPage() {
               placeholder="you@restaurant.co.uk"
             />
             <Field
-              label={lang === "de" ? "Passwort" : "Password"}
+              label={"Password"}
               value={password}
               onChange={setPassword}
               type="password"
@@ -274,13 +251,7 @@ function LoginPage() {
             className="mt-5 w-full inline-flex items-center justify-center gap-2 rounded-full bg-[color:var(--color-alert-red)] text-white px-5 py-3 font-bold hover:brightness-110 transition disabled:opacity-60"
           >
             {busy && <Loader2 size={16} className="animate-spin" />}
-            {mode === "signin"
-              ? lang === "de"
-                ? "Anmelden"
-                : "Sign in"
-              : lang === "de"
-                ? "Konto erstellen"
-                : "Create account"}
+            {mode === "signin" ? "Sign in" : "Create account"}
           </button>
           {mode === "signin" && (
             <button
@@ -293,24 +264,19 @@ function LoginPage() {
                 const result = await requestPasswordReset(email);
                 setBusy(false);
                 if (result.error) setError(result.error);
-                else
-                  setInfo(
-                    lang === "de" ? "Link zum Zurücksetzen gesendet." : "Password reset link sent.",
-                  );
+                else setInfo("Password reset link sent.");
               }}
               className="mt-3 w-full text-xs font-semibold text-muted-foreground hover:text-foreground disabled:opacity-40"
             >
-              {lang === "de" ? "Passwort vergessen?" : "Forgot your password?"}
+              {"Forgot your password?"}
             </button>
           )}
           <p className="mt-3 text-xs text-muted-foreground text-center">
-            {lang === "de"
-              ? "Mit der Anmeldung akzeptieren Sie "
-              : "By continuing you agree to the "}
+            {"By continuing you agree to the "}
             <Link to="/legal/terms" className="underline hover:text-foreground">
-              {lang === "de" ? "AGB" : "Terms"}
+              {"Terms"}
             </Link>
-            {lang === "de" ? " und " : " and "}
+            {" and "}
             <Link to="/legal/privacy" className="underline hover:text-foreground">
               Privacy Policy
             </Link>

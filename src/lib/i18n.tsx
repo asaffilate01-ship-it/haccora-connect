@@ -1,8 +1,6 @@
 import { createContext, useContext, type ReactNode } from "react";
 
-// The union is retained temporarily for legacy component signatures; the provider below is fixed
-// to UK English and does not expose a German runtime path.
-export type Language = "de" | "en";
+export type Language = "en";
 
 type Dict = Record<string, string>;
 
@@ -101,7 +99,7 @@ const en: Dict = {
   "pricing.plan.growing": "Growing Group",
   "pricing.plan.growing.desc": "Up to 10 locations",
   "pricing.plan.enterprise": "Enterprise",
-  "pricing.plan.enterprise.desc": "10+ locations, SLA and integrations",
+  "pricing.plan.enterprise.desc": "4+ locations, SLA and integrations",
   "pricing.promise":
     "The binding quote states the feature scope, support and pricing transparently.",
 
@@ -114,11 +112,13 @@ const en: Dict = {
   "cta.primary": "Get started",
   "cta.secondary": "Talk to sales",
   "footer.rights": "© 2026 Haccora. All rights reserved.",
-  "footer.imprint": "Imprint",
+  "footer.company": "Company details",
   "footer.privacy": "Privacy",
   "footer.terms": "Terms",
   "footer.cookies": "Cookies",
   "footer.complaints": "Complaints",
+  "footer.dataProcessing": "Data processing",
+  "footer.accessibility": "Accessibility",
   "footer.section.platform": "Platform",
   "footer.section.support": "Support",
   "footer.section.legal": "Legal",
@@ -132,12 +132,11 @@ const en: Dict = {
   "legal.back": "Back to homepage",
 
   // Cookie banner
-  "cookie.title": "Cookies at Haccora",
+  "cookie.title": "Necessary storage at Haccora",
   "cookie.body":
     "We currently use only technically necessary local-storage and authentication mechanisms.",
-  "cookie.accept": "Accept all",
-  "cookie.reject": "Only necessary",
-  "cookie.customize": "Customise",
+  "cookie.continue": "Continue",
+  "cookie.details": "What is stored",
   "cookie.save": "Save selection",
   "cookie.cat.necessary": "Necessary",
   "cookie.cat.necessary.desc": "Required for sign-in, language and security.",
@@ -641,9 +640,9 @@ const en: Dict = {
   "recipes.newIngredient": "New ingredient",
   "recipe.currywurst": "London currywurst",
   "recipe.sesameNoodles": "Sesame noodles (vegan)",
-  "recipe.klopse": "Königsberger meatballs",
+  "recipe.klopse": "Herb meatballs",
   "recipe.fishSoup": "North Sea fish soup",
-  "recipe.kaesespaetzle": "Cheese spätzle",
+  "recipe.kaesespaetzle": "Macaroni cheese",
   "recipe.falafel": "Falafel bowl",
   "allergen.gluten": "Gluten",
   "allergen.crustacean": "Crust.",
@@ -699,15 +698,13 @@ const en: Dict = {
   "suppliers.performance": "Performance",
   "sup.metro": "Metro London",
   "sup.metro.cat": "Broadline foodservice",
-  "sup.havel": "Havelbauer GmbH",
+  "sup.havel": "Thames Valley Produce Ltd",
   "sup.havel.cat": "Regional produce",
   "sup.havel.note": "Carrots price change +8%",
-  "sup.ostsee": "Ostsee Fisch KG",
+  "sup.ostsee": "North Sea Fish Ltd",
   "sup.ostsee.cat": "Fish",
   "sup.ostsee.note": "Certificate expires 30 Sep",
-  "sup.baeckerei": "Kreuzer Bakery",
-  "sup.baeckerei.cat": "Bakery",
-  "sup.wein": "Wein Import Süd",
+  "sup.wein": "City Drinks Wholesale Ltd",
   "sup.wein.cat": "Beverages",
   "sup.chem": "CleanChem AG",
   "sup.chem.cat": "Cleaning chemicals",

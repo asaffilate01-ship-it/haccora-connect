@@ -200,9 +200,12 @@ test("public pricing offers four clear packages and trial conversion", () => {
     landing.indexOf("function Pricing"),
     landing.indexOf("function CtaFooter"),
   );
-  assert.equal((pricingBlock.match(/\{ k:/g) ?? []).length, 4);
+  for (const plan of ["solo", "complete", "group", "enterprise"])
+    assert.match(pricingBlock, new RegExp(`k: "${plan}"`));
   assert.match(pricingBlock, /Start 7-day free trial/);
   assert.match(pricingBlock, /Contact sales/);
+  assert.match(pricingBlock, /VAT/);
+  assert.match(pricingBlock, /No card required/);
 });
 
 test("Phase 7 replaces German regional concepts with four-nation UK authority context", () => {
@@ -408,4 +411,72 @@ test("Phase 18 simplifies mobile navigation around Today Log Alerts and More", (
   assert.match(quickLog, /What are you recording/);
   assert.match(more, /Food safety/);
   assert.match(more, /People/);
+});
+
+test("Phase 21 exposes a complete UK legal route set and removes the German imprint", () => {
+  const legal = read("src/lib/legal-content.tsx");
+  const shell = read("src/routes/legal.tsx");
+  const sitemap = read("src/routes/sitemap[.]xml.ts");
+  for (const route of [
+    "company-details",
+    "privacy",
+    "terms",
+    "cookies",
+    "data-processing",
+    "accessibility",
+    "complaints",
+  ])
+    assert.match(shell + sitemap, new RegExp(route));
+  for (const law of [
+    "UK\\s+GDPR",
+    "Data\\s+Protection\\s+Act\\s+2018",
+    "Privacy\\s+and\\s+Electronic\\s+Communications\\s+Regulations",
+  ])
+    assert.match(legal, new RegExp(law));
+  assert.doesNotMatch(legal + shell, /Impressum|GmbH|Deutschland|DSGVO/);
+});
+
+test("Phase 21 launch preflight fails closed on company identity and legal approval evidence", () => {
+  const preflight = read("scripts/verify-launch-env.mjs");
+  const workflow = read(".github/workflows/release-readiness.yml");
+  for (const name of [
+    "VITE_LEGAL_REGISTERED_IN",
+    "VITE_LEGAL_COMPANY_NUMBER",
+    "LEGAL_COUNSEL_APPROVAL_REFERENCE",
+    "LEGAL_COUNSEL_APPROVED_AT",
+    "LEGAL_ICO_FEE_STATUS_CONFIRMED",
+  ])
+    assert.match(preflight + workflow, new RegExp(name));
+  assert.doesNotMatch(
+    preflight + workflow,
+    /VITE_LEGAL_MANAGING_DIRECTOR|VITE_LEGAL_REGISTER(?:\W|$)/,
+  );
+});
+
+test("Phase 21 uses a necessary-storage notice without pretending optional consent exists", () => {
+  const banner = read("src/components/CookieBanner.tsx");
+  const dictionary = read("src/lib/i18n.tsx");
+  assert.match(banner + dictionary, /necessary storage/i);
+  assert.match(banner + dictionary, /Continue/);
+  assert.doesNotMatch(banner, /Accept all|Reject all/);
+});
+
+test("Phase 21 active UK runtime contains no German interface copy", () => {
+  const runtimeFiles = readdirSync(new URL("../src/routes", import.meta.url)).filter((file) =>
+    file.endsWith(".tsx"),
+  );
+  const runtime =
+    runtimeFiles.map((file) => read(`src/routes/${file}`)).join("\n") + read("src/lib/i18n.tsx");
+  assert.doesNotMatch(
+    runtime,
+    /Impressum|Deutschland|Bäckerei|Kantine|Verletzung|Erkrankung|Schädlingsbefall|Entwurf|Gesendet|Abgelehnt|Qualität|Fremdkörper|Sonstiges|Sichtung|Köderstellenkontrolle/,
+  );
+});
+
+test("Phase 21 replaces legacy bilingual database alerts with UK English runtime functions", () => {
+  const migration = read("supabase/migrations/20260807010000_uk_english_alert_cleanup.sql");
+  for (const title of ["Temperature out of range", "Expiring soon", "High-severity incident"])
+    assert.match(migration, new RegExp(title));
+  assert.match(migration, /CREATE OR REPLACE FUNCTION public\.tg_temp_alert/);
+  assert.match(migration, /UPDATE public\.alerts/);
 });

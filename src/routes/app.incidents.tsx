@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, useCallback } from "react";
-import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { can } from "@/lib/permissions";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,19 +34,18 @@ interface Row {
   user_id: string;
 }
 
-const CAT_META: Record<Kind, { deL: string; enL: string }> = {
-  injury: { deL: "Verletzung", enL: "Injury" },
-  illness: { deL: "Erkrankung", enL: "Illness" },
-  contamination: { deL: "Kontamination", enL: "Contamination" },
-  pest: { deL: "Schädlingsbefall", enL: "Pest sighting" },
-  equipment: { deL: "Geräteausfall", enL: "Equipment failure" },
-  customer: { deL: "Gastbeschwerde", enL: "Customer complaint" },
+const CAT_META: Record<Kind, { label: string }> = {
+  injury: { label: "Injury" },
+  illness: { label: "Illness" },
+  contamination: { label: "Contamination" },
+  pest: { label: "Pest sighting" },
+  equipment: { label: "Equipment failure" },
+  customer: { label: "Customer complaint" },
 };
 
 function IncidentsPage() {
-  const { lang } = useI18n();
   const { user } = useAuth();
-  const t = (de: string, en: string) => (lang === "de" ? de : en);
+  const t = (_legacy: string, english: string) => english;
   const canReport = user ? can(user.role, "incidents.report") : false;
   const canClose = user ? can(user.role, "incidents.close") : false;
 
@@ -120,29 +118,26 @@ function IncidentsPage() {
     <div className="p-6 md:p-10 space-y-8">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <div className="eyebrow">{t("Sicherheit & Meldungen", "Safety & reporting")}</div>
-          <h1 className="mt-1 text-3xl md:text-4xl">
-            {t("Vorfälle & Unfälle", "Incidents & accidents")}
-          </h1>
+          <div className="eyebrow">{"Safety & reporting"}</div>
+          <h1 className="mt-1 text-3xl md:text-4xl">{"Incidents & accidents"}</h1>
           <p className="text-muted-foreground mt-1 max-w-2xl">
-            {t(
-              "Meldepflichtige Ereignisse gemäß UK workplace safety §16 und Food-handler health §42 – live gespeichert mit Ursachenanalyse.",
-              "Reportable events under UK workplace safety §16 and Food-handler health §42 — stored live with root-cause analysis.",
-            )}
+            {
+              "Record food-safety incidents, accidents and follow-up evidence. Escalate reportable events through your RIDDOR and local-authority process."
+            }
           </p>
         </div>
         {canReport && (
           <button onClick={() => setOpen((o) => !o)} className="btn-alert-solid text-sm">
             <PlusCircle size={16} className="inline mr-1.5" />
-            {t("Neuer Vorfall", "New incident")}
+            {"New incident"}
           </button>
         )}
       </div>
 
       <div className="grid md:grid-cols-3 gap-4">
-        <Kpi label={t("Offen", "Open")} value={kpis.open} tone="warn" />
-        <Kpi label={t("Hohe Priorität", "High severity")} value={kpis.high} tone="danger" />
-        <Kpi label={t("Gesamt", "Total")} value={kpis.mtd} tone="neutral" />
+        <Kpi label={"Open"} value={kpis.open} tone="warn" />
+        <Kpi label={"High severity"} value={kpis.high} tone="danger" />
+        <Kpi label={"Total"} value={kpis.mtd} tone="neutral" />
       </div>
 
       {err && (
@@ -158,14 +153,14 @@ function IncidentsPage() {
           >
             {(Object.keys(CAT_META) as Kind[]).map((c) => (
               <option key={c} value={c}>
-                {lang === "de" ? CAT_META[c].deL : CAT_META[c].enL}
+                {CAT_META[c].label}
               </option>
             ))}
           </select>
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder={t("Was ist passiert?", "What happened?")}
+            placeholder={"What happened?"}
             className="md:col-span-2 rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
           <select
@@ -173,14 +168,14 @@ function IncidentsPage() {
             onChange={(e) => setSev(e.target.value as Severity)}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
           >
-            <option value="low">{t("Niedrig", "Low")}</option>
-            <option value="medium">{t("Mittel", "Medium")}</option>
-            <option value="high">{t("Hoch", "High")}</option>
+            <option value="low">{"Low"}</option>
+            <option value="medium">{"Medium"}</option>
+            <option value="high">{"High"}</option>
           </select>
           <textarea
             value={desc}
             onChange={(e) => setDesc(e.target.value)}
-            placeholder={t("Beschreibung (optional)", "Description (optional)")}
+            placeholder={"Description (optional)"}
             className="md:col-span-4 rounded-lg border border-border bg-card px-3 py-2 text-sm min-h-[70px]"
           />
           <button
@@ -189,7 +184,7 @@ function IncidentsPage() {
             className="btn-alert-solid text-sm md:col-span-4 inline-flex items-center justify-center gap-2"
           >
             {busy && <Loader2 size={14} className="animate-spin" />}
-            {t("Melden", "Report")}
+            {"Report"}
           </button>
         </div>
       )}
@@ -198,12 +193,12 @@ function IncidentsPage() {
         {loading ? (
           <div className="p-10 text-center text-sm text-muted-foreground">
             <Loader2 size={16} className="inline animate-spin mr-2" />
-            {t("Lade…", "Loading…")}
+            {"Loading…"}
           </div>
         ) : items.length === 0 ? (
           <div className="p-10 text-center text-sm text-muted-foreground">
-            {t("Keine Vorfälle. ", "No incidents yet. ")}
-            {canReport && t("Melden Sie den ersten oben.", "Report the first one above.")}
+            {"No incidents yet. "}
+            {canReport && "Report the first one above."}
           </div>
         ) : (
           <ul className="divide-y divide-border">
@@ -223,9 +218,9 @@ function IncidentsPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">
-                      {lang === "de" ? CAT_META[i.kind].deL : CAT_META[i.kind].enL}
+                      {CAT_META[i.kind].label}
                     </span>
-                    <StatusChip status={i.status} lang={lang} />
+                    <StatusChip status={i.status} />
                   </div>
                   <div className="font-display text-lg mt-0.5">{i.title}</div>
                   {i.description && (
@@ -238,12 +233,12 @@ function IncidentsPage() {
                     </span>
                     <span className="inline-flex items-center gap-1">
                       <Clock size={11} />
-                      {new Date(i.occurred_at).toLocaleString(lang === "de" ? "de-DE" : "en-GB")}
+                      {new Date(i.occurred_at).toLocaleString("en-GB")}
                     </span>
                   </div>
                   {i.root_cause && (
                     <div className="mt-2 text-xs bg-secondary/60 rounded-lg px-3 py-2">
-                      <span className="font-bold">{t("Ursache", "Root cause")}: </span>
+                      <span className="font-bold">{"Root cause"}: </span>
                       {i.root_cause}
                     </div>
                   )}
@@ -254,7 +249,7 @@ function IncidentsPage() {
                     className="shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full bg-success text-success-foreground hover:brightness-110"
                   >
                     <CheckCircle2 size={12} className="inline mr-1" />
-                    {t("Abschließen", "Close")}
+                    {"Close"}
                   </button>
                 )}
               </li>
@@ -289,24 +284,22 @@ function Kpi({
   );
 }
 
-function StatusChip({ status, lang }: { status: Status; lang: "de" | "en" }) {
+function StatusChip({ status }: { status: Status }) {
   const map = {
     open: {
-      de: "Offen",
-      en: "Open",
+      label: "Open",
       cls: "bg-[color:var(--color-alert-red)]/15 text-[color:var(--color-alert-red)]",
     },
     investigating: {
-      de: "In Bearbeitung",
-      en: "Investigating",
+      label: "Investigating",
       cls: "bg-amber-100 text-amber-800",
     },
-    closed: { de: "Abgeschlossen", en: "Closed", cls: "bg-success/15 text-success" },
+    closed: { label: "Closed", cls: "bg-success/15 text-success" },
   } as const;
   const m = map[status];
   return (
     <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${m.cls}`}>
-      {lang === "de" ? m.de : m.en}
+      {m.label}
     </span>
   );
 }

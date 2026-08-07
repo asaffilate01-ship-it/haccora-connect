@@ -27,7 +27,7 @@ type Run = {
 function WorkflowsPage() {
   const { lang } = useI18n();
   const { user } = useAuth();
-  const tr = useCallback((de: string, en: string) => (lang === "de" ? de : en), [lang]);
+  const tr = useCallback((_legacy: string, english: string) => english, []);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [runs, setRuns] = useState<Run[]>([]);
   const [loading, setLoading] = useState(true);
@@ -85,7 +85,7 @@ function WorkflowsPage() {
         template_id: templateResult.data.id,
         version: 1,
         status: "draft",
-        change_summary: tr("Erste Version", "Initial version"),
+        change_summary: "Initial version",
       })
       .select("id")
       .single();
@@ -109,7 +109,7 @@ function WorkflowsPage() {
     else {
       setName("");
       setSteps(["", ""]);
-      toast.success(tr("Workflow-Entwurf gespeichert.", "Workflow draft saved."));
+      toast.success("Workflow draft saved.");
       void load();
     }
   };
@@ -124,8 +124,7 @@ function WorkflowsPage() {
       .order("version", { ascending: false })
       .limit(1)
       .maybeSingle();
-    if (error || !version)
-      return toast.error(error?.message ?? tr("Kein Entwurf.", "No draft found."));
+    if (error || !version) return toast.error(error?.message ?? "No draft found.");
     const now = new Date().toISOString();
     const approved = await client
       .from("workflow_template_versions")
@@ -136,7 +135,7 @@ function WorkflowsPage() {
         .from("workflow_templates")
         .update({ active_version_id: version.id, updated_at: now })
         .eq("id", template.id);
-      toast.success(tr("Workflow veröffentlicht.", "Workflow published."));
+      toast.success("Workflow published.");
       void load();
     } else toast.error(approved.error.message);
   };
@@ -156,7 +155,7 @@ function WorkflowsPage() {
     });
     if (error) toast.error(error.message);
     else {
-      toast.success(tr("Ausführung für morgen geplant.", "Run scheduled for tomorrow."));
+      toast.success("Run scheduled for tomorrow.");
       void load();
     }
   };
@@ -165,13 +164,10 @@ function WorkflowsPage() {
   return (
     <div className="p-5 md:p-10 space-y-7">
       <div>
-        <div className="eyebrow">{tr("Versionierte Abläufe", "Versioned procedures")}</div>
-        <h1 className="mt-1 text-3xl md:text-4xl">{tr("Workflow Studio", "Workflow studio")}</h1>
+        <div className="eyebrow">{"Versioned procedures"}</div>
+        <h1 className="mt-1 text-3xl md:text-4xl">{"Workflow studio"}</h1>
         <p className="mt-1 text-muted-foreground">
-          {tr(
-            "Freigabefähige Vorlagen, Pflichtschritte und nachvollziehbare Ausführungen.",
-            "Approvable templates, required evidence steps and traceable runs.",
-          )}
+          {"Approvable templates, required evidence steps and traceable runs."}
         </p>
       </div>
 
@@ -182,21 +178,16 @@ function WorkflowsPage() {
               <GitBranch size={18} />
             </span>
             <div>
-              <div className="font-display text-lg">
-                {tr("Neuen Entwurf erstellen", "Create a new draft")}
-              </div>
+              <div className="font-display text-lg">{"Create a new draft"}</div>
               <div className="text-xs text-muted-foreground">
-                {tr(
-                  "Entwürfe sind bis zur Freigabe nicht aktiv.",
-                  "Drafts stay inactive until published.",
-                )}
+                {"Drafts stay inactive until published."}
               </div>
             </div>
           </div>
           <input
             value={name}
             onChange={(event) => setName(event.target.value)}
-            placeholder={tr("Workflow-Name", "Workflow name")}
+            placeholder={"Workflow name"}
             className="min-h-11 w-full rounded-xl border border-input bg-background px-3 text-sm"
           />
           <div className="grid gap-2 md:grid-cols-2">
@@ -209,7 +200,7 @@ function WorkflowsPage() {
                     current.map((value, i) => (i === index ? event.target.value : value)),
                   )
                 }
-                placeholder={`${tr("Pflichtschritt", "Required step")} ${index + 1}`}
+                placeholder={`${"Required step"} ${index + 1}`}
                 className="min-h-11 rounded-xl border border-input bg-background px-3 text-sm"
               />
             ))}
@@ -220,18 +211,14 @@ function WorkflowsPage() {
               className="min-h-11 rounded-xl border border-border px-4 text-sm font-bold"
             >
               <Plus size={15} className="mr-1 inline" />
-              {tr("Schritt", "Step")}
+              {"Step"}
             </button>
             <button
               disabled={saving || name.trim().length < 2 || !steps.some((step) => step.trim())}
               onClick={() => void createTemplate()}
               className="min-h-11 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground disabled:opacity-50"
             >
-              {saving ? (
-                <Loader2 className="inline animate-spin" size={15} />
-              ) : (
-                tr("Entwurf speichern", "Save draft")
-              )}
+              {saving ? <Loader2 className="inline animate-spin" size={15} /> : "Save draft"}
             </button>
           </div>
         </section>
@@ -239,16 +226,14 @@ function WorkflowsPage() {
 
       <div className="grid gap-5 lg:grid-cols-[1.3fr_.7fr]">
         <section className="surface overflow-hidden">
-          <div className="border-b border-border p-5 font-display text-xl">
-            {tr("Vorlagen", "Templates")}
-          </div>
+          <div className="border-b border-border p-5 font-display text-xl">{"Templates"}</div>
           {loading ? (
             <div className="p-10 text-center">
               <Loader2 className="inline animate-spin" />
             </div>
           ) : templates.length === 0 ? (
             <div className="p-10 text-center text-sm text-muted-foreground">
-              {tr("Noch keine Vorlagen.", "No templates yet.")}
+              {"No templates yet."}
             </div>
           ) : (
             <ul className="divide-y divide-border">
@@ -263,9 +248,7 @@ function WorkflowsPage() {
                   <div className="flex-1">
                     <div className="font-display text-lg">{template.name}</div>
                     <div className="text-xs text-muted-foreground">
-                      {template.active_version_id
-                        ? tr("Freigegeben", "Published")
-                        : tr("Entwurf", "Draft")}
+                      {template.active_version_id ? "Published" : "Draft"}
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -275,7 +258,7 @@ function WorkflowsPage() {
                         className="min-h-10 rounded-xl border border-border px-3 text-xs font-bold"
                       >
                         <Rocket size={13} className="mr-1 inline" />
-                        {tr("Freigeben", "Publish")}
+                        {"Publish"}
                       </button>
                     )}
                     {template.active_version_id && (
@@ -283,7 +266,7 @@ function WorkflowsPage() {
                         onClick={() => void schedule(template)}
                         className="min-h-10 rounded-xl bg-foreground px-3 text-xs font-bold text-background"
                       >
-                        {tr("Planen", "Schedule")}
+                        {"Schedule"}
                       </button>
                     )}
                   </div>
@@ -293,9 +276,7 @@ function WorkflowsPage() {
           )}
         </section>
         <section className="surface overflow-hidden">
-          <div className="border-b border-border p-5 font-display text-xl">
-            {tr("Letzte Ausführungen", "Recent runs")}
-          </div>
+          <div className="border-b border-border p-5 font-display text-xl">{"Recent runs"}</div>
           <ul className="divide-y divide-border">
             {runs.map((run) => (
               <li key={run.id} className="p-4 flex gap-3">
@@ -305,13 +286,11 @@ function WorkflowsPage() {
                 />
                 <div>
                   <div className="text-sm font-bold">
-                    {run.workflow_templates?.name ?? tr("Workflow", "Workflow")}
+                    {run.workflow_templates?.name ?? "Workflow"}
                   </div>
                   <div className="text-xs text-muted-foreground">
                     {run.status.replace("_", " ")}
-                    {run.due_at
-                      ? ` · ${new Date(run.due_at).toLocaleDateString(lang === "de" ? "de-DE" : "en-GB")}`
-                      : ""}
+                    {run.due_at ? ` · ${new Date(run.due_at).toLocaleDateString("en-GB")}` : ""}
                   </div>
                 </div>
               </li>

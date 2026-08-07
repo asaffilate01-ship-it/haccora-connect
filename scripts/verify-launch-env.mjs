@@ -44,6 +44,14 @@ function requireSecret(name, minimumLength = 32) {
   }
 }
 
+function requireIsoDate(name) {
+  const current = requireValue(name);
+  if (!current) return;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(current) || Number.isNaN(Date.parse(`${current}T00:00:00Z`))) {
+    failures.push(`${name} must be a valid date in YYYY-MM-DD format`);
+  }
+}
+
 for (const name of [
   "VITE_SUPABASE_URL",
   "SUPABASE_URL",
@@ -81,12 +89,21 @@ for (const name of [
   "VITE_LEGAL_COMPANY_NAME",
   "VITE_LEGAL_ADDRESS_LINE_1",
   "VITE_LEGAL_POSTAL_CITY",
+  "VITE_LEGAL_REGISTERED_IN",
+  "VITE_LEGAL_COMPANY_NUMBER",
   "VITE_LEGAL_EMAIL",
   "VITE_LEGAL_PHONE",
-  "VITE_LEGAL_REGISTER",
-  "VITE_LEGAL_MANAGING_DIRECTOR",
+  "LEGAL_COUNSEL_APPROVAL_REFERENCE",
 ])
   requireValue(name);
+
+requireIsoDate("LEGAL_COUNSEL_APPROVED_AT");
+
+if (value("LEGAL_ICO_FEE_STATUS_CONFIRMED") !== "true") {
+  failures.push(
+    "LEGAL_ICO_FEE_STATUS_CONFIRMED must be true after documenting ICO registration or exemption",
+  );
+}
 
 if (value("VITE_LEGAL_CONTENT_APPROVED") !== "true") {
   failures.push("VITE_LEGAL_CONTENT_APPROVED must be true after documented counsel approval");

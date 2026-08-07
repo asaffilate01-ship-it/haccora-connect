@@ -31,7 +31,7 @@ const KINDS = [
 function ChecksPage() {
   const { lang } = useI18n();
   const { user } = useAuth();
-  const t = (de: string, en: string) => (lang === "de" ? de : en);
+  const t = (_legacy: string, english: string) => english;
 
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
@@ -98,8 +98,8 @@ function ChecksPage() {
     <div className="p-6 md:p-10 space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <div className="eyebrow">{t("Tägliche Kontrollen", "Daily checks")}</div>
-          <h1 className="mt-1 text-3xl md:text-4xl">{t("Checks", "Checks")}</h1>
+          <div className="eyebrow">{"Daily checks"}</div>
+          <h1 className="mt-1 text-3xl md:text-4xl">{"Checks"}</h1>
           <p className="text-muted-foreground mt-1">
             {t(
               `${todayDone} heute erledigt · live gespeichert.`,
@@ -114,11 +114,7 @@ function ChecksPage() {
               onClick={() => setFilter(f)}
               className={`text-xs font-semibold px-3 py-1.5 rounded-full border ${filter === f ? "bg-foreground text-background border-foreground" : "border-border hover:bg-secondary"}`}
             >
-              {f === "all"
-                ? t("Alle", "All")
-                : f === "pending"
-                  ? t("Offen", "Pending")
-                  : t("Erledigt", "Done")}
+              {f === "all" ? "All" : f === "pending" ? "Pending" : "Done"}
             </button>
           ))}
         </div>
@@ -139,7 +135,7 @@ function ChecksPage() {
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder={t("Neue Aufgabe…", "New check…")}
+          placeholder={"New check…"}
           className="md:col-span-3 rounded-lg border border-border bg-card px-3 py-2 text-sm"
         />
         <button
@@ -148,7 +144,7 @@ function ChecksPage() {
           className="btn-alert-solid text-sm inline-flex items-center justify-center gap-2"
         >
           {busy ? <Loader2 size={14} className="animate-spin" /> : <PlusCircle size={14} />}
-          {t("Hinzufügen", "Add")}
+          {"Add"}
         </button>
       </div>
 
@@ -160,12 +156,10 @@ function ChecksPage() {
         {loading ? (
           <div className="p-10 text-center text-sm text-muted-foreground">
             <Loader2 size={16} className="inline animate-spin mr-2" />
-            {t("Lade…", "Loading…")}
+            {"Loading…"}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="p-10 text-center text-sm text-muted-foreground">
-            {t("Keine Einträge.", "Nothing here.")}
-          </div>
+          <div className="p-10 text-center text-sm text-muted-foreground">{"Nothing here."}</div>
         ) : (
           <ul className="divide-y divide-border">
             {filtered.map((r) => {
@@ -184,8 +178,8 @@ function ChecksPage() {
                     <div className="font-medium text-sm mt-0.5">{r.title}</div>
                     <div className="text-xs text-muted-foreground mt-0.5">
                       {done && r.completed_at
-                        ? new Date(r.completed_at).toLocaleString(lang === "de" ? "de-DE" : "en-GB")
-                        : new Date(r.created_at).toLocaleString(lang === "de" ? "de-DE" : "en-GB")}
+                        ? new Date(r.completed_at).toLocaleString("en-GB")
+                        : new Date(r.created_at).toLocaleString("en-GB")}
                     </div>
                   </div>
                   {!done && (
@@ -194,7 +188,7 @@ function ChecksPage() {
                       className="shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full bg-success text-success-foreground"
                     >
                       <CheckCircle2 size={12} className="inline mr-1" />
-                      {t("Erledigen", "Complete")}
+                      {"Complete"}
                     </button>
                   )}
                 </li>

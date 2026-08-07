@@ -35,7 +35,7 @@ Native app:
 
 ```bash
 cd mobile
-npm install
+npm ci
 npx expo start
 ```
 

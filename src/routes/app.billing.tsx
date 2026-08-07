@@ -19,7 +19,7 @@ type Subscription = {
 function BillingPage() {
   const { user } = useAuth();
   const { lang } = useI18n();
-  const tr = useCallback((de: string, en: string) => (lang === "de" ? de : en), [lang]);
+  const tr = useCallback((_legacy: string, english: string) => english, []);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [busy, setBusy] = useState<"checkout" | "portal" | null>(null);
   useEffect(() => {
@@ -35,28 +35,24 @@ function BillingPage() {
     setBusy(action);
     const { data, error } = await supabase.functions.invoke("billing", { body: { action } });
     setBusy(null);
-    if (error || !data?.url)
-      toast.error(tr("Billing-Anfrage fehlgeschlagen.", "Billing request failed."));
+    if (error || !data?.url) toast.error("Billing request failed.");
     else window.location.assign(data.url);
   };
   const manager = user?.role === "owner" || user?.role === "manager";
   return (
     <div className="p-5 md:p-10 space-y-6 max-w-5xl">
       <div>
-        <div className="eyebrow">{tr("Abonnement", "Subscription")}</div>
-        <h1 className="mt-1 text-3xl md:text-4xl">{tr("Plan & Billing", "Plan & billing")}</h1>
+        <div className="eyebrow">{"Subscription"}</div>
+        <h1 className="mt-1 text-3xl md:text-4xl">{"Plan & billing"}</h1>
         <p className="mt-1 text-muted-foreground">
-          {tr(
-            "Entitlements kommen ausschließlich aus verifizierten Provider-Events.",
-            "Entitlements come only from verified provider events.",
-          )}
+          {"Entitlements come only from verified provider events."}
         </p>
       </div>
       <div className="grid gap-5 md:grid-cols-2">
         <section className="surface p-6">
           <CreditCard size={22} />
           <div className="mt-4 text-xs font-black uppercase tracking-widest text-muted-foreground">
-            {tr("Aktueller Plan", "Current plan")}
+            {"Current plan"}
           </div>
           <div className="mt-1 font-display text-3xl capitalize">
             {subscription?.plan ?? "trial"}
@@ -66,8 +62,8 @@ function BillingPage() {
           </div>
           <div className="mt-4 text-sm text-muted-foreground">
             {subscription?.current_period_end
-              ? `${tr("Zeitraum bis", "Period ends")} ${new Date(subscription.current_period_end).toLocaleDateString(lang === "de" ? "de-DE" : "en-GB")}`
-              : tr("Noch kein bezahlter Zeitraum.", "No paid period yet.")}
+              ? `${"Period ends"} ${new Date(subscription.current_period_end).toLocaleDateString("en-GB")}`
+              : "No paid period yet."}
           </div>
         </section>
         <section className="surface p-6">
@@ -75,10 +71,10 @@ function BillingPage() {
           <div className="mt-4 font-display text-2xl">Haccora Pro</div>
           <ul className="mt-4 space-y-2 text-sm">
             {[
-              tr("Versionierte Workflows", "Versioned workflows"),
-              tr("Native iOS/Android Apps", "Native iOS/Android apps"),
-              tr("Signierte Webhooks", "Signed webhooks"),
-              tr("Kontrollzentrum & Sensor-Automation", "Control centre & sensor automation"),
+              "Versioned workflows",
+              "Native iOS/Android apps",
+              "Signed webhooks",
+              "Control centre & sensor automation",
             ].map((item) => (
               <li key={item}>
                 <Check className="mr-2 inline text-success" size={15} />
@@ -93,11 +89,7 @@ function BillingPage() {
                 onClick={() => void launch("checkout")}
                 className="min-h-11 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground"
               >
-                {busy === "checkout" ? (
-                  <Loader2 className="inline animate-spin" />
-                ) : (
-                  tr("Pro wählen", "Choose Pro")
-                )}
+                {busy === "checkout" ? <Loader2 className="inline animate-spin" /> : "Choose Pro"}
               </button>
               {subscription && (
                 <button
@@ -109,8 +101,7 @@ function BillingPage() {
                     <Loader2 className="inline animate-spin" />
                   ) : (
                     <>
-                      {tr("Billing verwalten", "Manage billing")}{" "}
-                      <ExternalLink className="ml-1 inline" size={13} />
+                      {"Manage billing"} <ExternalLink className="ml-1 inline" size={13} />
                     </>
                   )}
                 </button>
@@ -120,10 +111,7 @@ function BillingPage() {
         </section>
       </div>
       <p className="text-xs text-muted-foreground">
-        {tr(
-          "Zahlungsdaten werden bei Stripe verarbeitet; Haccora speichert keine Kartennummern.",
-          "Payment details are processed by Stripe; Haccora does not store card numbers.",
-        )}
+        {"Payment details are processed by Stripe; Haccora does not store card numbers."}
       </p>
     </div>
   );

@@ -1,6 +1,6 @@
 # Go-live status — 2026-08-02
 
-Baseline: GitHub `main` at `eae7611ad1c8a23aca87b495145c8598895ace0b`, plus the release-integrity phase in this change set.
+Baseline: GitHub `main` at `c68c615`, plus Phase 21 UK legal and commercial polish in this change set.
 
 ## Decision
 
@@ -15,7 +15,7 @@ Scores are evidence-based release gates, not a claim that all product behavior h
 | Security and privacy implementation |      17/20 | Tenant/RLS, private storage, immutable audit, secret scanning, CycloneDX SBOMs, signed build provenance and zero production dependency findings are present. Penetration testing remains.        |
 | Database and backend                |      12/15 | 18 migrations, 195 policy declarations, 56 function definitions and the fresh-database/pgTAP workflow pass. Linked-project ledger reconciliation, staging migration and restore evidence remain. |
 | Operations and monitoring           |       8/10 | Release identity, external smoke checks, immutable manifests, GitHub deployment recording, rollback and incident runbooks exist. Alert routing, named on-call and exercised rollback remain.     |
-| Legal and public content            |       3/10 | Legal routes and fail-closed launch checks exist. Real entity fields, final bilingual copy and documented counsel approval remain.                                                               |
+| Legal and public content            |       6/10 | UK-only legal routes and fail-closed identity/counsel/ICO gates exist. Real entity values and qualified UK legal/privacy approval remain.                                                        |
 | Native iOS and Android              |       6/10 | Typecheck/export pass; fail-closed store config, privacy map and release checklist exist. EAS UUID, signing, device QA, declarations and TestFlight/Play evidence remain.                        |
 | Providers and commercial flows      |        2/5 | Billing, notification, malware and integration paths exist. Live provider credentials and end-to-end production-mode verification remain.                                                        |
 | **Total**                           | **77/100** | Public go-live remains blocked by launch-team configuration, evidence and approvals.                                                                                                             |
@@ -52,7 +52,7 @@ The repair defers configured legal-value reads until React renders the legal con
 
 ## Current launch-preflight blockers
 
-The production preflight reports 24 unresolved items:
+The documented launch checklist contains 27 unresolved configuration and approval items:
 
 1. `PUBLIC_APP_URL`
 2. `MALWARE_SCAN_URL`
@@ -73,18 +73,21 @@ The production preflight reports 24 unresolved items:
 17. `VITE_LEGAL_POSTAL_CITY`
 18. `VITE_LEGAL_EMAIL`
 19. `VITE_LEGAL_PHONE`
-20. `VITE_LEGAL_REGISTER`
-21. `VITE_LEGAL_MANAGING_DIRECTOR`
-22. `VITE_LEGAL_CONTENT_APPROVED=true` after documented counsel approval
-23. `STRIPE_LIVE_MODE=true` after live-mode provider verification
-24. Replace the EAS project placeholder in `mobile/app.json`
+20. `VITE_LEGAL_REGISTERED_IN`
+21. `VITE_LEGAL_COMPANY_NUMBER`
+22. `LEGAL_COUNSEL_APPROVAL_REFERENCE`
+23. `LEGAL_COUNSEL_APPROVED_AT`
+24. `LEGAL_ICO_FEE_STATUS_CONFIRMED=true` after documenting ICO registration or exemption
+25. `VITE_LEGAL_CONTENT_APPROVED=true` after documented counsel approval
+26. `STRIPE_LIVE_MODE=true` after live-mode provider verification
+27. Replace the EAS project placeholder in `mobile/app.json`
 
 These values belong in managed production secrets/configuration, not in GitHub.
 
 ## Ordered path to 100/100
 
 1. Upload this phase, require a green GitHub Actions run, deploy the exact commit to staging and run the manual release workflow against its real HTTPS URL; retain the web artifact and SHA-256 manifest.
-2. Configure all 24 preflight items in the hosting/Supabase/EAS environments and obtain a passing `npm run launch:preflight` without exposing values.
+2. Configure every preflight item in the hosting/Supabase/EAS environments and obtain a passing `npm run launch:preflight` without exposing values.
 3. Reconcile the production Supabase migration ledger, apply to staging, run the fresh-database/RLS suite, back up database and storage, and complete a timed restore drill.
 4. Exercise real Resend/push, malware scanning, Stripe live-mode test products/webhooks, cron dispatch and outbound integrations; capture provider evidence and alert delivery.
 5. Configure production monitoring, status page, on-call ownership and escalation; deliberately trigger and resolve a staging alert and rollback drill.

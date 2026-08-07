@@ -246,7 +246,7 @@ function Hero() {
               {t("brand.tagline")}
             </div>
             <h1
-              lang="de"
+              lang="en-GB"
               className="mt-4 display-black text-[2rem] leading-[1.02] xs:text-4xl sm:text-5xl md:text-7xl lg:text-[5.4rem] [overflow-wrap:anywhere] [hyphens:auto]"
             >
               {t("hero.title")}
@@ -314,11 +314,7 @@ function ContactCard() {
     });
     if (invokeError) {
       setState("error");
-      setError(
-        lang === "de"
-          ? "Ihre Anfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut."
-          : "Your request could not be sent. Please try again.",
-      );
+      setError("Your request could not be sent. Please try again.");
       return;
     }
     formElement.reset();
@@ -395,17 +391,11 @@ function ContactCard() {
         type="submit"
         className="btn-primary w-full mt-5 uppercase tracking-widest text-xs md:text-sm disabled:opacity-60"
       >
-        {state === "sending"
-          ? lang === "de"
-            ? "Wird gesendet…"
-            : "Sending…"
-          : (t("contact.cta") ?? "Get In Touch")}
+        {state === "sending" ? "Sending…" : (t("contact.cta") ?? "Get In Touch")}
       </button>
       {state === "sent" && (
         <p role="status" className="mt-3 text-sm text-success text-center">
-          {lang === "de"
-            ? "Vielen Dank. Wir melden uns in Kürze."
-            : "Thank you. We will be in touch shortly."}
+          {"Thank you. We will be in touch shortly."}
         </p>
       )}
       {state === "error" && (
@@ -623,10 +613,42 @@ function Regulation() {
 function Pricing() {
   const { t } = useI18n();
   const plans = [
-    { k: "solo", price: "£9.99", featured: false },
-    { k: "complete", price: "£24.99", featured: true },
-    { k: "group", price: "£59.99", featured: false },
-    { k: "enterprise", price: "Custom", featured: false },
+    {
+      k: "solo",
+      price: "£9.99",
+      featured: false,
+      features: [
+        "Daily routines and temperature logs",
+        "Document and training expiry alerts",
+        "Inspection-ready exports",
+      ],
+    },
+    {
+      k: "complete",
+      price: "£24.99",
+      featured: true,
+      features: [
+        "All Solo features",
+        "Unlimited staff and all modules",
+        "Printable QR equipment history",
+      ],
+    },
+    {
+      k: "group",
+      price: "£59.99",
+      featured: false,
+      features: ["Up to three locations", "Group oversight and alerts", "Scoped inspector access"],
+    },
+    {
+      k: "enterprise",
+      price: "Custom",
+      featured: false,
+      features: [
+        "Four or more locations",
+        "SLA and implementation support",
+        "Integrations and governance",
+      ],
+    },
   ] as const;
   return (
     <section id="pricing" className="bg-white">
@@ -636,7 +658,7 @@ function Pricing() {
           <h2 className="mt-4 display-black text-3xl md:text-6xl">{t("pricing.title")}</h2>
           <p className="mt-5 text-black/60">{t("pricing.subtitle")}</p>
         </div>
-        <div className="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="mt-12 grid md:grid-cols-2 xl:grid-cols-4 gap-5">
           {plans.map((p) => (
             <div
               key={p.k}
@@ -661,6 +683,13 @@ function Pricing() {
                   {t("pricing.perMonth")}
                 </span>
               </div>
+              <ul className="mt-5 space-y-2 text-sm">
+                {p.features.map((feature) => (
+                  <li key={feature} className={p.featured ? "text-white/80" : "text-black/65"}>
+                    ✓ {feature}
+                  </li>
+                ))}
+              </ul>
               <a
                 href={p.k === "enterprise" ? "#contact" : "/login"}
                 className={`mt-7 inline-flex w-full items-center justify-center rounded-full py-3 text-sm font-black tracking-wider uppercase transition ${
@@ -674,6 +703,9 @@ function Pricing() {
             </div>
           ))}
         </div>
+        <p className="mt-6 text-sm text-black/60">
+          VAT is added where applicable. No card required for the trial; cancel before renewal.
+        </p>
       </div>
     </section>
   );
@@ -919,8 +951,8 @@ function SiteFooter() {
           </div>
           <ul className="mt-3 space-y-2">
             <li>
-              <Link to="/legal/imprint" className="hover:text-white">
-                {t("footer.imprint")}
+              <Link to="/legal/company-details" className="hover:text-white">
+                {t("footer.company")}
               </Link>
             </li>
             <li>
@@ -936,6 +968,16 @@ function SiteFooter() {
             <li>
               <Link to="/legal/cookies" className="hover:text-white">
                 {t("footer.cookies")}
+              </Link>
+            </li>
+            <li>
+              <Link to="/legal/data-processing" className="hover:text-white">
+                {t("footer.dataProcessing")}
+              </Link>
+            </li>
+            <li>
+              <Link to="/legal/accessibility" className="hover:text-white">
+                {t("footer.accessibility")}
               </Link>
             </li>
           </ul>

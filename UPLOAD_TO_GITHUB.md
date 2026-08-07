@@ -7,9 +7,9 @@ The distributed ZIP contains the repository contents but intentionally excludes 
 1. Create an empty GitHub repository or open the existing Haccora repository.
 2. Extract the ZIP into the repository root.
 3. Review `git diff`. Do not squash or rewrite existing Lovable history.
-4. Do not delete any of the 18 canonical migration files. The earlier duplicate migration has already been removed.
+4. Keep all 44 tracked migration timestamps. Five duplicated Phase 9/14/15/16/20 timestamps have been safely reduced to ledger-preserving no-op or service-role deltas.
 5. Preserve Lovable's platform-generated root `.env` if the platform recreates it. It may contain only publishable Supabase client declarations; never add server secrets or other production configuration to it.
-6. Run `npm ci`, `npm run quality`, the native checks and the Edge Function checks locally.
+6. Run `npm ci`, `npm run quality`, then `cd mobile && npm ci && npm run typecheck && npm run export:check`; run the Edge Function checks locally or in CI.
 7. Commit on a branch and open a pull request.
 8. Require every configured GitHub check to pass before merging, then deploy the exact merge commit to staging and verify `/health.json`.
 

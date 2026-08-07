@@ -1,6 +1,5 @@
 import { createFileRoute, Link, Outlet, useLocation } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
-import { LanguageToggle } from "@/components/LanguageToggle";
 import { ArrowLeft } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 
@@ -12,10 +11,12 @@ function LegalLayout() {
   const { t } = useI18n();
   const { pathname } = useLocation();
   const items: Array<{ to: string; k: string }> = [
-    { to: "/legal/imprint", k: "footer.imprint" },
+    { to: "/legal/company-details", k: "footer.company" },
     { to: "/legal/privacy", k: "footer.privacy" },
     { to: "/legal/terms", k: "footer.terms" },
     { to: "/legal/cookies", k: "footer.cookies" },
+    { to: "/legal/data-processing", k: "footer.dataProcessing" },
+    { to: "/legal/accessibility", k: "footer.accessibility" },
     { to: "/legal/complaints", k: "footer.complaints" },
   ];
   return (
@@ -28,13 +29,14 @@ function LegalLayout() {
           >
             <ArrowLeft size={16} /> {t("legal.back")}
           </Link>
-          <BrandLogo imgClassName="h-9 w-auto" />
-
-          <LanguageToggle variant="dark" />
+          <BrandLogo imgClassName="h-8 w-auto" />
+          <span className="text-[10px] font-bold uppercase tracking-widest text-white/65">
+            UK legal
+          </span>
         </div>
       </div>
 
-      <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-12 md:py-20 grid lg:grid-cols-[240px_minmax(0,1fr)] gap-10">
+      <div className="mx-auto grid max-w-[1180px] gap-8 px-4 py-10 md:px-8 md:py-14 lg:grid-cols-[220px_minmax(0,1fr)]">
         <aside className="lg:sticky lg:top-8 h-max">
           <div className="text-xs font-black uppercase tracking-widest text-black/60">
             {t("legal.title")}
@@ -58,7 +60,7 @@ function LegalLayout() {
             })}
           </nav>
         </aside>
-        <main className="max-w-3xl">
+        <main className="max-w-[760px]">
           <Outlet />
         </main>
       </div>

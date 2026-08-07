@@ -12,7 +12,6 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/app/control-centre")({ component: ControlCentrePage });
 
@@ -46,9 +45,8 @@ const severityClass: Record<InboxItem["severity"], string> = {
 };
 
 function ControlCentrePage() {
-  const { lang } = useI18n();
   const { user } = useAuth();
-  const tr = useCallback((de: string, en: string) => (lang === "de" ? de : en), [lang]);
+  const tr = useCallback((_legacy: string, english: string) => english, []);
   const [items, setItems] = useState<InboxItem[]>([]);
   const [actions, setActions] = useState<CorrectiveAction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,14 +71,12 @@ function ControlCentrePage() {
         .limit(150),
     ]);
     if (inbox.error || corrective.error) {
-      toast.error(
-        tr("Kontrollzentrum konnte nicht geladen werden.", "Control centre could not load."),
-      );
+      toast.error("Control centre could not load.");
     }
     setItems((inbox.data ?? []) as InboxItem[]);
     setActions((corrective.data ?? []) as CorrectiveAction[]);
     setLoading(false);
-  }, [filter, tr]);
+  }, [filter]);
 
   useEffect(() => {
     void load();
@@ -128,7 +124,7 @@ function ControlCentrePage() {
     const { error } = await (supabase as any).rpc("transition_corrective_action", {
       p_action_id: action.id,
       p_status: "in_progress",
-      p_note: tr("Im Kontrollzentrum übernommen", "Claimed in control centre"),
+      p_note: "Claimed in control centre",
       p_evidence: [],
     });
     if (!error) {
@@ -150,13 +146,10 @@ function ControlCentrePage() {
     <div className="p-5 md:p-10 space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <div className="eyebrow">{tr("Live-Betrieb", "Live operations")}</div>
-          <h1 className="mt-1 text-3xl md:text-4xl">{tr("Kontrollzentrum", "Control centre")}</h1>
+          <div className="eyebrow">{"Live operations"}</div>
+          <h1 className="mt-1 text-3xl md:text-4xl">{"Control centre"}</h1>
           <p className="mt-1 text-muted-foreground">
-            {tr(
-              "Eine priorisierte, persistente Warteschlange für Abweichungen und Nachweise.",
-              "One prioritised, persistent queue for exceptions, ownership and evidence.",
-            )}
+            {"One prioritised, persistent queue for exceptions, ownership and evidence."}
           </p>
         </div>
         <div className="flex gap-2">
@@ -164,23 +157,23 @@ function ControlCentrePage() {
             className="rounded-full border border-border px-3 py-2 text-xs font-bold"
             onClick={() => setFilter((value) => (value === "open" ? "all" : "open"))}
           >
-            {filter === "open" ? tr("Alle anzeigen", "Show all") : tr("Nur offen", "Open only")}
+            {filter === "open" ? "Show all" : "Open only"}
           </button>
           <button
             className="rounded-full bg-foreground px-3 py-2 text-xs font-bold text-background"
             onClick={() => void load()}
           >
-            <RefreshCw size={13} className="mr-1 inline" /> {tr("Aktualisieren", "Refresh")}
+            <RefreshCw size={13} className="mr-1 inline" /> {"Refresh"}
           </button>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[
-          [ShieldAlert, tr("Offene Punkte", "Open items"), items.length, "text-red-700"],
-          [AlertTriangle, tr("Kritisch", "Critical"), critical, "text-orange-700"],
-          [Clock3, tr("Überfällig", "Overdue"), overdue, "text-amber-700"],
-          [WifiOff, tr("Sensor offline", "Sensors offline"), offline, "text-slate-700"],
+          [ShieldAlert, "Open items", items.length, "text-red-700"],
+          [AlertTriangle, "Critical", critical, "text-orange-700"],
+          [Clock3, "Overdue", overdue, "text-amber-700"],
+          [WifiOff, "Sensors offline", offline, "text-slate-700"],
         ].map(([Icon, label, value, colour]) => {
           const MetricIcon = Icon as typeof ShieldAlert;
           return (
@@ -196,16 +189,14 @@ function ControlCentrePage() {
       <div className="surface overflow-hidden">
         {loading ? (
           <div className="p-12 text-center text-sm text-muted-foreground">
-            <Loader2 className="mr-2 inline animate-spin" size={16} /> {tr("Lade…", "Loading…")}
+            <Loader2 className="mr-2 inline animate-spin" size={16} /> {"Loading…"}
           </div>
         ) : items.length === 0 ? (
           <div className="p-12 text-center">
             <CheckCircle2 className="mx-auto text-success" size={28} />
-            <div className="mt-3 font-display text-xl">
-              {tr("Alles unter Kontrolle", "All clear")}
-            </div>
+            <div className="mt-3 font-display text-xl">{"All clear"}</div>
             <p className="mt-1 text-sm text-muted-foreground">
-              {tr("Keine offenen Betriebsausnahmen.", "There are no open operational exceptions.")}
+              {"There are no open operational exceptions."}
             </p>
           </div>
         ) : (
@@ -230,8 +221,8 @@ function ControlCentrePage() {
                       className={`mt-1 text-xs ${isOverdue ? "font-bold text-red-700" : "text-muted-foreground"}`}
                     >
                       {item.due_at
-                        ? `${tr("Fällig", "Due")} ${new Date(item.due_at).toLocaleString(lang === "de" ? "de-DE" : "en-GB")}`
-                        : tr("Keine Frist", "No deadline")}
+                        ? `${"Due"} ${new Date(item.due_at).toLocaleString("en-GB")}`
+                        : "No deadline"}
                       {action ? ` · ${action.status.replace("_", " ")}` : ""}
                     </div>
                   </div>
@@ -243,7 +234,7 @@ function ControlCentrePage() {
                     {busy === item.id ? (
                       <Loader2 className="inline animate-spin" size={15} />
                     ) : (
-                      tr("Übernehmen", "Take ownership")
+                      "Take ownership"
                     )}
                   </button>
                 </li>

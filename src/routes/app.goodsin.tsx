@@ -31,7 +31,7 @@ interface Row {
 function GoodsInPage() {
   const { lang } = useI18n();
   const { user } = useAuth();
-  const t = (de: string, en: string) => (lang === "de" ? de : en);
+  const t = (_legacy: string, english: string) => english;
   const [items, setItems] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -145,14 +145,14 @@ function GoodsInPage() {
         </div>
         <button onClick={() => setOpen((o) => !o)} className="btn-alert-solid text-sm">
           <PlusCircle size={16} className="inline mr-1.5" />
-          {t("Lieferung erfassen", "Log delivery")}
+          {"Log delivery"}
         </button>
       </div>
 
       <div className="grid md:grid-cols-3 gap-4">
-        <Kpi label={t("Angenommen", "Accepted")} value={accepted} tone="ok" />
-        <Kpi label={t("Abgelehnt", "Rejected")} value={rejected} tone="danger" />
-        <Kpi label={t("Erfasst", "Total logged")} value={items.length} tone="neutral" />
+        <Kpi label={"Accepted"} value={accepted} tone="ok" />
+        <Kpi label={"Rejected"} value={rejected} tone="danger" />
+        <Kpi label={"Total logged"} value={items.length} tone="neutral" />
       </div>
 
       {err && (
@@ -170,19 +170,19 @@ function GoodsInPage() {
           <input
             value={f.supplier}
             onChange={(e) => setF({ ...f, supplier: e.target.value })}
-            placeholder={t("Lieferant", "Supplier")}
+            placeholder={"Supplier"}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
           <input
             value={f.product}
             onChange={(e) => setF({ ...f, product: e.target.value })}
-            placeholder={t("Produkt", "Product")}
+            placeholder={"Product"}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
           <input
             value={f.batch_lot}
             onChange={(e) => setF({ ...f, batch_lot: e.target.value })}
-            placeholder={t("Charge / Lot", "Batch / Lot")}
+            placeholder={"Batch / Lot"}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
           <input
@@ -201,7 +201,7 @@ function GoodsInPage() {
           <input
             value={f.quantity}
             onChange={(e) => setF({ ...f, quantity: e.target.value })}
-            placeholder={t("Menge", "Qty")}
+            placeholder={"Qty"}
             type="number"
             step="0.01"
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
@@ -236,13 +236,13 @@ function GoodsInPage() {
           <input
             value={f.unit}
             onChange={(e) => setF({ ...f, unit: e.target.value })}
-            placeholder={t("Einheit", "Unit")}
+            placeholder={"Unit"}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
           <input
             value={f.delivery_temp_c}
             onChange={(e) => setF({ ...f, delivery_temp_c: e.target.value })}
-            placeholder={t("Liefer-Temp °C", "Delivery temp °C")}
+            placeholder={"Delivery temp °C"}
             type="number"
             step="0.1"
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
@@ -250,7 +250,7 @@ function GoodsInPage() {
           <input
             value={f.notes}
             onChange={(e) => setF({ ...f, notes: e.target.value })}
-            placeholder={t("Notiz", "Note")}
+            placeholder={"Note"}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
           />
           <div className="md:col-span-4 flex gap-2">
@@ -261,7 +261,7 @@ function GoodsInPage() {
             >
               {busy && <Loader2 size={14} className="animate-spin" />}
               <CheckCircle2 size={14} />
-              {t("Annehmen", "Accept")}
+              {"Accept"}
             </button>
             <button
               onClick={() => submit("rejected")}
@@ -269,7 +269,7 @@ function GoodsInPage() {
               className="text-sm rounded-full border border-destructive text-destructive px-4 py-2 inline-flex items-center gap-2 hover:bg-destructive/10"
             >
               <XCircle size={14} />
-              {t("Ablehnen", "Reject")}
+              {"Reject"}
             </button>
           </div>
         </div>
@@ -279,11 +279,11 @@ function GoodsInPage() {
         {loading ? (
           <div className="p-10 text-center text-sm text-muted-foreground">
             <Loader2 size={16} className="inline animate-spin mr-2" />
-            {t("Lade…", "Loading…")}
+            {"Loading…"}
           </div>
         ) : items.length === 0 ? (
           <div className="p-10 text-center text-sm text-muted-foreground">
-            {t("Noch keine Lieferungen erfasst.", "No deliveries logged yet.")}
+            {"No deliveries logged yet."}
           </div>
         ) : (
           <ul className="divide-y divide-border">
@@ -328,9 +328,7 @@ function GoodsInPage() {
                       </span>
                     )}
                     {i.best_before && <span>MHD: {i.best_before}</span>}
-                    <span>
-                      {new Date(i.received_at).toLocaleString(lang === "de" ? "de-DE" : "en-GB")}
-                    </span>
+                    <span>{new Date(i.received_at).toLocaleString("en-GB")}</span>
                   </div>
                   {i.notes && <div className="text-xs text-muted-foreground mt-1">{i.notes}</div>}
                 </div>

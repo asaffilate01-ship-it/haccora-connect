@@ -19,60 +19,41 @@ export const Route = createFileRoute("/app/menu")({
   component: MenuPage,
 });
 
-// EU 1169/2011 – 14 allergens
+// The 14 allergens regulated by UK food information law.
 const ALLERGENS = [
-  { code: "gluten", de: "Gluten", en: "Gluten", icon: Wheat },
-  { code: "crust", de: "Krebstiere", en: "Crustaceans", icon: Fish },
-  { code: "egg", de: "Ei", en: "Egg", icon: Egg },
-  { code: "fish", de: "Fisch", en: "Fish", icon: Fish },
-  { code: "peanut", de: "Erdnuss", en: "Peanut", icon: Nut },
-  { code: "soy", de: "Soja", en: "Soy", icon: Leaf },
-  { code: "milk", de: "Milch", en: "Milk", icon: Milk },
-  { code: "nut", de: "Schalenfr.", en: "Tree nuts", icon: Nut },
-  { code: "celery", de: "Sellerie", en: "Celery", icon: Leaf },
-  { code: "mustard", de: "Senf", en: "Mustard", icon: Leaf },
-  { code: "sesame", de: "Sesam", en: "Sesame", icon: Leaf },
-  { code: "sulph", de: "Sulfite", en: "Sulphites", icon: AlertTriangle },
-  { code: "lupin", de: "Lupine", en: "Lupin", icon: Leaf },
-  { code: "mollusc", de: "Weichtiere", en: "Molluscs", icon: Fish },
+  { code: "gluten", en: "Gluten", icon: Wheat },
+  { code: "crust", en: "Crustaceans", icon: Fish },
+  { code: "egg", en: "Egg", icon: Egg },
+  { code: "fish", en: "Fish", icon: Fish },
+  { code: "peanut", en: "Peanut", icon: Nut },
+  { code: "soy", en: "Soy", icon: Leaf },
+  { code: "milk", en: "Milk", icon: Milk },
+  { code: "nut", en: "Tree nuts", icon: Nut },
+  { code: "celery", en: "Celery", icon: Leaf },
+  { code: "mustard", en: "Mustard", icon: Leaf },
+  { code: "sesame", en: "Sesame", icon: Leaf },
+  { code: "sulph", en: "Sulphites", icon: AlertTriangle },
+  { code: "lupin", en: "Lupin", icon: Leaf },
+  { code: "mollusc", en: "Molluscs", icon: Fish },
 ] as const;
 
-// Map free-text allergen tags stored on recipes back to the LMIV codes above.
+// Map common UK free-text allergen tags stored on recipes back to the codes above.
 const ALLERGEN_ALIASES: Record<string, string> = {
   gluten: "gluten",
-  weizen: "gluten",
   wheat: "gluten",
-  ei: "egg",
   egg: "egg",
-  eier: "egg",
-  milch: "milk",
   milk: "milk",
-  laktose: "milk",
   lactose: "milk",
-  fisch: "fish",
   fish: "fish",
-  krebstiere: "crust",
   crustaceans: "crust",
-  erdnuss: "peanut",
   peanut: "peanut",
-  erdnüsse: "peanut",
-  soja: "soy",
   soy: "soy",
-  sellerie: "celery",
   celery: "celery",
-  senf: "mustard",
   mustard: "mustard",
-  sesam: "sesame",
   sesame: "sesame",
-  sulfite: "sulph",
   sulphites: "sulph",
-  sulfit: "sulph",
-  lupine: "lupin",
   lupin: "lupin",
-  weichtiere: "mollusc",
   molluscs: "mollusc",
-  nüsse: "nut",
-  schalenfrüchte: "nut",
   nuts: "nut",
   "tree nuts": "nut",
 };
@@ -90,7 +71,7 @@ type Dish = {
 
 function MenuPage() {
   const { lang } = useI18n();
-  const t = (de: string, en: string) => (lang === "de" ? de : en);
+  const t = (_legacy: string, english: string) => english;
   const [filter, setFilter] = useState<string[]>([]);
   const [q, setQ] = useState("");
   const [dishes, setDishes] = useState<Dish[]>([]);
@@ -132,15 +113,10 @@ function MenuPage() {
   return (
     <div className="p-6 md:p-10 space-y-8">
       <div>
-        <div className="eyebrow">LMIV · EU 1169/2011</div>
-        <h1 className="mt-1 text-3xl md:text-4xl">
-          {t("Speisekarte & Allergene", "Menu & allergens")}
-        </h1>
+        <div className="eyebrow">UK food information law · 14 allergens</div>
+        <h1 className="mt-1 text-3xl md:text-4xl">{"Menu & allergens"}</h1>
         <p className="text-muted-foreground mt-1">
-          {t(
-            "14 EU-Allergene, Zusatzstoffe und vegane/vegetarische Kennzeichnung – gastraum-ready.",
-            "14 EU allergens, additives and vegan/vegetarian tagging — guest-ready.",
-          )}
+          {"14 EU allergens, additives and vegan/vegetarian tagging — guest-ready."}
         </p>
       </div>
 
@@ -151,13 +127,13 @@ function MenuPage() {
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder={t("Gericht suchen…", "Search dish…")}
+            placeholder={"Search dish…"}
             className="bg-transparent outline-none text-sm flex-1"
           />
         </div>
         <div>
           <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
-            {t("Gäste-Filter: ausschließen", "Guest filter: exclude")}
+            {"Guest filter: exclude"}
           </div>
           <div className="flex flex-wrap gap-2">
             {ALLERGENS.map((a) => {
@@ -172,7 +148,7 @@ function MenuPage() {
                       : "bg-card hover:bg-secondary border-border"
                   }`}
                 >
-                  <a.icon size={12} /> {lang === "de" ? a.de : a.en}
+                  <a.icon size={12} /> {a.en}
                 </button>
               );
             })}
@@ -184,7 +160,7 @@ function MenuPage() {
       {loading ? (
         <div className="surface p-10 text-center text-sm text-muted-foreground">
           <Loader2 size={20} className="mx-auto mb-2 animate-spin" />
-          {t("Speisekarte wird geladen…", "Loading menu…")}
+          {"Loading menu…"}
         </div>
       ) : (
         <div className="grid md:grid-cols-2 gap-4">
@@ -206,7 +182,7 @@ function MenuPage() {
               <div className="flex flex-wrap gap-1.5">
                 {d.allergens.length === 0 ? (
                   <span className="text-[10px] text-success font-semibold uppercase tracking-widest">
-                    {t("keine deklarierten Allergene", "no declared allergens")}
+                    {"no declared allergens"}
                   </span>
                 ) : (
                   d.allergens.map((c, i) => {
@@ -225,7 +201,7 @@ function MenuPage() {
                         key={c + i}
                         className="inline-flex items-center gap-1 rounded-full bg-warning/15 text-warning-foreground px-2 py-0.5 text-[10px] font-semibold"
                       >
-                        <a.icon size={10} /> {lang === "de" ? a.de : a.en}
+                        <a.icon size={10} /> {a.en}
                       </span>
                     );
                   })
@@ -237,14 +213,8 @@ function MenuPage() {
             <div className="col-span-full surface p-10 text-center text-sm text-muted-foreground">
               <UtensilsCrossed size={24} className="mx-auto mb-2 opacity-50" />
               {dishes.length === 0
-                ? t(
-                    "Noch keine Rezepte. Erfassen Sie Gerichte unter Küche › Rezepte.",
-                    "No recipes yet. Add dishes under Kitchen › Recipes.",
-                  )
-                : t(
-                    "Keine Gerichte entsprechen den Filtern.",
-                    "No dishes match the current filters.",
-                  )}
+                ? "No recipes yet. Add dishes under Kitchen › Recipes."
+                : "No dishes match the current filters."}
             </div>
           )}
         </div>
