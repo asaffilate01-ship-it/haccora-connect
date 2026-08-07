@@ -126,7 +126,7 @@ jobs:
           subject-path: haccora-production-${{ github.sha }}.tar.gz
           sbom-path: release-evidence/sbom-haccora-release.cdx.json
       - name: Upload immutable release evidence
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: haccora-production-${{ github.sha }}
           path: |
