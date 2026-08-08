@@ -2,7 +2,16 @@
 
 ## Position
 
-The repository is suitable for a controlled staging deployment after Phase 24. Core web/PWA/native workflows, persistence, QR equipment history, tenant RLS, scoped inspector access, notifications/billing foundations and release controls are implemented. The product is not yet approved for public production use because deployment, provider, legal, security and store evidence cannot be completed in source code.
+The repository is suitable for a protected staging rehearsal after Phase 25. Core web/PWA/native workflows, persistence, QR equipment history, tenant RLS, scoped inspector access, notifications/billing foundations and release controls are implemented. The product is not yet approved for public production use because deployment, provider, legal, security and store evidence cannot be completed in source code.
+
+## Closed in Phase 25
+
+- Added a fail-closed staging workflow that separates migration preview from explicitly approved remote changes.
+- Added remote migration-ledger reconciliation, full Edge Function deployment/inventory and hosted demo-role verification.
+- Extended live RLS proof across sensitive operational tables and an inspector write-denial probe.
+- Added redacted staging evidence with gate status and artifact hashes.
+- Added a pinned, internal-only EAS candidate workflow for physical iOS/Android testing.
+- Made the production preflight require the Expo enhanced-push access token.
 
 ## Closed in Phase 24
 
@@ -27,8 +36,8 @@ The repository is suitable for a controlled staging deployment after Phase 24. C
 
 | Priority | Gate                                | Completion evidence                                                                                                                       |
 | -------- | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| P0       | Fresh and linked-staging migrations | `supabase db start`, both pgTAP files, reconciled remote ledger and regenerated types                                                     |
-| P0       | Hosted demo identities              | Successful `demo:seed`, `demo:verify` and `demo:access` output from the staging project                                                   |
+| P0       | Fresh and linked-staging migrations | Run `Protected staging rehearsal` in `apply-and-test` mode and retain its reconciled ledger                                               |
+| P0       | Hosted demo identities              | Retain the workflow's successful `demo:seed`, `demo:verify` and expanded `demo:access` output                                             |
 | P0       | Production configuration            | Passing `npm run launch:preflight` with managed Supabase, domain, Auth, storage, scanner, Stripe, Resend/push and scheduler configuration |
 | P0       | Security and recovery               | Independent penetration test, cross-tenant acceptance, monitored alerts and a timed backup/storage restore drill                          |
 | P0       | UK legal/privacy                    | Real legal identity, UK counsel approval, ICO position, DPIA, DPA/subprocessor and retention evidence                                     |

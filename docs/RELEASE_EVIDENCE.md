@@ -1,5 +1,7 @@
 # Production release evidence
 
+Before production, run the `Protected staging rehearsal` workflow in `verify-only` mode and then, after reviewing the migration plan, in `apply-and-test` mode. Retain `staging-release-manifest.json`, the remote ledger, Edge Function inventory, hosted smoke output and demo-role/RLS output. Phase 25 setup is documented in `PHASE-25-STAGING-RELEASE-AUTOMATION.md`.
+
 Run the manual `Production release evidence` workflow against the deployed HTTPS candidate. It creates `release-evidence/release-manifest.json` and `.md` with the exact commit, gate results, per-file hashes and aggregate SHA-256 for the web artifact. Copy this human-approval template into the private release record. Link evidence; do not paste secrets, personal data or production database contents into GitHub.
 
 ## Candidate

@@ -28,8 +28,14 @@ if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
 if (eas?.cli?.appVersionSource !== "remote") {
   failures.push("EAS must use remote app version management");
 }
+if (eas?.cli?.requireCommit !== true) {
+  failures.push("EAS must require a committed source snapshot");
+}
 if (eas?.build?.production?.autoIncrement !== true) {
   failures.push("EAS production builds must auto-increment store build numbers");
+}
+if (eas?.build?.production?.channel !== "production") {
+  failures.push("EAS production builds must use the production update channel");
 }
 if (!eas?.submit?.production) failures.push("EAS production submit profile is missing");
 

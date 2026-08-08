@@ -15,6 +15,8 @@ Never point this file at the production database. The script refuses a URL misma
 
 ## 2. Seed and verify
 
+For the hosted staging project, prefer the protected `Protected staging rehearsal` GitHub workflow from Phase 25. It validates that staging and production project refs differ, previews migrations before applying them, deploys Edge Functions, runs all three commands below and stores redacted evidence in one operation.
+
 ```bash
 npm run demo:seed
 npm run demo:verify
@@ -23,7 +25,7 @@ npm run demo:access
 
 Re-running the seed is safe: fixed demonstration records are upserted and the seven test users are reused. Their password is reset to the current private `DEMO_PASSWORD` value. `demo:access` signs in through the publishable client as every identity and checks the deployed RLS boundary; it does not use the service key for those assertions.
 
-The accounts are created only after the latest migrations have been applied to the selected non-production project and `npm run demo:seed` succeeds. Source code alone cannot create hosted logins without that project's private service-role key.
+The accounts are created only after the latest migrations have been applied to the selected non-production project and `npm run demo:seed` succeeds. Source code alone cannot create hosted logins without that project's private service-role key. Phase 25 also checks that every visible assets, document, goods-in, training, cleaning, corrective-action and asset-history row remains in the signed-in tenant, and proves that an inspector cannot insert operational evidence.
 
 ## 3. Run the products
 

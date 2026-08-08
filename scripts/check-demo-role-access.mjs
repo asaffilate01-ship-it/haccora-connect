@@ -1,12 +1,14 @@
+import { randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import {
+  DEMO_LOCATION_ID,
   DEMO_ORGANIZATION_ID,
   ISOLATION_ORGANIZATION_ID,
   demoEmails,
   requireDemoEnvironment,
 } from "./demo-client-config.mjs";
 
-const { url, publishableKey } = requireDemoEnvironment();
+const { url, publishableKey, serviceKey } = requireDemoEnvironment();
 const password = process.env.DEMO_PASSWORD;
 if (!password || password.length < 16) {
   throw new Error("DEMO_PASSWORD must contain at least 16 characters.");
@@ -23,6 +25,29 @@ function client() {
   return createClient(url, publishableKey, {
     auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false },
   });
+}
+
+const admin = createClient(url, serviceKey, {
+  auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false },
+});
+const sensitiveTenantTables = [
+  "assets",
+  "asset_events",
+  "cleaning_completions",
+  "corrective_actions",
+  "documents",
+  "goods_in_logs",
+  "training_records",
+];
+
+async function tenantBoundary(supabase, table, organizationId) {
+  const { data, error } = await supabase.from(table).select("organization_id").limit(1_000);
+  if (error) return { ok: false, detail: error.message };
+  const foreign = (data ?? []).filter((row) => row.organization_id !== organizationId);
+  return {
+    ok: foreign.length === 0,
+    detail: `${data?.length ?? 0} visible row(s), ${foreign.length} foreign`,
+  };
 }
 
 async function visibleOrganizationIds(supabase) {
@@ -75,6 +100,12 @@ record(
     (await visibleCount(platform, "subscriptions")) === 0,
   "SaaS owner does not bypass tenant RLS",
 );
+for (const table of sensitiveTenantTables) {
+  record(
+    (await visibleCount(platform, table)) === 0,
+    `SaaS owner receives no direct ${table} evidence`,
+  );
+}
 record(
   (await visibleCount(platform, "platform_audit_events")) >= 1,
   "SaaS overview access creates a readable audit event",
@@ -166,6 +197,41 @@ for (const testCase of tenantCases) {
     (await visibleCount(supabase, "temperature_logs")) === testCase.temperatureCount,
     `${testCase.label} cannot read the other tenant's temperature evidence`,
   );
+  for (const table of sensitiveTenantTables) {
+    const boundary = await tenantBoundary(supabase, table, testCase.organizationId);
+    record(
+      boundary.ok,
+      `${testCase.label} ${table} visibility remains tenant scoped`,
+      boundary.detail,
+    );
+  }
+
+  if (testCase.role === "inspector") {
+    const attemptId = randomUUID();
+    const { data: authData } = await supabase.auth.getUser();
+    const { data: inserted, error: insertError } = await supabase
+      .from("temperature_logs")
+      .insert({
+        id: attemptId,
+        user_id: authData.user?.id,
+        organization_id: DEMO_ORGANIZATION_ID,
+        location_id: DEMO_LOCATION_ID,
+        location: "Inspector write-denial probe",
+        reading: 4,
+        target_min: 0,
+        target_max: 5,
+        status: "ok",
+        note: "This staging-only row must be rejected by RLS",
+      })
+      .select("id");
+    record(
+      Boolean(insertError) && !(inserted ?? []).length,
+      "Inspector cannot create operational evidence",
+    );
+    if ((inserted ?? []).length) {
+      await admin.from("temperature_logs").delete().eq("id", attemptId);
+    }
+  }
 
   const { error: forbiddenPlatformError } = await supabase.rpc("get_platform_overview");
   record(

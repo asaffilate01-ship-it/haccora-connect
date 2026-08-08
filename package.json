@@ -30,7 +30,10 @@
     "smoke:worker": "node scripts/check-built-worker.mjs",
     "launch:preflight": "node --env-file-if-exists=.env scripts/verify-launch-env.mjs",
     "quality": "npm run verify && npm run migrations:check && npm run secrets:check && npm run typecheck && npm test && npm run lint:check && npm run format:check && npm run build",
-    "demo:access": "node --env-file-if-exists=.env.demo scripts/check-demo-role-access.mjs"
+    "demo:access": "node --env-file-if-exists=.env.demo scripts/check-demo-role-access.mjs",
+    "staging:preflight": "node --env-file-if-exists=.env.staging scripts/verify-staging-env.mjs",
+    "staging:ledger": "node scripts/verify-remote-migration-ledger.mjs",
+    "staging:evidence": "node scripts/generate-staging-evidence.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -109,5 +112,8 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
     "vite": "^8.0.16"
+  },
+  "overrides": {
+    "nanoid": "3.3.17"
   }
 }

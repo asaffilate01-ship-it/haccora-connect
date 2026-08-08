@@ -19,6 +19,7 @@ dist-ssr
 .env.*
 !.env.example
 !.env.demo.example
+!.env.staging.example
 !mobile/.env.example
 
 # Wrangler / Cloudflare

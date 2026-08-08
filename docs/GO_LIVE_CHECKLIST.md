@@ -20,6 +20,7 @@ Production release is approved only when every P0 item is complete and linked ev
 
 - [ ] The remote Supabase migration ledger is archived and reconciled.
 - [ ] All migrations apply to a new empty staging project.
+- [ ] The protected staging workflow passes in `apply-and-test` mode and its redacted evidence artifact is retained.
 - [ ] `supabase test db` passes the committed tenant-isolation and privilege checks.
 - [ ] Generated TypeScript types match the staging schema.
 - [ ] Owner A cannot access Owner B through PostgREST, RPC, realtime, storage, exports or signed URLs.
@@ -55,6 +56,7 @@ Production release is approved only when every P0 item is complete and linked ev
 - [ ] `mobile/npm run release:preflight` passes; EAS project ID, Apple/Google teams, signing, privacy declarations and store metadata are complete.
 - [ ] Camera/document denial, biometric fallback and notification permissions pass on representative iOS/Android devices.
 - [ ] Signed release candidates are installed from TestFlight and Play internal testing before submission.
+- [ ] The native internal-candidate workflow succeeds for both platforms and its EAS build evidence is retained.
 
 ## Release decision
 
