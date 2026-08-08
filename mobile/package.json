@@ -11,7 +11,8 @@
     "export:check": "expo export --platform all --output-dir dist --clear",
     "release:preflight": "node scripts/verify-store-readiness.mjs",
     "build:ios": "eas build --platform ios --profile production",
-    "build:android": "eas build --platform android --profile production"
+    "build:android": "eas build --platform android --profile production",
+    "release:internal-preflight": "node scripts/verify-internal-build-env.mjs"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.1.2",
@@ -37,7 +38,8 @@
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.0",
     "react-native-url-polyfill": "^2.0.0",
-    "react-native-web": "~0.21.0"
+    "react-native-web": "~0.21.0",
+    "nanoid": "3.3.17"
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
