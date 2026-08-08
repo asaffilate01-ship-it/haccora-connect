@@ -14,6 +14,13 @@ type Payload = {
   [key: string]: unknown;
 };
 
+type ExpoDelivery = {
+  status?: "ok" | "error";
+  id?: string;
+  message?: string;
+  details?: { error?: string; [key: string]: unknown };
+};
+
 type ReminderPreference = {
   user_id: string;
   organization_id: string;
@@ -34,7 +41,8 @@ function localClock(now: Date, timeZone: string) {
     hour: "2-digit",
     hourCycle: "h23",
   }).formatToParts(now);
-  const part = (type: string) => parts.find((entry) => entry.type === type)?.value ?? "";
+  const part = (type: string) =>
+    parts.find((entry) => entry.type === type)?.value ?? "";
   return {
     date: `${part("year")}-${part("month")}-${part("day")}`,
     hour: Number(part("hour")),
@@ -106,7 +114,9 @@ async function enqueueComplianceReminders(
         .select("id", { count: "exact", head: true })
         .eq("organization_id", preference.organization_id)
         .neq("status", "completed");
-      if (membership.role === "staff") checksQuery = checksQuery.eq("user_id", preference.user_id);
+      if (membership.role === "staff") {
+        checksQuery = checksQuery.eq("user_id", preference.user_id);
+      }
       const [{ count }, { count: cleaningCount }] = await Promise.all([
         checksQuery,
         supabase
@@ -122,7 +132,9 @@ async function enqueueComplianceReminders(
         {
           severity: "info",
           title: "Start today's food-safety routine",
-          message: `${count ?? 0} open check${count === 1 ? "" : "s"} · ${cleaningCount ?? 0} scheduled cleaning task${cleaningCount === 1 ? "" : "s"}.`,
+          message: `${count ?? 0} open check${count === 1 ? "" : "s"} · ${
+            cleaningCount ?? 0
+          } scheduled cleaning task${cleaningCount === 1 ? "" : "s"}.`,
           route: count ? "/app/routines" : "/app/cleaning",
           nativeRoute: count ? "/checks" : "/cleaning",
         },
@@ -148,7 +160,9 @@ async function enqueueComplianceReminders(
           {
             severity: "warning",
             title: "Food-safety issues need attention",
-            message: `${count} corrective action${count === 1 ? " is" : "s are"} still open.`,
+            message: `${count} corrective action${
+              count === 1 ? " is" : "s are"
+            } still open.`,
             route: "/app/control-centre",
             nativeRoute: "/actions",
           },
@@ -170,7 +184,9 @@ async function enqueueComplianceReminders(
             {
               severity: "critical",
               title: "Fitness-to-work report needs review",
-              message: `${exclusionCount} active food-handling exclusion${exclusionCount === 1 ? " requires" : "s require"} manager review.`,
+              message: `${exclusionCount} active food-handling exclusion${
+                exclusionCount === 1 ? " requires" : "s require"
+              } manager review.`,
               route: "/app/health",
               nativeRoute: "/fitness-to-work",
             },
@@ -193,7 +209,10 @@ async function enqueueComplianceReminders(
             {
               severity: "warning",
               title: "Rejected delivery recorded",
-              message: `${rejectedDeliveryCount} rejected or partially accepted deliver${rejectedDeliveryCount === 1 ? "y requires" : "ies require"} review.`,
+              message:
+                `${rejectedDeliveryCount} rejected or partially accepted deliver${
+                  rejectedDeliveryCount === 1 ? "y requires" : "ies require"
+                } review.`,
               route: "/app/goodsin",
               nativeRoute: "/goods-in",
             },
@@ -219,10 +238,16 @@ async function enqueueComplianceReminders(
         .not("certificate_valid_to", "is", null)
         .lte("certificate_valid_to", deadline.slice(0, 10));
       if (!(["owner", "manager"] as string[]).includes(membership.role)) {
-        documentsQuery = documentsQuery.eq("subject_user_id", preference.user_id);
+        documentsQuery = documentsQuery.eq(
+          "subject_user_id",
+          preference.user_id,
+        );
         trainingQuery = trainingQuery.eq("user_id", preference.user_id);
       }
-      const [documents, training] = await Promise.all([documentsQuery, trainingQuery]);
+      const [documents, training] = await Promise.all([
+        documentsQuery,
+        trainingQuery,
+      ]);
       const total = (documents.count ?? 0) + (training.count ?? 0);
       if (total) {
         queued += await enqueueReminder(
@@ -232,7 +257,9 @@ async function enqueueComplianceReminders(
           {
             severity: "warning",
             title: "Compliance evidence is expiring",
-            message: `${documents.count ?? 0} document(s) and ${training.count ?? 0} training record(s) expire within 30 days.`,
+            message: `${documents.count ?? 0} document(s) and ${
+              training.count ?? 0
+            } training record(s) expire within 30 days.`,
             route: "/app/documents",
             nativeRoute: "/documents",
           },
@@ -251,7 +278,10 @@ async function enqueueComplianceReminders(
         !(["owner", "manager"] as string[]).includes(membership.role) &&
         membership.default_location_id
       ) {
-        equipmentQuery = equipmentQuery.eq("location_id", membership.default_location_id);
+        equipmentQuery = equipmentQuery.eq(
+          "location_id",
+          membership.default_location_id,
+        );
       }
       const { count: equipmentCount } = await equipmentQuery;
       if (equipmentCount) {
@@ -262,7 +292,9 @@ async function enqueueComplianceReminders(
           {
             severity: "warning",
             title: "Equipment check or service is due",
-            message: `${equipmentCount} equipment item${equipmentCount === 1 ? " is" : "s are"} due within 30 days or overdue.`,
+            message: `${equipmentCount} equipment item${
+              equipmentCount === 1 ? " is" : "s are"
+            } due within 30 days or overdue.`,
             route: "/app/assets",
             nativeRoute: "/assets",
           },
@@ -270,7 +302,8 @@ async function enqueueComplianceReminders(
         );
       }
 
-      const inductionDeadline = new Date(now.getTime() + 7 * 86400000).toISOString();
+      const inductionDeadline = new Date(now.getTime() + 7 * 86400000)
+        .toISOString();
       let inductionsQuery = supabase
         .from("staff_induction_assignments")
         .select("id", { count: "exact", head: true })
@@ -290,7 +323,9 @@ async function enqueueComplianceReminders(
           {
             severity: "warning",
             title: "Staff instruction needs acknowledgement",
-            message: `${inductionCount} induction or policy instruction${inductionCount === 1 ? " is" : "s are"} due within 7 days.`,
+            message: `${inductionCount} induction or policy instruction${
+              inductionCount === 1 ? " is" : "s are"
+            } due within 7 days.`,
             route: "/app/inductions",
             nativeRoute: "/inductions",
           },
@@ -390,6 +425,95 @@ async function enqueueWeeklyDigests(
   return queued;
 }
 
+async function processPushReceipts(
+  supabase: ReturnType<typeof serviceClient>,
+) {
+  const { data: pending, error } = await supabase
+    .from("expo_push_receipts")
+    .select("ticket_id,organization_id,user_id,token,attempts")
+    .eq("status", "pending")
+    .lte("next_attempt_at", new Date().toISOString())
+    .order("created_at")
+    .limit(1000);
+  if (error) throw error;
+  if (!pending?.length) return { checked: 0, delivered: 0, failed: 0 };
+
+  const accessToken = Deno.env.get("EXPO_ACCESS_TOKEN");
+  const response = await fetch("https://exp.host/--/api/v2/push/getReceipts", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+    },
+    body: JSON.stringify({ ids: pending.map(({ ticket_id }) => ticket_id) }),
+  });
+  if (!response.ok) {
+    throw new Error(`Push receipt provider returned ${response.status}`);
+  }
+  const result = (await response.json()) as {
+    data?: Record<string, ExpoDelivery>;
+    errors?: Array<{ message?: string }>;
+  };
+  if (!result.data && result.errors?.length) {
+    throw new Error(
+      result.errors[0]?.message ?? "Push receipt provider rejected the request",
+    );
+  }
+
+  let delivered = 0;
+  let failed = 0;
+  for (const row of pending) {
+    const receipt = result.data?.[row.ticket_id];
+    if (!receipt) {
+      const attempts = row.attempts + 1;
+      const dead = attempts >= 5;
+      const { error: updateError } = await supabase
+        .from("expo_push_receipts")
+        .update({
+          attempts,
+          status: dead ? "failed" : "pending",
+          next_attempt_at: new Date(Date.now() + 15 * 60_000).toISOString(),
+          provider_error: dead ? "Push receipt was unavailable" : null,
+          completed_at: dead ? new Date().toISOString() : null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("ticket_id", row.ticket_id)
+        .eq("status", "pending");
+      if (updateError) throw updateError;
+      failed += dead ? 1 : 0;
+      continue;
+    }
+
+    const isDelivered = receipt.status === "ok";
+    const providerError = receipt.details?.error ?? receipt.message ?? null;
+    const { error: updateError } = await supabase
+      .from("expo_push_receipts")
+      .update({
+        attempts: row.attempts + 1,
+        status: isDelivered ? "delivered" : "failed",
+        provider_error: providerError?.slice(0, 500) ?? null,
+        completed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("ticket_id", row.ticket_id)
+      .eq("status", "pending");
+    if (updateError) throw updateError;
+
+    if (receipt.details?.error === "DeviceNotRegistered") {
+      const { error: tokenError } = await supabase
+        .from("device_push_tokens")
+        .update({ enabled: false, updated_at: new Date().toISOString() })
+        .eq("token", row.token)
+        .eq("organization_id", row.organization_id)
+        .eq("user_id", row.user_id);
+      if (tokenError) throw tokenError;
+    }
+    delivered += isDelivered ? 1 : 0;
+    failed += isDelivered ? 0 : 1;
+  }
+  return { checked: pending.length, delivered, failed };
+}
+
 async function sendEmail(
   supabase: ReturnType<typeof serviceClient>,
   recipientId: string,
@@ -434,8 +558,12 @@ async function sendPush(
   if (error) throw error;
   if (!registrations?.length) throw new Error("No active push token");
 
-  const webRegistrations = registrations.filter(({ platform }) => platform === "web");
-  const nativeRegistrations = registrations.filter(({ platform }) => platform !== "web");
+  const webRegistrations = registrations.filter(({ platform }) =>
+    platform === "web"
+  );
+  const nativeRegistrations = registrations.filter(({ platform }) =>
+    platform !== "web"
+  );
   if (webRegistrations.length) {
     const gateway = env("WEB_PUSH_GATEWAY_URL");
     const gatewayResponse = await fetch(gateway, {
@@ -453,7 +581,9 @@ async function sendPush(
         },
       }),
     });
-    if (!gatewayResponse.ok) throw new Error(`Web push gateway returned ${gatewayResponse.status}`);
+    if (!gatewayResponse.ok) {
+      throw new Error(`Web push gateway returned ${gatewayResponse.status}`);
+    }
   }
 
   if (!nativeRegistrations.length) return;
@@ -478,13 +608,65 @@ async function sendPush(
     throw new Error(`Push provider returned ${response.status}`);
   }
   const result = (await response.json()) as {
-    data?: Array<{ status?: string; message?: string }>;
+    data?: ExpoDelivery[] | ExpoDelivery;
+    errors?: Array<{ message?: string }>;
   };
-  const failed = result.data?.find((ticket) => ticket.status === "error");
-  if (failed) {
+  const tickets = Array.isArray(result.data)
+    ? result.data
+    : result.data
+    ? [result.data]
+    : [];
+  if (!tickets.length && result.errors?.length) {
     throw new Error(
-      failed.message ?? "Push provider rejected the notification",
+      result.errors[0]?.message ?? "Push provider rejected the notification",
     );
+  }
+
+  const receiptRows: Array<{
+    ticket_id: string;
+    organization_id: string;
+    user_id: string;
+    token: string;
+  }> = [];
+  const retryableFailures: string[] = [];
+  let accepted = webRegistrations.length;
+  for (const [index, registration] of nativeRegistrations.entries()) {
+    const ticket = tickets[index];
+    if (ticket?.status === "ok" && ticket.id) {
+      accepted += 1;
+      receiptRows.push({
+        ticket_id: ticket.id,
+        organization_id: organizationId,
+        user_id: recipientId,
+        token: registration.token,
+      });
+      continue;
+    }
+    if (ticket?.details?.error === "DeviceNotRegistered") {
+      const { error: tokenError } = await supabase
+        .from("device_push_tokens")
+        .update({ enabled: false, updated_at: new Date().toISOString() })
+        .eq("token", registration.token)
+        .eq("organization_id", organizationId)
+        .eq("user_id", recipientId);
+      if (tokenError) throw tokenError;
+      continue;
+    }
+    retryableFailures.push(
+      ticket?.message ?? "Push provider did not return a ticket",
+    );
+  }
+
+  if (receiptRows.length) {
+    const { error: receiptError } = await supabase.from("expo_push_receipts")
+      .upsert(receiptRows, {
+        onConflict: "ticket_id",
+        ignoreDuplicates: true,
+      });
+    if (receiptError) throw receiptError;
+  }
+  if (!accepted && retryableFailures.length) {
+    throw new Error(retryableFailures[0]);
   }
 }
 
@@ -503,12 +685,18 @@ Deno.serve(async (request) => {
   const supabase = serviceClient();
   let digestQueued = 0;
   let remindersQueued = 0;
+  let receiptSummary = { checked: 0, delivered: 0, failed: 0 };
   try {
     remindersQueued = await enqueueComplianceReminders(supabase);
     digestQueued = await enqueueWeeklyDigests(supabase);
   } catch (digestError) {
     console.error(digestError);
     return json(request, { error: "digest_generation_failed" }, 500);
+  }
+  try {
+    receiptSummary = await processPushReceipts(supabase);
+  } catch (receiptError) {
+    console.error("push_receipt_check_failed", receiptError);
   }
   await supabase
     .from("notification_outbox")
@@ -602,5 +790,8 @@ Deno.serve(async (request) => {
     sent,
     digestQueued,
     remindersQueued,
+    receiptsChecked: receiptSummary.checked,
+    receiptsDelivered: receiptSummary.delivered,
+    receiptsFailed: receiptSummary.failed,
   });
 });
