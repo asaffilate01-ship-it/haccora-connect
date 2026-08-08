@@ -249,11 +249,12 @@ function LoginPage() {
           )}
 
           <button
+            type="submit"
             disabled={busy}
             className="mt-5 w-full inline-flex items-center justify-center gap-2 rounded-full bg-[color:var(--color-alert-red)] text-white px-5 py-3 font-bold hover:brightness-110 transition disabled:opacity-60"
           >
             {busy && <Loader2 size={16} className="animate-spin" />}
-            {mode === "signin" ? "Sign in" : "Create account"}
+            {mode === "signin" ? "Sign in to Haccora" : "Create account"}
           </button>
           {mode === "signin" && (
             <button
