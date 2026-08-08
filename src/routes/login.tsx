@@ -193,7 +193,7 @@ function LoginPage() {
               onClick={() => setMode("signin")}
               className={`flex-1 py-2 rounded-full transition ${mode === "signin" ? "bg-white shadow" : "text-muted-foreground"}`}
             >
-              {"Sign in"}
+              {"Existing account"}
             </button>
             <button
               type="button"
