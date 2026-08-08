@@ -21,7 +21,7 @@ export function BottomNav() {
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
   const { role } = useSession();
-  if (["/", "/login", "/onboarding"].includes(pathname)) return null;
+  if (["/", "/login", "/onboarding", "/platform-access"].includes(pathname)) return null;
   const items = role === "inspector" ? inspectorItems : operationsItems;
   return (
     <View

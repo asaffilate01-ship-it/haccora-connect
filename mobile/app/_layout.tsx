@@ -15,6 +15,10 @@ export default function RootLayout() {
             <Stack.Screen name="index" options={{ headerShown: false }} />
             <Stack.Screen name="login" options={{ title: "Haccora" }} />
             <Stack.Screen name="onboarding" options={{ title: "Set up workspace" }} />
+            <Stack.Screen
+              name="platform-access"
+              options={{ title: "Haccora platform", headerBackVisible: false }}
+            />
             <Stack.Screen name="dashboard" options={{ title: "Today", headerBackVisible: false }} />
             <Stack.Screen name="temperature" options={{ title: "Temperature check" }} />
             <Stack.Screen name="checks" options={{ title: "Daily check" }} />

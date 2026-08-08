@@ -262,6 +262,24 @@ test("tenant billing is owner-only in navigation, RLS and the Stripe function", 
   assert.match(migration, /array\['owner'\]::public\.app_role\[\]/);
 });
 
+test("the final policy reconciliation restores tenant billing and active platform access", async () => {
+  const migration = await readFile(
+    "supabase/migrations/20260808170000_restore_tenant_billing_and_platform_policy.sql",
+    "utf8",
+  );
+  assert.match(migration, /user_id = auth\.uid\(\) and status = 'active'/);
+  assert.match(
+    migration,
+    /create policy subscriptions_owner_read[\s\S]*?has_org_role\(organization_id, array\['owner'\]::public\.app_role\[\]\)/i,
+  );
+  assert.match(
+    migration,
+    /create policy billing_events_owner_read[\s\S]*?has_org_role\(organization_id, array\['owner'\]::public\.app_role\[\]\)/i,
+  );
+  const tenantBillingPolicies = migration.slice(migration.indexOf("subscriptions_owner_read"));
+  assert.doesNotMatch(tenantBillingPolicies, /is_platform_operator/);
+});
+
 test("Phase 23 aligns the equipment inspector scope with database constraints", async () => {
   const migration = await readFile(
     "supabase/migrations/20260807190000_platform_operator_and_demo_role_access.sql",

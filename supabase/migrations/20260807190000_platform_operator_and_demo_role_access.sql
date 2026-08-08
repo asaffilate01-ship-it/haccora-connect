@@ -62,10 +62,15 @@ $$;
 revoke all on function public.is_platform_operator(uuid, public.platform_operator_role[]) from public;
 grant execute on function public.is_platform_operator(uuid, public.platform_operator_role[]) to authenticated;
 
+-- This published migration replays the platform policy definitions from the
+-- earlier Phase 23 migration. Make the replay idempotent so a fresh database
+-- can apply the complete migration history in order.
+drop policy if exists platform_operators_self_read on public.platform_operators;
 create policy platform_operators_self_read
 on public.platform_operators for select to authenticated
 using (user_id = auth.uid() and status = 'active');
 
+drop policy if exists platform_audit_authorised_read on public.platform_audit_events;
 create policy platform_audit_authorised_read
 on public.platform_audit_events for select to authenticated
 using (
@@ -267,10 +272,12 @@ alter table public.inspector_access_invitations
 
 -- Subscription details and Stripe actions are reserved for the tenant owner.
 drop policy if exists subscriptions_admin_read on public.subscriptions;
+drop policy if exists subscriptions_owner_read on public.subscriptions;
 create policy subscriptions_owner_read on public.subscriptions for select to authenticated
 using (public.has_org_role(organization_id, array['owner']::public.app_role[]));
 
 drop policy if exists billing_events_read on public.billing_events;
+drop policy if exists billing_events_owner_read on public.billing_events;
 create policy billing_events_owner_read on public.billing_events for select to authenticated
 using (public.has_org_role(organization_id, array['owner']::public.app_role[]));
 
