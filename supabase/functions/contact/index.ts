@@ -8,7 +8,7 @@ const Input = z.object({
   email: z.string().trim().email().max(254),
   phone: z.string().trim().max(40).optional().default(""),
   businessName: z.string().trim().max(160).optional().default(""),
-  locale: z.enum(["de", "en"]).default("de"),
+  locale: z.literal("en").default("en"),
   consent: z.literal(true),
   website: z.string().max(0).optional().default(""),
 });

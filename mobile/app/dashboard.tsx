@@ -8,7 +8,7 @@ import { getQueueStatus } from "@/lib/offline-queue";
 import { useEffect, useState } from "react";
 
 export default function Dashboard() {
-  const { session, workspaceReady, loading } = useSession();
+  const { session, workspaceReady, role, loading } = useSession();
   const network = useNetInfo();
   const [pending, setPending] = useState(0);
   const [today, setToday] = useState({ done: 0, open: 0, actions: 0 });
@@ -40,6 +40,7 @@ export default function Dashboard() {
   if (loading) return null;
   if (!session) return <Redirect href="/login" />;
   if (!workspaceReady) return <Redirect href="/onboarding" />;
+  if (role === "inspector") return <Redirect href="/inspection-readiness" />;
   const signOut = async () => {
     await unregisterPushNotifications().catch(() => undefined);
     await supabase.auth.signOut();
