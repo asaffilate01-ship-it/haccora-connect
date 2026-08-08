@@ -193,14 +193,14 @@ function LoginPage() {
               onClick={() => setMode("signin")}
               className={`flex-1 py-2 rounded-full transition ${mode === "signin" ? "bg-white shadow" : "text-muted-foreground"}`}
             >
-              {"Sign in"}
+              {"Existing account"}
             </button>
             <button
               type="button"
               onClick={() => setMode("signup")}
               className={`flex-1 py-2 rounded-full transition ${mode === "signup" ? "bg-white shadow" : "text-muted-foreground"}`}
             >
-              {"Sign up"}
+              {"New account"}
             </button>
           </div>
 
@@ -249,11 +249,12 @@ function LoginPage() {
           )}
 
           <button
+            type="submit"
             disabled={busy}
             className="mt-5 w-full inline-flex items-center justify-center gap-2 rounded-full bg-[color:var(--color-alert-red)] text-white px-5 py-3 font-bold hover:brightness-110 transition disabled:opacity-60"
           >
             {busy && <Loader2 size={16} className="animate-spin" />}
-            {mode === "signin" ? "Sign in" : "Create account"}
+            {mode === "signin" ? "Sign in to Haccora" : "Create account"}
           </button>
           {mode === "signin" && (
             <button
