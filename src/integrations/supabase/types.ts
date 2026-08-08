@@ -1756,6 +1756,56 @@ export type Database = {
           },
         ]
       }
+      expo_push_receipts: {
+        Row: {
+          attempts: number
+          completed_at: string | null
+          created_at: string
+          next_attempt_at: string
+          organization_id: string
+          provider_error: string | null
+          status: string
+          ticket_id: string
+          token: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          completed_at?: string | null
+          created_at?: string
+          next_attempt_at?: string
+          organization_id: string
+          provider_error?: string | null
+          status?: string
+          ticket_id: string
+          token: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attempts?: number
+          completed_at?: string | null
+          created_at?: string
+          next_attempt_at?: string
+          organization_id?: string
+          provider_error?: string | null
+          status?: string
+          ticket_id?: string
+          token?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expo_push_receipts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       file_scan_jobs: {
         Row: {
           attempts: number

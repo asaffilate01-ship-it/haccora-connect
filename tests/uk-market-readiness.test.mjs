@@ -185,6 +185,16 @@ test("native navigation gives inspectors a read-focused evidence surface", () =>
   assert.match(more, /items\.filter\(\(\[, , roles\]\)/);
   assert.match(dashboard, /role === "inspector"/);
 });
+test("native SaaS operators are sent to the governed web console instead of tenant onboarding", () => {
+  const session = read("mobile/lib/session.tsx");
+  const index = read("mobile/app/index.tsx");
+  const screen = read("mobile/app/platform-access.tsx");
+  assert.match(session, /get_my_platform_context/);
+  assert.match(index, /platformRole/);
+  assert.match(index, /platform-access/);
+  assert.match(screen, /Tenant food-safety evidence remains isolated by RLS/);
+  assert.match(screen, /EXPO_PUBLIC_WEB_APP_URL/);
+});
 
 test("Phase 8 compliance coach ranks real persisted evidence on web and native", () => {
   const web = read("src/routes/app.coach.tsx");

@@ -14,6 +14,8 @@ const canonicalFiles = [
   "20260802100000_v2_operations_control.sql",
   "20260802103319_63102a85-216e-4527-ab82-2f9dc19862bb.sql",
   "20260802120000_v2_commercial_reconciliation.sql",
+  "20260808170000_restore_tenant_billing_and_platform_policy.sql",
+  "20260808190000_native_evidence_and_push_hardening.sql",
 ];
 
 async function fixture(

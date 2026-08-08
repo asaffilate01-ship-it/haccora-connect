@@ -13,12 +13,24 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export async function registerPushNotifications() {
-  if (Platform.OS === "web") return;
-  const projectId =
+type RegistrationOptions = { requestPermission?: boolean };
+
+function easProjectId() {
+  return (
     Constants.easConfig?.projectId ??
-    (Constants.expoConfig?.extra?.eas?.projectId as string | undefined);
-  if (!projectId || projectId.startsWith("SET_")) return;
+    (Constants.expoConfig?.extra?.eas?.projectId as string | undefined)
+  );
+}
+
+export async function registerPushNotifications(options: RegistrationOptions = {}) {
+  if (Platform.OS === "web") return false;
+  const projectId = easProjectId();
+  if (!projectId || projectId.startsWith("SET_")) {
+    if (options.requestPermission) {
+      throw new Error("Push notifications require the signed Haccora app configuration");
+    }
+    return false;
+  }
 
   if (Platform.OS === "android") {
     await Notifications.setNotificationChannelAsync("critical", {
@@ -37,8 +49,13 @@ export async function registerPushNotifications() {
   }
 
   let permission = await Notifications.getPermissionsAsync();
-  if (permission.status !== "granted") permission = await Notifications.requestPermissionsAsync();
-  if (permission.status !== "granted") return;
+  if (permission.status !== "granted" && options.requestPermission) {
+    permission = await Notifications.requestPermissionsAsync();
+  }
+  if (permission.status !== "granted") {
+    if (options.requestPermission) throw new Error("Notification permission was not granted");
+    return false;
+  }
 
   const { data: token } = await Notifications.getExpoPushTokenAsync({ projectId });
   const { error } = await supabase.rpc("register_my_push_token", {
@@ -46,6 +63,23 @@ export async function registerPushNotifications() {
     p_platform: Platform.OS,
   });
   if (error) throw error;
+  return true;
+}
+
+export async function syncPushNotifications() {
+  if (Platform.OS === "web") return false;
+  const { data: context, error: contextError } = await supabase.rpc("get_my_context");
+  if (contextError || !context || typeof context !== "object" || Array.isArray(context))
+    return false;
+  const organizationId = (context as Record<string, unknown>).organization_id;
+  if (typeof organizationId !== "string") return false;
+  const { data, error } = await supabase
+    .from("notification_preferences")
+    .select("push_enabled")
+    .eq("organization_id", organizationId)
+    .maybeSingle();
+  if (error || data?.push_enabled === false) return false;
+  return registerPushNotifications();
 }
 
 const ALLOWED_ROUTES = new Set([
@@ -80,10 +114,11 @@ export function configureNotificationNavigation() {
 
 export async function unregisterPushNotifications() {
   if (Platform.OS === "web") return;
-  const projectId =
-    Constants.easConfig?.projectId ??
-    (Constants.expoConfig?.extra?.eas?.projectId as string | undefined);
+  const projectId = easProjectId();
   if (!projectId || projectId.startsWith("SET_")) return;
+  const permission = await Notifications.getPermissionsAsync();
+  if (permission.status !== "granted") return;
   const { data: token } = await Notifications.getExpoPushTokenAsync({ projectId });
-  await supabase.rpc("disable_my_push_token", { p_token: token });
+  const { error } = await supabase.rpc("disable_my_push_token", { p_token: token });
+  if (error) throw error;
 }

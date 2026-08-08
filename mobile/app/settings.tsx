@@ -90,7 +90,7 @@ export default function Settings() {
   const togglePush = async (value: boolean) => {
     setPushEnabled(value);
     try {
-      if (value) await registerPushNotifications();
+      if (value) await registerPushNotifications({ requestPermission: true });
       else await unregisterPushNotifications();
       const { error } = await supabase.rpc("set_my_notification_preferences", {
         p_email_enabled: null,

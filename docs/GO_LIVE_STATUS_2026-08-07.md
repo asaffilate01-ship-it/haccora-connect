@@ -2,7 +2,16 @@
 
 ## Position
 
-The repository is suitable for a controlled staging deployment after Phase 23. Core web/PWA/native workflows, persistence, QR equipment history, tenant RLS, scoped inspector access, notifications/billing foundations and release controls are implemented. The product is not yet approved for public production use because deployment, provider, legal, security and store evidence cannot be completed in source code.
+The repository is suitable for a controlled staging deployment after Phase 24. Core web/PWA/native workflows, persistence, QR equipment history, tenant RLS, scoped inspector access, notifications/billing foundations and release controls are implemented. The product is not yet approved for public production use because deployment, provider, legal, security and store evidence cannot be completed in source code.
+
+## Closed in Phase 24
+
+- Native evidence uploads now include canonical file metadata and SHA-256 integrity evidence.
+- Native document opening is malware-scan gated and uses short-lived signed links.
+- Archived evidence no longer appears in the active native library and is retained for audit.
+- Push registration respects explicit permission and the saved tenant preference.
+- Reused device tokens move to the current authenticated tenant rather than remaining attached to an earlier account.
+- Expo ticket receipts are reconciled and provider-rejected tokens are disabled.
 
 ## Closed in Phase 23
 

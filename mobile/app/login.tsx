@@ -15,7 +15,7 @@ export default function Login() {
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     setBusy(false);
     if (error) Alert.alert("Sign in failed", error.message);
-    else router.replace("/dashboard");
+    else router.replace("/");
   };
   return (
     <View style={styles.page}>
