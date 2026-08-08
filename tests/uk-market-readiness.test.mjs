@@ -118,6 +118,13 @@ test("public metadata no longer positions Haccora for Germany", () => {
   ])
     assert.doesNotMatch(read(file), /Germany|German kitchens|haccora\.de|Datenschutz/);
 });
+test("UK-only public and contact defaults cannot silently fall back to German", () => {
+  const manifest = JSON.parse(read("public/manifest.webmanifest"));
+  const contact = read("supabase/functions/contact/index.ts");
+  assert.equal(manifest.lang, "en-GB");
+  assert.match(contact, /z\.literal\("en"\)\.default\("en"\)/);
+  assert.doesNotMatch(contact, /default\("de"\)|\["de",\s*"en"\]/);
+});
 test("the launch language runtime is explicitly UK English only", () => {
   const i18n = read("src/lib/i18n.tsx");
   assert.match(i18n, /const lang: Language = "en"/);
@@ -168,6 +175,15 @@ test("native navigation keeps five high-frequency destinations visible", () => {
   for (const label of ["Today", "Checks", "Log", "Alerts", "More"])
     assert.match(nav, new RegExp(`"${label}"`));
   assert.match(read("mobile/app/_layout.tsx"), /<BottomNav/);
+});
+test("native navigation gives inspectors a read-focused evidence surface", () => {
+  const nav = read("mobile/components/bottom-nav.tsx");
+  const more = read("mobile/app/more.tsx");
+  const dashboard = read("mobile/app/dashboard.tsx");
+  assert.match(nav, /role === "inspector" \? inspectorItems : operationsItems/);
+  assert.match(nav, /useSafeAreaInsets/);
+  assert.match(more, /items\.filter\(\(\[, , roles\]\)/);
+  assert.match(dashboard, /role === "inspector"/);
 });
 
 test("Phase 8 compliance coach ranks real persisted evidence on web and native", () => {

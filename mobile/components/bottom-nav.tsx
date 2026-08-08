@@ -1,7 +1,9 @@
 import { router, usePathname } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSession } from "@/lib/session";
 
-const items = [
+const operationsItems = [
   { label: "Today", path: "/dashboard", icon: "✓" },
   { label: "Checks", path: "/checks", icon: "☑" },
   { label: "Log", path: "/quick-log", icon: "+" },
@@ -9,11 +11,23 @@ const items = [
   { label: "More", path: "/more", icon: "•••" },
 ] as const;
 
+const inspectorItems = [
+  { label: "Evidence", path: "/inspection-readiness", icon: "◎" },
+  { label: "Equipment", path: "/assets", icon: "QR" },
+  { label: "More", path: "/more", icon: "•••" },
+] as const;
+
 export function BottomNav() {
   const pathname = usePathname();
+  const insets = useSafeAreaInsets();
+  const { role } = useSession();
   if (["/", "/login", "/onboarding"].includes(pathname)) return null;
+  const items = role === "inspector" ? inspectorItems : operationsItems;
   return (
-    <View style={styles.bar} accessibilityRole="tablist">
+    <View
+      style={[styles.bar, { paddingBottom: Math.max(insets.bottom, 8) }]}
+      accessibilityRole="tablist"
+    >
       {items.map((item) => {
         const active = pathname === item.path;
         return (

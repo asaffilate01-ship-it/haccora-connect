@@ -27,6 +27,13 @@ const publishedNoopFunctionReplays = new Set([
   "public.tg_temp_alert:20260807005727_590d47c7-aec4-44c7-87c8-0e87f31aa670.sql:20260807010000_uk_english_alert_cleanup.sql",
   "public.tg_expiry_alert:20260807005727_590d47c7-aec4-44c7-87c8-0e87f31aa670.sql:20260807010000_uk_english_alert_cleanup.sql",
   "public.tg_incident_alert:20260807005727_590d47c7-aec4-44c7-87c8-0e87f31aa670.sql:20260807010000_uk_english_alert_cleanup.sql",
+  // Lovable published the platform operator migration twice on main. Both
+  // files must remain in the ledger; the later migration is now an explicitly
+  // idempotent replay so clean and already-linked environments converge.
+  "public.is_platform_operator:20260807173739_2b265a28-3122-4776-92be-467db0c3d6f9.sql:20260807190000_platform_operator_and_demo_role_access.sql",
+  "public.get_my_platform_context:20260807173739_2b265a28-3122-4776-92be-467db0c3d6f9.sql:20260807190000_platform_operator_and_demo_role_access.sql",
+  "public.get_platform_overview:20260807173739_2b265a28-3122-4776-92be-467db0c3d6f9.sql:20260807190000_platform_operator_and_demo_role_access.sql",
+  "public.get_platform_customers:20260807173739_2b265a28-3122-4776-92be-467db0c3d6f9.sql:20260807190000_platform_operator_and_demo_role_access.sql",
 ]);
 
 const files = (await readdir(migrationDirectory)).filter((file) => file.endsWith(".sql")).sort();
