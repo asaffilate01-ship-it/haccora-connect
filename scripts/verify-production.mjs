@@ -8,6 +8,7 @@ const failures = [];
 const run = promisify(execFile);
 const required = [
   ".env.example",
+  ".env.staging.example",
   "package-lock.json",
   "mobile/package-lock.json",
   "public/manifest.webmanifest",
@@ -34,6 +35,7 @@ const required = [
   "supabase/migrations/20260808170000_restore_tenant_billing_and_platform_policy.sql",
   "supabase/migrations/20260808190000_native_evidence_and_push_hardening.sql",
   "docs/PHASE-24-NATIVE-EVIDENCE-AND-NOTIFICATIONS.md",
+  "docs/PHASE-25-STAGING-RELEASE-AUTOMATION.md",
   "supabase/functions/billing/index.ts",
   "supabase/functions/integration-admin/index.ts",
   "supabase/functions/integration-dispatch/index.ts",
@@ -58,6 +60,8 @@ const required = [
   "src/routes/health[.]json.ts",
   ".github/workflows/database.yml",
   ".github/workflows/release-readiness.yml",
+  ".github/workflows/staging-rehearsal.yml",
+  ".github/workflows/native-internal-candidate.yml",
   ".github/workflows/uptime.yml",
   ".github/CODEOWNERS",
   ".github/pull_request_template.md",
@@ -65,6 +69,9 @@ const required = [
   "scripts/check-deployment-health.mjs",
   "scripts/check-deployment-smoke.mjs",
   "scripts/generate-release-evidence.mjs",
+  "scripts/generate-staging-evidence.mjs",
+  "scripts/verify-staging-env.mjs",
+  "scripts/verify-remote-migration-ledger.mjs",
   "scripts/check-build-budget.mjs",
   "scripts/check-built-worker.mjs",
   "scripts/clean-build-output.mjs",
@@ -76,6 +83,7 @@ const required = [
   "docs/RESTORE_DRILL.md",
   "docs/RELEASE_EVIDENCE.md",
   "mobile/scripts/verify-store-readiness.mjs",
+  "mobile/scripts/verify-internal-build-env.mjs",
   "mobile/store/PRIVACY_DATA_MAP.md",
   "mobile/store/STORE_RELEASE_CHECKLIST.md",
   "docs/GO_LIVE_STATUS_2026-08-02.md",
@@ -122,6 +130,7 @@ for (const key of [
   "STRIPE_PRICE_PRO",
   "STRIPE_LIVE_MODE",
   "INTEGRATION_ENCRYPTION_KEY",
+  "EXPO_ACCESS_TOKEN",
 ]) {
   if (!new RegExp(`^${key}=`, "m").test(envExample)) {
     failures.push(`Environment template is missing: ${key}`);
@@ -195,6 +204,25 @@ for (const marker of [
   }
 }
 
+const stagingWorkflow = await readFile(
+  path.join(root, ".github/workflows/staging-rehearsal.yml"),
+  "utf8",
+);
+for (const marker of [
+  "environment: staging",
+  "npm run staging:preflight",
+  "supabase db push --dry-run",
+  "npm run staging:ledger",
+  "supabase functions deploy",
+  "npm run demo:access",
+  "npm run deployment:smoke",
+  "generate-staging-evidence.mjs",
+]) {
+  if (!stagingWorkflow.includes(marker)) {
+    failures.push(`Staging rehearsal workflow is missing: ${marker}`);
+  }
+}
+
 const uptimeWorkflow = await readFile(path.join(root, ".github/workflows/uptime.yml"), "utf8");
 for (const marker of ["check-deployment-health.mjs", "check-deployment-smoke.mjs"]) {
   if (!uptimeWorkflow.includes(marker)) {
@@ -265,6 +293,7 @@ const { stdout: trackedOutput } = await run("git", ["ls-files", "-z"], {
 const exampleEnvironmentFiles = new Set([
   ".env.example",
   ".env.demo.example",
+  ".env.staging.example",
   "mobile/.env.example",
 ]);
 const publishableEnvironmentDeclaration =
@@ -298,6 +327,12 @@ if (!mobilePackage.scripts?.["export:check"]?.includes("--platform all")) {
 }
 if (mobilePackage.scripts?.["release:preflight"] !== "node scripts/verify-store-readiness.mjs") {
   failures.push("Native release verification must enforce the store configuration preflight");
+}
+if (
+  mobilePackage.scripts?.["release:internal-preflight"] !==
+  "node scripts/verify-internal-build-env.mjs"
+) {
+  failures.push("Native internal builds must enforce the protected staging preflight");
 }
 
 const forbiddenDuplicateMigrations = [

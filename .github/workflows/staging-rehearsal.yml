@@ -1,0 +1,165 @@
+name: Protected staging rehearsal
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Verify only, or apply migrations/functions and recreate the demo client
+        required: true
+        default: verify-only
+        type: choice
+        options:
+          - verify-only
+          - apply-and-test
+      deployment_url:
+        description: Clean HTTPS URL serving this exact commit in staging
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: haccora-staging-rehearsal
+  cancel-in-progress: false
+
+jobs:
+  rehearsal:
+    environment: staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    env:
+      HACCORA_ENV: staging
+      STAGING_APPLY_CHANGES: ${{ inputs.mode == 'apply-and-test' }}
+      STAGING_DEPLOY_CONFIRM: ${{ vars.STAGING_DEPLOY_CONFIRM }}
+      STAGING_BACKUP_OR_DISPOSABLE_CONFIRMED: ${{ vars.STAGING_BACKUP_OR_DISPOSABLE_CONFIRMED }}
+      STAGING_PROJECT_REF: ${{ vars.STAGING_PROJECT_REF }}
+      PRODUCTION_SUPABASE_PROJECT_REF: ${{ vars.PRODUCTION_SUPABASE_PROJECT_REF }}
+      STAGING_SUPABASE_URL: ${{ vars.STAGING_SUPABASE_URL }}
+      SUPABASE_URL: ${{ vars.STAGING_SUPABASE_URL }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ vars.STAGING_SUPABASE_PUBLISHABLE_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.STAGING_SUPABASE_SERVICE_ROLE_KEY }}
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.STAGING_SUPABASE_DB_PASSWORD }}
+      STAGING_APP_URL: ${{ inputs.deployment_url }}
+      PRODUCTION_APP_URL: ${{ vars.PRODUCTION_APP_URL }}
+      PRODUCTION_URL: ${{ inputs.deployment_url }}
+      EXPECTED_RELEASE_SHA: ${{ github.sha }}
+      DEMO_ALLOWED_SUPABASE_URL: ${{ vars.STAGING_SUPABASE_URL }}
+      DEMO_SEED_CONFIRM: HACCORA_DEMO_ONLY
+      DEMO_EMAIL_DOMAIN: ${{ vars.DEMO_EMAIL_DOMAIN }}
+      DEMO_PASSWORD: ${{ secrets.DEMO_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - uses: supabase/setup-cli@v2
+        with:
+          version: 2.111.0
+          github-token: ${{ github.token }}
+      - run: npm ci
+
+      - name: Prove this is the protected staging environment
+        run: |
+          npm run staging:preflight
+          echo "STAGING_PREFLIGHT_PASSED=true" >> "$GITHUB_ENV"
+
+      - name: Run the complete source release gate
+        run: |
+          npm run quality
+          echo "SOURCE_QUALITY_PASSED=true" >> "$GITHUB_ENV"
+
+      - name: Export the native web, iOS and Android bundles
+        working-directory: mobile
+        env:
+          EXPO_NO_TELEMETRY: "1"
+        run: |
+          npm ci
+          npm run typecheck
+          npm run export:check
+          echo "NATIVE_EXPORT_PASSED=true" >> "$GITHUB_ENV"
+
+      - name: Link only the allow-listed staging project
+        run: >-
+          supabase link
+          --project-ref "$STAGING_PROJECT_REF"
+          --password "$SUPABASE_DB_PASSWORD"
+
+      - name: Preview the exact remote migration plan
+        run: |
+          mkdir -p release-evidence
+          set -o pipefail
+          supabase db push --dry-run --linked --password "$SUPABASE_DB_PASSWORD" \
+            | tee release-evidence/staging-migration-dry-run.txt
+          echo "MIGRATION_DRY_RUN_PASSED=true" >> "$GITHUB_ENV"
+
+      - name: Apply forward-only migrations to staging
+        if: ${{ inputs.mode == 'apply-and-test' }}
+        run: |
+          supabase db push --linked --include-all --password "$SUPABASE_DB_PASSWORD"
+          echo "MIGRATIONS_APPLIED=true" >> "$GITHUB_ENV"
+
+      - name: Prove the remote migration ledger matches source
+        if: ${{ inputs.mode == 'apply-and-test' }}
+        run: |
+          set -o pipefail
+          supabase migration list --linked --password "$SUPABASE_DB_PASSWORD" \
+            | tee release-evidence/staging-migration-list.txt
+          npm run staging:ledger
+          echo "REMOTE_LEDGER_PASSED=true" >> "$GITHUB_ENV"
+
+      - name: Deploy and inventory every Edge Function
+        if: ${{ inputs.mode == 'apply-and-test' }}
+        run: |
+          supabase functions deploy --project-ref "$STAGING_PROJECT_REF"
+          supabase functions list --project-ref "$STAGING_PROJECT_REF" \
+            | tee release-evidence/staging-functions-list.txt
+          echo "EDGE_FUNCTIONS_DEPLOYED=true" >> "$GITHUB_ENV"
+
+      - name: Seed all demo identities and realistic UK evidence
+        if: ${{ inputs.mode == 'apply-and-test' }}
+        run: |
+          set -o pipefail
+          npm run demo:seed | tee release-evidence/demo-seed.txt
+          echo "DEMO_SEEDED=true" >> "$GITHUB_ENV"
+
+      - name: Verify the hosted demo data contract
+        if: ${{ inputs.mode == 'apply-and-test' }}
+        run: |
+          set -o pipefail
+          npm run demo:verify | tee release-evidence/demo-verify.txt
+          echo "DEMO_DATA_VERIFIED=true" >> "$GITHUB_ENV"
+
+      - name: Sign in as every role and prove tenant isolation
+        if: ${{ inputs.mode == 'apply-and-test' }}
+        run: |
+          set -o pipefail
+          npm run demo:access | tee release-evidence/demo-role-access.txt
+          echo "DEMO_RLS_PASSED=true" >> "$GITHUB_ENV"
+
+      - name: Verify hosted release identity and health
+        run: |
+          set -o pipefail
+          npm run health:check | tee release-evidence/hosted-health.txt
+          echo "HOSTED_HEALTH_PASSED=true" >> "$GITHUB_ENV"
+
+      - name: Smoke-test the hosted UK release candidate
+        run: |
+          set -o pipefail
+          npm run deployment:smoke | tee release-evidence/hosted-smoke.txt
+          echo "HOSTED_SMOKE_PASSED=true" >> "$GITHUB_ENV"
+
+      - name: Generate a redacted staging readiness manifest
+        if: always()
+        run: node scripts/generate-staging-evidence.mjs
+
+      - name: Upload staging evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: haccora-staging-${{ github.sha }}
+          path: release-evidence
+          if-no-files-found: error
+          retention-days: 30

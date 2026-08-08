@@ -9,6 +9,7 @@ const findings = [];
 const allowedEnvironmentFiles = new Set([
   ".env.example",
   ".env.demo.example",
+  ".env.staging.example",
   "mobile/.env.example",
 ]);
 // The hosting platform generates a root .env containing only publishable client

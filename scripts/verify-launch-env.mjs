@@ -74,6 +74,7 @@ for (const name of [
   "STRIPE_PRICE_PRO",
   "MALWARE_SCAN_TOKEN",
   "VITE_WEB_PUSH_PUBLIC_KEY",
+  "EXPO_ACCESS_TOKEN",
 ])
   requireValue(name);
 
@@ -84,6 +85,8 @@ for (const name of [
   "WEB_PUSH_GATEWAY_TOKEN",
 ])
   requireSecret(name);
+
+for (const name of ["MALWARE_SCAN_TOKEN", "EXPO_ACCESS_TOKEN"]) requireSecret(name, 20);
 
 for (const name of [
   "VITE_LEGAL_COMPANY_NAME",

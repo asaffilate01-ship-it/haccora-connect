@@ -36,6 +36,11 @@ const publishedNoopFunctionReplays = new Set([
   "public.get_my_platform_context:20260807173739_2b265a28-3122-4776-92be-467db0c3d6f9.sql:20260807190000_platform_operator_and_demo_role_access.sql",
   "public.get_platform_overview:20260807173739_2b265a28-3122-4776-92be-467db0c3d6f9.sql:20260807190000_platform_operator_and_demo_role_access.sql",
   "public.get_platform_customers:20260807173739_2b265a28-3122-4776-92be-467db0c3d6f9.sql:20260807190000_platform_operator_and_demo_role_access.sql",
+  // Phase 24 was applied through Lovable in 20260808172806 and its canonical
+  // package migration was then published at 20260808190000. Both versions may
+  // already be in remote ledgers, so preserve the files and allow only this
+  // exact idempotent function replay.
+  "public.register_my_push_token:20260808172806_d6e78310-5903-43e5-9ff3-6d770d46c327.sql:20260808190000_native_evidence_and_push_hardening.sql",
 ]);
 
 const files = (await readdir(migrationDirectory)).filter((file) => file.endsWith(".sql")).sort();

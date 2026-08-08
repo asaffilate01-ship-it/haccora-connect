@@ -1,0 +1,62 @@
+name: Native internal candidate
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Signed internal candidate platform
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - ios
+          - android
+
+permissions:
+  contents: read
+
+concurrency:
+  group: haccora-native-internal-${{ inputs.platform }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    environment: staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      HACCORA_ENV: staging
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      EAS_CLI_VERSION: ${{ vars.EAS_CLI_VERSION }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - name: Verify and export the native source
+        working-directory: mobile
+        env:
+          EXPO_NO_TELEMETRY: "1"
+        run: |
+          npm ci
+          npm run release:internal-preflight
+          npm run typecheck
+          npm run export:check
+      - name: Install the explicitly approved EAS CLI
+        run: npm install --global "eas-cli@${EAS_CLI_VERSION}"
+      - name: Build a signed internal candidate
+        working-directory: mobile
+        run: |
+          mkdir -p ../release-evidence
+          eas build --platform "${{ inputs.platform }}" --profile preview \
+            --non-interactive --wait --json > ../release-evidence/eas-internal-build.json
+      - name: Upload signed-build evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: haccora-native-internal-${{ inputs.platform }}-${{ github.sha }}
+          path: release-evidence/eas-internal-build.json
+          if-no-files-found: error
+          retention-days: 30
