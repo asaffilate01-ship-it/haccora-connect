@@ -14,21 +14,29 @@ const httpsUrl = (name: string) => {
   }
 };
 
+// Committed non-secret defaults for the confirmed UK trading identity. Any value
+// can still be overridden per environment; outstanding statutory details (registered
+// office, Companies House number, phone, VAT/ICO) remain unset until supplied.
+const COMPANY_DOMAIN = "haccora.co.uk";
+const withDefault = (name: string, fallback: string) => value(name) ?? fallback;
+const httpsUrlWithDefault = (name: string, fallback: string) => httpsUrl(name) ?? fallback;
+
 export const PUBLIC_CONFIG = {
   legal: {
-    companyName: value("VITE_LEGAL_COMPANY_NAME"),
+    companyName: withDefault("VITE_LEGAL_COMPANY_NAME", "Haccora Ltd"),
     addressLine1: value("VITE_LEGAL_ADDRESS_LINE_1"),
     postalCity: value("VITE_LEGAL_POSTAL_CITY"),
-    registeredIn: value("VITE_LEGAL_REGISTERED_IN"),
+    registeredIn: withDefault("VITE_LEGAL_REGISTERED_IN", "England and Wales"),
     companyNumber: value("VITE_LEGAL_COMPANY_NUMBER"),
-    email: value("VITE_LEGAL_EMAIL"),
+    email: withDefault("VITE_LEGAL_EMAIL", `hello@${COMPANY_DOMAIN}`),
     phone: value("VITE_LEGAL_PHONE"),
     vatId: value("VITE_LEGAL_VAT_ID"),
     icoRegistration: value("VITE_LEGAL_ICO_REGISTRATION"),
   },
-  supportUrl: httpsUrl("VITE_SUPPORT_URL"),
-  statusUrl: httpsUrl("VITE_STATUS_URL"),
+  supportUrl: httpsUrlWithDefault("VITE_SUPPORT_URL", `https://support.${COMPANY_DOMAIN}`),
+  statusUrl: httpsUrlWithDefault("VITE_STATUS_URL", `https://status.${COMPANY_DOMAIN}`),
 };
+
 
 const requiredLegalIdentity = [
   PUBLIC_CONFIG.legal.companyName,
