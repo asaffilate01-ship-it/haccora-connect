@@ -33,3 +33,16 @@ export const screen = {
   paddingTop: 16,
   paddingBottom: 96,
 } as const;
+
+// Compact operational scale for phones and tablets. React Native font scaling
+// remains enabled so the user's accessibility setting is still respected.
+export const typeScale = {
+  micro: 9,
+  caption: 10,
+  body: 11.5,
+  label: 12.5,
+  section: 14,
+  title: 21,
+  hero: 23,
+  input: 16,
+} as const;

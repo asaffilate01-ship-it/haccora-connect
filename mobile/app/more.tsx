@@ -17,7 +17,7 @@ import {
 } from "lucide-react-native";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSession } from "@/lib/session";
-import { cardShadow, colours, screen } from "@/lib/theme";
+import { cardShadow, colours, screen, typeScale } from "@/lib/theme";
 
 const ALL_TENANT_ROLES = ["owner", "manager", "chef", "staff"] as const;
 const ALL_WORKSPACE_ROLES = [...ALL_TENANT_ROLES, "inspector"] as const;
@@ -106,8 +106,18 @@ export default function More() {
 const styles = StyleSheet.create({
   canvas: { backgroundColor: colours.canvas },
   page: { ...screen, gap: 10 },
-  eyebrow: { color: colours.brand, fontSize: 9, fontWeight: "900", letterSpacing: 1.6 },
-  title: { color: colours.ink, fontSize: 21, fontWeight: "900", letterSpacing: -0.35 },
+  eyebrow: {
+    color: colours.brand,
+    fontSize: typeScale.micro,
+    fontWeight: "900",
+    letterSpacing: 1.6,
+  },
+  title: {
+    color: colours.ink,
+    fontSize: typeScale.title,
+    fontWeight: "900",
+    letterSpacing: -0.35,
+  },
   workspace: { color: colours.ink, fontSize: 10.5, fontWeight: "800", marginTop: -5 },
   intro: { color: colours.muted, fontSize: 10.5, lineHeight: 15, marginBottom: 3 },
   group: {
@@ -146,5 +156,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: 30,
   },
-  label: { color: colours.ink, flex: 1, fontSize: 11.5, fontWeight: "800" },
+  label: { color: colours.ink, flex: 1, fontSize: typeScale.body, fontWeight: "800" },
 });

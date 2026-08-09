@@ -11,7 +11,7 @@ import {
   type LucideIcon,
 } from "lucide-react-native";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { cardShadow, colours, screen } from "@/lib/theme";
+import { cardShadow, colours, screen, typeScale } from "@/lib/theme";
 import { useSession } from "@/lib/session";
 
 type Action = [string, string, string, LucideIcon, string?];
@@ -75,9 +75,19 @@ export default function QuickLog() {
 const styles = StyleSheet.create({
   canvas: { backgroundColor: colours.canvas },
   page: { ...screen, gap: 9 },
-  eyebrow: { color: colours.brand, fontSize: 9, fontWeight: "900", letterSpacing: 1.6 },
-  title: { color: colours.ink, fontSize: 21, fontWeight: "900", letterSpacing: -0.35 },
-  intro: { color: colours.muted, fontSize: 11, lineHeight: 16, marginBottom: 4 },
+  eyebrow: {
+    color: colours.brand,
+    fontSize: typeScale.micro,
+    fontWeight: "900",
+    letterSpacing: 1.6,
+  },
+  title: {
+    color: colours.ink,
+    fontSize: typeScale.title,
+    fontWeight: "900",
+    letterSpacing: -0.35,
+  },
+  intro: { color: colours.muted, fontSize: typeScale.body, lineHeight: 16, marginBottom: 4 },
   grid: { gap: 8 },
   card: {
     ...cardShadow,
@@ -101,6 +111,6 @@ const styles = StyleSheet.create({
     width: 38,
   },
   flex: { flex: 1 },
-  cardTitle: { color: colours.ink, fontSize: 12.5, fontWeight: "900" },
-  body: { color: colours.muted, fontSize: 9.5, lineHeight: 14, marginTop: 2 },
+  cardTitle: { color: colours.ink, fontSize: typeScale.label, fontWeight: "900" },
+  body: { color: colours.muted, fontSize: typeScale.caption, lineHeight: 14, marginTop: 2 },
 });

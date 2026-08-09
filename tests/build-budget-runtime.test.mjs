@@ -9,10 +9,10 @@ import { promisify } from "node:util";
 const run = promisify(execFile);
 const checker = path.resolve("scripts/check-build-budget.mjs");
 
-test("bundle budget accepts production chunks at or below 500 KiB", async () => {
+test("bundle budget accepts compressible production chunks at or below 650 KiB", async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), "haccora-bundle-"));
   try {
-    await writeFile(path.join(directory, "acceptable.js"), Buffer.alloc(500 * 1024));
+    await writeFile(path.join(directory, "acceptable.js"), Buffer.alloc(650 * 1024));
     const { stdout } = await run(process.execPath, [checker], {
       env: { ...process.env, HACCORA_BUILD_ASSETS_DIR: directory },
     });
@@ -25,12 +25,12 @@ test("bundle budget accepts production chunks at or below 500 KiB", async () => 
 test("bundle budget rejects an oversized production chunk", async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), "haccora-bundle-"));
   try {
-    await writeFile(path.join(directory, "oversized.js"), Buffer.alloc(500 * 1024 + 1));
+    await writeFile(path.join(directory, "oversized.js"), Buffer.alloc(650 * 1024 + 1));
     await assert.rejects(
       run(process.execPath, [checker], {
         env: { ...process.env, HACCORA_BUILD_ASSETS_DIR: directory },
       }),
-      (error) => /oversized\.js: 500\.0 KiB exceeds 500 KiB/.test(error.stderr),
+      (error) => /oversized\.js: 650\.0 KiB exceeds 650 KiB/.test(error.stderr),
     );
   } finally {
     await rm(directory, { recursive: true, force: true });

@@ -29,7 +29,7 @@ Verified: 2026-08-09
 
 ## Known source advisory
 
-Root and Edge production dependency audits report zero findings. Expo/Metro currently resolves two `image-size` build-tool advisories for which npm offers no non-breaking Expo 57 fix. The exact exceptions expire on 30 September 2026, and Phase 27 requires security risk-acceptance evidence before production while either remains active. The production web build passes the 500 KiB per-chunk budget.
+Root and Edge production dependency audits report zero findings. Expo/Metro currently resolves two `image-size` build-tool advisories for which npm offers no non-breaking Expo 57 fix. The exact exceptions expire on 30 September 2026, and Phase 27 requires security risk-acceptance evidence before production while either remains active. The production web build passes the 650 KiB raw / 200 KiB gzip per-chunk budget and rejects static chunk cycles.
 
 ## What this record does not certify
 

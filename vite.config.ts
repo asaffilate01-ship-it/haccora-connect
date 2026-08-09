@@ -38,39 +38,11 @@ export default defineConfig({
     define: {
       __HACCORA_RELEASE_SHA__: JSON.stringify(resolveReleaseSha()),
     },
-    build: {
-      rolldownOptions: {
-        output: {
-          codeSplitting: {
-            maxSize: 400_000,
-            minSize: 20_000,
-            groups: [
-              {
-                name: "vendor-react",
-                test: /node_modules[\\/](?:react|react-dom|scheduler)(?:[\\/]|$)/,
-                priority: 50,
-              },
-              {
-                name: "vendor-tanstack",
-                test: /node_modules[\\/]@tanstack[\\/]/,
-                priority: 40,
-              },
-              {
-                name: "vendor-supabase",
-                test: /node_modules[\\/]@supabase[\\/]/,
-                priority: 30,
-              },
-              {
-                name: "vendor-ui",
-                test: /node_modules[\\/](?:@radix-ui|cmdk|embla-carousel-react|lucide-react|recharts|sonner|vaul)(?:[\\/]|$)/,
-                priority: 20,
-              },
-              { name: "vendor", test: /node_modules[\\/]/, priority: 10 },
-            ],
-          },
-        },
-      },
-    },
+    // Do not force framework packages into manual vendor groups. TanStack,
+    // React and Supabase contain valid package-level cycles; breaking those
+    // cycles across independently initialised browser chunks caused the live
+    // Lovable build to crash before client navigation attached. Rolldown's
+    // native route graph still code-splits the application safely.
   },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).

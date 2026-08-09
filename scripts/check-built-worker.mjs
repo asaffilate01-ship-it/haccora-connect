@@ -33,9 +33,15 @@ const env = {
   SUPABASE_PUBLISHABLE_KEY: process.env.SUPABASE_PUBLISHABLE_KEY ?? placeholderKey,
   VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL ?? placeholderUrl,
   VITE_SUPABASE_PUBLISHABLE_KEY: process.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? placeholderKey,
+  PUBLIC_RELEASE_SHA: process.env.PUBLIC_RELEASE_SHA,
   HACCORA_RELEASE_SHA: process.env.HACCORA_RELEASE_SHA,
 };
-const expectedReleaseSha = process.env.GITHUB_SHA ?? process.env.HACCORA_RELEASE_SHA;
+const fullCommitSha = /^[0-9a-f]{40}$/i;
+const expectedReleaseSha = [
+  process.env.PUBLIC_RELEASE_SHA,
+  process.env.GITHUB_SHA,
+  process.env.HACCORA_RELEASE_SHA,
+].find((candidate) => fullCommitSha.test(candidate ?? ""));
 const context = {
   waitUntil() {},
   passThroughOnException() {},

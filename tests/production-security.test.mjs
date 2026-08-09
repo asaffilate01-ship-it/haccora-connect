@@ -503,19 +503,24 @@ test("native release configuration has a fail-closed store gate and privacy map"
   assert.match(privacy, /Push notification token/);
 });
 
-test("production build splits vendors, enforces its budget and smoke-tests the worker", async () => {
+test("production build enforces a cycle-safe budget and smoke-tests the worker", async () => {
   const vite = await readFile("vite.config.ts", "utf8");
   const packageJson = JSON.parse(await readFile("package.json", "utf8"));
   const budget = await readFile("scripts/check-build-budget.mjs", "utf8");
   const workerSmoke = await readFile("scripts/check-built-worker.mjs", "utf8");
-  assert.match(vite, /codeSplitting/);
-  assert.match(vite, /vendor-tanstack/);
-  assert.match(vite, /vendor-supabase/);
+  assert.doesNotMatch(vite, /codeSplitting:/);
+  assert.doesNotMatch(vite, /name: "vendor-/);
+  assert.match(vite, /native route graph still code-splits/);
+  assert.match(vite, /process\.env\.PUBLIC_RELEASE_SHA/);
   assert.match(packageJson.scripts.build, /check-build-budget\.mjs/);
   assert.match(packageJson.scripts.build, /clean-build-output\.mjs/);
   assert.match(packageJson.scripts.build, /check-built-worker\.mjs/);
   assert.equal(packageJson.scripts.preview, "nitro preview");
-  assert.match(budget, /500 \* 1024/);
+  assert.match(budget, /650 \* 1024/);
+  assert.match(budget, /200 \* 1024/);
+  assert.match(budget, /gzipSync/);
+  assert.match(budget, /static chunk cycle/);
   assert.match(workerSmoke, /generic HTTPError payload/);
   assert.match(workerSmoke, /content-security-policy/);
+  assert.match(workerSmoke, /process\.env\.PUBLIC_RELEASE_SHA/);
 });
