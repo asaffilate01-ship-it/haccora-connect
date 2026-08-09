@@ -41,6 +41,7 @@ import heroChef from "@/assets/hero-chef.jpg";
 import { FollowBar } from "@/components/SocialIcons";
 import { BrandLogo } from "@/components/BrandLogo";
 import { PUBLIC_CONFIG } from "@/lib/public-config";
+import { MARKETING_FAQS } from "@/lib/marketing-faqs";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -62,6 +63,20 @@ export const Route = createFileRoute("/")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [{ rel: "canonical", href: "https://haccora.co.uk/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: MARKETING_FAQS.map(({ question, answer }) => ({
+            "@type": "Question",
+            name: question,
+            acceptedAnswer: { "@type": "Answer", text: answer },
+          })),
+        }),
+      },
+    ],
   }),
   component: Landing,
 });
@@ -852,24 +867,38 @@ function PlatformPillars() {
 /* ────────────────────────────────────────────── FAQ */
 function FaqSection() {
   const { t } = useI18n();
-  const items = [1, 2, 3, 4, 5] as const;
   return (
-    <section className="bg-white border-t border-black/10">
-      <div className="mx-auto max-w-[900px] px-4 md:px-8 py-16 md:py-32">
-        <h2 className="display-black text-4xl md:text-5xl text-center">{t("faq.title")}</h2>
-        <div className="mt-12 divide-y divide-black/10 border-y border-black/10">
-          {items.map((i) => (
-            <details key={i} className="group py-5">
-              <summary className="flex items-center justify-between gap-4 cursor-pointer list-none">
-                <span className="font-black text-lg md:text-xl">{t(`faq.q${i}`)}</span>
-                <span className="shrink-0 inline-flex items-center justify-center h-9 w-9 rounded-full bg-black text-white group-open:hidden">
-                  <Plus size={16} />
+    <section className="bg-white border-t border-black/10" aria-labelledby="faq-heading">
+      <div className="mx-auto max-w-[860px] px-4 sm:px-6 md:px-8 py-14 sm:py-18 md:py-24">
+        <h2 id="faq-heading" className="display-black text-2xl sm:text-3xl md:text-4xl text-center">
+          {t("faq.title")}
+        </h2>
+        <p className="mx-auto mt-3 max-w-2xl text-center text-sm text-black/60">
+          Clear answers about UK compliance, inspections, devices, security and subscriptions.
+        </p>
+        <div className="mt-8 sm:mt-10 divide-y divide-black/10 border-y border-black/10">
+          {MARKETING_FAQS.map(({ question, answer }) => (
+            <details key={question} className="group py-4 sm:py-5">
+              <summary className="flex items-center justify-between gap-3 cursor-pointer list-none rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[color:var(--color-alert-red)]">
+                <span className="font-black text-[0.95rem] sm:text-base md:text-lg leading-snug">
+                  {question}
                 </span>
-                <span className="shrink-0 hidden group-open:inline-flex items-center justify-center h-9 w-9 rounded-full bg-[color:var(--color-alert-red)] text-white">
-                  <Minus size={16} />
+                <span
+                  aria-hidden="true"
+                  className="shrink-0 inline-flex items-center justify-center h-8 w-8 rounded-full bg-black text-white group-open:hidden"
+                >
+                  <Plus size={15} />
+                </span>
+                <span
+                  aria-hidden="true"
+                  className="shrink-0 hidden group-open:inline-flex items-center justify-center h-8 w-8 rounded-full bg-[color:var(--color-alert-red)] text-white"
+                >
+                  <Minus size={15} />
                 </span>
               </summary>
-              <p className="mt-4 text-black/70 text-base leading-relaxed pr-12">{t(`faq.a${i}`)}</p>
+              <p className="mt-3 pr-10 text-sm md:text-[0.95rem] leading-relaxed text-black/70">
+                {answer}
+              </p>
             </details>
           ))}
         </div>

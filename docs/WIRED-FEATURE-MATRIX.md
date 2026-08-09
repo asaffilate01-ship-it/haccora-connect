@@ -24,6 +24,8 @@
 | PWA                             | Manifest, service worker/offline route, installable shell and persistent role-filtered Quick Log navigation                                                          | Installed-browser test                                     | Lighthouse/device acceptance                                       |
 | Audit/security                  | RLS, audit trails, privacy workflows, secret and migration checks                                                                                                    | Automated suite plus role tests                            | Independent penetration test and restore drill                     |
 
+The complete built-in, custom-role and platform-operator boundary is documented in `ROLE-PERMISSION-RLS-MATRIX.md`. Client navigation is convenience only; database RLS and guarded RPCs remain authoritative.
+
 ## Honest production boundary
 
 The core SaaS workflows are implemented and persist data. “100% production ready” can only be claimed after deployment-specific checks pass: migrations, secrets, storage, scheduled functions, payment webhooks, notification providers, native signing/store review, monitoring, backups/restores, penetration testing, accessibility/device testing and legal/compliance sign-off. The software helps a business keep evidence; no app is automatically “FSA approved,” and the food business remains responsible for suitable controls.

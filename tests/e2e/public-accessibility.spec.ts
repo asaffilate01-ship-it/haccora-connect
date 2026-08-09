@@ -48,6 +48,35 @@ test("sign-in form is keyboard reachable and exposes named controls", async ({ p
   await expect(page.locator(":focus")).toBeVisible();
 });
 
+test("marketing FAQs disclose complete answers and client navigation works", async ({ page }) => {
+  await page.goto("/");
+  const disclosures = page.locator("details");
+  await expect(disclosures).toHaveCount(12);
+  await disclosures.first().locator("summary").click();
+  await expect(disclosures.first()).toContainText(/do not generally approve/i);
+
+  await page.getByRole("link", { name: "Login", exact: true }).first().click();
+  await expect(page).toHaveURL(/\/login$/);
+});
+
+test("marketing layout has no horizontal overflow at phone, tablet or desktop widths", async ({
+  page,
+}) => {
+  for (const viewport of [
+    { width: 390, height: 844 },
+    { width: 820, height: 1180 },
+    { width: 1440, height: 900 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto("/");
+    const dimensions = await page.locator("html").evaluate((element) => ({
+      clientWidth: element.clientWidth,
+      scrollWidth: element.scrollWidth,
+    }));
+    expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth + 1);
+  }
+});
+
 test("health endpoint exposes only non-sensitive readiness metadata", async ({ request }) => {
   const response = await request.get("/health.json");
   expect(response.ok()).toBeTruthy();

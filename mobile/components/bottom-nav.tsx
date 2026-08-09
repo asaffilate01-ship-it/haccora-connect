@@ -12,7 +12,7 @@ import {
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSession } from "@/lib/session";
-import { colours } from "@/lib/theme";
+import { colours, typeScale } from "@/lib/theme";
 
 type NavItem = {
   label: string;
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
     marginTop: -13,
     width: 48,
   },
-  label: { color: colours.subtle, fontSize: 9, fontWeight: "700" },
+  label: { color: colours.subtle, fontSize: typeScale.micro, fontWeight: "700" },
   labelActive: { color: colours.ink, fontWeight: "900" },
   primaryLabel: { color: colours.brand, fontWeight: "900", marginTop: -1 },
 });

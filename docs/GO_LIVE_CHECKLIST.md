@@ -9,7 +9,7 @@ Production release is approved only when every P0 item is complete and linked ev
 - [ ] GitHub secret scanning, push protection and private vulnerability reporting are enabled in repository settings.
 - [ ] The deployed release is on `haccora.co.uk` / `app.haccora.co.uk`, contains no Lovable editor badge or preview hostname, and matches the approved release SHA.
 - [ ] `npm ci`, `npm run quality` and `npm audit --omit=dev` pass from the committed root lockfile.
-- [ ] The clean production artifact contains no stale assets and every JavaScript chunk passes the 500 KiB build budget.
+- [ ] The clean production artifact contains no stale assets, static chunk cycles or JavaScript chunks above 650 KiB raw / 200 KiB gzip.
 - [ ] Native `npm ci`, typecheck, all-platform Expo export and runtime dependency audit pass from `mobile/package-lock.json`.
 - [ ] Deno format, lint and typecheck pass for every Edge Function using the committed import map and pinned CI toolchain.
 - [ ] Production checks and CodeQL are green on the release pull request.

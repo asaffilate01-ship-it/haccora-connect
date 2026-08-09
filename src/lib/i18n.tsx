@@ -809,21 +809,6 @@ const en: Dict = {
 
   // FAQ
   "faq.title": "Frequently asked questions",
-  "faq.q1": "What is required before launch?",
-  "faq.a1":
-    "After a staging migration and isolation test, the business, locations, HACCP, recipes and training matrix are configured with the real accountable owners.",
-  "faq.q2": "How does Haccora support UK GDPR readiness?",
-  "faq.a2":
-    "Health data is tightly restricted, evidence is tenant-scoped, and core records are hash-chained. Hosting region, DPA, retention and legal review remain deployment requirements.",
-  "faq.q3": "What happens during an inspection?",
-  "faq.a3":
-    "Inspector Mode gives officers a read-only view of the HACCP plan, temperatures, cleaning, allergens and training records — or generates a downloadable PDF evidence pack.",
-  "faq.q4": "Can I cancel any time?",
-  "faq.a4":
-    "Yes. Evidence can be exported before account closure. Retention and access after termination follow the agreed deletion and export process.",
-  "faq.q5": "Which staff languages are supported?",
-  "faq.a5":
-    "The launch interface and integrated training records use UK English. Additional staff languages will only be released after specialist review.",
   // New modules & permissions matrix (EN)
   "menu.labels": "Labels",
   "menu.incidents": "Incidents",
