@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title">
+  <title id="title">Haccora shield</title>
+  <rect width="1024" height="1024" rx="220" fill="#c8102e"/>
+  <path d="M512 176 760 272v184c0 152-96 264-248 328-152-64-248-176-248-328V272l248-96Z" fill="#ffffff"/>
+  <path d="m392 472 80 80 168-192" fill="none" stroke="#c8102e" stroke-width="56" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

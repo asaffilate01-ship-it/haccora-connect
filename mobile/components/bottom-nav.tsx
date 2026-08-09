@@ -88,16 +88,17 @@ export function BottomNav() {
 
 const styles = StyleSheet.create({
   bar: {
+    alignSelf: "center",
     backgroundColor: colours.card,
     borderTopColor: colours.line,
     borderTopWidth: 1,
     bottom: 0,
     flexDirection: "row",
-    left: 0,
+    maxWidth: 760,
     paddingHorizontal: 5,
     paddingTop: 7,
     position: "absolute",
-    right: 0,
+    width: "100%",
   },
   item: { alignItems: "center", flex: 1, gap: 2, minHeight: 49 },
   pressed: { opacity: 0.7 },

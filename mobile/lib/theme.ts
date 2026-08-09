@@ -29,6 +29,9 @@ export const cardShadow = Platform.select({
 });
 
 export const screen = {
+  alignSelf: "center",
+  width: "100%",
+  maxWidth: 760,
   paddingHorizontal: 16,
   paddingTop: 16,
   paddingBottom: 96,

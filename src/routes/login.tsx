@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useState, type InputHTMLAttributes } from "react";
 import { useI18n } from "@/lib/i18n";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useAuth, ROLES, homeFor, type Role } from "@/lib/auth";
@@ -227,12 +227,19 @@ function LoginPage() {
           <div className="mt-5 space-y-3">
             {mode === "signup" && (
               <>
-                <Field label={"Name"} value={name} onChange={setName} placeholder={"Full name"} />
+                <Field
+                  label={"Name"}
+                  value={name}
+                  onChange={setName}
+                  placeholder={"Full name"}
+                  autoComplete="name"
+                />
                 <Field
                   label={"Restaurant"}
                   value={restaurant}
                   onChange={setRestaurant}
                   placeholder="e.g. Riverside Kitchen"
+                  autoComplete="organization"
                 />
                 <p className="rounded-lg border border-black/10 bg-secondary/40 px-3 py-2 text-xs text-muted-foreground">
                   {
@@ -247,6 +254,7 @@ function LoginPage() {
               onChange={setEmail}
               type="email"
               placeholder="you@restaurant.co.uk"
+              autoComplete="email"
             />
             <Field
               label={"Password"}
@@ -254,6 +262,7 @@ function LoginPage() {
               onChange={setPassword}
               type="password"
               placeholder="••••••••"
+              autoComplete={mode === "signin" ? "current-password" : "new-password"}
             />
           </div>
 
@@ -317,12 +326,14 @@ function Field({
   onChange,
   type = "text",
   placeholder,
+  autoComplete,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   type?: string;
   placeholder?: string;
+  autoComplete?: InputHTMLAttributes<HTMLInputElement>["autoComplete"];
 }) {
   const inputId = useId();
 
@@ -340,6 +351,8 @@ function Field({
         onChange={(e) => onChange(e.target.value)}
         type={type}
         placeholder={placeholder}
+        autoComplete={autoComplete}
+        name={autoComplete || undefined}
         className="mt-1 w-full rounded-lg border border-black/15 bg-white px-3 py-2.5 text-sm outline-none focus:border-[color:var(--color-alert-red)] focus:ring-2 focus:ring-[color:var(--color-alert-red)]/20"
       />
     </div>

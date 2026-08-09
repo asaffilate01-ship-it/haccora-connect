@@ -70,6 +70,8 @@ async function insertOnce(table, rows, onConflict = "id") {
 
 const users = {
   platformOwner: await ensureUser(emails.platformOwner, "Morgan Reed"),
+  platformSupport: await ensureUser(emails.platformSupport, "Casey Support"),
+  platformAuditor: await ensureUser(emails.platformAuditor, "Avery Auditor"),
   owner: await ensureUser(emails.owner, "Alex Morgan"),
   manager: await ensureUser(emails.manager, "Samira Khan"),
   chef: await ensureUser(emails.chef, "Priya Shah"),
@@ -86,6 +88,20 @@ await upsert(
       role: "platform_owner",
       status: "active",
       display_name: "Haccora SaaS Owner",
+      created_by: users.platformOwner.id,
+    },
+    {
+      user_id: users.platformSupport.id,
+      role: "platform_support",
+      status: "active",
+      display_name: "Haccora Platform Support",
+      created_by: users.platformOwner.id,
+    },
+    {
+      user_id: users.platformAuditor.id,
+      role: "platform_auditor",
+      status: "active",
+      display_name: "Haccora Platform Auditor",
       created_by: users.platformOwner.id,
     },
   ],
@@ -197,6 +213,8 @@ await upsert(
   "profiles",
   [
     ["platformOwner", "Morgan Reed", null, null, "Haccora", "United Kingdom"],
+    ["platformSupport", "Casey Support", null, null, "Haccora", "United Kingdom"],
+    ["platformAuditor", "Avery Auditor", null, null, "Haccora", "United Kingdom"],
     [
       "owner",
       "Alex Morgan",
@@ -624,6 +642,8 @@ await insertOnce("asset_events", [
 
 const loginLabels = {
   platformOwner: "SaaS owner",
+  platformSupport: "SaaS support",
+  platformAuditor: "SaaS auditor",
   owner: "Tenant admin",
   manager: "Manager",
   chef: "Chef",

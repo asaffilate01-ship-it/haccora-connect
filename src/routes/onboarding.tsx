@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { BrandLogo } from "@/components/BrandLogo";
 import {
   ShieldCheck,
   ChevronRight,
@@ -119,17 +120,7 @@ function OnboardingPage() {
   return (
     <div className="min-h-screen bg-secondary/40 flex flex-col">
       <header className="h-14 px-6 flex items-center justify-between border-b border-border bg-card">
-        <Link to="/" className="flex items-center gap-2">
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <ShieldCheck size={16} />
-          </span>
-          <div className="leading-tight">
-            <span className="font-display block">Haccora</span>
-            <span className="text-[9px] font-bold tracking-[0.1em] text-muted-foreground uppercase">
-              {"Safe. Clean. Traceable."}
-            </span>
-          </div>
-        </Link>
+        <BrandLogo imgClassName="h-9 sm:h-10 w-auto" />
         <LanguageToggle />
       </header>
 

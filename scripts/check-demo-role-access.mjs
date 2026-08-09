@@ -112,6 +112,43 @@ record(
 );
 await platform.auth.signOut();
 
+for (const operatorCase of [
+  {
+    label: "SaaS support",
+    email: emails.platformSupport,
+    role: "platform_support",
+    financialAccess: false,
+  },
+  {
+    label: "SaaS auditor",
+    email: emails.platformAuditor,
+    role: "platform_auditor",
+    financialAccess: true,
+  },
+]) {
+  const operator = await signIn(operatorCase.email);
+  const [{ data: context, error: contextError }, { data: dashboard, error: dashboardError }] =
+    await Promise.all([
+      operator.rpc("get_my_platform_context"),
+      operator.rpc("get_platform_dashboard"),
+    ]);
+  record(
+    !contextError && context?.role === operatorCase.role,
+    `${operatorCase.label} receives the correct platform context`,
+  );
+  record(
+    !dashboardError && dashboard?.financial_access === operatorCase.financialAccess,
+    `${operatorCase.label} financial visibility matches its platform role`,
+  );
+  record(
+    (await visibleOrganizationIds(operator)).length === 0 &&
+      (await visibleCount(operator, "temperature_logs")) === 0 &&
+      (await visibleCount(operator, "subscriptions")) === 0,
+    `${operatorCase.label} does not bypass tenant RLS`,
+  );
+  await operator.auth.signOut();
+}
+
 const tenantCases = [
   {
     label: "Tenant admin",
