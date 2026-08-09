@@ -20,7 +20,7 @@ Verified: 2026-08-02
 | Native dependency audit     | 0 known runtime vulnerabilities                                |
 | Edge Function formatting    | Passed with Deno 2.9.4                                         |
 | Edge Function lint          | Passed with Deno 2.9.4                                         |
-| Edge Function type check    | Passed for all 14 deployable functions                         |
+| Edge Function type check    | Required for all 15 deployable functions                       |
 | Edge dependency audit       | 0 known runtime vulnerabilities                                |
 | Public route smoke check    | `/`, login, legal routes and `/health.json` returned HTTP 200  |
 | Browser accessibility       | Playwright/Axe gate configured; hosted run still required      |

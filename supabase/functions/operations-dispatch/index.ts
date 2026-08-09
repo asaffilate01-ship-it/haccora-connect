@@ -5,6 +5,7 @@ import {
   preflight,
   requirePost,
 } from "../_shared/http.ts";
+import { recordJobHeartbeat } from "../_shared/job-heartbeat.ts";
 import { serviceClient } from "../_shared/supabase.ts";
 
 Deno.serve(async (request) => {
@@ -20,10 +21,34 @@ Deno.serve(async (request) => {
   }
 
   const supabase = serviceClient();
+  const startedAt = new Date().toISOString();
+  await recordJobHeartbeat(
+    supabase,
+    "operations-dispatch",
+    "started",
+    startedAt,
+  );
   const { data, error } = await supabase.rpc("dispatch_operations_control");
   if (error) {
     console.error(error);
+    await recordJobHeartbeat(
+      supabase,
+      "operations-dispatch",
+      "failed",
+      startedAt,
+      {
+        error: "operations_dispatch_failed",
+      },
+    );
     return json(request, { error: "operations_dispatch_failed" }, 500);
   }
-  return json(request, { ok: true, ...(data ?? {}) });
+  const result = data && typeof data === "object" ? data : {};
+  await recordJobHeartbeat(
+    supabase,
+    "operations-dispatch",
+    "succeeded",
+    startedAt,
+    result,
+  );
+  return json(request, { ok: true, ...result });
 });

@@ -22,6 +22,8 @@ Run the manual `Production release evidence` workflow against the deployed HTTPS
 - Production release evidence run:
 - Deployed candidate smoke result and URL:
 - Dependency audit results:
+- Temporary audit-exception review and expiry confirmation:
+- Scheduler heartbeat and dead-letter health result:
 - Native export/store-preflight results and signed-build identifiers:
 
 ## Environment and providers

@@ -1,7 +1,7 @@
 # Haccora release-fix package
 
-This phase was started from GitHub `main` commit
-`896c42e73b645a154048b23034369da73a11cee4`.
+Phase 26 was started from GitHub `main` commit
+`e0702519a3b5c0a5c1a069536be0a6a573fdbbb4` after the Phase 25 upload.
 
 ## Fixed in this package
 
@@ -24,17 +24,20 @@ This phase was started from GitHub `main` commit
 - Made production launch preflight fail closed when enhanced Expo push security is not configured.
 - Reconciled the two published Phase 24 migration ledgers without deleting either timestamp or weakening general duplicate detection.
 - Pinned the patched `nanoid` release across web and native dependency trees; the root production dependency audit now reports zero findings.
-- Corrected the inspection-export Deno formatting regression so all 14 Edge Functions pass format, lint and type checks.
+- Corrected the inspection-export Deno formatting regression and added operations health so all 15 Edge Functions can pass format, lint and type checks.
 - Included the existing UK-only language, legal, pricing, role-aware navigation, compact typography, equipment QR, audit-history and compliance workflow improvements from `main`.
+- Added monitored scheduler heartbeats, aggregate queue health and production release/uptime enforcement.
+- Corrected notification cron authentication, the uploaded native dependency lock and the Edge export formatting regression.
+- Added an exact, expiring audit policy for the two current Expo/Metro build-tool advisories while keeping web and Edge audits at zero findings.
 
 ## Verification completed
 
 - `npm ci`
-- `npm run quality` — 135 tests, TypeScript, lint, formatting, migration lineage, secret scan, production build, bundle budget and worker smoke test all passed.
+- `npm run quality` — 139 tests, TypeScript, lint, formatting, migration lineage, secret scan, production build, bundle budget and worker smoke test all passed.
 - `cd mobile && npm ci`
 - `cd mobile && npm run typecheck`
 - `cd mobile && npm run export:check` — web, iOS and Android exports passed.
-- All 14 Edge Functions passed Deno format, lint and type checks; their production dependency audit reports zero findings.
+- All 15 Edge Functions must pass Deno format, lint and type checks; their production dependency audit is required to report zero findings.
 - Root production dependency audit reports zero findings. Expo/Metro still reports the upstream `image-size` advisory described below.
 
 ## Still requires the owner's production accounts or approval

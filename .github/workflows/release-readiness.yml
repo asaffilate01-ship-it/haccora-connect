@@ -27,6 +27,7 @@ jobs:
       VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
       SUPABASE_URL: ${{ vars.SUPABASE_URL }}
       PUBLIC_APP_URL: ${{ vars.PUBLIC_APP_URL }}
+      OPERATIONS_HEALTH_URL: ${{ vars.OPERATIONS_HEALTH_URL }}
       PRODUCTION_URL: ${{ inputs.deployment_url }}
       EXPECTED_RELEASE_SHA: ${{ github.sha }}
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
@@ -48,6 +49,7 @@ jobs:
       STRIPE_LIVE_MODE: ${{ vars.STRIPE_LIVE_MODE }}
       CONTACT_HASH_SALT: ${{ secrets.CONTACT_HASH_SALT }}
       CRON_SECRET: ${{ secrets.CRON_SECRET }}
+      OPERATIONS_MONITOR_SECRET: ${{ secrets.OPERATIONS_MONITOR_SECRET }}
       INTEGRATION_ENCRYPTION_KEY: ${{ secrets.INTEGRATION_ENCRYPTION_KEY }}
       VITE_LEGAL_COMPANY_NAME: ${{ vars.VITE_LEGAL_COMPANY_NAME }}
       VITE_LEGAL_ADDRESS_LINE_1: ${{ vars.VITE_LEGAL_ADDRESS_LINE_1 }}
@@ -72,7 +74,7 @@ jobs:
         with:
           deno-version: v2.9.4
       - run: npm ci
-      - run: npm audit --omit=dev --audit-level=high
+      - run: npm run audit:production
       - run: npm run launch:preflight
       - run: npm run quality
       - name: Verify native release bundle
@@ -81,7 +83,6 @@ jobs:
           EXPO_NO_TELEMETRY: "1"
         run: |
           npm ci
-          npm audit --omit=dev --audit-level=high
           npm run typecheck
           npm run export:check
           npm run release:preflight
@@ -89,7 +90,6 @@ jobs:
         working-directory: supabase/functions
         run: |
           npm ci
-          npm audit --omit=dev --audit-level=high
           deno fmt --check .
           deno lint .
           deno check --node-modules-dir=manual --no-lock \
@@ -97,11 +97,14 @@ jobs:
             notification-dispatch/index.ts sensor-ingest/index.ts sensor-provision/index.ts \
             team-invite/index.ts privacy-requests/index.ts security-center/index.ts \
             file-scan/index.ts operations-dispatch/index.ts billing/index.ts \
-            integration-admin/index.ts integration-dispatch/index.ts
+            integration-admin/index.ts integration-dispatch/index.ts \
+            operations-health/index.ts
       - name: Verify deployed commit identity and health
         run: npm run health:check
       - name: Smoke-test the deployed release candidate
         run: npm run deployment:smoke
+      - name: Verify scheduler heartbeats and dead-letter queues
+        run: npm run operations:health
       - name: Generate web, native and Edge SBOMs
         run: npm run release:sbom
       - name: Generate tamper-evident release manifest
@@ -113,6 +116,7 @@ jobs:
           EDGE_FUNCTIONS_PASSED: "true"
           DEPLOYMENT_HEALTH_PASSED: "true"
           DEPLOYMENT_SMOKE_PASSED: "true"
+          OPERATIONS_HEALTH_PASSED: "true"
           SBOM_GENERATED: "true"
         run: npm run release:evidence
       - name: Package the verified release artifact

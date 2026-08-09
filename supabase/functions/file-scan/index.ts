@@ -5,6 +5,7 @@ import {
   preflight,
   requirePost,
 } from "../_shared/http.ts";
+import { recordJobHeartbeat } from "../_shared/job-heartbeat.ts";
 import { serviceClient } from "../_shared/supabase.ts";
 
 Deno.serve(async (request) => {
@@ -21,11 +22,18 @@ Deno.serve(async (request) => {
   const scannerUrl = env("MALWARE_SCAN_URL");
   const scannerToken = env("MALWARE_SCAN_TOKEN");
   const supabase = serviceClient();
+  const startedAt = new Date().toISOString();
+  await recordJobHeartbeat(supabase, "file-scan", "started", startedAt);
   const { data: jobs, error: claimError } = await supabase.rpc(
     "claim_file_scan_jobs",
     { p_limit: 10 },
   );
-  if (claimError) return json(request, { error: "claim_failed" }, 500);
+  if (claimError) {
+    await recordJobHeartbeat(supabase, "file-scan", "failed", startedAt, {
+      error: "claim_failed",
+    });
+    return json(request, { error: "claim_failed" }, 500);
+  }
   let clean = 0;
   let failed = 0;
   for (const job of jobs ?? []) {
@@ -78,5 +86,13 @@ Deno.serve(async (request) => {
       }).eq("id", job.id);
     }
   }
-  return json(request, { ok: true, claimed: jobs?.length ?? 0, clean, failed });
+  const result = { claimed: jobs?.length ?? 0, clean, failed };
+  await recordJobHeartbeat(
+    supabase,
+    "file-scan",
+    "succeeded",
+    startedAt,
+    result,
+  );
+  return json(request, { ok: true, ...result });
 });

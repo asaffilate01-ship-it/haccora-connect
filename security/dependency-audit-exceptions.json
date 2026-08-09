@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "exceptions": [
+    {
+      "scope": "mobile",
+      "package": "image-size",
+      "advisory": "GHSA-w3rx-r6r6-pgpr",
+      "severity": "high",
+      "expiresOn": "2026-09-30",
+      "reason": "Expo 57 currently resolves image-size through Metro. The affected parser is build tooling and is not shipped as application runtime code.",
+      "mitigations": [
+        "Metro processes only reviewed, version-controlled application assets in the release workflow.",
+        "Untrusted customer uploads are scanned by the separate server-side malware workflow and are never passed to Metro.",
+        "The exception is exact, time-limited and must be removed when Expo publishes a non-breaking patched dependency tree."
+      ]
+    },
+    {
+      "scope": "mobile",
+      "package": "image-size",
+      "advisory": "GHSA-5p2g-fcmc-qvqq",
+      "severity": "high",
+      "expiresOn": "2026-09-30",
+      "reason": "Expo 57 currently resolves image-size through Metro. The affected parser is build tooling and is not shipped as application runtime code.",
+      "mitigations": [
+        "Metro processes only reviewed, version-controlled application assets in the release workflow.",
+        "Untrusted customer uploads are scanned by the separate server-side malware workflow and are never passed to Metro.",
+        "The exception is exact, time-limited and must be removed when Expo publishes a non-breaking patched dependency tree."
+      ]
+    }
+  ]
+}

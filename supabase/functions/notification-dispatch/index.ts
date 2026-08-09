@@ -5,6 +5,7 @@ import {
   preflight,
   requirePost,
 } from "../_shared/http.ts";
+import { recordJobHeartbeat } from "../_shared/job-heartbeat.ts";
 import { serviceClient } from "../_shared/supabase.ts";
 
 type Payload = {
@@ -683,6 +684,13 @@ Deno.serve(async (request) => {
   }
 
   const supabase = serviceClient();
+  const startedAt = new Date().toISOString();
+  await recordJobHeartbeat(
+    supabase,
+    "notification-dispatch",
+    "started",
+    startedAt,
+  );
   let digestQueued = 0;
   let remindersQueued = 0;
   let receiptSummary = { checked: 0, delivered: 0, failed: 0 };
@@ -691,6 +699,15 @@ Deno.serve(async (request) => {
     digestQueued = await enqueueWeeklyDigests(supabase);
   } catch (digestError) {
     console.error(digestError);
+    await recordJobHeartbeat(
+      supabase,
+      "notification-dispatch",
+      "failed",
+      startedAt,
+      {
+        error: "digest_generation_failed",
+      },
+    );
     return json(request, { error: "digest_generation_failed" }, 500);
   }
   try {
@@ -711,7 +728,18 @@ Deno.serve(async (request) => {
     .lte("next_attempt_at", new Date().toISOString())
     .order("created_at")
     .limit(50);
-  if (error) return json(request, { error: "queue_read_failed" }, 500);
+  if (error) {
+    await recordJobHeartbeat(
+      supabase,
+      "notification-dispatch",
+      "failed",
+      startedAt,
+      {
+        error: "queue_read_failed",
+      },
+    );
+    return json(request, { error: "queue_read_failed" }, 500);
+  }
 
   let sent = 0;
   for (const job of jobs ?? []) {
@@ -785,7 +813,7 @@ Deno.serve(async (request) => {
         .eq("id", job.id);
     }
   }
-  return json(request, {
+  const result = {
     processed: jobs?.length ?? 0,
     sent,
     digestQueued,
@@ -793,5 +821,13 @@ Deno.serve(async (request) => {
     receiptsChecked: receiptSummary.checked,
     receiptsDelivered: receiptSummary.delivered,
     receiptsFailed: receiptSummary.failed,
-  });
+  };
+  await recordJobHeartbeat(
+    supabase,
+    "notification-dispatch",
+    "succeeded",
+    startedAt,
+    result,
+  );
+  return json(request, result);
 });
