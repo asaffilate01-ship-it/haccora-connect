@@ -18,6 +18,7 @@ const gateNames = [
   "DEPLOYMENT_HEALTH_PASSED",
   "DEPLOYMENT_SMOKE_PASSED",
   "OPERATIONS_HEALTH_PASSED",
+  "LAUNCH_ACCEPTANCE_PASSED",
   "SBOM_GENERATED",
 ];
 const sbomNames = [
@@ -85,6 +86,19 @@ const migrationFiles = (await readdir(path.join(root, "supabase/migrations"))).f
   file.endsWith(".sql"),
 );
 const gates = Object.fromEntries(gateNames.map((name) => [name, process.env[name] === "true"]));
+const releaseCommit = await commitSha();
+let launchAcceptance = null;
+if (gates.LAUNCH_ACCEPTANCE_PASSED) {
+  launchAcceptance = JSON.parse(
+    await readFile(path.join(evidenceDir, "launch-acceptance-summary.json"), "utf8"),
+  );
+  if (launchAcceptance.releaseSha !== releaseCommit) {
+    throw new Error("Launch acceptance summary does not match the release commit");
+  }
+  if (!/^[a-f0-9]{64}$/.test(launchAcceptance.acceptanceSha256 ?? "")) {
+    throw new Error("Launch acceptance summary is missing its SHA-256 digest");
+  }
+}
 const sboms = [];
 if (gates.SBOM_GENERATED) {
   for (const filename of sbomNames) {
@@ -105,11 +119,12 @@ const manifest = {
   generatedAt: new Date().toISOString(),
   repository: process.env.GITHUB_REPOSITORY ?? null,
   workflowRunId: process.env.GITHUB_RUN_ID ?? null,
-  commitSha: await commitSha(),
+  commitSha: releaseCommit,
   nodeVersion: process.version,
   application: { webVersion: rootPackage.version ?? null, mobileVersion: mobilePackage.version },
   migrations: migrationFiles.length,
   gates,
+  launchAcceptance,
   supplyChain: { sboms },
   artifact: {
     directory: path.relative(root, buildDir) || ".",
@@ -139,6 +154,7 @@ const markdown = `# Haccora automated release evidence
 - Build SHA-256: ${manifest.artifact.sha256}
 - Database migrations: ${manifest.migrations}
 - SBOMs: ${manifest.supplyChain.sboms.length}
+- Launch acceptance SHA-256: ${manifest.launchAcceptance?.acceptanceSha256 ?? "not recorded"}
 
 ## Software supply chain
 
@@ -148,7 +164,7 @@ ${manifest.supplyChain.sboms.map((sbom) => `- ${sbom.path}: ${sbom.components} c
 
 ${gateLines}
 
-The JSON manifest contains the SHA-256 digest and per-file hashes for the immutable build artifact. Human approvals and provider evidence remain in the private release record.
+The JSON manifest contains the SHA-256 digest and per-file hashes for the immutable build artifact. It records only the digest and non-sensitive result set for launch acceptance; approver identities and provider evidence remain in the protected private record.
 `;
 await writeFile(path.join(evidenceDir, "release-manifest.md"), markdown, "utf8");
 

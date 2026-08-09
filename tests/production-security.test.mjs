@@ -402,7 +402,7 @@ test("CI checks every deployable Edge Function and security scanning", async () 
     "integration-dispatch",
   ])
     assert.match(ci, new RegExp(`${functionName}/index\\.ts`));
-  assert.match(codeql, /github\/codeql-action\/analyze@v4/);
+  assert.match(codeql, /github\/codeql-action\/analyze@[a-f0-9]{40}/);
 });
 
 test("CI runs browser accessibility and fresh-database tenant isolation gates", async () => {
@@ -475,9 +475,9 @@ test("release governance requires preflight, deployment smoke and tamper-evident
   assert.match(release, /deno check/);
   assert.match(release, /deployments: write/);
   assert.match(release, /attestations: write/);
-  assert.match(release, /actions\/attest@v4/);
+  assert.match(release, /actions\/attest@[a-f0-9]{40}/);
   assert.match(release, /npm run release:record-deployment/);
-  assert.match(release, /actions\/upload-artifact@v4/);
+  assert.match(release, /actions\/upload-artifact@[a-f0-9]{40}/);
   assert.match(uptime, /schedule:/);
   assert.match(uptime, /check-deployment-health\.mjs/);
   assert.match(uptime, /check-deployment-smoke\.mjs/);

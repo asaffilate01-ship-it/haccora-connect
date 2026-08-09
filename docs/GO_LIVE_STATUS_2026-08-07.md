@@ -2,7 +2,16 @@
 
 ## Position
 
-The repository is suitable for a protected staging rehearsal after Phase 26. Core web/PWA/native workflows, persistence, QR equipment history, tenant RLS, scoped inspector access, notifications/billing foundations and release controls are implemented. Production schedulers and dead-letter queues now have a protected release and uptime gate. The product is not yet approved for public production use because deployment, provider, legal, security and store evidence cannot be completed in source code.
+The repository is suitable for a protected staging rehearsal after Phase 27. Core web/PWA/native workflows, persistence, QR equipment history, tenant RLS, scoped inspector access, notifications/billing foundations and release controls are implemented. Production schedulers, queues and accountable launch approvals now have fail-closed release gates. The product is not yet approved for public production use because the deployment, provider, legal, security and store evidence must still be completed by the launch team.
+
+## Closed in Phase 27
+
+- Reconciled the duplicate heartbeat migration published during the Phase 26 Lovable upload without deleting either ledger timestamp.
+- Added a protected launch-acceptance record bound to the exact release SHA and `haccora.co.uk` candidate URL.
+- Made product, security, privacy/legal, qualified food-safety and operations approvals mandatory for the production workflow.
+- Made restore RPO/RTO, penetration-test, tenant, provider, accessibility, offline and signed native evidence machine-enforced.
+- Added explicit risk acceptance for every active dependency exception.
+- Pinned all third-party GitHub Actions to immutable commit SHAs and added an enforcement gate.
 
 ## Closed in Phase 26
 
@@ -43,17 +52,17 @@ The repository is suitable for a protected staging rehearsal after Phase 26. Cor
 
 ## Remaining launch gates
 
-| Priority | Gate                                | Completion evidence                                                                                                                       |
-| -------- | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| P0       | Fresh and linked-staging migrations | Run `Protected staging rehearsal` in `apply-and-test` mode and retain its reconciled ledger                                               |
-| P0       | Hosted demo identities              | Retain the workflow's successful `demo:seed`, `demo:verify` and expanded `demo:access` output                                             |
-| P0       | Production configuration            | Passing `npm run launch:preflight` with managed Supabase, domain, Auth, storage, scanner, Stripe, Resend/push and scheduler configuration |
-| P0       | Security and recovery               | Independent penetration test, cross-tenant acceptance, on-call routing proof and a timed backup/storage restore drill                     |
-| P0       | UK legal/privacy                    | Real legal identity, UK counsel approval, ICO position, DPIA, DPA/subprocessor and retention evidence                                     |
-| P0       | Food-safety validation              | Qualified reviewer approval of UK-nation templates, limits, claims and source/review dates                                                |
-| P0       | Release governance                  | Protected PR, green CI/CodeQL/database/E2E checks and immutable deployment evidence for the exact commit                                  |
-| P1       | Native release                      | Real EAS project, signing, physical-device/offline/push QA, TestFlight/Play internal testing and store review                             |
-| P1       | SaaS operations                     | Approved time-limited support-access workflow, customer lifecycle controls and operational runbooks                                       |
+| Priority | Gate                                | Completion evidence                                                                                                                          |
+| -------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| P0       | Fresh and linked-staging migrations | Run `Protected staging rehearsal` in `apply-and-test` mode and retain its reconciled ledger                                                  |
+| P0       | Hosted demo identities              | Retain the workflow's successful `demo:seed`, `demo:verify` and expanded `demo:access` output                                                |
+| P0       | Production configuration            | Passing `npm run launch:preflight` with managed Supabase, domain, Auth, storage, scanner, Stripe, Resend/push and scheduler configuration    |
+| P0       | Security and recovery               | Independent penetration test, cross-tenant acceptance, on-call routing proof and a timed backup/storage restore drill                        |
+| P0       | UK legal/privacy                    | Real legal identity, UK counsel approval, ICO position, DPIA, DPA/subprocessor and retention evidence                                        |
+| P0       | Food-safety validation              | Qualified reviewer approval of UK-nation templates, limits, claims and source/review dates                                                   |
+| P0       | Release governance                  | Protected PR, green CI/CodeQL/database/E2E checks, completed `LAUNCH_ACCEPTANCE_JSON` and immutable deployment evidence for the exact commit |
+| P1       | Native release                      | Real EAS project, signing, physical-device/offline/push QA, TestFlight/Play internal testing and store review                                |
+| P1       | SaaS operations                     | Approved time-limited support-access workflow, customer lifecycle controls and operational runbooks                                          |
 
 ## Demo login pattern
 

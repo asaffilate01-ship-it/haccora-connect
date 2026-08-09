@@ -2,7 +2,7 @@
 
 ## Report a vulnerability
 
-Do not open a public issue with exploit details, personal data or credentials. Use GitHub's private vulnerability reporting at <https://github.com/asaffilate01-ship-it/haccora/security/advisories/new>.
+Do not open a public issue with exploit details, personal data or credentials. Use GitHub's private vulnerability reporting at <https://github.com/asaffilate01-ship-it/haccora-connect/security/advisories/new>.
 
 Include the affected route, function or dependency; reproduction steps; impact; and a safe proof of concept when possible. Remove real customer data and secrets from all evidence.
 

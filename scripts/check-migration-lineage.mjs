@@ -41,6 +41,10 @@ const publishedNoopFunctionReplays = new Set([
   // already be in remote ledgers, so preserve the files and allow only this
   // exact idempotent function replay.
   "public.register_my_push_token:20260808172806_d6e78310-5903-43e5-9ff3-6d770d46c327.sql:20260808190000_native_evidence_and_push_hardening.sql",
+  // Phase 26 was first applied by Lovable and then uploaded under its
+  // canonical timestamp. Both immutable ledger entries are idempotent. Allow
+  // only this exact replay while continuing to reject every other duplicate.
+  "public.record_service_job_heartbeat:20260809112615_bdaf520a-1b59-46e8-9302-8fce9cac64e9.sql:20260809120000_production_job_heartbeats.sql",
 ]);
 
 const files = (await readdir(migrationDirectory)).filter((file) => file.endsWith(".sql")).sort();

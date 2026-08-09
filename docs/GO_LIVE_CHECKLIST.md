@@ -15,6 +15,7 @@ Production release is approved only when every P0 item is complete and linked ev
 - [ ] Browser E2E/accessibility and fresh-database workflows are green on the release pull request.
 - [ ] Branch protection requires review and passing checks before `main` can change.
 - [ ] The manual Production release evidence workflow passes on the exact release commit, smoke-tests the deployed HTTPS candidate and retains the immutable web artifact plus SHA-256 manifest.
+- [ ] The protected `LAUNCH_ACCEPTANCE_JSON` passes for the exact release SHA and URL and its non-sensitive digest is present in the release manifest.
 
 ## P0 — database and tenant isolation
 

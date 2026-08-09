@@ -27,11 +27,13 @@ Earlier dated migrations remain in place and run before this sequence. The recon
 
 Published platform-generated timestamps that replayed an earlier named phase remain in the ledger as minimal deltas. In particular, `20260807163905_f24a7a5a-889a-4eb2-8fd9-84abb1e67f53.sql` retains only the service-role grant added after the canonical Phase 22 migration `20260807110000_asset_check_schedules_and_rls.sql`; it must not recreate the Phase 22 functions or policies.
 
+The Phase 26 heartbeat schema was published twice: first by Lovable as `20260809112615_bdaf520a-1b59-46e8-9302-8fce9cac64e9.sql`, then by the canonical package as `20260809120000_production_job_heartbeats.sql`. Both files are idempotent and may already exist in linked ledgers. Preserve both timestamps. The lineage checker permits only their exact `record_service_job_heartbeat` replay and continues to reject every other unapproved duplicate.
+
 ## Safe reconciliation procedure
 
 1. Back up the linked Supabase database and storage before changing migration history.
 2. Record the remote ledger with `supabase migration list`; retain the output with the release evidence.
-3. Apply this repository to a new, empty staging project. `npm run migrations:check` must report 18 migrations before the database is reset.
+3. Apply this repository to a new, empty staging project. `npm run migrations:check` must pass the complete current ledger before the database is reset.
 4. Run `supabase db start` and `supabase test db`, then regenerate Supabase TypeScript types from that fresh schema.
 5. Compare the fresh schema with the linked project. Confirm that canonical objects, grants, functions, policies and constraints are equivalent.
 6. If the remote ledger contains one of the removed generated versions, including `20260802110000`, do not drop live database objects. Reconcile ledger entries only after reviewing the recorded remote list, the fresh-schema comparison and a rollback plan with the database owner.

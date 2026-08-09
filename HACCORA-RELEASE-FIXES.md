@@ -1,7 +1,7 @@
 # Haccora release-fix package
 
-Phase 26 was started from GitHub `main` commit
-`e0702519a3b5c0a5c1a069536be0a6a573fdbbb4` after the Phase 25 upload.
+Phase 27 was started from GitHub `main` commit
+`7831f061a32a81562600c3535125983c859b268f` after the Phase 26 upload.
 
 ## Fixed in this package
 
@@ -29,11 +29,15 @@ Phase 26 was started from GitHub `main` commit
 - Added monitored scheduler heartbeats, aggregate queue health and production release/uptime enforcement.
 - Corrected notification cron authentication, the uploaded native dependency lock and the Edge export formatting regression.
 - Added an exact, expiring audit policy for the two current Expo/Metro build-tool advisories while keeping web and Edge audits at zero findings.
+- Reconciled the exact duplicate Phase 26 heartbeat function replay introduced by the latest Lovable migration while preserving both published ledger entries.
+- Added a fail-closed, SHA-bound launch-acceptance gate covering named approvals, restore targets, penetration testing, UK privacy/food-safety evidence and signed native candidates.
+- Pinned every third-party GitHub Action to an immutable commit SHA and made mutable Action tags fail the local and CI quality gates.
+- Corrected the private vulnerability-reporting URL for this repository.
 
 ## Verification completed
 
 - `npm ci`
-- `npm run quality` — 139 tests, TypeScript, lint, formatting, migration lineage, secret scan, production build, bundle budget and worker smoke test all passed.
+- `npm run quality` — 143 tests, TypeScript, lint, formatting, migration lineage, secret scan, Action pins, production build, bundle budget and worker smoke test all passed.
 - `cd mobile && npm ci`
 - `cd mobile && npm run typecheck`
 - `cd mobile && npm run export:check` — web, iOS and Android exports passed.
@@ -50,6 +54,7 @@ Phase 26 was started from GitHub `main` commit
 - Complete physical-device push-notification, offline-sync, tenant-isolation, restore and penetration testing.
 - Track the Expo/Metro transitive `image-size` advisory. npm currently offers no non-breaking fix for the Expo 57 dependency chain, so native release approval must record or remediate this residual build-tool risk.
 - Add the real UK company identity and obtain UK legal/privacy and competent food-safety review. Haccora can support compliant records but cannot itself guarantee regulatory acceptance.
+- Complete `docs/launch-acceptance.example.json` privately and store it as the protected production Environment secret `LAUNCH_ACCEPTANCE_JSON` for the exact release commit.
 
 Do not add `.env` files, service-role keys, signing credentials or provider secrets
 to GitHub.

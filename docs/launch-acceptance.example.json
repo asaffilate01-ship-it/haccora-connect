@@ -1,0 +1,152 @@
+{
+  "schemaVersion": 1,
+  "releaseSha": "REPLACE_WITH_40_CHARACTER_RELEASE_SHA",
+  "productionUrl": "https://app.haccora.co.uk",
+  "preparedAt": "REPLACE_WITH_ISO_TIMESTAMP",
+  "market": {
+    "countryCode": "GB",
+    "jurisdiction": "United Kingdom",
+    "currency": "GBP",
+    "timezone": "Europe/London"
+  },
+  "approvals": {
+    "productOwner": {
+      "status": "pending",
+      "approvedBy": "REPLACE_WITH_APPROVER",
+      "approvedAt": "REPLACE_WITH_ISO_TIMESTAMP",
+      "evidenceRef": "REPLACE_WITH_PRIVATE_EVIDENCE_REFERENCE"
+    },
+    "security": {
+      "status": "pending",
+      "approvedBy": "REPLACE_WITH_APPROVER",
+      "approvedAt": "REPLACE_WITH_ISO_TIMESTAMP",
+      "evidenceRef": "REPLACE_WITH_PRIVATE_EVIDENCE_REFERENCE"
+    },
+    "privacyLegal": {
+      "status": "pending",
+      "approvedBy": "REPLACE_WITH_APPROVER",
+      "approvedAt": "REPLACE_WITH_ISO_TIMESTAMP",
+      "evidenceRef": "REPLACE_WITH_PRIVATE_EVIDENCE_REFERENCE"
+    },
+    "foodSafetySpecialist": {
+      "status": "pending",
+      "approvedBy": "REPLACE_WITH_APPROVER",
+      "approvedAt": "REPLACE_WITH_ISO_TIMESTAMP",
+      "evidenceRef": "REPLACE_WITH_PRIVATE_EVIDENCE_REFERENCE"
+    },
+    "operations": {
+      "status": "pending",
+      "approvedBy": "REPLACE_WITH_APPROVER",
+      "approvedAt": "REPLACE_WITH_ISO_TIMESTAMP",
+      "evidenceRef": "REPLACE_WITH_PRIVATE_EVIDENCE_REFERENCE"
+    }
+  },
+  "checks": {
+    "stagingRehearsal": {
+      "status": "pending",
+      "completedAt": "REPLACE_WITH_ISO_TIMESTAMP",
+      "evidenceRef": "REPLACE_WITH_PRIVATE_EVIDENCE_REFERENCE"
+    },
+    "tenantIsolation": {
+      "status": "pending",
+      "completedAt": "REPLACE_WITH_ISO_TIMESTAMP",
+      "evidenceRef": "REPLACE_WITH_PRIVATE_EVIDENCE_REFERENCE"
+    },
+    "backupRestore": {
+      "status": "pending",
+      "completedAt": "REPLACE_WITH_ISO_TIMESTAMP",
+      "evidenceRef": "REPLACE_WITH_PRIVATE_EVIDENCE_REFERENCE",
+      "measuredRpoMinutes": 0,
+      "targetRpoMinutes": 0,
+      "measuredRtoMinutes": 0,
+      "targetRtoMinutes": 0
+    },
+    "penetrationTest": {
+      "status": "pending",
+      "completedAt": "REPLACE_WITH_ISO_TIMESTAMP",
+      "evidenceRef": "REPLACE_WITH_PRIVATE_EVIDENCE_REFERENCE",
+      "openCritical": 0,
+      "openHigh": 0
+    },
+    "accessibility": {
+      "status": "pending",
+      "completedAt": "REPLACE_WITH_ISO_TIMESTAMP",
+      "evidenceRef": "REPLACE_WITH_PRIVATE_EVIDENCE_REFERENCE"
+    },
+    "nativeIos": {
+      "status": "pending",
+      "completedAt": "REPLACE_WITH_ISO_TIMESTAMP",
+      "evidenceRef": "REPLACE_WITH_PRIVATE_EVIDENCE_REFERENCE",
+      "buildId": "REPLACE_WITH_TESTFLIGHT_BUILD_ID",
+      "physicalDeviceTested": false,
+      "internalDistributionTested": false
+    },
+    "nativeAndroid": {
+      "status": "pending",
+      "completedAt": "REPLACE_WITH_ISO_TIMESTAMP",
+      "evidenceRef": "REPLACE_WITH_PRIVATE_EVIDENCE_REFERENCE",
+      "buildId": "REPLACE_WITH_PLAY_INTERNAL_BUILD_ID",
+      "physicalDeviceTested": false,
+      "internalDistributionTested": false
+    },
+    "offlineSync": {
+      "status": "pending",
+      "completedAt": "REPLACE_WITH_ISO_TIMESTAMP",
+      "evidenceRef": "REPLACE_WITH_PRIVATE_EVIDENCE_REFERENCE"
+    },
+    "billing": {
+      "status": "pending",
+      "completedAt": "REPLACE_WITH_ISO_TIMESTAMP",
+      "evidenceRef": "REPLACE_WITH_PRIVATE_EVIDENCE_REFERENCE"
+    },
+    "notifications": {
+      "status": "pending",
+      "completedAt": "REPLACE_WITH_ISO_TIMESTAMP",
+      "evidenceRef": "REPLACE_WITH_PRIVATE_EVIDENCE_REFERENCE"
+    },
+    "malwareScanning": {
+      "status": "pending",
+      "completedAt": "REPLACE_WITH_ISO_TIMESTAMP",
+      "evidenceRef": "REPLACE_WITH_PRIVATE_EVIDENCE_REFERENCE"
+    },
+    "incidentResponse": {
+      "status": "pending",
+      "completedAt": "REPLACE_WITH_ISO_TIMESTAMP",
+      "evidenceRef": "REPLACE_WITH_PRIVATE_EVIDENCE_REFERENCE"
+    }
+  },
+  "privacy": {
+    "dpiaReference": "REPLACE_WITH_PRIVATE_EVIDENCE_REFERENCE",
+    "specialCategoryConditionReference": "REPLACE_WITH_PRIVATE_EVIDENCE_REFERENCE",
+    "retentionScheduleReference": "REPLACE_WITH_PRIVATE_EVIDENCE_REFERENCE",
+    "subprocessorRegisterReference": "REPLACE_WITH_PRIVATE_EVIDENCE_REFERENCE",
+    "icoPositionReference": "REPLACE_WITH_PRIVATE_EVIDENCE_REFERENCE"
+  },
+  "foodSafety": {
+    "reviewerCompetenceReference": "REPLACE_WITH_PRIVATE_EVIDENCE_REFERENCE",
+    "haccpReviewReference": "REPLACE_WITH_PRIVATE_EVIDENCE_REFERENCE",
+    "claimsReviewReference": "REPLACE_WITH_PRIVATE_EVIDENCE_REFERENCE"
+  },
+  "operations": {
+    "rollbackOwner": "REPLACE_WITH_OWNER",
+    "onCallReference": "REPLACE_WITH_PRIVATE_ON_CALL_REFERENCE",
+    "releaseWindowStart": "REPLACE_WITH_ISO_TIMESTAMP",
+    "releaseWindowEnd": "REPLACE_WITH_ISO_TIMESTAMP",
+    "monitoringWindowMinutes": 60,
+    "statusPageUrl": "https://status.haccora.co.uk"
+  },
+  "riskAcceptances": [
+    {
+      "id": "mobile:image-size:GHSA-W3RX-R6R6-PGPR",
+      "accepted": false,
+      "expiresOn": "2026-09-30",
+      "evidenceRef": "REPLACE_WITH_SECURITY_APPROVAL_REFERENCE"
+    },
+    {
+      "id": "mobile:image-size:GHSA-5P2G-FCMC-QVQQ",
+      "accepted": false,
+      "expiresOn": "2026-09-30",
+      "evidenceRef": "REPLACE_WITH_SECURITY_APPROVAL_REFERENCE"
+    }
+  ]
+}

@@ -20,6 +20,7 @@
     "verify": "node scripts/verify-production.mjs",
     "migrations:check": "node scripts/check-migration-lineage.mjs",
     "secrets:check": "node scripts/check-secrets.mjs",
+    "actions:check": "node scripts/check-action-pins.mjs",
     "health:check": "node scripts/check-deployment-health.mjs",
     "deployment:smoke": "node scripts/check-deployment-smoke.mjs",
     "release:evidence": "node scripts/generate-release-evidence.mjs",
@@ -29,13 +30,14 @@
     "demo:verify": "node --env-file-if-exists=.env.demo scripts/verify-demo-client.mjs",
     "smoke:worker": "node scripts/check-built-worker.mjs",
     "launch:preflight": "node --env-file-if-exists=.env scripts/verify-launch-env.mjs",
-    "quality": "npm run verify && npm run migrations:check && npm run secrets:check && npm run typecheck && npm test && npm run lint:check && npm run format:check && npm run build",
+    "quality": "npm run verify && npm run migrations:check && npm run secrets:check && npm run actions:check && npm run typecheck && npm test && npm run lint:check && npm run format:check && npm run build",
     "demo:access": "node --env-file-if-exists=.env.demo scripts/check-demo-role-access.mjs",
     "staging:preflight": "node --env-file-if-exists=.env.staging scripts/verify-staging-env.mjs",
     "staging:ledger": "node scripts/verify-remote-migration-ledger.mjs",
     "staging:evidence": "node scripts/generate-staging-evidence.mjs",
     "audit:production": "node scripts/check-production-audits.mjs",
-    "operations:health": "node scripts/check-operations-health.mjs"
+    "operations:health": "node scripts/check-operations-health.mjs",
+    "launch:acceptance": "node scripts/verify-launch-acceptance.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
