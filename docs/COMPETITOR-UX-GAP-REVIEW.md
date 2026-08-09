@@ -29,6 +29,14 @@ Haccora now matches the core mobile pattern for routines, temperatures, deliveri
 
 Remaining commercial launch work is primarily operational: production deployment, store signing, billing-provider live configuration, customer support processes, penetration testing, UK data-protection documentation, independent food-safety review and pilot evidence from real premises.
 
+## Phase 35 refresh — video, service and assurance gaps
+
+- Leafe's current public offer combines software with human services: bespoke HACCP documentation, training and certificates, onboarding, a food-safety hotline and complaint support. Haccora must not present these as included until qualified partners, service levels and training accreditation are contracted and operational.
+- Checkit's current advantage is automated sensing and predictive asset intelligence. Haccora has a governed sensor boundary and equipment history, but predictive-failure claims need contracted hardware, real telemetry and measured validation before they become product copy.
+- Haccora's defensible software position remains stronger tenant and premises isolation, restrictive custom roles, protected QR asset history, append-only corrective evidence, four-nation UK context and explicitly scoped Inspector Mode.
+- The homepage product tour now demonstrates the high-frequency journey in 52 seconds without claiming FSA, FSS, local-authority or EHO approval. It is first-party, captioned, transcribed and usable without autoplay or marketing trackers.
+- Competitor claims about guaranteed ratings, universal EHO approval, percentage time savings or perfect outcomes are not a standard Haccora should copy. Haccora needs its own measured pilot evidence before making quantified outcome claims.
+
 ## Phase 20 review — scan-to-work equipment
 
 The market review was refreshed against Leafe plus current low-cost UK kitchen products (Seito, Blueroll, MiseOS, TempTake, Loggo and Forkto) and specialist QR asset products. This is an indicative public-site comparison, not a claim to catalogue every product or private roadmap.

@@ -74,6 +74,49 @@ export const HELP_CENTRE_SECTIONS: HelpCentreSection[] = [
     ],
   },
   {
+    title: "Allergens and traceability",
+    description:
+      "Maintain source evidence while keeping business decisions and verification explicit.",
+    articles: [
+      {
+        question: "Does Haccora decide whether a recipe is safe for someone with an allergy?",
+        answer:
+          "No. Haccora records ingredients, supplier declarations, recipe allergens and review evidence. The business must verify current source information, control cross-contact, train staff and give accurate information to customers. Do not rely on a generated matrix when a supplier, ingredient or process has changed but has not been reviewed.",
+      },
+      {
+        question: "How does Haccora support PPDS labelling work?",
+        answer:
+          "The product record can link recipes, ingredients, the 14 regulated allergens, supplier evidence and label review. The food business remains responsible for deciding whether a product is prepacked for direct sale and for checking the complete label against current UK requirements before sale.",
+      },
+      {
+        question: "Can I trace a supplier or affected batch?",
+        answer:
+          "Authorised users can connect suppliers, deliveries, lots or batches, recipes and incident or recall actions to support one-step-back and one-step-forward evidence. The business must test its traceability and withdrawal or recall procedure and preserve any additional records required for its products and supply chain.",
+      },
+    ],
+  },
+  {
+    title: "Privacy, GPS and workforce transparency",
+    description: "Collect only evidence that is necessary, explained and appropriately restricted.",
+    articles: [
+      {
+        question: "Does Haccora continuously track staff location?",
+        answer:
+          "No. Haccora does not require background location tracking. Where a customer enables location evidence for a specific foreground action, it must explain the purpose to staff, select a lawful basis, limit access and retention, and assess whether the collection is necessary and proportionate.",
+      },
+      {
+        question: "Who is responsible for staff privacy information?",
+        answer:
+          "The customer normally decides why and how its workforce data is used and must provide clear privacy information. Haccora Ltd processes customer data under the signed terms and data-processing agreement. Customers should document their lawful basis and complete a data-protection impact assessment where the processing is likely to create high risk.",
+      },
+      {
+        question: "Can support staff browse tenant records?",
+        answer:
+          "Platform support does not automatically bypass tenant row-level security or private evidence storage. Any exceptional support access must use an authorised, time-bounded and audited route with a recorded reason; it must not be granted merely by hiding or showing a screen control.",
+      },
+    ],
+  },
+  {
     title: "Equipment QR labels",
     description: "Identify equipment and preserve its check, reading and maintenance history.",
     articles: [

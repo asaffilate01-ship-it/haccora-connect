@@ -7,7 +7,7 @@ export const MARKETING_FAQS = [
   {
     question: "Can Haccora replace paper food-safety records?",
     answer:
-      "Digital records can replace paper where they are appropriate for the business, accurate, retained and readily available. Haccora provides attributable, time-stamped records and exports; each business must configure its controls around its own activities and the relevant SFBB, Safe Catering or HACCP approach.",
+      "Official guidance allows food-safety records to be kept electronically where the arrangements are appropriate to the nature and size of the business. Haccora provides attributable, time-stamped records and exports, but each business must keep its procedures current, retain records for an appropriate period and make suitable evidence available to its authorised officer.",
   },
   {
     question: "Does Haccora cover the whole United Kingdom?",

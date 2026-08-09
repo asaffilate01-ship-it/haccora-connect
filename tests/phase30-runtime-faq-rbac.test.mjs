@@ -12,7 +12,7 @@ test("public FAQs answer UK buyer questions without claiming regulator approval"
   assert.equal((faqs.match(/question:/g) ?? []).length, 12);
   assert.match(faqs, /is not approved or endorsed by the FSA/i);
   assert.match(faqs, /does not guarantee an inspection outcome or food hygiene rating/i);
-  assert.match(faqs, /Digital records can replace paper/i);
+  assert.match(faqs, /Official guidance allows food-safety records to be kept electronically/i);
   assert.match(faqs, /England, Wales, Scotland and Northern Ireland/i);
   assert.match(faqs, /encrypted offline queue/i);
   assert.match(faqs, /equipment QR codes/i);

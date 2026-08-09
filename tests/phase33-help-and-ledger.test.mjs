@@ -14,8 +14,8 @@ test("the public Help Centre extends the launch FAQ without overloading the land
     read("scripts/check-built-worker.mjs"),
   ]);
 
-  assert.equal((content.match(/title: "/g) ?? []).length, 7);
-  assert.ok((content.match(/question: "/g) ?? []).length >= 20);
+  assert.equal((content.match(/title: "/g) ?? []).length, 9);
+  assert.ok((content.match(/question: "/g) ?? []).length >= 26);
   for (const expected of [
     "row-level security",
     "equipment QR",

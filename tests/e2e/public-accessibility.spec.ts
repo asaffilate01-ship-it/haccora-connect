@@ -62,6 +62,34 @@ test("marketing FAQs disclose complete answers and client navigation works", asy
   await expect(page).toHaveURL(/\/login$/);
 });
 
+test("hero product tour opens as a captioned first-party video with a transcript", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: /watch how we support your business/i }).click();
+
+  const dialog = page.getByRole("dialog", { name: /Haccora in under a minute/i });
+  await expect(dialog).toBeVisible();
+  const video = dialog.locator("video");
+  await expect(video).toBeVisible();
+  await expect(video.locator('source[type="video/mp4"]')).toHaveAttribute(
+    "src",
+    "/media/haccora-product-tour.mp4",
+  );
+  await expect(video.locator('track[kind="captions"]')).toHaveAttribute(
+    "src",
+    "/media/haccora-product-tour.en.vtt",
+  );
+  await dialog.getByText("Read the video transcript").click();
+  await expect(dialog).toContainText(/does not guarantee an inspection outcome/i);
+
+  const results = await new AxeBuilder({ page })
+    .include('[role="dialog"]')
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+    .analyze();
+  expect(results.violations).toEqual([]);
+});
+
 test("marketing layout has no horizontal overflow at phone, tablet or desktop widths", async ({
   page,
 }) => {
