@@ -1,5 +1,6 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { isSupabaseConfigured, SUPABASE_UNAVAILABLE_MESSAGE } from "@/integrations/supabase/config";
 
 export type Role = "owner" | "manager" | "chef" | "staff" | "inspector";
 export type PlatformRole = "platform_owner" | "platform_support" | "platform_auditor";
@@ -343,6 +344,7 @@ async function fetchAuthUser(userId: string, email: string): Promise<AuthUser | 
 type Ctx = {
   user: AuthUser | null;
   hydrated: boolean;
+  authenticationAvailable: boolean;
   signInWithEmail: (email: string, password: string) => Promise<{ error?: string }>;
   signUpWithEmail: (input: {
     email: string;
@@ -360,8 +362,13 @@ const AuthContext = createContext<Ctx | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const authenticationAvailable = isSupabaseConfigured();
 
-  const loadFromSession = async () => {
+  const loadFromSession = useCallback(async () => {
+    if (!authenticationAvailable) {
+      setUser(null);
+      return;
+    }
     const { data } = await supabase.auth.getSession();
     const s = data.session;
     if (!s?.user) {
@@ -370,9 +377,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     const u = await fetchAuthUser(s.user.id, s.user.email ?? "");
     setUser(u);
-  };
+  }, [authenticationAvailable]);
 
   useEffect(() => {
+    // Public marketing and legal pages must remain available during a provider
+    // configuration incident. Authenticated routes still fail closed below.
+    if (!authenticationAvailable) {
+      setUser(null);
+      setHydrated(true);
+      return;
+    }
     // Listener first, then hydrate
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT" || !session) {
@@ -390,9 +404,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       sub.subscription.unsubscribe();
     };
-  }, []);
+  }, [authenticationAvailable, loadFromSession]);
 
   const signInWithEmail = async (email: string, password: string) => {
+    if (!authenticationAvailable) return { error: SUPABASE_UNAVAILABLE_MESSAGE };
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return { error: error.message };
     return {};
@@ -405,6 +420,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     restaurant,
     language,
   }) => {
+    if (!authenticationAvailable) return { error: SUPABASE_UNAVAILABLE_MESSAGE };
     let redirectTo: string | undefined;
     if (typeof window !== "undefined") {
       const invite = new URLSearchParams(window.location.search).get("invite");
@@ -430,6 +446,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const requestPasswordReset = async (email: string) => {
+    if (!authenticationAvailable) return { error: SUPABASE_UNAVAILABLE_MESSAGE };
     const redirectTo =
       typeof window !== "undefined" ? `${window.location.origin}/login?reset=1` : undefined;
     const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
@@ -437,6 +454,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    if (!authenticationAvailable) {
+      setUser(null);
+      return;
+    }
     await supabase.auth.signOut();
     setUser(null);
   };
@@ -449,6 +470,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         hydrated,
+        authenticationAvailable,
         signInWithEmail,
         signUpWithEmail,
         requestPasswordReset,

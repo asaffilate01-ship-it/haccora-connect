@@ -68,7 +68,7 @@ function Readiness() {
         .eq("organization_id", user.organizationId)
         .eq("location_id", user.locationId)
         .eq("diary_date", today),
-      supabase.from("temperature_logs").select("id", count).gte("recorded_at", since),
+      supabase.from("temperature_logs").select("id", count).gte("logged_at", since),
       supabase.from("checks").select("id", count).eq("status", "done").gte("completed_at", since),
       supabase.from("training_records").select("id", count).not("verified_at", "is", null),
       supabase.from("ppds_label_versions").select("id", count),
