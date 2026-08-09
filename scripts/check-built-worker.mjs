@@ -48,6 +48,7 @@ const context = {
 };
 const routes = [
   ["/", "text/html"],
+  ["/help", "text/html"],
   ["/login", "text/html"],
   ["/blog", "text/html"],
   ["/legal/privacy", "text/html"],

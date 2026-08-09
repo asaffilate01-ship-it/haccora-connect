@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Activity,
+  AlertTriangle,
   Banknote,
   Building2,
   CheckCircle2,
@@ -9,6 +10,7 @@ import {
   Database,
   Snowflake,
   Gauge,
+  KeyRound,
   Loader2,
   LockKeyhole,
   LogOut,
@@ -16,6 +18,7 @@ import {
   RefreshCw,
   Save,
   ShieldCheck,
+  ServerCog,
   UserPlus,
   Users,
   XCircle,
@@ -23,6 +26,7 @@ import {
 import { BrandLogo } from "@/components/BrandLogo";
 import { supabase } from "@/integrations/supabase/client";
 import { homeFor, useAuth } from "@/lib/auth";
+import { PUBLIC_LAUNCH_READINESS } from "@/lib/public-config";
 
 export const Route = createFileRoute("/platform")({
   head: () => ({
@@ -99,6 +103,39 @@ type Operator = {
 
 type AuditEvent = { id: string; event_type: string; occurred_at: string };
 
+type ReadinessJob = {
+  jobName: string;
+  lastStatus: string;
+  lastSucceededAt: string | null;
+  lastFailedAt: string | null;
+  lastDurationMs: number | null;
+  maximumAgeMinutes: number;
+  ageMinutes: number | null;
+  overdue: boolean;
+};
+
+type PlatformReadiness = {
+  status: "configured" | "action_required";
+  checkedAt: string;
+  operations: {
+    status: "healthy" | "degraded";
+    jobs: ReadinessJob[];
+    queues: {
+      notificationDeadLetters: number;
+      fileScanDeadLetters: number;
+      webhookDeadLetters: number;
+    };
+  };
+  configuration: {
+    configuredCount: number;
+    totalCount: number;
+    items: Array<{ key: string; label: string; configured: boolean }>;
+  };
+  caveat: string;
+};
+
+type MfaFactor = { id: string; status: string };
+
 function PlatformOperations() {
   const { user, hydrated, signOut } = useAuth();
   const canAuditPlatform = user?.platformRole !== "platform_support";
@@ -108,6 +145,16 @@ function PlatformOperations() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [operators, setOperators] = useState<Operator[]>([]);
   const [auditEvents, setAuditEvents] = useState<AuditEvent[]>([]);
+  const [readiness, setReadiness] = useState<PlatformReadiness | null>(null);
+  const [readinessError, setReadinessError] = useState("");
+  const [mfaLevel, setMfaLevel] = useState("aal1");
+  const [mfaFactors, setMfaFactors] = useState<MfaFactor[]>([]);
+  const [mfaEnrolment, setMfaEnrolment] = useState<{
+    id: string;
+    qr: string;
+    secret: string;
+  } | null>(null);
+  const [mfaCode, setMfaCode] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -131,22 +178,35 @@ function PlatformOperations() {
     if (!user?.platformRole) return;
     setLoading(true);
     setError("");
-    const [dashboardResult, customersResult, plansResult, operatorsResult, auditResult] =
-      await Promise.all([
-        (supabase as any).rpc("get_platform_dashboard"),
-        (supabase as any).rpc("get_platform_customers_v2"),
-        (supabase as any).rpc("get_platform_plans"),
-        canAuditPlatform
-          ? (supabase as any).rpc("get_platform_operators")
-          : Promise.resolve({ data: [], error: null }),
-        canAuditPlatform
-          ? (supabase as any)
-              .from("platform_audit_events")
-              .select("id,event_type,occurred_at")
-              .order("occurred_at", { ascending: false })
-              .limit(20)
-          : Promise.resolve({ data: [], error: null }),
-      ]);
+    const [
+      dashboardResult,
+      customersResult,
+      plansResult,
+      operatorsResult,
+      auditResult,
+      readinessResult,
+      assuranceResult,
+      factorsResult,
+    ] = await Promise.all([
+      (supabase as any).rpc("get_platform_dashboard"),
+      (supabase as any).rpc("get_platform_customers_v2"),
+      (supabase as any).rpc("get_platform_plans"),
+      canAuditPlatform
+        ? (supabase as any).rpc("get_platform_operators")
+        : Promise.resolve({ data: [], error: null }),
+      canAuditPlatform
+        ? (supabase as any)
+            .from("platform_audit_events")
+            .select("id,event_type,occurred_at")
+            .order("occurred_at", { ascending: false })
+            .limit(20)
+        : Promise.resolve({ data: [], error: null }),
+      canAuditPlatform
+        ? supabase.functions.invoke("platform-readiness", { body: {} })
+        : Promise.resolve({ data: null, error: null }),
+      supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
+      supabase.auth.mfa.listFactors(),
+    ]);
     const failure =
       dashboardResult.error ||
       customersResult.error ||
@@ -162,6 +222,17 @@ function PlatformOperations() {
       setOperators((operatorsResult.data ?? []) as Operator[]);
       setAuditEvents((auditResult.data ?? []) as AuditEvent[]);
     }
+    if (readinessResult.error) {
+      setReadiness(null);
+      setReadinessError(
+        "Launch telemetry is unavailable until the platform-readiness function is deployed.",
+      );
+    } else {
+      setReadiness((readinessResult.data ?? null) as PlatformReadiness | null);
+      setReadinessError("");
+    }
+    setMfaLevel(assuranceResult.data?.currentLevel ?? "aal1");
+    setMfaFactors((factorsResult.data?.totp ?? []) as MfaFactor[]);
     setLoading(false);
   }, [canAuditPlatform, user?.platformRole]);
 
@@ -178,9 +249,89 @@ function PlatformOperations() {
       (dashboard?.checks_30d ?? 0),
     [dashboard],
   );
+  const publicSignals = useMemo(
+    () => [
+      {
+        label: "Statutory company identity",
+        ready: PUBLIC_LAUNCH_READINESS.legalIdentityComplete,
+      },
+      { label: "UK legal content approved", ready: PUBLIC_LAUNCH_READINESS.legalPublishReady },
+      { label: "Customer support service", ready: PUBLIC_LAUNCH_READINESS.supportConfigured },
+      { label: "Public status service", ready: PUBLIC_LAUNCH_READINESS.statusConfigured },
+      { label: "Browser push public key", ready: PUBLIC_LAUNCH_READINESS.browserPushConfigured },
+    ],
+    [],
+  );
+  const publicReadyCount = publicSignals.filter((signal) => signal.ready).length;
+  const deadLetterCount = readiness
+    ? Object.values(readiness.operations.queues).reduce((sum, count) => sum + count, 0)
+    : 0;
+  const launchConfigurationReady =
+    readiness?.status === "configured" &&
+    publicReadyCount === publicSignals.length &&
+    mfaLevel === "aal2";
+
+  const startMfa = async () => {
+    setBusy("mfa-enrol");
+    setError("");
+    const { data, error: enrolError } = await supabase.auth.mfa.enroll({
+      factorType: "totp",
+      friendlyName: `Haccora platform ${new Date().toLocaleDateString("en-GB")}`,
+    });
+    setBusy("");
+    if (enrolError || !data.totp) {
+      setError(enrolError?.message ?? "MFA enrolment could not be started.");
+      return;
+    }
+    setMfaEnrolment({ id: data.id, qr: data.totp.qr_code, secret: data.totp.secret });
+  };
+
+  const verifyMfa = async () => {
+    if (!/^\d{6}$/.test(mfaCode)) {
+      setError("Enter the six-digit code from your authenticator app.");
+      return;
+    }
+    const factorId =
+      mfaEnrolment?.id ?? mfaFactors.find((factor) => factor.status === "verified")?.id;
+    if (!factorId) {
+      setError("Enrol an authenticator before attempting MFA verification.");
+      return;
+    }
+    setBusy("mfa-verify");
+    setError("");
+    const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({
+      factorId,
+    });
+    if (challengeError || !challenge) {
+      setBusy("");
+      setError(challengeError?.message ?? "MFA challenge could not be created.");
+      return;
+    }
+    const { error: verifyError } = await supabase.auth.mfa.verify({
+      factorId,
+      challengeId: challenge.id,
+      code: mfaCode,
+    });
+    setBusy("");
+    if (verifyError) {
+      setError(verifyError.message);
+      return;
+    }
+    setMfaCode("");
+    setMfaEnrolment(null);
+    setNotice("MFA step-up completed. Governed SaaS-owner actions are now enabled.");
+    await load();
+  };
+
+  const requireMfa = () => {
+    if (mfaLevel === "aal2") return true;
+    setError("MFA step-up is required before changing tenants, subscriptions or SaaS staff.");
+    return false;
+  };
 
   const createTenant = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (!requireMfa()) return;
     setBusy("tenant-create");
     setError("");
     const { error: createError } = await supabase.functions.invoke("platform-admin", {
@@ -205,6 +356,7 @@ function PlatformOperations() {
 
   const inviteOperator = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (!requireMfa()) return;
     setBusy("operator-create");
     setError("");
     const { error: inviteError } = await supabase.functions.invoke("platform-admin", {
@@ -230,6 +382,7 @@ function PlatformOperations() {
     action: "freeze" | "unfreeze" | "close" | "subscription",
     subscription?: { plan: string; seats: number; locations: number; mrr: number; status: string },
   ) => {
+    if (!requireMfa()) return;
     const reason = window.prompt(
       `Reason for ${action.replace("subscription", "subscription change")}:`,
     );
@@ -262,6 +415,7 @@ function PlatformOperations() {
   };
 
   const manageOperator = async (operator: Operator, status: string) => {
+    if (!requireMfa()) return;
     const reason = window.prompt(`Reason for changing ${operator.display_name} to ${status}:`);
     if (!reason || reason.trim().length < 4) return;
     setBusy(operator.user_id);
@@ -336,6 +490,195 @@ function PlatformOperations() {
           >
             <CheckCircle2 size={16} /> {notice}
           </div>
+        )}
+
+        {canAuditPlatform && (
+          <section className="surface overflow-hidden">
+            <div className="flex flex-wrap items-start justify-between gap-4 border-b border-border p-5 md:p-6">
+              <div>
+                <div className="flex items-center gap-2">
+                  <ServerCog size={20} />
+                  <h2 className="font-display text-xl">Launch centre</h2>
+                </div>
+                <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
+                  Protected environment, scheduler, queue, legal-channel and operator-security
+                  signals. Configuration is not proof that a provider or accountable review has
+                  passed.
+                </p>
+              </div>
+              <span
+                className={`rounded-full px-3 py-1.5 text-xs font-black uppercase tracking-wider ${
+                  launchConfigurationReady
+                    ? "bg-success/10 text-success"
+                    : "bg-warning/15 text-warning-foreground"
+                }`}
+              >
+                {launchConfigurationReady ? "Configured for evidence" : "Action required"}
+              </span>
+            </div>
+
+            {readinessError && (
+              <div className="m-5 rounded-xl bg-warning/15 p-4 text-sm text-warning-foreground">
+                {readinessError}
+              </div>
+            )}
+
+            <div className="grid gap-3 p-5 sm:grid-cols-2 xl:grid-cols-4 md:p-6">
+              <ReadinessMetric
+                label="Scheduled operations"
+                value={
+                  readiness
+                    ? `${readiness.operations.jobs.filter((job) => !job.overdue).length}/4`
+                    : "—"
+                }
+                detail={`${deadLetterCount} dead letters`}
+                ready={readiness?.operations.status === "healthy"}
+              />
+              <ReadinessMetric
+                label="Server configuration"
+                value={
+                  readiness
+                    ? `${readiness.configuration.configuredCount}/${readiness.configuration.totalCount}`
+                    : "—"
+                }
+                detail="Presence only · verification required"
+                ready={readiness?.status === "configured"}
+              />
+              <ReadinessMetric
+                label="Public and legal"
+                value={`${publicReadyCount}/${publicSignals.length}`}
+                detail="Identity, approval and service channels"
+                ready={publicReadyCount === publicSignals.length}
+              />
+              <ReadinessMetric
+                label="Operator assurance"
+                value={mfaLevel.toUpperCase()}
+                detail="AAL2 required for governed changes"
+                ready={mfaLevel === "aal2"}
+              />
+            </div>
+
+            <div className="grid border-t border-border xl:grid-cols-3">
+              <div className="p-5 md:p-6 xl:border-r xl:border-border">
+                <h3 className="text-sm font-black">Scheduler and queue evidence</h3>
+                <div className="mt-3 space-y-2">
+                  {readiness?.operations.jobs.map((job) => (
+                    <SignalRow
+                      key={job.jobName}
+                      label={job.jobName.replaceAll("-", " ")}
+                      ready={!job.overdue}
+                      detail={
+                        job.ageMinutes === null
+                          ? "No successful run"
+                          : `${job.ageMinutes} min ago · limit ${job.maximumAgeMinutes}`
+                      }
+                    />
+                  ))}
+                  {!readiness && <EmptySignal />}
+                </div>
+              </div>
+              <div className="border-t border-border p-5 md:p-6 xl:border-r xl:border-t-0">
+                <h3 className="text-sm font-black">Production configuration</h3>
+                <div className="mt-3 space-y-2">
+                  {readiness?.configuration.items.map((item) => (
+                    <SignalRow
+                      key={item.key}
+                      label={item.label}
+                      ready={item.configured}
+                      detail={item.configured ? "Configured · test evidence due" : "Not configured"}
+                    />
+                  ))}
+                  {!readiness && <EmptySignal />}
+                </div>
+              </div>
+              <div className="border-t border-border p-5 md:p-6 xl:border-t-0">
+                <h3 className="text-sm font-black">Public launch controls</h3>
+                <div className="mt-3 space-y-2">
+                  {publicSignals.map((signal) => (
+                    <SignalRow
+                      key={signal.label}
+                      label={signal.label}
+                      ready={signal.ready}
+                      detail={signal.ready ? "Configured" : "Required before publication"}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {owner && mfaLevel !== "aal2" && (
+              <div className="border-t border-border bg-secondary/35 p-5 md:p-6">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-2 font-black">
+                      <KeyRound size={17} /> Secure SaaS-owner actions
+                    </div>
+                    <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+                      Tenant lifecycle, subscription and SaaS staff changes fail closed until this
+                      session reaches AAL2 with a TOTP authenticator.
+                    </p>
+                  </div>
+                  {mfaFactors.every((factor) => factor.status !== "verified") && !mfaEnrolment && (
+                    <button
+                      onClick={() => void startMfa()}
+                      disabled={busy === "mfa-enrol"}
+                      className="btn-secondary min-h-11 text-sm"
+                    >
+                      {busy === "mfa-enrol" ? (
+                        <Loader2 className="animate-spin" size={15} />
+                      ) : (
+                        <KeyRound size={15} />
+                      )}{" "}
+                      Enrol authenticator
+                    </button>
+                  )}
+                </div>
+                {mfaEnrolment && (
+                  <div className="mt-4 grid gap-4 rounded-xl border border-border bg-card p-4 sm:grid-cols-[150px_1fr]">
+                    <img
+                      src={mfaEnrolment.qr}
+                      alt="Authenticator enrolment QR code"
+                      className="h-36 w-36 rounded-lg bg-white p-2"
+                    />
+                    <div className="min-w-0">
+                      <div className="text-sm font-bold">Scan with your authenticator app</div>
+                      <p className="mt-1 break-all text-xs text-muted-foreground">
+                        Manual key: {mfaEnrolment.secret}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                {(mfaEnrolment || mfaFactors.some((factor) => factor.status === "verified")) && (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <input
+                      aria-label="Six-digit authenticator code"
+                      className="field max-w-48"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      maxLength={6}
+                      value={mfaCode}
+                      onChange={(event) =>
+                        setMfaCode(event.target.value.replace(/\D/g, "").slice(0, 6))
+                      }
+                      placeholder="Six-digit code"
+                    />
+                    <button
+                      onClick={() => void verifyMfa()}
+                      disabled={busy === "mfa-verify" || mfaCode.length !== 6}
+                      className="btn-alert-solid min-h-11 text-sm"
+                    >
+                      {busy === "mfa-verify" ? (
+                        <Loader2 className="animate-spin" size={15} />
+                      ) : (
+                        <ShieldCheck size={15} />
+                      )}{" "}
+                      Verify and unlock
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
         )}
 
         <section
@@ -859,6 +1202,60 @@ function SmallMetric({ label, value }: { label: string; value?: number }) {
     </div>
   );
 }
+
+function ReadinessMetric({
+  label,
+  value,
+  detail,
+  ready,
+}: {
+  label: string;
+  value: string;
+  detail: string;
+  ready: boolean;
+}) {
+  return (
+    <div className="rounded-xl border border-border p-4">
+      <div className="flex items-center justify-between gap-3">
+        <div className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+          {label}
+        </div>
+        {ready ? (
+          <CheckCircle2 size={16} className="shrink-0 text-success" />
+        ) : (
+          <AlertTriangle size={16} className="shrink-0 text-warning" />
+        )}
+      </div>
+      <div className="mt-2 text-xl font-black">{value}</div>
+      <div className="mt-1 text-xs text-muted-foreground">{detail}</div>
+    </div>
+  );
+}
+
+function SignalRow({ label, detail, ready }: { label: string; detail: string; ready: boolean }) {
+  return (
+    <div className="flex items-start gap-2 rounded-lg bg-secondary/50 p-2.5">
+      {ready ? (
+        <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-success" />
+      ) : (
+        <XCircle size={15} className="mt-0.5 shrink-0 text-destructive" />
+      )}
+      <div className="min-w-0">
+        <div className="text-xs font-bold capitalize">{label}</div>
+        <div className="mt-0.5 text-[10px] leading-4 text-muted-foreground">{detail}</div>
+      </div>
+    </div>
+  );
+}
+
+function EmptySignal() {
+  return (
+    <div className="rounded-lg bg-secondary/50 p-3 text-xs text-muted-foreground">
+      Deploy the protected readiness function to load this evidence.
+    </div>
+  );
+}
+
 function money(pence?: number) {
   return new Intl.NumberFormat("en-GB", {
     style: "currency",

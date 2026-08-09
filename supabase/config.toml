@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.platform-admin]
 verify_jwt = false
+
+[functions.platform-readiness]
+verify_jwt = false
