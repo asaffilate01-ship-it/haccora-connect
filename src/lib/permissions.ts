@@ -39,6 +39,7 @@ export const ROLE_ACTIONS: Record<Role, Action[]> = {
     "records.export",
     "records.signOff",
     "haccp.editPlan",
+    "team.manageRoles",
     "team.invite",
     "rota.publish",
     "rota.approveSwap",
@@ -71,7 +72,8 @@ export const ROLE_ACTIONS: Record<Role, Action[]> = {
   inspector: ["records.export"],
 };
 
-export function can(role: Role, action: Action): boolean {
+export function can(role: Role, action: Action, effectivePermissions?: string[]): boolean {
+  if (effectivePermissions) return effectivePermissions.includes(action);
   return ROLE_ACTIONS[role].includes(action);
 }
 

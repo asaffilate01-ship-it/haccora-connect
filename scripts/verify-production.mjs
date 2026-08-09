@@ -21,6 +21,7 @@ const required = [
   "supabase/functions/sensor-ingest/index.ts",
   "supabase/functions/sensor-provision/index.ts",
   "supabase/functions/team-invite/index.ts",
+  "supabase/functions/platform-admin/index.ts",
   "supabase/functions/privacy-requests/index.ts",
   "supabase/functions/security-center/index.ts",
   "supabase/functions/file-scan/index.ts",
@@ -35,6 +36,7 @@ const required = [
   "supabase/migrations/20260808170000_restore_tenant_billing_and_platform_policy.sql",
   "supabase/migrations/20260808190000_native_evidence_and_push_hardening.sql",
   "supabase/migrations/20260809120000_production_job_heartbeats.sql",
+  "supabase/migrations/20260809150000_saas_control_plane_and_asset_scan_evidence.sql",
   "docs/PHASE-24-NATIVE-EVIDENCE-AND-NOTIFICATIONS.md",
   "docs/PHASE-25-STAGING-RELEASE-AUTOMATION.md",
   "docs/PHASE-26-PRODUCTION-OPERATIONS.md",
@@ -47,6 +49,9 @@ const required = [
   "supabase/functions/package-lock.json",
   "supabase/functions/package.json",
   "src/routes/app.billing.tsx",
+  "src/routes/app.organisation.tsx",
+  "src/routes/platform.tsx",
+  "src/routes/account-status.tsx",
   "src/routes/app.integrations.tsx",
   "src/routes/app.preferences.tsx",
   "mobile/app/actions.tsx",
@@ -137,7 +142,9 @@ for (const key of [
   "MALWARE_SCAN_TOKEN",
   "STRIPE_SECRET_KEY",
   "STRIPE_WEBHOOK_SECRET",
-  "STRIPE_PRICE_PRO",
+  "STRIPE_PRICE_SOLO",
+  "STRIPE_PRICE_COMPLETE",
+  "STRIPE_PRICE_GROUP",
   "STRIPE_LIVE_MODE",
   "INTEGRATION_ENCRYPTION_KEY",
   "EXPO_ACCESS_TOKEN",
@@ -158,6 +165,7 @@ for (const functionName of [
   "integration-dispatch",
   "notification-dispatch",
   "operations-health",
+  "platform-admin",
 ]) {
   if (!supabaseConfig.includes(`[functions.${functionName}]`)) {
     failures.push(`Supabase config is missing function: ${functionName}`);
@@ -175,6 +183,7 @@ for (const functionName of [
   "integration-dispatch",
   "notification-dispatch",
   "operations-health",
+  "platform-admin",
 ]) {
   if (!ci.includes(`${functionName}/index.ts`)) {
     failures.push(`CI does not type-check Edge Function: ${functionName}`);

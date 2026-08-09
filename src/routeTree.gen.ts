@@ -17,6 +17,7 @@ import { Route as LegalRouteImport } from './routes/legal'
 import { Route as HealthDotjsonRouteImport } from './routes/health[.]json'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as AppRouteImport } from './routes/app'
+import { Route as AccountStatusRouteImport } from './routes/account-status'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
@@ -48,6 +49,7 @@ import { Route as AppPurchasingRouteImport } from './routes/app.purchasing'
 import { Route as AppPreferencesRouteImport } from './routes/app.preferences'
 import { Route as AppPpdsRouteImport } from './routes/app.ppds'
 import { Route as AppPestRouteImport } from './routes/app.pest'
+import { Route as AppOrganisationRouteImport } from './routes/app.organisation'
 import { Route as AppOilRouteImport } from './routes/app.oil'
 import { Route as AppMenuRouteImport } from './routes/app.menu'
 import { Route as AppLogsRouteImport } from './routes/app.logs'
@@ -116,6 +118,11 @@ const BlogRoute = BlogRouteImport.update({
 const AppRoute = AppRouteImport.update({
   id: '/app',
   path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountStatusRoute = AccountStatusRouteImport.update({
+  id: '/account-status',
+  path: '/account-status',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -273,6 +280,11 @@ const AppPestRoute = AppPestRouteImport.update({
   path: '/pest',
   getParentRoute: () => AppRoute,
 } as any)
+const AppOrganisationRoute = AppOrganisationRouteImport.update({
+  id: '/organisation',
+  path: '/organisation',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppOilRoute = AppOilRouteImport.update({
   id: '/oil',
   path: '/oil',
@@ -421,6 +433,7 @@ const AppAssetsAssetIdRoute = AppAssetsAssetIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account-status': typeof AccountStatusRoute
   '/app': typeof AppRouteWithChildren
   '/blog': typeof BlogRouteWithChildren
   '/health.json': typeof HealthDotjsonRoute
@@ -456,6 +469,7 @@ export interface FileRoutesByFullPath {
   '/app/logs': typeof AppLogsRoute
   '/app/menu': typeof AppMenuRoute
   '/app/oil': typeof AppOilRoute
+  '/app/organisation': typeof AppOrganisationRoute
   '/app/pest': typeof AppPestRoute
   '/app/ppds': typeof AppPpdsRoute
   '/app/preferences': typeof AppPreferencesRoute
@@ -491,6 +505,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account-status': typeof AccountStatusRoute
   '/health.json': typeof HealthDotjsonRoute
   '/legal': typeof LegalRouteWithChildren
   '/login': typeof LoginRoute
@@ -524,6 +539,7 @@ export interface FileRoutesByTo {
   '/app/logs': typeof AppLogsRoute
   '/app/menu': typeof AppMenuRoute
   '/app/oil': typeof AppOilRoute
+  '/app/organisation': typeof AppOrganisationRoute
   '/app/pest': typeof AppPestRoute
   '/app/ppds': typeof AppPpdsRoute
   '/app/preferences': typeof AppPreferencesRoute
@@ -560,6 +576,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account-status': typeof AccountStatusRoute
   '/app': typeof AppRouteWithChildren
   '/blog': typeof BlogRouteWithChildren
   '/health.json': typeof HealthDotjsonRoute
@@ -595,6 +612,7 @@ export interface FileRoutesById {
   '/app/logs': typeof AppLogsRoute
   '/app/menu': typeof AppMenuRoute
   '/app/oil': typeof AppOilRoute
+  '/app/organisation': typeof AppOrganisationRoute
   '/app/pest': typeof AppPestRoute
   '/app/ppds': typeof AppPpdsRoute
   '/app/preferences': typeof AppPreferencesRoute
@@ -632,6 +650,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/account-status'
     | '/app'
     | '/blog'
     | '/health.json'
@@ -667,6 +686,7 @@ export interface FileRouteTypes {
     | '/app/logs'
     | '/app/menu'
     | '/app/oil'
+    | '/app/organisation'
     | '/app/pest'
     | '/app/ppds'
     | '/app/preferences'
@@ -702,6 +722,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/account-status'
     | '/health.json'
     | '/legal'
     | '/login'
@@ -735,6 +756,7 @@ export interface FileRouteTypes {
     | '/app/logs'
     | '/app/menu'
     | '/app/oil'
+    | '/app/organisation'
     | '/app/pest'
     | '/app/ppds'
     | '/app/preferences'
@@ -770,6 +792,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/account-status'
     | '/app'
     | '/blog'
     | '/health.json'
@@ -805,6 +828,7 @@ export interface FileRouteTypes {
     | '/app/logs'
     | '/app/menu'
     | '/app/oil'
+    | '/app/organisation'
     | '/app/pest'
     | '/app/ppds'
     | '/app/preferences'
@@ -841,6 +865,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountStatusRoute: typeof AccountStatusRoute
   AppRoute: typeof AppRouteWithChildren
   BlogRoute: typeof BlogRouteWithChildren
   HealthDotjsonRoute: typeof HealthDotjsonRoute
@@ -907,6 +932,13 @@ declare module '@tanstack/react-router' {
       path: '/app'
       fullPath: '/app'
       preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account-status': {
+      id: '/account-status'
+      path: '/account-status'
+      fullPath: '/account-status'
+      preLoaderRoute: typeof AccountStatusRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -1124,6 +1156,13 @@ declare module '@tanstack/react-router' {
       path: '/pest'
       fullPath: '/app/pest'
       preLoaderRoute: typeof AppPestRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/organisation': {
+      id: '/app/organisation'
+      path: '/organisation'
+      fullPath: '/app/organisation'
+      preLoaderRoute: typeof AppOrganisationRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/oil': {
@@ -1374,6 +1413,7 @@ interface AppRouteChildren {
   AppLogsRoute: typeof AppLogsRoute
   AppMenuRoute: typeof AppMenuRoute
   AppOilRoute: typeof AppOilRoute
+  AppOrganisationRoute: typeof AppOrganisationRoute
   AppPestRoute: typeof AppPestRoute
   AppPpdsRoute: typeof AppPpdsRoute
   AppPreferencesRoute: typeof AppPreferencesRoute
@@ -1425,6 +1465,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppLogsRoute: AppLogsRoute,
   AppMenuRoute: AppMenuRoute,
   AppOilRoute: AppOilRoute,
+  AppOrganisationRoute: AppOrganisationRoute,
   AppPestRoute: AppPestRoute,
   AppPpdsRoute: AppPpdsRoute,
   AppPreferencesRoute: AppPreferencesRoute,
@@ -1486,6 +1527,7 @@ const LegalRouteWithChildren = LegalRoute._addFileChildren(LegalRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountStatusRoute: AccountStatusRoute,
   AppRoute: AppRouteWithChildren,
   BlogRoute: BlogRouteWithChildren,
   HealthDotjsonRoute: HealthDotjsonRoute,

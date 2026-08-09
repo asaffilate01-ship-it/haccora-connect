@@ -1,16 +1,24 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Activity,
+  Banknote,
   Building2,
   CheckCircle2,
   CreditCard,
+  Database,
+  Snowflake,
+  Gauge,
   Loader2,
+  LockKeyhole,
   LogOut,
   MapPin,
   RefreshCw,
+  Save,
   ShieldCheck,
+  UserPlus,
   Users,
+  XCircle,
 } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,114 +27,277 @@ import { homeFor, useAuth } from "@/lib/auth";
 export const Route = createFileRoute("/platform")({
   head: () => ({
     meta: [
-      { title: "Platform operations — Haccora" },
+      { title: "SaaS owner control plane — Haccora" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
   component: PlatformOperations,
 });
 
-type PlatformOverview = {
+type Dashboard = {
   generated_at: string;
-  organizations_total: number;
+  financial_access: boolean;
+  tenants_total: number;
+  tenants_active: number;
+  tenants_frozen: number;
+  tenants_closed: number;
   locations_active: number;
-  memberships_active: number;
+  members_active: number;
   subscriptions_active: number;
   trials_active: number;
+  subscriptions_past_due: number;
+  mrr_pence: number;
+  arr_pence: number;
+  past_due_mrr_pence: number;
+  assets_active: number;
+  asset_events_30d: number;
+  asset_scans_30d: number;
+  temperature_logs_30d: number;
+  checks_30d: number;
   subscriptions_by_status: Record<string, number>;
+  subscriptions_by_plan: Record<string, number>;
 };
 
-type PlatformCustomer = {
+type Customer = {
   organization_id: string;
   organization_name: string;
   organization_slug: string;
+  service_status: string;
+  service_status_reason: string | null;
+  created_at: string;
   active_locations: number;
   active_memberships: number;
+  active_assets: number;
+  events_30d: number;
   plan: string;
   subscription_status: string;
+  seats: number;
+  location_limit: number;
+  mrr_pence: number | null;
   trial_ends_at: string | null;
   current_period_end: string | null;
 };
 
-type PlatformAuditEvent = {
-  id: string;
-  event_type: string;
-  occurred_at: string;
+type Plan = {
+  code: string;
+  name: string;
+  monthly_price_pence: number | null;
+  included_seats: number;
+  max_locations: number;
+  custom_roles_limit: number;
+  active: boolean;
 };
+
+type Operator = {
+  user_id: string;
+  display_name: string;
+  email: string;
+  role: "platform_owner" | "platform_support" | "platform_auditor";
+  status: string;
+  created_at: string;
+};
+
+type AuditEvent = { id: string; event_type: string; occurred_at: string };
 
 function PlatformOperations() {
   const { user, hydrated, signOut } = useAuth();
+  const canAuditPlatform = user?.platformRole !== "platform_support";
   const navigate = useNavigate();
-  const [overview, setOverview] = useState<PlatformOverview | null>(null);
-  const [customers, setCustomers] = useState<PlatformCustomer[]>([]);
-  const [auditEvents, setAuditEvents] = useState<PlatformAuditEvent[]>([]);
+  const [dashboard, setDashboard] = useState<Dashboard | null>(null);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [operators, setOperators] = useState<Operator[]>([]);
+  const [auditEvents, setAuditEvents] = useState<AuditEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [busy, setBusy] = useState("");
+  const [tenantName, setTenantName] = useState("");
+  const [tenantOwnerEmail, setTenantOwnerEmail] = useState("");
+  const [tenantLocation, setTenantLocation] = useState("");
+  const [tenantPlan, setTenantPlan] = useState("trial");
+  const [operatorName, setOperatorName] = useState("");
+  const [operatorEmail, setOperatorEmail] = useState("");
+  const [operatorRole, setOperatorRole] = useState<Operator["role"]>("platform_support");
 
   useEffect(() => {
     if (!hydrated) return;
     if (!user) {
       navigate({ to: "/login", search: { redirect: "/platform" } as never, replace: true });
-      return;
-    }
-    if (!user.platformRole) {
-      navigate({ to: homeFor(user.role) as never, replace: true });
-    }
+    } else if (!user.platformRole) navigate({ to: homeFor(user.role) as never, replace: true });
   }, [hydrated, navigate, user]);
 
   const load = useCallback(async () => {
     if (!user?.platformRole) return;
     setLoading(true);
-    setError(null);
-    const [overviewResult, customerResult] = await Promise.all([
-      (supabase as any).rpc("get_platform_overview"),
-      (supabase as any).rpc("get_platform_customers"),
-    ]);
-    const auditResult = await (supabase as any)
-      .from("platform_audit_events")
-      .select("id,event_type,occurred_at")
-      .order("occurred_at", { ascending: false })
-      .limit(8);
-    if (overviewResult.error || customerResult.error || auditResult.error) {
-      setError("The audited platform overview could not be loaded.");
-    } else {
-      setOverview(overviewResult.data as PlatformOverview);
-      setCustomers((customerResult.data ?? []) as PlatformCustomer[]);
-      setAuditEvents((auditResult.data ?? []) as PlatformAuditEvent[]);
+    setError("");
+    const [dashboardResult, customersResult, plansResult, operatorsResult, auditResult] =
+      await Promise.all([
+        (supabase as any).rpc("get_platform_dashboard"),
+        (supabase as any).rpc("get_platform_customers_v2"),
+        (supabase as any).rpc("get_platform_plans"),
+        canAuditPlatform
+          ? (supabase as any).rpc("get_platform_operators")
+          : Promise.resolve({ data: [], error: null }),
+        canAuditPlatform
+          ? (supabase as any)
+              .from("platform_audit_events")
+              .select("id,event_type,occurred_at")
+              .order("occurred_at", { ascending: false })
+              .limit(20)
+          : Promise.resolve({ data: [], error: null }),
+      ]);
+    const failure =
+      dashboardResult.error ||
+      customersResult.error ||
+      plansResult.error ||
+      operatorsResult.error ||
+      auditResult.error;
+    if (failure)
+      setError(failure.message ?? "The audited platform control plane could not be loaded.");
+    else {
+      setDashboard(dashboardResult.data as Dashboard);
+      setCustomers((customersResult.data ?? []) as Customer[]);
+      setPlans((plansResult.data ?? []) as Plan[]);
+      setOperators((operatorsResult.data ?? []) as Operator[]);
+      setAuditEvents((auditResult.data ?? []) as AuditEvent[]);
     }
     setLoading(false);
-  }, [user?.platformRole]);
+  }, [canAuditPlatform, user?.platformRole]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  if (!hydrated || !user?.platformRole) {
+  const owner = user?.platformRole === "platform_owner";
+  const financialAccess = dashboard?.financial_access === true;
+  const totalEvidence = useMemo(
+    () =>
+      (dashboard?.asset_events_30d ?? 0) +
+      (dashboard?.temperature_logs_30d ?? 0) +
+      (dashboard?.checks_30d ?? 0),
+    [dashboard],
+  );
+
+  const createTenant = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setBusy("tenant-create");
+    setError("");
+    const { error: createError } = await supabase.functions.invoke("platform-admin", {
+      body: {
+        action: "create_tenant",
+        businessName: tenantName.trim(),
+        ownerEmail: tenantOwnerEmail.trim(),
+        locationName: tenantLocation.trim(),
+        plan: tenantPlan,
+      },
+    });
+    setBusy("");
+    if (createError) setError(createError.message);
+    else {
+      setTenantName("");
+      setTenantOwnerEmail("");
+      setTenantLocation("");
+      setNotice("Tenant created and its owner received a secure authentication invitation.");
+      await load();
+    }
+  };
+
+  const inviteOperator = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setBusy("operator-create");
+    setError("");
+    const { error: inviteError } = await supabase.functions.invoke("platform-admin", {
+      body: {
+        action: "invite_operator",
+        email: operatorEmail.trim(),
+        displayName: operatorName.trim(),
+        role: operatorRole,
+      },
+    });
+    setBusy("");
+    if (inviteError) setError(inviteError.message);
+    else {
+      setOperatorName("");
+      setOperatorEmail("");
+      setNotice("Platform staff invitation sent and the operator assignment was audit logged.");
+      await load();
+    }
+  };
+
+  const manageTenant = async (
+    customer: Customer,
+    action: "freeze" | "unfreeze" | "close" | "subscription",
+    subscription?: { plan: string; seats: number; locations: number; mrr: number; status: string },
+  ) => {
+    const reason = window.prompt(
+      `Reason for ${action.replace("subscription", "subscription change")}:`,
+    );
+    if (!reason || reason.trim().length < 4) return;
+    if (
+      action === "close" &&
+      !window.confirm("Close this tenant? Data is retained, but all tenant access is blocked.")
+    )
+      return;
+    setBusy(customer.organization_id);
+    setError("");
+    const { error: actionError } = await (supabase as any).rpc("platform_manage_tenant", {
+      p_organization_id: customer.organization_id,
+      p_action: action,
+      p_reason: reason.trim(),
+      p_plan: subscription?.plan ?? null,
+      p_seats: subscription?.seats ?? null,
+      p_location_limit: subscription?.locations ?? null,
+      p_contract_mrr_pence: subscription?.mrr ?? null,
+      p_subscription_status: subscription?.status ?? null,
+    });
+    setBusy("");
+    if (actionError) setError(actionError.message);
+    else {
+      setNotice(
+        `${customer.organization_name}: ${action} completed with an immutable platform audit event.`,
+      );
+      await load();
+    }
+  };
+
+  const manageOperator = async (operator: Operator, status: string) => {
+    const reason = window.prompt(`Reason for changing ${operator.display_name} to ${status}:`);
+    if (!reason || reason.trim().length < 4) return;
+    setBusy(operator.user_id);
+    const { error: operatorError } = await (supabase as any).rpc("platform_manage_operator", {
+      p_user_id: operator.user_id,
+      p_role: operator.role,
+      p_status: status,
+      p_reason: reason.trim(),
+    });
+    setBusy("");
+    if (operatorError) setError(operatorError.message);
+    else await load();
+  };
+
+  if (!hydrated || !user?.platformRole)
     return (
-      <div className="grid min-h-screen place-items-center bg-secondary/40">
-        <Loader2 className="animate-spin text-primary" aria-label="Loading" />
+      <div className="grid min-h-screen place-items-center">
+        <Loader2 className="animate-spin" />
       </div>
     );
-  }
-
-  const roleLabel = user.platformRole.replace("platform_", "").replace("_", " ");
 
   return (
     <div className="min-h-screen bg-secondary/35 text-foreground">
-      <header className="border-b border-border bg-black text-white">
-        <div className="mx-auto flex min-h-16 max-w-[1400px] items-center justify-between gap-4 px-4 py-3 md:px-8">
+      <header className="border-b border-white/10 bg-black text-white">
+        <div className="mx-auto flex min-h-16 max-w-[1500px] items-center justify-between gap-4 px-4 py-3 md:px-8">
           <BrandLogo imgClassName="h-10 w-auto" />
           <div className="flex items-center gap-3">
             <div className="hidden text-right sm:block">
               <div className="text-sm font-semibold">{user.name}</div>
               <div className="text-[10px] font-bold uppercase tracking-wider text-white/60">
-                SaaS {roleLabel}
+                {user.platformRole.replace("platform_", "SaaS ")}
               </div>
             </div>
             <button
-              type="button"
               onClick={() => void signOut().then(() => navigate({ to: "/login" }))}
-              className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/20 px-4 text-sm font-bold hover:bg-white/10"
+              className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/20 px-4 text-sm font-bold"
             >
               <LogOut size={15} /> Sign out
             </button>
@@ -134,181 +305,525 @@ function PlatformOperations() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1400px] space-y-6 px-4 py-6 md:px-8 md:py-10">
-        <div className="flex flex-wrap items-end justify-between gap-4">
+      <main className="mx-auto max-w-[1500px] space-y-6 px-4 py-6 md:px-8 md:py-9">
+        <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <div className="eyebrow">Haccora service operations</div>
-            <h1 className="mt-1 text-3xl md:text-4xl">Platform overview</h1>
-            <p className="mt-2 max-w-3xl text-sm text-muted-foreground md:text-base">
-              Audited service-level totals for running Haccora. Customer food-safety records remain
-              behind tenant RLS and are not available from this console.
+            <h1 className="mt-1 text-2xl md:text-3xl">SaaS owner control plane</h1>
+            <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
+              Financial, subscription, tenant lifecycle and usage oversight. Tenant food-safety
+              evidence remains isolated behind tenant RLS.
             </p>
           </div>
           <button
-            type="button"
             onClick={() => void load()}
             disabled={loading}
-            className="inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-4 text-sm font-bold text-primary-foreground disabled:opacity-60"
+            className="btn-alert-solid min-h-11 text-sm"
           >
             <RefreshCw size={15} className={loading ? "animate-spin" : ""} /> Refresh
           </button>
-        </div>
+        </header>
 
         {error && (
-          <div
-            role="alert"
-            className="rounded-xl border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive"
-          >
+          <div role="alert" className="rounded-xl bg-destructive/10 p-4 text-sm text-destructive">
             {error}
           </div>
         )}
+        {notice && (
+          <div
+            role="status"
+            className="flex items-center gap-2 rounded-xl bg-success/10 p-4 text-sm text-success"
+          >
+            <CheckCircle2 size={16} /> {notice}
+          </div>
+        )}
 
-        <section aria-label="Platform totals" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-          <Metric
-            icon={Building2}
-            label="Customer workspaces"
-            value={overview?.organizations_total}
-          />
-          <Metric icon={MapPin} label="Active premises" value={overview?.locations_active} />
-          <Metric icon={Users} label="Active tenant users" value={overview?.memberships_active} />
+        <section
+          aria-label="Commercial metrics"
+          className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6"
+        >
+          {financialAccess ? (
+            <Metric
+              icon={Banknote}
+              label="MRR"
+              value={money(dashboard?.mrr_pence)}
+              detail={`${money(dashboard?.arr_pence)} ARR`}
+            />
+          ) : (
+            <Metric
+              icon={Building2}
+              label="All tenants"
+              value={dashboard?.tenants_total}
+              detail="Support view"
+            />
+          )}
           <Metric
             icon={CreditCard}
-            label="Active subscriptions"
-            value={overview?.subscriptions_active}
+            label="Paid subscriptions"
+            value={dashboard?.subscriptions_active}
+            detail={`${dashboard?.trials_active ?? 0} trials`}
           />
-          <Metric icon={Activity} label="Active trials" value={overview?.trials_active} />
+          <Metric
+            icon={Building2}
+            label="Active tenants"
+            value={dashboard?.tenants_active}
+            detail={`${dashboard?.tenants_frozen ?? 0} frozen`}
+          />
+          <Metric
+            icon={MapPin}
+            label="Premises"
+            value={dashboard?.locations_active}
+            detail="Active UK sites"
+          />
+          <Metric
+            icon={Users}
+            label="Tenant users"
+            value={dashboard?.members_active}
+            detail="Active memberships"
+          />
+          <Metric
+            icon={Activity}
+            label="Evidence volume"
+            value={totalEvidence}
+            detail="Last 30 days"
+          />
         </section>
 
-        <div className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
-          <section className="surface p-5 md:p-7">
-            <div className="flex items-center gap-3">
-              <ShieldCheck className="text-success" size={22} />
-              <div>
-                <h2 className="font-display text-xl">Protected operator boundary</h2>
-                <p className="text-sm text-muted-foreground">Designed for UK SaaS operations</p>
-              </div>
+        <div className="grid gap-5 xl:grid-cols-[1.25fr_0.75fr]">
+          <section className="surface p-5">
+            <div className="flex items-center gap-2">
+              <Gauge size={20} />
+              <h2 className="font-display text-xl">Product volume</h2>
             </div>
-            <ul className="mt-5 space-y-3 text-sm">
-              {[
-                "Platform access is assigned out of band; public sign-up and tenant admins cannot grant it.",
-                "Opening this overview creates a server-timestamped platform audit event.",
-                "Platform status does not bypass tenant RLS or provide hidden impersonation.",
-                "Customer support access needs a separate approved, time-limited workflow before launch.",
-              ].map((item) => (
-                <li key={item} className="flex gap-2">
-                  <CheckCircle2 className="mt-0.5 shrink-0 text-success" size={16} />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <SmallMetric label="Active assets" value={dashboard?.assets_active} />
+              <SmallMetric label="QR scans · 30d" value={dashboard?.asset_scans_30d} />
+              <SmallMetric label="Asset records · 30d" value={dashboard?.asset_events_30d} />
+              <SmallMetric
+                label="Compliance logs · 30d"
+                value={(dashboard?.temperature_logs_30d ?? 0) + (dashboard?.checks_30d ?? 0)}
+              />
+            </div>
           </section>
-
-          <section className="surface p-5 md:p-7">
-            <h2 className="font-display text-xl">Subscription status</h2>
-            <div className="mt-4 space-y-2">
-              {Object.entries(overview?.subscriptions_by_status ?? {}).length ? (
-                Object.entries(overview?.subscriptions_by_status ?? {}).map(([status, count]) => (
-                  <div
-                    key={status}
-                    className="flex items-center justify-between rounded-xl border border-border px-4 py-3"
-                  >
-                    <span className="text-sm font-semibold capitalize">
-                      {status.replace("_", " ")}
-                    </span>
-                    <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-black">
-                      {count}
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground">No subscription records yet.</p>
-              )}
+          <section className="surface p-5">
+            <div className="flex items-center gap-2">
+              <LockKeyhole size={20} />
+              <h2 className="font-display text-xl">
+                {financialAccess ? "Revenue risk" : "Support access"}
+              </h2>
             </div>
-            {overview?.generated_at && (
-              <p className="mt-4 text-xs text-muted-foreground">
-                Generated {new Date(overview.generated_at).toLocaleString("en-GB")}
+            {financialAccess ? (
+              <div className="mt-4 flex items-end justify-between">
+                <div>
+                  <div className="text-2xl font-black">{money(dashboard?.past_due_mrr_pence)}</div>
+                  <div className="text-xs text-muted-foreground">Past-due monthly value</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-black">
+                    {dashboard?.subscriptions_past_due ?? 0}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Past-due accounts</div>
+                </div>
+              </div>
+            ) : (
+              <p className="mt-4 text-sm text-muted-foreground">
+                Revenue and operator audit data are restricted to SaaS owners and auditors.
               </p>
             )}
           </section>
         </div>
 
-        <section className="surface overflow-hidden">
-          <div className="border-b border-border p-5 md:px-7">
-            <h2 className="font-display text-xl">Customer accounts</h2>
+        {owner && (
+          <section className="surface p-5">
+            <div className="flex items-center gap-2">
+              <UserPlus size={19} />
+              <h2 className="font-display text-xl">Add tenant</h2>
+            </div>
             <p className="mt-1 text-sm text-muted-foreground">
-              Business, site and subscription metadata only. No food-safety evidence or staff PII.
+              Creates a UK workspace, first premises, subscription limits and secure owner
+              invitation as one governed operation.
+            </p>
+            <form
+              onSubmit={createTenant}
+              className="mt-4 grid gap-3 lg:grid-cols-[1.2fr_1.2fr_1fr_10rem_auto]"
+            >
+              <input
+                required
+                minLength={2}
+                className="field"
+                value={tenantName}
+                onChange={(event) => setTenantName(event.target.value)}
+                placeholder="Business name"
+              />
+              <input
+                required
+                type="email"
+                className="field"
+                value={tenantOwnerEmail}
+                onChange={(event) => setTenantOwnerEmail(event.target.value)}
+                placeholder="owner@business.co.uk"
+              />
+              <input
+                required
+                minLength={2}
+                className="field"
+                value={tenantLocation}
+                onChange={(event) => setTenantLocation(event.target.value)}
+                placeholder="First premises"
+              />
+              <select
+                className="field"
+                value={tenantPlan}
+                onChange={(event) => setTenantPlan(event.target.value)}
+              >
+                {plans
+                  .filter((plan) => plan.active)
+                  .map((plan) => (
+                    <option value={plan.code} key={plan.code}>
+                      {plan.name}
+                    </option>
+                  ))}
+              </select>
+              <button
+                disabled={busy === "tenant-create"}
+                className="btn-alert-solid min-h-11 text-sm"
+              >
+                {busy === "tenant-create" ? (
+                  <Loader2 className="animate-spin" size={15} />
+                ) : (
+                  <Building2 size={15} />
+                )}{" "}
+                Create tenant
+              </button>
+            </form>
+          </section>
+        )}
+
+        <section className="surface overflow-hidden">
+          <div className="border-b border-border p-5">
+            <h2 className="font-display text-xl">Tenants & subscriptions</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Freeze is immediate and fail-closed. Close is a retained soft closure, not destructive
+              deletion.
             </p>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] text-left text-sm">
+            <table className="w-full min-w-[1150px] text-left text-xs">
               <thead className="bg-secondary/60 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
                 <tr>
-                  <th className="px-5 py-3 md:px-7">Customer</th>
-                  <th className="px-5 py-3">Plan</th>
-                  <th className="px-5 py-3">Status</th>
-                  <th className="px-5 py-3">Premises</th>
-                  <th className="px-5 py-3">Users</th>
-                  <th className="px-5 py-3">Trial / period end</th>
+                  <th className="px-5 py-3">Tenant</th>
+                  <th className="px-3 py-3">Lifecycle</th>
+                  <th className="px-3 py-3">Subscription</th>
+                  <th className="px-3 py-3">MRR</th>
+                  <th className="px-3 py-3">Volume</th>
+                  <th className="px-3 py-3">Limits</th>
+                  <th className="px-5 py-3">Governed actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {customers.map((customer) => (
-                  <tr key={customer.organization_id}>
-                    <td className="px-5 py-4 md:px-7">
-                      <div className="font-semibold">{customer.organization_name}</div>
-                      <div className="mt-0.5 text-xs text-muted-foreground">
-                        {customer.organization_slug}
-                      </div>
-                    </td>
-                    <td className="px-5 py-4 font-semibold capitalize">{customer.plan}</td>
-                    <td className="px-5 py-4">
-                      <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-bold capitalize">
-                        {customer.subscription_status.replace("_", " ")}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4">{customer.active_locations}</td>
-                    <td className="px-5 py-4">{customer.active_memberships}</td>
-                    <td className="px-5 py-4 text-xs text-muted-foreground">
-                      {customer.trial_ends_at || customer.current_period_end
-                        ? new Date(
-                            customer.trial_ends_at ?? customer.current_period_end!,
-                          ).toLocaleDateString("en-GB")
-                        : "Not set"}
-                    </td>
-                  </tr>
+                  <CustomerRow
+                    key={customer.organization_id}
+                    customer={customer}
+                    plans={plans}
+                    owner={owner}
+                    financialAccess={financialAccess}
+                    busy={busy === customer.organization_id}
+                    onAction={manageTenant}
+                  />
                 ))}
-                {!customers.length && !loading && (
-                  <tr>
-                    <td colSpan={6} className="px-5 py-10 text-center text-muted-foreground">
-                      No customer accounts yet.
-                    </td>
-                  </tr>
-                )}
               </tbody>
             </table>
           </div>
         </section>
 
-        <section className="surface p-5 md:p-7">
-          <h2 className="font-display text-xl">Recent platform access</h2>
-          <div className="mt-4 grid gap-2 md:grid-cols-2">
-            {auditEvents.map((event) => (
-              <div
-                key={event.id}
-                className="flex items-center justify-between gap-3 rounded-xl border border-border px-4 py-3"
-              >
-                <span className="text-sm font-semibold">
-                  {event.event_type.replaceAll("_", " ")}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {new Date(event.occurred_at).toLocaleString("en-GB")}
-                </span>
+        {canAuditPlatform && (
+          <div className="grid gap-6 xl:grid-cols-[1fr_0.8fr]">
+            <section className="surface p-5">
+              <div className="flex items-center gap-2">
+                <ShieldCheck size={19} />
+                <h2 className="font-display text-xl">SaaS staff</h2>
               </div>
-            ))}
+              <div className="mt-4 space-y-2">
+                {operators.map((operator) => (
+                  <div
+                    key={operator.user_id}
+                    className="flex flex-wrap items-center gap-3 rounded-xl border border-border p-3 text-sm"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="font-semibold">{operator.display_name}</div>
+                      <div className="truncate text-xs text-muted-foreground">
+                        {operator.email} · {operator.role.replace("platform_", "")}
+                      </div>
+                    </div>
+                    <span className="rounded-full bg-secondary px-2 py-1 text-xs font-bold capitalize">
+                      {operator.status}
+                    </span>
+                    {owner && operator.user_id !== user.id && (
+                      <button
+                        disabled={busy === operator.user_id}
+                        onClick={() =>
+                          void manageOperator(
+                            operator,
+                            operator.status === "active" ? "suspended" : "active",
+                          )
+                        }
+                        className="rounded-lg border border-border px-3 py-2 text-xs font-bold"
+                      >
+                        {operator.status === "active" ? "Suspend" : "Activate"}
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {owner && (
+                <form
+                  onSubmit={inviteOperator}
+                  className="mt-4 grid gap-2 md:grid-cols-[1fr_1fr_11rem_auto]"
+                >
+                  <input
+                    required
+                    className="field"
+                    minLength={2}
+                    value={operatorName}
+                    onChange={(event) => setOperatorName(event.target.value)}
+                    placeholder="Full name"
+                  />
+                  <input
+                    required
+                    className="field"
+                    type="email"
+                    value={operatorEmail}
+                    onChange={(event) => setOperatorEmail(event.target.value)}
+                    placeholder="staff@haccora.co.uk"
+                  />
+                  <select
+                    className="field"
+                    value={operatorRole}
+                    onChange={(event) => setOperatorRole(event.target.value as Operator["role"])}
+                  >
+                    <option value="platform_support">Support</option>
+                    <option value="platform_auditor">Auditor</option>
+                    <option value="platform_owner">Owner</option>
+                  </select>
+                  <button
+                    disabled={busy === "operator-create"}
+                    className="btn-secondary min-h-11 text-sm"
+                  >
+                    <UserPlus size={14} /> Invite
+                  </button>
+                </form>
+              )}
+            </section>
+            <section className="surface p-5">
+              <div className="flex items-center gap-2">
+                <Database size={19} />
+                <h2 className="font-display text-xl">Recent platform audit</h2>
+              </div>
+              <div className="mt-4 space-y-2">
+                {auditEvents.map((event) => (
+                  <div
+                    key={event.id}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-border px-3 py-2 text-xs"
+                  >
+                    <span className="font-semibold capitalize">
+                      {event.event_type.replaceAll("_", " ")}
+                    </span>
+                    <span className="text-muted-foreground">
+                      {new Date(event.occurred_at).toLocaleString("en-GB")}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </section>
           </div>
-        </section>
+        )}
       </main>
     </div>
+  );
+}
+
+function CustomerRow({
+  customer,
+  plans,
+  owner,
+  financialAccess,
+  busy,
+  onAction,
+}: {
+  customer: Customer;
+  plans: Plan[];
+  owner: boolean;
+  financialAccess: boolean;
+  busy: boolean;
+  onAction: (
+    customer: Customer,
+    action: "freeze" | "unfreeze" | "close" | "subscription",
+    subscription?: { plan: string; seats: number; locations: number; mrr: number; status: string },
+  ) => Promise<void>;
+}) {
+  const [plan, setPlan] = useState(customer.plan);
+  const [seats, setSeats] = useState(String(customer.seats));
+  const [locations, setLocations] = useState(String(customer.location_limit));
+  const [mrr, setMrr] = useState(
+    financialAccess ? ((customer.mrr_pence ?? 0) / 100).toFixed(2) : "",
+  );
+  const [status, setStatus] = useState(customer.subscription_status);
+  return (
+    <tr>
+      <td className="px-5 py-4">
+        <div className="font-semibold text-sm">{customer.organization_name}</div>
+        <div className="mt-0.5 text-muted-foreground">{customer.organization_slug}</div>
+      </td>
+      <td className="px-3 py-4">
+        <span
+          className={`rounded-full px-2.5 py-1 font-bold capitalize ${customer.service_status === "active" ? "bg-success/10 text-success" : customer.service_status === "frozen" ? "bg-warning/15 text-warning-foreground" : "bg-destructive/10 text-destructive"}`}
+        >
+          {customer.service_status}
+        </span>
+        {customer.service_status_reason && (
+          <div className="mt-2 max-w-44 text-[10px] text-muted-foreground">
+            {customer.service_status_reason}
+          </div>
+        )}
+      </td>
+      <td className="px-3 py-4">
+        <div className="grid gap-1">
+          <select
+            disabled={!owner}
+            className="rounded border border-border bg-card px-2 py-1.5"
+            value={plan}
+            onChange={(event) => {
+              const next = event.target.value;
+              setPlan(next);
+              const selected = plans.find((item) => item.code === next);
+              if (selected) {
+                setSeats(String(selected.included_seats));
+                setLocations(String(selected.max_locations));
+                setMrr(((selected.monthly_price_pence ?? 0) / 100).toFixed(2));
+              }
+            }}
+          >
+            {plans.map((item) => (
+              <option value={item.code} key={item.code}>
+                {item.name}
+              </option>
+            ))}
+          </select>
+          <select
+            disabled={!owner}
+            className="rounded border border-border bg-card px-2 py-1.5"
+            value={status}
+            onChange={(event) => setStatus(event.target.value)}
+          >
+            {["trialing", "active", "past_due", "canceled", "unpaid", "paused"].map((item) => (
+              <option key={item}>{item}</option>
+            ))}
+          </select>
+        </div>
+      </td>
+      <td className="px-3 py-4">
+        {financialAccess ? (
+          <div className="flex items-center">
+            <span>£</span>
+            <input
+              disabled={!owner}
+              className="w-20 rounded border border-border bg-card px-2 py-1.5"
+              inputMode="decimal"
+              value={mrr}
+              onChange={(event) => setMrr(event.target.value)}
+            />
+          </div>
+        ) : (
+          <span className="text-muted-foreground">Restricted</span>
+        )}
+      </td>
+      <td className="px-3 py-4">
+        <div>{customer.active_memberships} users</div>
+        <div>{customer.active_locations} sites</div>
+        <div>{customer.active_assets} assets</div>
+        <div>{customer.events_30d} records · 30d</div>
+      </td>
+      <td className="px-3 py-4">
+        <div className="space-y-1">
+          <label className="flex items-center gap-1">
+            Seats{" "}
+            <input
+              disabled={!owner}
+              className="w-16 rounded border border-border bg-card px-2 py-1"
+              value={seats}
+              onChange={(event) => setSeats(event.target.value)}
+              inputMode="numeric"
+            />
+          </label>
+          <label className="flex items-center gap-1">
+            Sites{" "}
+            <input
+              disabled={!owner}
+              className="w-16 rounded border border-border bg-card px-2 py-1"
+              value={locations}
+              onChange={(event) => setLocations(event.target.value)}
+              inputMode="numeric"
+            />
+          </label>
+        </div>
+      </td>
+      <td className="px-5 py-4">
+        {owner ? (
+          <div className="flex flex-wrap gap-1.5">
+            <button
+              disabled={busy}
+              onClick={() =>
+                void onAction(customer, "subscription", {
+                  plan,
+                  seats: Number(seats),
+                  locations: Number(locations),
+                  mrr: Math.round(Number(mrr) * 100),
+                  status,
+                })
+              }
+              className="inline-flex items-center gap-1 rounded-lg border border-border px-2.5 py-2 font-bold"
+            >
+              <Save size={12} /> Save plan
+            </button>
+            {customer.service_status === "active" ? (
+              <button
+                disabled={busy}
+                onClick={() => void onAction(customer, "freeze")}
+                className="inline-flex items-center gap-1 rounded-lg bg-warning/15 px-2.5 py-2 font-bold"
+              >
+                <Snowflake size={12} /> Freeze
+              </button>
+            ) : customer.service_status === "frozen" ? (
+              <button
+                disabled={busy}
+                onClick={() => void onAction(customer, "unfreeze")}
+                className="inline-flex items-center gap-1 rounded-lg bg-success/10 px-2.5 py-2 font-bold text-success"
+              >
+                <CheckCircle2 size={12} /> Unfreeze
+              </button>
+            ) : (
+              <button
+                disabled={busy}
+                onClick={() => void onAction(customer, "unfreeze")}
+                className="inline-flex items-center gap-1 rounded-lg bg-success/10 px-2.5 py-2 font-bold text-success"
+              >
+                <CheckCircle2 size={12} /> Restore
+              </button>
+            )}
+            <button
+              disabled={busy || customer.service_status === "closed"}
+              onClick={() => void onAction(customer, "close")}
+              className="inline-flex items-center gap-1 rounded-lg bg-destructive/10 px-2.5 py-2 font-bold text-destructive"
+            >
+              <XCircle size={12} /> Close
+            </button>
+          </div>
+        ) : (
+          <span className="text-muted-foreground">Read only</span>
+        )}
+      </td>
+    </tr>
   );
 }
 
@@ -316,16 +831,38 @@ function Metric({
   icon: Icon,
   label,
   value,
+  detail,
 }: {
   icon: typeof Building2;
   label: string;
-  value: number | undefined;
+  value?: string | number;
+  detail: string;
 }) {
   return (
-    <div className="surface p-4 md:p-5">
+    <div className="surface p-4">
       <Icon size={18} className="text-primary" />
-      <div className="mt-3 font-display text-3xl">{value ?? "—"}</div>
-      <div className="mt-1 text-xs font-semibold text-muted-foreground">{label}</div>
+      <div className="mt-3 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+        {label}
+      </div>
+      <div className="mt-1 text-xl font-black">{value ?? "—"}</div>
+      <div className="mt-1 text-xs text-muted-foreground">{detail}</div>
     </div>
   );
+}
+function SmallMetric({ label, value }: { label: string; value?: number }) {
+  return (
+    <div className="rounded-xl bg-secondary/60 p-3">
+      <div className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+        {label}
+      </div>
+      <div className="mt-1 text-xl font-black">{value ?? "—"}</div>
+    </div>
+  );
+}
+function money(pence?: number) {
+  return new Intl.NumberFormat("en-GB", {
+    style: "currency",
+    currency: "GBP",
+    maximumFractionDigits: 2,
+  }).format((pence ?? 0) / 100);
 }

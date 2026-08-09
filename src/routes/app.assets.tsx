@@ -63,7 +63,7 @@ function statusOf(asset: Asset): "ok" | "due" | "overdue" | "attention" | "retir
 
 function AssetsPage() {
   const { user } = useAuth();
-  const canManage = user ? can(user.role, "assets.manage") : false;
+  const canManage = user ? can(user.role, "assets.manage", user.actionPermissions) : false;
   const [rows, setRows] = useState<Asset[]>([]);
   const [labels, setLabels] = useState<Label[]>([]);
   const [loading, setLoading] = useState(true);

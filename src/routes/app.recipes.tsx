@@ -40,9 +40,8 @@ function RecipesPage() {
   const { t } = useI18n();
   const { user } = useAuth();
   const role = user?.role ?? "staff";
-  const canCost = can(role, "recipes.cost");
-  const canEdit =
-    can(role, "menu.editAllergens") || role === "owner" || role === "manager" || role === "chef";
+  const canCost = can(role, "recipes.cost", user?.actionPermissions);
+  const canEdit = can(role, "menu.editAllergens", user?.actionPermissions);
 
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);

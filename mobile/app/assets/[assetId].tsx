@@ -42,6 +42,18 @@ type Event = {
   measured_value: number | null;
   measured_unit: string | null;
   corrective_action: string | null;
+  scan_recorded_at: string | null;
+  scan_latitude: number | null;
+  scan_longitude: number | null;
+  scan_accuracy_metres: number | null;
+};
+type Scan = {
+  id: string;
+  scanned_at: string;
+  client_scanned_at: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  accuracy_metres: number | null;
 };
 type Schedule = {
   id: string;
@@ -56,11 +68,13 @@ type Schedule = {
 };
 
 export default function AssetDetail() {
-  const { assetId } = useLocalSearchParams<{ assetId: string }>();
+  const { assetId, scanId } = useLocalSearchParams<{ assetId: string; scanId?: string }>();
   const { session, loading, role } = useSession();
   const [asset, setAsset] = useState<Asset | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [activeScan, setActiveScan] = useState<Scan | null>(null);
+  const [scanConsumed, setScanConsumed] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [type, setType] = useState("inspection");
   const [outcome, setOutcome] = useState("pass");
@@ -83,11 +97,11 @@ export default function AssetDetail() {
     const next = result.data as Asset | null;
     setAsset(next);
     if (next) {
-      const [history, scheduleResult] = await Promise.all([
+      const [history, scheduleResult, scanResult] = await Promise.all([
         supabase
           .from("asset_events")
           .select(
-            "id,event_type,outcome,title,notes,recorded_by_name,recorded_at,measured_value,measured_unit,corrective_action",
+            "id,event_type,outcome,title,notes,recorded_by_name,recorded_at,measured_value,measured_unit,corrective_action,scan_recorded_at,scan_latitude,scan_longitude,scan_accuracy_metres",
           )
           .eq("asset_id", next.id)
           .order("recorded_at", { ascending: false })
@@ -100,12 +114,21 @@ export default function AssetDetail() {
           .eq("asset_id", next.id)
           .eq("active", true)
           .order("next_due_at"),
+        scanId && !scanConsumed
+          ? supabase
+              .from("asset_scans")
+              .select("id,scanned_at,client_scanned_at,latitude,longitude,accuracy_metres")
+              .eq("id", scanId)
+              .eq("asset_id", next.id)
+              .maybeSingle()
+          : Promise.resolve({ data: null }),
       ]);
       setEvents((history.data ?? []) as Event[]);
       setSchedules((scheduleResult.data ?? []) as Schedule[]);
+      setActiveScan((scanResult.data ?? null) as Scan | null);
     }
     setRefreshing(false);
-  }, [assetId]);
+  }, [assetId, scanConsumed, scanId]);
   useEffect(() => {
     if (session) void load();
   }, [load, session]);
@@ -164,6 +187,7 @@ export default function AssetDetail() {
         measured_unit: measuredUnit.trim() || null,
         corrective_action: correctiveAction.trim() || null,
         recorded_by: session.user.id,
+        scan_session_id: activeScan?.id ?? null,
       });
       setTitle("");
       setNotes("");
@@ -171,6 +195,8 @@ export default function AssetDetail() {
       setMeasuredUnit("");
       setCorrectiveAction("");
       setScheduleId(null);
+      setActiveScan(null);
+      setScanConsumed(true);
       Alert.alert(
         "Equipment record saved",
         "The timestamped record is saved or securely queued for sync.",
@@ -213,6 +239,17 @@ export default function AssetDetail() {
           }
         />
       </View>
+      {activeScan && (
+        <View style={styles.scanEvidence}>
+          <Text style={styles.scanTitle}>QR identity verified for this record</Text>
+          <Text style={styles.audit}>
+            Server time {new Date(activeScan.scanned_at).toLocaleString("en-GB")}
+            {activeScan.latitude !== null && activeScan.longitude !== null
+              ? ` · GPS ${Number(activeScan.latitude).toFixed(5)}, ${Number(activeScan.longitude).toFixed(5)} · ±${Math.round(Number(activeScan.accuracy_metres ?? 0))}m`
+              : " · GPS not shared"}
+          </Text>
+        </View>
+      )}
       <View style={styles.history}>
         <Text style={styles.formTitle}>Due QR checks</Text>
         <Text style={styles.audit}>Tap a check to load its instructions and expected reading.</Text>
@@ -362,6 +399,14 @@ export default function AssetDetail() {
             {event.corrective_action && (
               <Text style={styles.correction}>Corrective action: {event.corrective_action}</Text>
             )}
+            {event.scan_recorded_at && (
+              <Text style={styles.scanHistory}>
+                QR identified {new Date(event.scan_recorded_at).toLocaleString("en-GB")}
+                {event.scan_latitude !== null && event.scan_longitude !== null
+                  ? ` · GPS ${Number(event.scan_latitude).toFixed(5)}, ${Number(event.scan_longitude).toFixed(5)} · ±${Math.round(Number(event.scan_accuracy_metres ?? 0))}m`
+                  : " · GPS not shared"}
+              </Text>
+            )}
           </View>
         ))}
         {events.length === 0 && <Text style={styles.empty}>No equipment events recorded yet.</Text>}
@@ -484,6 +529,23 @@ const styles = StyleSheet.create({
     color: "#b42318",
     fontSize: 12,
     lineHeight: 18,
+    marginTop: 7,
+    padding: 8,
+  },
+  scanEvidence: {
+    backgroundColor: "#edf8f1",
+    borderColor: "#98d5aa",
+    borderRadius: 13,
+    borderWidth: 1,
+    padding: 13,
+  },
+  scanTitle: { color: "#176b3a", fontSize: 14, fontWeight: "900", marginBottom: 4 },
+  scanHistory: {
+    backgroundColor: "#f3f4f6",
+    borderRadius: 7,
+    color: "#555",
+    fontSize: 11,
+    lineHeight: 17,
     marginTop: 7,
     padding: 8,
   },

@@ -1,10 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
-import { Check, CreditCard, ExternalLink, Loader2, ShieldCheck } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Check, CreditCard, ExternalLink, Loader2, ShieldCheck, Users, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/app/billing")({ component: BillingPage });
 
@@ -18,10 +17,8 @@ type Subscription = {
 
 function BillingPage() {
   const { user } = useAuth();
-  const { lang } = useI18n();
-  const tr = useCallback((_legacy: string, english: string) => english, []);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
-  const [busy, setBusy] = useState<"checkout" | "portal" | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
   useEffect(() => {
     if (!user?.organizationId) return;
     void (supabase as any)
@@ -31,9 +28,9 @@ function BillingPage() {
       .maybeSingle()
       .then(({ data }: { data: Subscription | null }) => setSubscription(data));
   }, [user?.organizationId]);
-  const launch = async (action: "checkout" | "portal") => {
-    setBusy(action);
-    const { data, error } = await supabase.functions.invoke("billing", { body: { action } });
+  const launch = async (action: "checkout" | "portal", plan = "complete") => {
+    setBusy(action === "portal" ? action : plan);
+    const { data, error } = await supabase.functions.invoke("billing", { body: { action, plan } });
     setBusy(null);
     if (error || !data?.url) toast.error("Billing request failed.");
     else window.location.assign(data.url);
@@ -48,7 +45,7 @@ function BillingPage() {
           {"Entitlements come only from verified provider events."}
         </p>
       </div>
-      <div className="grid gap-5 md:grid-cols-2">
+      <div className="grid gap-5 md:grid-cols-[0.8fr_1.2fr]">
         <section className="surface p-6">
           <CreditCard size={22} />
           <div className="mt-4 text-xs font-black uppercase tracking-widest text-muted-foreground">
@@ -68,13 +65,13 @@ function BillingPage() {
         </section>
         <section className="surface p-6">
           <ShieldCheck size={22} />
-          <div className="mt-4 font-display text-2xl">Haccora Pro</div>
+          <div className="mt-4 font-display text-2xl">Secure subscription management</div>
           <ul className="mt-4 space-y-2 text-sm">
             {[
-              "Versioned workflows",
-              "Native iOS/Android apps",
-              "Signed webhooks",
-              "Control centre & sensor automation",
+              "GBP billing and VAT-ready invoices",
+              "Limits enforced server-side",
+              "Verified Stripe events control access",
+              "No card details stored by Haccora",
             ].map((item) => (
               <li key={item}>
                 <Check className="mr-2 inline text-success" size={15} />
@@ -82,34 +79,79 @@ function BillingPage() {
               </li>
             ))}
           </ul>
-          {canManageBilling && (
-            <div className="mt-6 flex flex-wrap gap-2">
-              <button
-                disabled={!!busy}
-                onClick={() => void launch("checkout")}
-                className="min-h-11 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground"
-              >
-                {busy === "checkout" ? <Loader2 className="inline animate-spin" /> : "Choose Pro"}
-              </button>
-              {subscription && (
-                <button
-                  disabled={!!busy}
-                  onClick={() => void launch("portal")}
-                  className="min-h-11 rounded-xl border border-border px-4 text-sm font-bold"
-                >
-                  {busy === "portal" ? (
-                    <Loader2 className="inline animate-spin" />
-                  ) : (
-                    <>
-                      {"Manage billing"} <ExternalLink className="ml-1 inline" size={13} />
-                    </>
-                  )}
-                </button>
+          {canManageBilling && subscription && (
+            <button
+              disabled={!!busy}
+              onClick={() => void launch("portal")}
+              className="mt-6 min-h-11 rounded-xl border border-border px-4 text-sm font-bold"
+            >
+              {busy === "portal" ? (
+                <Loader2 className="inline animate-spin" />
+              ) : (
+                <>
+                  {"Manage billing"} <ExternalLink className="ml-1 inline" size={13} />
+                </>
               )}
-            </div>
+            </button>
           )}
         </section>
       </div>
+      <section>
+        <h2 className="font-display text-2xl">Available plans</h2>
+        <div className="mt-4 grid gap-4 md:grid-cols-3">
+          {[
+            { code: "solo", name: "Solo", price: "£9.99", seats: "5 staff", sites: "1 premises" },
+            {
+              code: "complete",
+              name: "Complete",
+              price: "£24.99",
+              seats: "Unlimited staff",
+              sites: "1 premises",
+            },
+            {
+              code: "group",
+              name: "Small Group",
+              price: "£59.99",
+              seats: "Unlimited staff",
+              sites: "Up to 3 premises",
+            },
+          ].map((plan) => (
+            <article
+              key={plan.code}
+              className={`surface p-5 ${subscription?.plan === plan.code ? "ring-2 ring-primary" : ""}`}
+            >
+              <div className="text-xs font-black uppercase tracking-wider text-muted-foreground">
+                {plan.name}
+              </div>
+              <div className="mt-2 text-3xl font-black">
+                {plan.price}
+                <span className="text-xs font-medium text-muted-foreground"> / month + VAT</span>
+              </div>
+              <div className="mt-4 space-y-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <Users size={14} /> {plan.seats}
+                </div>
+                <div className="flex items-center gap-2">
+                  <MapPin size={14} /> {plan.sites}
+                </div>
+              </div>
+              {canManageBilling && subscription?.plan !== plan.code && (
+                <button
+                  disabled={!!busy}
+                  onClick={() => void launch("checkout", plan.code)}
+                  className="btn-alert-solid mt-5 min-h-11 w-full text-sm"
+                >
+                  {busy === plan.code ? (
+                    <Loader2 className="animate-spin" size={15} />
+                  ) : (
+                    "Choose plan"
+                  )}
+                </button>
+              )}
+            </article>
+          ))}
+        </div>
+      </section>
       <p className="text-xs text-muted-foreground">
         {"Payment details are processed by Stripe; Haccora does not store card numbers."}
       </p>

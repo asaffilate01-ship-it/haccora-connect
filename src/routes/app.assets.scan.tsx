@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import type { IScannerControls } from "@zxing/browser";
 import { ArrowLeft, Camera, Keyboard, Loader2, QrCode, ShieldCheck } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/app/assets/scan")({ component: AssetScannerPage });
 
@@ -39,15 +40,37 @@ function AssetScannerPage() {
   const [manual, setManual] = useState("");
   const [active, setActive] = useState(false);
   const [starting, setStarting] = useState(false);
+  const [registering, setRegistering] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const openValue = (value: string) => {
+  const openValue = async (value: string, source: "web_camera" | "manual_token") => {
     const token = assetToken(value);
     if (!token) {
       setError("This is not a valid Haccora equipment QR code or token.");
       return;
     }
     controls.current?.stop();
+    setRegistering(true);
+    setError(null);
+    const position = await currentPosition();
+    const { data, error: scanError } = await (supabase as any).rpc("record_asset_scan", {
+      p_qr_token: token,
+      p_source: source,
+      p_client_scanned_at: new Date().toISOString(),
+      p_latitude: position?.latitude ?? null,
+      p_longitude: position?.longitude ?? null,
+      p_accuracy_metres: position?.accuracy ?? null,
+    });
+    setRegistering(false);
+    if (scanError || !data?.scan_session_id) {
+      setError(scanError?.message ?? "The equipment scan could not be registered.");
+      return;
+    }
+    try {
+      window.sessionStorage.setItem(`haccora-asset-scan:${token}`, JSON.stringify(data));
+    } catch {
+      // The asset still opens when private storage is unavailable; the scan remains audited.
+    }
     void navigate({ to: "/app/assets/$assetId", params: { assetId: token } });
   };
 
@@ -69,7 +92,7 @@ function AssetScannerPage() {
         { audio: false, video: { facingMode: { ideal: "environment" } } },
         video.current,
         (result) => {
-          if (result) openValue(result.getText());
+          if (result) void openValue(result.getText(), "web_camera");
         },
       );
       setActive(true);
@@ -148,20 +171,43 @@ function AssetScannerPage() {
             className="field min-h-11 flex-1 font-mono text-sm"
             value={manual}
             onChange={(event) => setManual(event.target.value)}
-            onKeyDown={(event) => event.key === "Enter" && openValue(manual)}
+            onKeyDown={(event) => event.key === "Enter" && void openValue(manual, "manual_token")}
             placeholder="00000000-0000-4000-8000-000000000000"
             autoCapitalize="none"
           />
-          <button className="btn-secondary min-h-11 text-sm" onClick={() => openValue(manual)}>
-            Open record
+          <button
+            disabled={registering}
+            className="btn-secondary min-h-11 text-sm disabled:opacity-60"
+            onClick={() => void openValue(manual, "manual_token")}
+          >
+            {registering ? <Loader2 className="animate-spin" size={15} /> : null} Open record
           </button>
         </div>
       </section>
 
       <p className="flex items-start gap-2 text-xs text-muted-foreground">
         <ShieldCheck className="mt-0.5 shrink-0" size={14} /> A QR identifies an item; it does not
-        bypass sign-in, site permissions or inspector scope.
+        bypass sign-in, site permissions or inspector scope. GPS is requested only after a valid
+        label is read; denial records the scan without coordinates.
       </p>
     </div>
   );
+}
+
+function currentPosition(): Promise<
+  { latitude: number; longitude: number; accuracy: number } | undefined
+> {
+  if (!("geolocation" in navigator)) return Promise.resolve(undefined);
+  return new Promise((resolve) => {
+    navigator.geolocation.getCurrentPosition(
+      (position) =>
+        resolve({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+        }),
+      () => resolve(undefined),
+      { enableHighAccuracy: true, maximumAge: 30_000, timeout: 8_000 },
+    );
+  });
 }

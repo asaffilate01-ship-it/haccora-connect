@@ -33,7 +33,7 @@ test("staff can contribute but master data and inspector access remain scoped", 
   assert.match(migration, /can_contribute_to_organization/);
   assert.match(migration, /is_manager_or_owner/);
   assert.match(invitation, /"equipment"/);
-  assert.match(webDetail, /can\(user\.role, "assets\.record"\)/);
+  assert.match(webDetail, /can\(user\.role, "assets\.record", user\.actionPermissions\)/);
 });
 
 test("web produces printable labels and a persistent detail timeline", () => {

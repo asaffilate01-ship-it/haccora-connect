@@ -86,6 +86,7 @@ jobs:
           sensor-ingest/index.ts
           sensor-provision/index.ts
           team-invite/index.ts
+          platform-admin/index.ts
           privacy-requests/index.ts
           security-center/index.ts
           file-scan/index.ts

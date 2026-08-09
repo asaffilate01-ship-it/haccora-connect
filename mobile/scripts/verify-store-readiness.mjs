@@ -43,15 +43,24 @@ for (const key of [
   "NSCameraUsageDescription",
   "NSFaceIDUsageDescription",
   "NSPhotoLibraryUsageDescription",
+  "NSLocationWhenInUseUsageDescription",
 ]) {
   if ((app?.ios?.infoPlist?.[key] ?? "").trim().length < 20) {
     failures.push(`iOS privacy purpose string is missing or too vague: ${key}`);
   }
 }
-for (const permission of ["RECORD_AUDIO", "ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"]) {
+for (const permission of ["RECORD_AUDIO"]) {
   if (!app?.android?.blockedPermissions?.includes(permission)) {
     failures.push(`Android must explicitly block unused permission: ${permission}`);
   }
+}
+for (const permission of ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"]) {
+  if (app?.android?.blockedPermissions?.includes(permission)) {
+    failures.push(`Android must allow the declared QR evidence permission: ${permission}`);
+  }
+}
+if (!app?.plugins?.some((plugin) => Array.isArray(plugin) && plugin[0] === "expo-location")) {
+  failures.push("Expo location plugin is required for consented QR evidence GPS");
 }
 for (const asset of [app?.icon, app?.splash?.image, app?.android?.adaptiveIcon?.foregroundImage]) {
   if (!asset) {

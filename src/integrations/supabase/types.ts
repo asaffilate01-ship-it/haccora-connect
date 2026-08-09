@@ -296,6 +296,11 @@ export type Database = {
           recorded_at: string
           recorded_by: string
           recorded_by_name: string
+          scan_accuracy_metres: number | null
+          scan_latitude: number | null
+          scan_longitude: number | null
+          scan_recorded_at: string | null
+          scan_session_id: string | null
           schedule_id: string | null
           title: string
         }
@@ -316,6 +321,11 @@ export type Database = {
           recorded_at?: string
           recorded_by?: string
           recorded_by_name?: string
+          scan_accuracy_metres?: number | null
+          scan_latitude?: number | null
+          scan_longitude?: number | null
+          scan_recorded_at?: string | null
+          scan_session_id?: string | null
           schedule_id?: string | null
           title: string
         }
@@ -336,6 +346,11 @@ export type Database = {
           recorded_at?: string
           recorded_by?: string
           recorded_by_name?: string
+          scan_accuracy_metres?: number | null
+          scan_latitude?: number | null
+          scan_longitude?: number | null
+          scan_recorded_at?: string | null
+          scan_session_id?: string | null
           schedule_id?: string | null
           title?: string
         }
@@ -369,11 +384,98 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "asset_events_scan_session_id_fkey"
+            columns: ["scan_session_id"]
+            isOneToOne: false
+            referencedRelation: "asset_scans"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "asset_events_schedule_org"
             columns: ["schedule_id", "organization_id"]
             isOneToOne: false
             referencedRelation: "asset_check_schedules"
             referencedColumns: ["id", "organization_id"]
+          },
+        ]
+      }
+      asset_scans: {
+        Row: {
+          accuracy_metres: number | null
+          asset_id: string
+          client_scanned_at: string | null
+          created_at: string
+          id: string
+          latitude: number | null
+          location_id: string | null
+          longitude: number | null
+          organization_id: string
+          qr_token: string
+          scanned_at: string
+          scanner_name: string
+          scanner_user_id: string
+          source: string
+        }
+        Insert: {
+          accuracy_metres?: number | null
+          asset_id: string
+          client_scanned_at?: string | null
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          location_id?: string | null
+          longitude?: number | null
+          organization_id: string
+          qr_token: string
+          scanned_at?: string
+          scanner_name?: string
+          scanner_user_id: string
+          source: string
+        }
+        Update: {
+          accuracy_metres?: number | null
+          asset_id?: string
+          client_scanned_at?: string | null
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          location_id?: string | null
+          longitude?: number | null
+          organization_id?: string
+          qr_token?: string
+          scanned_at?: string
+          scanner_name?: string
+          scanner_user_id?: string
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asset_scans_asset_org"
+            columns: ["asset_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "asset_scans_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asset_scans_location_org"
+            columns: ["location_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "asset_scans_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -3001,6 +3103,7 @@ export type Database = {
           organization_id: string
           revoked_at: string | null
           role: Database["public"]["Enums"]["app_role"]
+          role_profile_id: string | null
           token_hash: string
         }
         Insert: {
@@ -3013,6 +3116,7 @@ export type Database = {
           organization_id: string
           revoked_at?: string | null
           role: Database["public"]["Enums"]["app_role"]
+          role_profile_id?: string | null
           token_hash: string
         }
         Update: {
@@ -3025,9 +3129,17 @@ export type Database = {
           organization_id?: string
           revoked_at?: string | null
           role?: Database["public"]["Enums"]["app_role"]
+          role_profile_id?: string | null
           token_hash?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "invitation_role_profile_org"
+            columns: ["role_profile_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_roles"
+            referencedColumns: ["id", "organization_id"]
+          },
           {
             foreignKeyName: "organization_invitations_organization_id_fkey"
             columns: ["organization_id"]
@@ -3046,6 +3158,7 @@ export type Database = {
           invited_by: string | null
           organization_id: string
           role: Database["public"]["Enums"]["app_role"]
+          role_profile_id: string | null
           status: string
           updated_at: string
           user_id: string
@@ -3058,6 +3171,7 @@ export type Database = {
           invited_by?: string | null
           organization_id: string
           role: Database["public"]["Enums"]["app_role"]
+          role_profile_id?: string | null
           status?: string
           updated_at?: string
           user_id: string
@@ -3070,6 +3184,7 @@ export type Database = {
           invited_by?: string | null
           organization_id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          role_profile_id?: string | null
           status?: string
           updated_at?: string
           user_id?: string
@@ -3080,6 +3195,13 @@ export type Database = {
             columns: ["default_location_id", "organization_id"]
             isOneToOne: false
             referencedRelation: "locations"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "membership_role_profile_org"
+            columns: ["role_profile_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_roles"
             referencedColumns: ["id", "organization_id"]
           },
           {
@@ -3098,6 +3220,50 @@ export type Database = {
           },
         ]
       }
+      organization_roles: {
+        Row: {
+          action_permissions: string[]
+          active: boolean
+          base_role: Database["public"]["Enums"]["app_role"]
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          action_permissions?: string[]
+          active?: boolean
+          base_role: Database["public"]["Enums"]["app_role"]
+          created_at?: string
+          created_by?: string
+          id?: string
+          name: string
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          action_permissions?: string[]
+          active?: boolean
+          base_role?: Database["public"]["Enums"]["app_role"]
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_roles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           archived_at: string | null
@@ -3105,8 +3271,12 @@ export type Database = {
           created_at: string
           created_by: string | null
           enabled_modules: string[]
+          frozen_at: string | null
+          frozen_by: string | null
           id: string
           name: string
+          service_status: string
+          service_status_reason: string | null
           slug: string
           timezone: string
           updated_at: string
@@ -3117,8 +3287,12 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           enabled_modules?: string[]
+          frozen_at?: string | null
+          frozen_by?: string | null
           id?: string
           name: string
+          service_status?: string
+          service_status_reason?: string | null
           slug: string
           timezone?: string
           updated_at?: string
@@ -3129,8 +3303,12 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           enabled_modules?: string[]
+          frozen_at?: string | null
+          frozen_by?: string | null
           id?: string
           name?: string
+          service_status?: string
+          service_status_reason?: string | null
           slug?: string
           timezone?: string
           updated_at?: string
@@ -3267,6 +3445,48 @@ export type Database = {
           status?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      platform_plan_catalog: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          custom_roles_limit: number
+          display_order: number
+          enabled_modules: string[]
+          included_seats: number
+          max_locations: number
+          monthly_price_pence: number | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          custom_roles_limit?: number
+          display_order?: number
+          enabled_modules?: string[]
+          included_seats: number
+          max_locations: number
+          monthly_price_pence?: number | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          custom_roles_limit?: number
+          display_order?: number
+          enabled_modules?: string[]
+          included_seats?: number
+          max_locations?: number
+          monthly_price_pence?: number | null
+          name?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -4878,11 +5098,14 @@ export type Database = {
         Row: {
           billing_email: string | null
           cancel_at_period_end: boolean
+          contract_mrr_pence: number | null
           currency: string
           current_period_end: string | null
           last_event_at: string | null
+          location_limit: number | null
           organization_id: string
           plan: string
+          price_override_reason: string | null
           provider_customer_id: string | null
           provider_subscription_id: string | null
           seats: number
@@ -4893,11 +5116,14 @@ export type Database = {
         Insert: {
           billing_email?: string | null
           cancel_at_period_end?: boolean
+          contract_mrr_pence?: number | null
           currency?: string
           current_period_end?: string | null
           last_event_at?: string | null
+          location_limit?: number | null
           organization_id: string
           plan?: string
+          price_override_reason?: string | null
           provider_customer_id?: string | null
           provider_subscription_id?: string | null
           seats?: number
@@ -4908,11 +5134,14 @@ export type Database = {
         Update: {
           billing_email?: string | null
           cancel_at_period_end?: boolean
+          contract_mrr_pence?: number | null
           currency?: string
           current_period_end?: string | null
           last_event_at?: string | null
+          location_limit?: number | null
           organization_id?: string
           plan?: string
+          price_override_reason?: string | null
           provider_customer_id?: string | null
           provider_subscription_id?: string | null
           seats?: number
@@ -5125,6 +5354,44 @@ export type Database = {
           },
           {
             foreignKeyName: "temperature_logs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenant_admin_events: {
+        Row: {
+          actor_id: string
+          event_type: string
+          id: string
+          metadata: Json
+          occurred_at: string
+          organization_id: string
+          target_id: string | null
+        }
+        Insert: {
+          actor_id: string
+          event_type: string
+          id?: string
+          metadata?: Json
+          occurred_at?: string
+          organization_id: string
+          target_id?: string | null
+        }
+        Update: {
+          actor_id?: string
+          event_type?: string
+          id?: string
+          metadata?: Json
+          occurred_at?: string
+          organization_id?: string
+          target_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_admin_events_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -6242,6 +6509,13 @@ export type Database = {
         Args: { p_assignment_id: string }
         Returns: string
       }
+      assert_tenant_invite_allowed: {
+        Args: {
+          p_role: Database["public"]["Enums"]["app_role"]
+          p_role_profile_id?: string
+        }
+        Returns: Json
+      }
       bootstrap_my_organization: {
         Args: {
           p_business_state?: string
@@ -6365,6 +6639,10 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      custom_role_allows: {
+        Args: { p_organization_id: string; p_permissions: string[] }
+        Returns: boolean
+      }
       decide_high_risk_action: {
         Args: { p_approve: boolean; p_reason: string; p_request_id: string }
         Returns: {
@@ -6392,6 +6670,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      default_role_actions: {
+        Args: { p_role: Database["public"]["Enums"]["app_role"] }
+        Returns: string[]
+      }
       disable_my_push_token: { Args: { p_token: string }; Returns: undefined }
       dispatch_operations_control: { Args: never; Returns: Json }
       get_document_scan_status: {
@@ -6416,7 +6698,97 @@ export type Database = {
           trial_ends_at: string
         }[]
       }
+      get_platform_customers_v2: {
+        Args: never
+        Returns: {
+          active_assets: number
+          active_locations: number
+          active_memberships: number
+          created_at: string
+          current_period_end: string
+          events_30d: number
+          location_limit: number
+          mrr_pence: number
+          organization_id: string
+          organization_name: string
+          organization_slug: string
+          plan: string
+          seats: number
+          service_status: string
+          service_status_reason: string
+          subscription_status: string
+          trial_ends_at: string
+        }[]
+      }
+      get_platform_dashboard: { Args: never; Returns: Json }
+      get_platform_operators: {
+        Args: never
+        Returns: {
+          created_at: string
+          display_name: string
+          email: string
+          role: Database["public"]["Enums"]["platform_operator_role"]
+          status: string
+          user_id: string
+        }[]
+      }
       get_platform_overview: { Args: never; Returns: Json }
+      get_platform_plans: {
+        Args: never
+        Returns: {
+          active: boolean
+          code: string
+          created_at: string
+          custom_roles_limit: number
+          display_order: number
+          enabled_modules: string[]
+          included_seats: number
+          max_locations: number
+          monthly_price_pence: number | null
+          name: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "platform_plan_catalog"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      get_tenant_admin_overview: { Args: never; Returns: Json }
+      get_tenant_locations: {
+        Args: never
+        Returns: {
+          address: Json
+          business_state: string
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          timezone: string
+        }[]
+      }
+      get_tenant_team: {
+        Args: never
+        Returns: {
+          accepted_at: string
+          created_at: string
+          default_location_id: string
+          email: string
+          full_name: string
+          location_name: string
+          membership_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          role_name: string
+          role_profile_id: string
+          status: string
+          user_id: string
+        }[]
+      }
+      has_org_permission: {
+        Args: { p_organization_id: string; p_permission: string }
+        Returns: boolean
+      }
       has_org_role: {
         Args: {
           p_organization_id: string
@@ -6460,6 +6832,58 @@ export type Database = {
         Args: { p_location_id: string; p_organization_id: string }
         Returns: boolean
       }
+      manage_tenant_location: {
+        Args: {
+          p_action: string
+          p_business_state?: string
+          p_location_id?: string
+          p_name?: string
+        }
+        Returns: string
+      }
+      manage_tenant_member: {
+        Args: {
+          p_default_location_id: string
+          p_membership_id: string
+          p_role: Database["public"]["Enums"]["app_role"]
+          p_role_profile_id: string
+          p_status: string
+        }
+        Returns: undefined
+      }
+      platform_manage_operator: {
+        Args: {
+          p_reason: string
+          p_role: Database["public"]["Enums"]["platform_operator_role"]
+          p_status: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      platform_manage_tenant: {
+        Args: {
+          p_action: string
+          p_contract_mrr_pence?: number
+          p_location_limit?: number
+          p_organization_id: string
+          p_plan?: string
+          p_reason: string
+          p_seats?: number
+          p_subscription_status?: string
+        }
+        Returns: undefined
+      }
+      record_asset_scan: {
+        Args: {
+          p_accuracy_metres?: number
+          p_client_scanned_at?: string
+          p_latitude?: number
+          p_longitude?: number
+          p_qr_token: string
+          p_source: string
+        }
+        Returns: Json
+      }
       record_evidence_export: {
         Args: { p_from: string; p_to: string }
         Returns: undefined
@@ -6502,6 +6926,15 @@ export type Database = {
       register_my_push_token: {
         Args: { p_platform: string; p_token: string }
         Returns: undefined
+      }
+      save_tenant_role: {
+        Args: {
+          p_action_permissions: string[]
+          p_base_role: Database["public"]["Enums"]["app_role"]
+          p_name: string
+          p_role_id: string
+        }
+        Returns: string
       }
       set_my_notification_preferences: {
         Args: {

@@ -55,6 +55,19 @@ type AssetEvent = {
   schedule_id: string | null;
   recorded_by_name: string;
   recorded_at: string;
+  scan_session_id: string | null;
+  scan_recorded_at: string | null;
+  scan_latitude: number | null;
+  scan_longitude: number | null;
+  scan_accuracy_metres: number | null;
+};
+type ActiveScan = {
+  scan_session_id: string;
+  scanned_at: string;
+  client_scanned_at: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  accuracy_metres: number | null;
 };
 type AssetCheckSchedule = {
   id: string;
@@ -96,8 +109,8 @@ const emptySchedule = {
 function AssetDetailPage() {
   const { assetId } = Route.useParams();
   const { user } = useAuth();
-  const canManage = user ? can(user.role, "assets.manage") : false;
-  const canRecord = user ? can(user.role, "assets.record") : false;
+  const canManage = user ? can(user.role, "assets.manage", user.actionPermissions) : false;
+  const canRecord = user ? can(user.role, "assets.record", user.actionPermissions) : false;
   const [asset, setAsset] = useState<Asset | null>(null);
   const [events, setEvents] = useState<AssetEvent[]>([]);
   const [schedules, setSchedules] = useState<AssetCheckSchedule[]>([]);
@@ -119,6 +132,7 @@ function AssetDetailPage() {
     notes: "",
   });
   const [qr, setQr] = useState("");
+  const [activeScan, setActiveScan] = useState<ActiveScan | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -137,10 +151,10 @@ function AssetDetailPage() {
     }
     const nextAsset = assetResult.data as Asset;
     const [eventResult, scheduleResult] = await Promise.all([
-      supabase
+      (supabase as any)
         .from("asset_events")
         .select(
-          "id,event_type,outcome,title,notes,measured_value,measured_unit,next_due_at,corrective_action,schedule_id,recorded_by_name,recorded_at",
+          "id,event_type,outcome,title,notes,measured_value,measured_unit,next_due_at,corrective_action,schedule_id,recorded_by_name,recorded_at,scan_session_id,scan_recorded_at,scan_latitude,scan_longitude,scan_accuracy_metres",
         )
         .eq("asset_id", nextAsset.id)
         .order("recorded_at", { ascending: false })
@@ -179,6 +193,12 @@ function AssetDetailPage() {
   useEffect(() => {
     if (!asset || typeof window === "undefined") return;
     setQr(renderQrDataUrl(`${window.location.origin}/app/assets/${asset.qr_token}`));
+    try {
+      const value = window.sessionStorage.getItem(`haccora-asset-scan:${asset.qr_token}`);
+      setActiveScan(value ? (JSON.parse(value) as ActiveScan) : null);
+    } catch {
+      setActiveScan(null);
+    }
   }, [asset]);
 
   const addEvent = async () => {
@@ -208,7 +228,7 @@ function AssetDetailPage() {
       setError("Record the corrective action before saving a failed or open result.");
       return;
     }
-    const { error: insertError } = await supabase.from("asset_events").insert({
+    const { error: insertError } = await (supabase as any).from("asset_events").insert({
       organization_id: asset.organization_id,
       location_id: asset.location_id,
       asset_id: asset.id,
@@ -222,6 +242,7 @@ function AssetDetailPage() {
       corrective_action: form.corrective_action.trim() || null,
       schedule_id: form.schedule_id || null,
       recorded_by: user.id,
+      scan_session_id: activeScan?.scan_session_id ?? null,
     });
     setBusy(false);
     if (insertError) {
@@ -230,6 +251,14 @@ function AssetDetailPage() {
     }
     setForm(emptyEvent);
     setEventOpen(false);
+    if (activeScan) {
+      try {
+        window.sessionStorage.removeItem(`haccora-asset-scan:${asset.qr_token}`);
+      } catch {
+        // The server-side scan and equipment event are already durable.
+      }
+      setActiveScan(null);
+    }
     await load();
   };
 
@@ -409,6 +438,24 @@ function AssetDetailPage() {
         >
           {error}
         </div>
+      )}
+
+      {activeScan && (
+        <section className="no-print flex flex-wrap items-center gap-3 rounded-xl border border-success/30 bg-success/10 p-4 text-sm">
+          <QrCode size={19} className="text-success" />
+          <div className="min-w-0 flex-1">
+            <div className="font-bold">This exact asset was identified by QR</div>
+            <div className="mt-0.5 text-xs text-muted-foreground">
+              Server scan time {new Date(activeScan.scanned_at).toLocaleString("en-GB")}
+              {activeScan.latitude !== null && activeScan.longitude !== null
+                ? ` · GPS ${Number(activeScan.latitude).toFixed(5)}, ${Number(activeScan.longitude).toFixed(5)} · ±${Math.round(Number(activeScan.accuracy_metres ?? 0))}m`
+                : " · GPS not shared"}
+            </div>
+          </div>
+          <span className="rounded-full bg-card px-3 py-1 text-xs font-bold">
+            Linked to next record
+          </span>
+        </section>
       )}
 
       <section className="no-print grid gap-3 md:grid-cols-[220px_1fr]">
@@ -812,6 +859,14 @@ function AssetDetailPage() {
                   {event.measured_value !== null && (
                     <p className="mt-1 font-mono">
                       {event.measured_value} {event.measured_unit}
+                    </p>
+                  )}
+                  {event.scan_recorded_at && (
+                    <p className="mt-2 rounded-md bg-secondary/70 p-2 text-xs text-muted-foreground">
+                      QR identified {new Date(event.scan_recorded_at).toLocaleString("en-GB")}
+                      {event.scan_latitude !== null && event.scan_longitude !== null
+                        ? ` · GPS ${Number(event.scan_latitude).toFixed(5)}, ${Number(event.scan_longitude).toFixed(5)} · ±${Math.round(Number(event.scan_accuracy_metres ?? 0))}m`
+                        : " · GPS not shared"}
                     </p>
                   )}
                 </div>
