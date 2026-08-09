@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import { isSupabaseConfigured } from "@/integrations/supabase/config";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import {
   Search,
@@ -316,22 +317,29 @@ function ContactCard() {
     const formElement = event.currentTarget;
     setState("sending");
     setError("");
-    const form = new FormData(formElement);
-    const { error: invokeError } = await supabase.functions.invoke("contact", {
-      body: {
-        firstName: form.get("firstName"),
-        lastName: form.get("lastName"),
-        email: form.get("email"),
-        phone: form.get("phone"),
-        businessName: form.get("businessName"),
-        website: form.get("website"),
-        locale: lang,
-        consent: form.get("consent") === "on",
-      },
-    });
-    if (invokeError) {
+    if (!isSupabaseConfigured()) {
       setState("error");
-      setError("Your request could not be sent. Please try again.");
+      setError(`The form is temporarily unavailable. Email ${PUBLIC_CONFIG.legal.email}.`);
+      return;
+    }
+    const form = new FormData(formElement);
+    try {
+      const { error: invokeError } = await supabase.functions.invoke("contact", {
+        body: {
+          firstName: form.get("firstName"),
+          lastName: form.get("lastName"),
+          email: form.get("email"),
+          phone: form.get("phone"),
+          businessName: form.get("businessName"),
+          website: form.get("website"),
+          locale: lang,
+          consent: form.get("consent") === "on",
+        },
+      });
+      if (invokeError) throw invokeError;
+    } catch {
+      setState("error");
+      setError(`Your request could not be sent. Email ${PUBLIC_CONFIG.legal.email}.`);
       return;
     }
     formElement.reset();

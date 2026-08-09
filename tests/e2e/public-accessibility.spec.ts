@@ -53,9 +53,12 @@ test("marketing FAQs disclose complete answers and client navigation works", asy
   const disclosures = page.locator("details");
   await expect(disclosures).toHaveCount(12);
   await disclosures.first().locator("summary").click();
-  await expect(disclosures.first()).toContainText(/do not generally approve/i);
+  await expect(disclosures.first()).toContainText(/not approved or endorsed/i);
 
-  await page.getByRole("link", { name: "Login", exact: true }).first().click();
+  await page
+    .getByRole("link", { name: /sign in|login/i })
+    .first()
+    .click();
   await expect(page).toHaveURL(/\/login$/);
 });
 

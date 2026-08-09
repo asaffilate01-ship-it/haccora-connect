@@ -8,22 +8,23 @@ Verified: 2026-08-09
 | --------------------------- | ------------------------------------------------------------------- |
 | Reproducible installs       | Root, native and Edge lockfile installs passed                      |
 | Production structure        | Passed                                                              |
-| Migration lineage           | Passed for 56 migrations, 265 policies and 114 function definitions |
+| Migration lineage           | Passed for 61 migrations, 266 policies and 116 function definitions |
 | Secret-pattern scan         | Passed across every tracked source file                             |
 | Web TypeScript              | Passed                                                              |
-| Security regression suite   | 150 of 150 tests passed                                             |
+| Security regression suite   | 167 of 167 tests passed                                             |
 | Web lint                    | Passed with zero warnings                                           |
 | Repository formatting       | Passed Prettier verification and `git diff --check`                 |
 | Cloudflare production build | Passed                                                              |
 | Root dependency audit       | 0 known runtime vulnerabilities                                     |
 | Native TypeScript           | Passed                                                              |
+| Native Expo exports         | Passed for web, iOS and Android                                     |
 | Native dependency audit     | Only two exact, expiring Expo/Metro build-tool exceptions           |
 | Edge Function formatting    | Passed with Deno 2.9.4                                              |
 | Edge Function lint          | Passed with Deno 2.9.4                                              |
 | Edge Function type check    | Passed for all 16 deployable functions with Deno 2.9.4              |
 | Edge dependency audit       | 0 known runtime vulnerabilities                                     |
 | Public route smoke check    | `/`, login, legal routes and `/health.json` returned HTTP 200       |
-| Browser accessibility       | Playwright/Axe gate configured; hosted run still required           |
+| Browser accessibility       | Playwright/Axe gate configured; Chromium CI run still required      |
 | Fresh database and RLS      | Supabase/pgTAP gate configured; hosted run still required           |
 | GitHub security automation  | CodeQL workflow configured; GitHub-hosted run still required        |
 

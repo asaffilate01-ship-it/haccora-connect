@@ -6,6 +6,7 @@ import { useAuth, ROLES, homeFor, type Role } from "@/lib/auth";
 import { Crown, ClipboardList, ChefHat, User, Gavel, ArrowLeft, Loader2 } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { supabase } from "@/integrations/supabase/client";
+import { SUPABASE_UNAVAILABLE_MESSAGE } from "@/integrations/supabase/config";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -32,8 +33,15 @@ const ROLE_ICON: Record<Role, typeof Crown> = {
 
 function LoginPage() {
   const { t, lang } = useI18n();
-  const { user, hydrated, signInWithEmail, signUpWithEmail, requestPasswordReset, refresh } =
-    useAuth();
+  const {
+    user,
+    hydrated,
+    authenticationAvailable,
+    signInWithEmail,
+    signUpWithEmail,
+    requestPasswordReset,
+    refresh,
+  } = useAuth();
   const navigate = useNavigate();
   const search = useRouterState({ select: (s) => s.location.search }) as {
     redirect?: string;
@@ -187,6 +195,18 @@ function LoginPage() {
           onSubmit={submit}
           className="rounded-2xl border border-black/10 bg-white p-6 md:p-8 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.2)] self-start"
         >
+          {!authenticationAvailable && (
+            <div
+              role="alert"
+              className="mb-5 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-950"
+            >
+              {SUPABASE_UNAVAILABLE_MESSAGE} Please try again later or email{" "}
+              <a className="font-semibold underline" href="mailto:hello@haccora.co.uk">
+                hello@haccora.co.uk
+              </a>
+              .
+            </div>
+          )}
           <div className="flex gap-1 p-1 bg-secondary/50 rounded-full text-sm font-semibold">
             <button
               type="button"
@@ -250,7 +270,7 @@ function LoginPage() {
 
           <button
             type="submit"
-            disabled={busy}
+            disabled={busy || !authenticationAvailable}
             className="mt-5 w-full inline-flex items-center justify-center gap-2 rounded-full bg-[color:var(--color-alert-red)] text-white px-5 py-3 font-bold hover:brightness-110 transition disabled:opacity-60"
           >
             {busy && <Loader2 size={16} className="animate-spin" />}
@@ -259,7 +279,7 @@ function LoginPage() {
           {mode === "signin" && (
             <button
               type="button"
-              disabled={busy || !email}
+              disabled={busy || !email || !authenticationAvailable}
               onClick={async () => {
                 setBusy(true);
                 setError(null);
