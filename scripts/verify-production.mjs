@@ -38,6 +38,8 @@ const required = [
   "docs/PHASE-24-NATIVE-EVIDENCE-AND-NOTIFICATIONS.md",
   "docs/PHASE-25-STAGING-RELEASE-AUTOMATION.md",
   "docs/PHASE-26-PRODUCTION-OPERATIONS.md",
+  "docs/PHASE-27-LAUNCH-ACCEPTANCE.md",
+  "docs/launch-acceptance.example.json",
   "supabase/functions/billing/index.ts",
   "supabase/functions/integration-admin/index.ts",
   "supabase/functions/integration-dispatch/index.ts",
@@ -73,6 +75,8 @@ const required = [
   "scripts/check-deployment-smoke.mjs",
   "scripts/check-operations-health.mjs",
   "scripts/check-production-audits.mjs",
+  "scripts/check-action-pins.mjs",
+  "scripts/verify-launch-acceptance.mjs",
   "security/dependency-audit-exceptions.json",
   "scripts/generate-release-evidence.mjs",
   "scripts/generate-staging-evidence.mjs",
@@ -209,12 +213,16 @@ for (const marker of [
   "npm run release:preflight",
   "npm run deployment:smoke",
   "npm run operations:health",
+  "npm run launch:acceptance",
   "npm run release:evidence",
-  "actions/upload-artifact@v4",
+  "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
 ]) {
   if (!releaseWorkflow.includes(marker)) {
     failures.push(`Production release workflow is missing: ${marker}`);
   }
+}
+if (!rootPackage.scripts?.quality?.includes("npm run actions:check")) {
+  failures.push("The local quality gate does not enforce immutable GitHub Action pins");
 }
 
 const stagingWorkflow = await readFile(

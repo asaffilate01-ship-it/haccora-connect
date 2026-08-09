@@ -40,3 +40,4 @@ Sensor secrets are returned once by `sensor-provision`. Deliver each secret thro
 - Verify real redirect URLs, CORS origins, email delivery, push receipts, signed-document expiry and scheduler alerts.
 - Configure an external uptime monitor for `/health.json`; the endpoint intentionally reports only service identity and readiness state.
 - Obtain legal/privacy, food-safety, security and product-owner sign-off before production traffic.
+- Complete `docs/launch-acceptance.example.json` privately, set it as the protected production Environment secret `LAUNCH_ACCEPTANCE_JSON`, and require `npm run launch:acceptance` to pass for the exact deployed SHA and URL.

@@ -65,12 +65,12 @@ jobs:
       LEGAL_COUNSEL_APPROVED_AT: ${{ vars.LEGAL_COUNSEL_APPROVED_AT }}
       LEGAL_ICO_FEE_STATUS_CONFIRMED: ${{ vars.LEGAL_ICO_FEE_STATUS_CONFIRMED }}
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: 22
           cache: npm
-      - uses: denoland/setup-deno@v2
+      - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2
         with:
           deno-version: v2.9.4
       - run: npm ci
@@ -105,6 +105,10 @@ jobs:
         run: npm run deployment:smoke
       - name: Verify scheduler heartbeats and dead-letter queues
         run: npm run operations:health
+      - name: Verify protected human and operational launch acceptance
+        env:
+          LAUNCH_ACCEPTANCE_JSON: ${{ secrets.LAUNCH_ACCEPTANCE_JSON }}
+        run: npm run launch:acceptance
       - name: Generate web, native and Edge SBOMs
         run: npm run release:sbom
       - name: Generate tamper-evident release manifest
@@ -117,21 +121,22 @@ jobs:
           DEPLOYMENT_HEALTH_PASSED: "true"
           DEPLOYMENT_SMOKE_PASSED: "true"
           OPERATIONS_HEALTH_PASSED: "true"
+          LAUNCH_ACCEPTANCE_PASSED: "true"
           SBOM_GENERATED: "true"
         run: npm run release:evidence
       - name: Package the verified release artifact
         run: tar -czf "haccora-production-${GITHUB_SHA}.tar.gz" .output release-evidence
       - name: Attest release build provenance
-        uses: actions/attest@v4
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
         with:
           subject-path: haccora-production-${{ github.sha }}.tar.gz
       - name: Attest aggregate release SBOM
-        uses: actions/attest@v4
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
         with:
           subject-path: haccora-production-${{ github.sha }}.tar.gz
           sbom-path: release-evidence/sbom-haccora-release.cdx.json
       - name: Upload immutable release evidence
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: haccora-production-${{ github.sha }}
           path: |
