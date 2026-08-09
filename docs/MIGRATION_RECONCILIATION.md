@@ -29,6 +29,8 @@ Published platform-generated timestamps that replayed an earlier named phase rem
 
 The Phase 26 heartbeat schema was published twice: first by Lovable as `20260809112615_bdaf520a-1b59-46e8-9302-8fce9cac64e9.sql`, then by the canonical package as `20260809120000_production_job_heartbeats.sql`. Both files are idempotent and may already exist in linked ledgers. Preserve both timestamps. The lineage checker permits only their exact `record_service_job_heartbeat` replay and continues to reject every other unapproved duplicate.
 
+The Phase 34 platform MFA guard was also applied twice: first by Lovable as `20260809212658_86b75e75-ddd4-4ecc-8273-a1a80d42645d.sql`, then by the named package as `20260809230000_platform_step_up_security.sql`. Both files use idempotent function and trigger replacement and may already exist in linked ledgers. Preserve both timestamps. The lineage checker permits only this exact `require_platform_operator_aal2` replay.
+
 ## Safe reconciliation procedure
 
 1. Back up the linked Supabase database and storage before changing migration history.

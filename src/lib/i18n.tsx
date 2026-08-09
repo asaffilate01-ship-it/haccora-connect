@@ -32,7 +32,8 @@ const en: Dict = {
   "brand.tag": "Digital food safety, built for UK food businesses",
   "brand.slogan": "Safe. Clean. Traceable.",
   "brand.tagline": "Structured for inspection preparation.",
-  "marquee.phrase": "Built for UK food businesses · Safe. Clean. Traceable. · Inspection ready.",
+  "marquee.phrase":
+    "Built for UK food businesses · Safe. Clean. Traceable. · Inspection evidence, organised.",
   "nav.more": "More",
 
   "hero.eyebrow": "HACCP · Food-handler health · food hygiene · Digital evidence",
@@ -69,7 +70,7 @@ const en: Dict = {
     "Four-nation UK profiles covering the correct regulator, local authority context and rating scheme — official sources remain authoritative.",
 
   "inspector.eyebrow": "Haccora Inspector Mode",
-  "inspector.title": "One click. Everything the authority asks for.",
+  "inspector.title": "Find and share the evidence your officer needs.",
   "inspector.body":
     "HACCP plan, temperature history, cleaning records, allergen matrix, training evidence, traceability and audit history — in a time-limited read-only view or downloadable evidence pack.",
   "inspector.item.plan": "Current HACCP plan",
@@ -78,7 +79,7 @@ const en: Dict = {
   "inspector.item.allergen": "Full allergen matrix",
   "inspector.item.training": "Food-handler health & food hygiene evidence",
   "inspector.item.traceability": "One-step-forward and one-step-back",
-  "inspector.cta": "See a sample evidence pack",
+  "inspector.cta": "How inspection evidence works",
 
   "pricing.eyebrow": "Pricing",
   "pricing.title": "Transparent. No hidden modules.",
@@ -247,7 +248,7 @@ const en: Dict = {
   "dash.actions": "Corrective actions",
   "dash.readiness": "Inspection readiness",
   "dash.readiness.body":
-    "All evidence is current. Generate the complete inspection pack in one click.",
+    "Review current evidence and generate a scoped inspection pack for the selected premises and period.",
   "dash.readiness.cta": "Open Inspector Mode",
   "dash.complete": "Complete",
   "dash.completed": "Done",
@@ -300,6 +301,14 @@ const en: Dict = {
   "nav.search": "Search",
   "nav.contact": "Contact us",
   "hero.video.title": "Watch how we support your business",
+  "hero.video.modalTitle": "Haccora in under a minute",
+  "hero.video.description":
+    "A captioned overview of daily routines, records, equipment, people and inspection evidence.",
+  "hero.video.transcriptTitle": "Read the video transcript",
+  "hero.video.transcript":
+    "Haccora brings daily food-safety work into one clear system. Start each shift with assigned routines. Record temperatures, cleaning and corrective actions. Track staff training and document expiry. Scan protected equipment QR labels to see the right asset and its history. Receive configured reminders and prepare scoped inspection evidence. Work across phone, tablet and desktop with tenant and premises controls. Haccora is built for UK food businesses. Official guidance and your business-specific procedures remain authoritative. Haccora does not guarantee an inspection outcome.",
+  "hero.video.unsupported":
+    "Your browser cannot play this video. Open the transcript below for the same information.",
   "contact.title": "Get more information",
   "contact.first": "First name",
   "contact.last": "Last name",

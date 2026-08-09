@@ -50,6 +50,10 @@ const publishedNoopFunctionReplays = new Set([
   // hosted ledgers. Keep the immutable entries and permit only this exact,
   // idempotent dashboard replacement; future identical replays still fail.
   "public.get_platform_dashboard:20260809193720_ae583ee2-089e-4eae-9406-2502454f3cde.sql:20260809213000_fix_platform_temperature_timestamp.sql",
+  // Lovable applied the Phase 34 AAL2 guard under its linked-project timestamp
+  // before the named Phase 34 migration reached main. Both immutable entries
+  // are safe and idempotent; permit only this exact published replay.
+  "public.require_platform_operator_aal2:20260809212658_86b75e75-ddd4-4ecc-8273-a1a80d42645d.sql:20260809230000_platform_step_up_security.sql",
 ]);
 
 const files = (await readdir(migrationDirectory)).filter((file) => file.endsWith(".sql")).sort();

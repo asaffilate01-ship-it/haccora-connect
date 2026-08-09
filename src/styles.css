@@ -319,6 +319,13 @@ html.haccora-reduced-motion *::after {
   line-height: 0.98;
 }
 
+.marketing-shell .hero-title {
+  max-width: 12ch;
+  font-size: clamp(2rem, 4.6vw, 4rem);
+  line-height: 0.98;
+  text-wrap: balance;
+}
+
 .marketing-shell h2 {
   font-size: clamp(1.6rem, 3vw, 2.85rem);
   line-height: 1.04;
@@ -338,6 +345,11 @@ html.haccora-reduced-motion *::after {
     font-size: clamp(1.8rem, 9vw, 2.45rem);
   }
 
+  .marketing-shell .hero-title {
+    max-width: 14ch;
+    font-size: clamp(2rem, 9.5vw, 2.7rem);
+  }
+
   .marketing-shell h2 {
     font-size: clamp(1.45rem, 7vw, 2rem);
   }
@@ -350,6 +362,11 @@ html.haccora-reduced-motion *::after {
 
   .marketing-shell h1 {
     font-size: clamp(2.35rem, 5vw, 3.15rem);
+  }
+
+  .marketing-shell .hero-title {
+    max-width: 13ch;
+    font-size: clamp(2.45rem, 5.2vw, 3.5rem);
   }
 
   .marketing-shell h2 {
