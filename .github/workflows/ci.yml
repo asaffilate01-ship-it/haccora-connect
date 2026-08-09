@@ -23,7 +23,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm audit --omit=dev --audit-level=high
+      - run: npm run audit:production
       - run: npm run verify
       - run: npm run migrations:check
       - run: npm run secrets:check
@@ -53,7 +53,6 @@ jobs:
           cache: npm
           cache-dependency-path: mobile/package-lock.json
       - run: npm ci
-      - run: npm audit --omit=dev --audit-level=high
       - run: npm run typecheck
       - run: npm run export:check
         env:
@@ -94,6 +93,7 @@ jobs:
           billing/index.ts
           integration-admin/index.ts
           integration-dispatch/index.ts
+          operations-health/index.ts
 
   browser-e2e:
     needs: web

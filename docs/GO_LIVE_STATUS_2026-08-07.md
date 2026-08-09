@@ -2,7 +2,16 @@
 
 ## Position
 
-The repository is suitable for a protected staging rehearsal after Phase 25. Core web/PWA/native workflows, persistence, QR equipment history, tenant RLS, scoped inspector access, notifications/billing foundations and release controls are implemented. The product is not yet approved for public production use because deployment, provider, legal, security and store evidence cannot be completed in source code.
+The repository is suitable for a protected staging rehearsal after Phase 26. Core web/PWA/native workflows, persistence, QR equipment history, tenant RLS, scoped inspector access, notifications/billing foundations and release controls are implemented. Production schedulers and dead-letter queues now have a protected release and uptime gate. The product is not yet approved for public production use because deployment, provider, legal, security and store evidence cannot be completed in source code.
+
+## Closed in Phase 26
+
+- Added service-role-only success/failure heartbeats for every scheduled dispatcher.
+- Added a protected aggregate operations-health function that fails on missed schedules or dead letters without exposing tenant data.
+- Added scheduled operational monitoring and made production release evidence depend on it.
+- Corrected cron authentication for the notification dispatcher.
+- Repaired the native dependency lock and inherited Edge formatting regression.
+- Replaced an impossible blanket mobile audit gate with an exact, expiring policy for the two current Expo/Metro build-tool advisories.
 
 ## Closed in Phase 25
 
@@ -39,7 +48,7 @@ The repository is suitable for a protected staging rehearsal after Phase 25. Cor
 | P0       | Fresh and linked-staging migrations | Run `Protected staging rehearsal` in `apply-and-test` mode and retain its reconciled ledger                                               |
 | P0       | Hosted demo identities              | Retain the workflow's successful `demo:seed`, `demo:verify` and expanded `demo:access` output                                             |
 | P0       | Production configuration            | Passing `npm run launch:preflight` with managed Supabase, domain, Auth, storage, scanner, Stripe, Resend/push and scheduler configuration |
-| P0       | Security and recovery               | Independent penetration test, cross-tenant acceptance, monitored alerts and a timed backup/storage restore drill                          |
+| P0       | Security and recovery               | Independent penetration test, cross-tenant acceptance, on-call routing proof and a timed backup/storage restore drill                     |
 | P0       | UK legal/privacy                    | Real legal identity, UK counsel approval, ICO position, DPIA, DPA/subprocessor and retention evidence                                     |
 | P0       | Food-safety validation              | Qualified reviewer approval of UK-nation templates, limits, claims and source/review dates                                                |
 | P0       | Release governance                  | Protected PR, green CI/CodeQL/database/E2E checks and immutable deployment evidence for the exact commit                                  |

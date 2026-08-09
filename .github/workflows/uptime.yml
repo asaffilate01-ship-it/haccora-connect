@@ -20,6 +20,7 @@ jobs:
       - name: Report monitoring configuration
         env:
           PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
+          OPERATIONS_HEALTH_URL: ${{ vars.OPERATIONS_HEALTH_URL }}
         run: |
           if [ -z "$PRODUCTION_URL" ]; then
             echo "::warning::PRODUCTION_URL is not configured; production probes are disabled until deployment."
@@ -27,6 +28,12 @@ jobs:
             echo "Set the repository variable \`PRODUCTION_URL\` to enable scheduled health and smoke probes." >> "$GITHUB_STEP_SUMMARY"
           else
             echo "Production probes are enabled for the configured URL." >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [ -z "$OPERATIONS_HEALTH_URL" ]; then
+            echo "::warning::OPERATIONS_HEALTH_URL is not configured; scheduler and queue probes are disabled."
+            echo "Set the operations-health URL and dedicated OPERATIONS_MONITOR_SECRET to monitor production jobs." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Scheduler heartbeat and dead-letter probes are enabled." >> "$GITHUB_STEP_SUMMARY"
           fi
 
   health:
@@ -42,3 +49,17 @@ jobs:
           node-version: 22
       - run: node scripts/check-deployment-health.mjs
       - run: node scripts/check-deployment-smoke.mjs
+
+  operations:
+    if: ${{ vars.OPERATIONS_HEALTH_URL != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      OPERATIONS_HEALTH_URL: ${{ vars.OPERATIONS_HEALTH_URL }}
+      OPERATIONS_MONITOR_SECRET: ${{ secrets.OPERATIONS_MONITOR_SECRET }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - run: node scripts/check-operations-health.mjs

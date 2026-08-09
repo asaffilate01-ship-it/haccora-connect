@@ -79,7 +79,9 @@ Deno.serve(async (request) => {
         .limit(1000),
       client
         .from("asset_events")
-        .select("event_type,outcome,title,notes,recorded_by_name,recorded_at", { count: "exact" })
+        .select("event_type,outcome,title,notes,recorded_by_name,recorded_at", {
+          count: "exact",
+        })
         .gte("recorded_at", from.toISOString())
         .lte("recorded_at", to.toISOString())
         .limit(1000),
@@ -193,7 +195,11 @@ Deno.serve(async (request) => {
         .slice(0, 250)
         .map(
           (row) =>
-            `${row.recorded_at} | ${ascii(row.event_type)} | ${ascii(row.outcome)} | ${ascii(row.title)} | ${ascii(row.recorded_by_name)} | ${ascii(row.notes)}`,
+            `${row.recorded_at} | ${ascii(row.event_type)} | ${
+              ascii(row.outcome)
+            } | ${ascii(row.title)} | ${ascii(row.recorded_by_name)} | ${
+              ascii(row.notes)
+            }`,
         ),
       "",
       "Generated from tenant-scoped data. Export creation is recorded in the immutable audit chain.",

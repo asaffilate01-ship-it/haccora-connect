@@ -4382,6 +4382,39 @@ export type Database = {
           },
         ]
       }
+      service_job_heartbeats: {
+        Row: {
+          job_name: string
+          last_duration_ms: number | null
+          last_failed_at: string | null
+          last_result: Json
+          last_started_at: string
+          last_status: string
+          last_succeeded_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          job_name: string
+          last_duration_ms?: number | null
+          last_failed_at?: string | null
+          last_result?: Json
+          last_started_at: string
+          last_status: string
+          last_succeeded_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          job_name?: string
+          last_duration_ms?: number | null
+          last_failed_at?: string | null
+          last_result?: Json
+          last_started_at?: string
+          last_status?: string
+          last_succeeded_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       shifts: {
         Row: {
           created_at: string
@@ -6445,6 +6478,15 @@ export type Database = {
           p_user_agent_hash?: string
         }
         Returns: string
+      }
+      record_service_job_heartbeat: {
+        Args: {
+          p_job_name: string
+          p_result?: Json
+          p_started_at: string
+          p_status: string
+        }
+        Returns: undefined
       }
       register_device_session: {
         Args: {

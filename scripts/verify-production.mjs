@@ -34,11 +34,14 @@ const required = [
   "supabase/migrations/20260802120000_v2_commercial_reconciliation.sql",
   "supabase/migrations/20260808170000_restore_tenant_billing_and_platform_policy.sql",
   "supabase/migrations/20260808190000_native_evidence_and_push_hardening.sql",
+  "supabase/migrations/20260809120000_production_job_heartbeats.sql",
   "docs/PHASE-24-NATIVE-EVIDENCE-AND-NOTIFICATIONS.md",
   "docs/PHASE-25-STAGING-RELEASE-AUTOMATION.md",
+  "docs/PHASE-26-PRODUCTION-OPERATIONS.md",
   "supabase/functions/billing/index.ts",
   "supabase/functions/integration-admin/index.ts",
   "supabase/functions/integration-dispatch/index.ts",
+  "supabase/functions/operations-health/index.ts",
   "supabase/functions/package-lock.json",
   "supabase/functions/package.json",
   "src/routes/app.billing.tsx",
@@ -68,6 +71,9 @@ const required = [
   "SECURITY.md",
   "scripts/check-deployment-health.mjs",
   "scripts/check-deployment-smoke.mjs",
+  "scripts/check-operations-health.mjs",
+  "scripts/check-production-audits.mjs",
+  "security/dependency-audit-exceptions.json",
   "scripts/generate-release-evidence.mjs",
   "scripts/generate-staging-evidence.mjs",
   "scripts/verify-staging-env.mjs",
@@ -131,6 +137,8 @@ for (const key of [
   "STRIPE_LIVE_MODE",
   "INTEGRATION_ENCRYPTION_KEY",
   "EXPO_ACCESS_TOKEN",
+  "OPERATIONS_HEALTH_URL",
+  "OPERATIONS_MONITOR_SECRET",
 ]) {
   if (!new RegExp(`^${key}=`, "m").test(envExample)) {
     failures.push(`Environment template is missing: ${key}`);
@@ -144,6 +152,8 @@ for (const functionName of [
   "billing",
   "integration-admin",
   "integration-dispatch",
+  "notification-dispatch",
+  "operations-health",
 ]) {
   if (!supabaseConfig.includes(`[functions.${functionName}]`)) {
     failures.push(`Supabase config is missing function: ${functionName}`);
@@ -159,6 +169,8 @@ for (const functionName of [
   "billing",
   "integration-admin",
   "integration-dispatch",
+  "notification-dispatch",
+  "operations-health",
 ]) {
   if (!ci.includes(`${functionName}/index.ts`)) {
     failures.push(`CI does not type-check Edge Function: ${functionName}`);
@@ -196,6 +208,7 @@ for (const marker of [
   "npm run export:check",
   "npm run release:preflight",
   "npm run deployment:smoke",
+  "npm run operations:health",
   "npm run release:evidence",
   "actions/upload-artifact@v4",
 ]) {
@@ -224,7 +237,11 @@ for (const marker of [
 }
 
 const uptimeWorkflow = await readFile(path.join(root, ".github/workflows/uptime.yml"), "utf8");
-for (const marker of ["check-deployment-health.mjs", "check-deployment-smoke.mjs"]) {
+for (const marker of [
+  "check-deployment-health.mjs",
+  "check-deployment-smoke.mjs",
+  "check-operations-health.mjs",
+]) {
   if (!uptimeWorkflow.includes(marker)) {
     failures.push(`Production uptime workflow is missing: ${marker}`);
   }

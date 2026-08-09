@@ -33,7 +33,9 @@
     "demo:access": "node --env-file-if-exists=.env.demo scripts/check-demo-role-access.mjs",
     "staging:preflight": "node --env-file-if-exists=.env.staging scripts/verify-staging-env.mjs",
     "staging:ledger": "node scripts/verify-remote-migration-ledger.mjs",
-    "staging:evidence": "node scripts/generate-staging-evidence.mjs"
+    "staging:evidence": "node scripts/generate-staging-evidence.mjs",
+    "audit:production": "node scripts/check-production-audits.mjs",
+    "operations:health": "node scripts/check-operations-health.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

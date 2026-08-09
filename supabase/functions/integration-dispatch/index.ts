@@ -6,6 +6,7 @@ import {
   preflight,
   requirePost,
 } from "../_shared/http.ts";
+import { recordJobHeartbeat } from "../_shared/job-heartbeat.ts";
 import { serviceClient } from "../_shared/supabase.ts";
 import { assertSafeWebhookUrl } from "../_shared/webhook-url.ts";
 
@@ -21,13 +22,31 @@ Deno.serve(async (request) => {
     return json(request, { error: "unauthorized" }, 401);
   }
   const supabase = serviceClient();
+  const startedAt = new Date().toISOString();
+  await recordJobHeartbeat(
+    supabase,
+    "integration-dispatch",
+    "started",
+    startedAt,
+  );
   const { data: jobs, error: claimError } = await supabase.rpc(
     "claim_webhook_deliveries",
     {
       p_limit: 25,
     },
   );
-  if (claimError) return json(request, { error: "claim_failed" }, 500);
+  if (claimError) {
+    await recordJobHeartbeat(
+      supabase,
+      "integration-dispatch",
+      "failed",
+      startedAt,
+      {
+        error: "claim_failed",
+      },
+    );
+    return json(request, { error: "claim_failed" }, 500);
+  }
   let delivered = 0;
   let failed = 0;
   for (const job of jobs ?? []) {
@@ -102,10 +121,17 @@ Deno.serve(async (request) => {
       }).eq("id", job.endpoint_id);
     }
   }
-  return json(request, {
-    ok: true,
+  const result = {
     claimed: jobs?.length ?? 0,
     delivered,
     failed,
-  });
+  };
+  await recordJobHeartbeat(
+    supabase,
+    "integration-dispatch",
+    "succeeded",
+    startedAt,
+    result,
+  );
+  return json(request, { ok: true, ...result });
 });

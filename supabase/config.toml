@@ -14,3 +14,9 @@ verify_jwt = false
 
 [functions.integration-dispatch]
 verify_jwt = false
+
+[functions.notification-dispatch]
+verify_jwt = false
+
+[functions.operations-health]
+verify_jwt = false

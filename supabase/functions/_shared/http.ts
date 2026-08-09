@@ -11,7 +11,7 @@ export function corsHeaders(request: Request): HeadersInit {
   return {
     "Access-Control-Allow-Origin": allowedOrigin,
     "Access-Control-Allow-Headers":
-      "authorization, apikey, content-type, x-client-info, x-device-secret, stripe-signature",
+      "authorization, apikey, content-type, x-client-info, x-cron-secret, x-device-secret, x-monitor-secret, stripe-signature",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Max-Age": "86400",
     "Content-Security-Policy": "default-src 'none'; frame-ancestors 'none'",
