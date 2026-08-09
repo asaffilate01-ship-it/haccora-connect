@@ -10,7 +10,16 @@ import {
 import { hmacHex } from "../_shared/integration-crypto.ts";
 import { requireUser, serviceClient } from "../_shared/supabase.ts";
 
-const Action = z.object({ action: z.enum(["checkout", "portal"]) });
+const Action = z.object({
+  action: z.enum(["checkout", "portal"]),
+  plan: z.enum(["solo", "complete", "group"]).default("complete"),
+});
+
+const PRICE_ENV = {
+  solo: "STRIPE_PRICE_SOLO",
+  complete: "STRIPE_PRICE_COMPLETE",
+  group: "STRIPE_PRICE_GROUP",
+} as const;
 
 async function stripeRequest(path: string, body: URLSearchParams) {
   const response = await fetch(`https://api.stripe.com/v1/${path}`, {
@@ -69,13 +78,15 @@ async function authenticatedAction(request: Request) {
   }
   const body = new URLSearchParams({
     mode: "subscription",
-    "line_items[0][price]": env("STRIPE_PRICE_PRO"),
+    "line_items[0][price]": env(PRICE_ENV[input.plan]),
     "line_items[0][quantity]": "1",
     success_url: `${appUrl}/app/billing?checkout=success`,
     cancel_url: `${appUrl}/app/billing?checkout=cancelled`,
     client_reference_id: organizationId,
     "metadata[organization_id]": organizationId,
     "subscription_data[metadata][organization_id]": organizationId,
+    "metadata[haccora_plan]": input.plan,
+    "subscription_data[metadata][haccora_plan]": input.plan,
     "allow_promotion_codes": "true",
   });
   if (subscription?.provider_customer_id) {
@@ -179,7 +190,12 @@ async function stripeWebhook(request: Request, signatureHeader: string) {
       provider_subscription_id: typeof object.id === "string"
         ? object.id
         : null,
-      plan: "pro",
+      plan: typeof object.metadata?.haccora_plan === "string" &&
+          ["solo", "complete", "group", "enterprise"].includes(
+            object.metadata.haccora_plan,
+          )
+        ? object.metadata.haccora_plan
+        : "complete",
       status,
       current_period_end: typeof object.current_period_end === "number"
         ? new Date(object.current_period_end * 1000).toISOString()

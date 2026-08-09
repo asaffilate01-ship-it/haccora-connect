@@ -46,7 +46,7 @@ function LabelsPage() {
   const t = (_legacy: string, english: string) => english;
   const [kind, setKind] = useState<LabelKind>("prep");
   const [sel, setSel] = useState(CATALOG[0]);
-  const canPrint = user ? can(user.role, "labels.print") : false;
+  const canPrint = user ? can(user.role, "labels.print", user.actionPermissions) : false;
 
   const [history, setHistory] = useState<
     Array<{

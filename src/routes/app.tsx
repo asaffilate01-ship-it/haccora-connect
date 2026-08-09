@@ -58,6 +58,7 @@ import {
   Rocket,
   Sunrise,
   Lightbulb,
+  Building2,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app")({
@@ -131,6 +132,7 @@ const GROUPS: NavGroup[] = [
   {
     labelKey: "nav.group.people",
     items: [
+      { to: "/app/organisation", icon: Building2, key: "Organisation & team", nav: "settings" },
       { to: "/app/training", icon: Users, key: "menu.training", nav: "training" },
       { to: "/app/inductions", icon: ClipboardCheck, key: "Staff induction", nav: "training" },
       { to: "/app/health", icon: HeartPulse, key: "menu.health", nav: "health" },
@@ -203,6 +205,8 @@ function AppShell() {
       navigate({ to: "/login", search: { redirect: pathname } as never });
     } else if (hydrated && user?.platformRole && !user.organizationId) {
       navigate({ to: "/platform", replace: true });
+    } else if (hydrated && user?.organizationId && user.serviceStatus !== "active") {
+      navigate({ to: "/account-status", replace: true });
     } else if (hydrated && user && !user.organizationId) {
       navigate({ to: "/onboarding", replace: true });
     }
@@ -239,6 +243,7 @@ function AppShell() {
       { prefix: "/app/logs", nav: "logs" },
       { prefix: "/app/inspection", nav: "audit" },
       { prefix: "/app/settings", nav: "settings" },
+      { prefix: "/app/organisation", nav: "settings" },
       { prefix: "/app/routines", nav: "routines" },
       { prefix: "/app/menu", nav: "menu" },
       { prefix: "/app/rota", nav: "rota" },

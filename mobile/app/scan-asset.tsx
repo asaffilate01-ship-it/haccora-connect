@@ -1,8 +1,10 @@
 import { CameraView, useCameraPermissions } from "expo-camera";
+import * as Location from "expo-location";
 import { Redirect, router } from "expo-router";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSession } from "@/lib/session";
+import { supabase } from "@/lib/supabase";
 
 const TOKEN = /[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i;
 
@@ -32,7 +34,7 @@ export default function ScanAsset() {
       </View>
     );
 
-  const receive = (data: string) => {
+  const receive = async (data: string) => {
     if (scanned) return;
     const token = data.match(TOKEN)?.[0];
     if (!token || (!data.includes("/app/assets/") && !data.startsWith("haccorauk://"))) {
@@ -41,7 +43,38 @@ export default function ScanAsset() {
       return;
     }
     setScanned(true);
-    router.replace({ pathname: "/assets/[assetId]", params: { assetId: token } });
+    let latitude: number | null = null;
+    let longitude: number | null = null;
+    let accuracy: number | null = null;
+    try {
+      const permissionResult = await Location.requestForegroundPermissionsAsync();
+      if (permissionResult.granted) {
+        const position = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.High,
+        });
+        latitude = position.coords.latitude;
+        longitude = position.coords.longitude;
+        accuracy = position.coords.accuracy;
+      }
+    } catch {
+      // The scan remains usable when GPS is denied or unavailable.
+    }
+    const { data: scan, error: scanError } = await supabase.rpc("record_asset_scan", {
+      p_qr_token: token,
+      p_source: "native_camera",
+      p_client_scanned_at: new Date().toISOString(),
+      p_latitude: latitude,
+      p_longitude: longitude,
+      p_accuracy_metres: accuracy,
+    });
+    if (scanError || !scan || typeof scan !== "object" || !("scan_session_id" in scan)) {
+      setError(scanError?.message ?? "The equipment scan could not be registered.");
+      return;
+    }
+    router.replace({
+      pathname: "/assets/[assetId]",
+      params: { assetId: token, scanId: String(scan.scan_session_id) },
+    });
   };
 
   return (
@@ -49,11 +82,15 @@ export default function ScanAsset() {
       <CameraView
         style={StyleSheet.absoluteFill}
         barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
-        onBarcodeScanned={({ data }) => receive(data)}
+        onBarcodeScanned={({ data }) => void receive(data)}
       />
       <View style={styles.overlay}>
         <View style={styles.frame} />
-        <Text style={styles.help}>Hold the Haccora QR label inside the frame</Text>
+        <Text style={styles.help}>
+          {scanned && !error
+            ? "Registering asset, time and permitted GPS…"
+            : "Hold the Haccora QR label inside the frame"}
+        </Text>
         {error ? (
           <View style={styles.error}>
             <Text style={styles.errorText}>{error}</Text>

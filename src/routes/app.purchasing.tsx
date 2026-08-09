@@ -24,7 +24,9 @@ function PurchasingPage() {
   const { user } = useAuth();
   const role = user?.role ?? "staff";
   const t = (_legacy: string, english: string) => english;
-  const canManage = can(role, "purchasing.approvePO") || can(role, "purchasing.receive");
+  const canManage =
+    can(role, "purchasing.approvePO", user?.actionPermissions) ||
+    can(role, "purchasing.receive", user?.actionPermissions);
 
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);

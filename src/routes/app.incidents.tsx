@@ -46,8 +46,8 @@ const CAT_META: Record<Kind, { label: string }> = {
 function IncidentsPage() {
   const { user } = useAuth();
   const t = (_legacy: string, english: string) => english;
-  const canReport = user ? can(user.role, "incidents.report") : false;
-  const canClose = user ? can(user.role, "incidents.close") : false;
+  const canReport = user ? can(user.role, "incidents.report", user.actionPermissions) : false;
+  const canClose = user ? can(user.role, "incidents.close", user.actionPermissions) : false;
 
   const [items, setItems] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);

@@ -9,108 +9,85 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as PlatformRouteImport } from './routes/platform'
-import { Route as OnboardingRouteImport } from './routes/onboarding'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as LegalRouteImport } from './routes/legal'
-import { Route as HealthDotjsonRouteImport } from './routes/health[.]json'
-import { Route as BlogRouteImport } from './routes/blog'
-import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as BlogIndexRouteImport } from './routes/blog.index'
+import { Route as AccountStatusRouteImport } from './routes/account-status'
+import { Route as AppRouteImport } from './routes/app'
+import { Route as BlogRouteImport } from './routes/blog'
+import { Route as HealthDotjsonRouteImport } from './routes/health[.]json'
+import { Route as LegalRouteImport } from './routes/legal'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as PlatformRouteImport } from './routes/platform'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as AppIndexRouteImport } from './routes/app.index'
-import { Route as LegalTermsRouteImport } from './routes/legal.terms'
-import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
-import { Route as LegalDataProcessingRouteImport } from './routes/legal.data-processing'
-import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
-import { Route as LegalComplaintsRouteImport } from './routes/legal.complaints'
-import { Route as LegalCompanyDetailsRouteImport } from './routes/legal.company-details'
-import { Route as LegalAccessibilityRouteImport } from './routes/legal.accessibility'
-import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
-import { Route as AppWorkflowsRouteImport } from './routes/app.workflows'
-import { Route as AppWasteRouteImport } from './routes/app.waste'
-import { Route as AppUkComplianceRouteImport } from './routes/app.uk-compliance'
-import { Route as AppTrainingRouteImport } from './routes/app.training'
-import { Route as AppTodayRouteImport } from './routes/app.today'
-import { Route as AppTemperatureRouteImport } from './routes/app.temperature'
-import { Route as AppSuppliersRouteImport } from './routes/app.suppliers'
-import { Route as AppStockRouteImport } from './routes/app.stock'
-import { Route as AppSettingsRouteImport } from './routes/app.settings'
-import { Route as AppSecurityRouteImport } from './routes/app.security'
-import { Route as AppSafeMethodsRouteImport } from './routes/app.safe-methods'
-import { Route as AppRoutinesRouteImport } from './routes/app.routines'
-import { Route as AppRotaRouteImport } from './routes/app.rota'
-import { Route as AppRecipesRouteImport } from './routes/app.recipes'
-import { Route as AppRecallsRouteImport } from './routes/app.recalls'
-import { Route as AppReadinessRouteImport } from './routes/app.readiness'
-import { Route as AppPurchasingRouteImport } from './routes/app.purchasing'
-import { Route as AppPreferencesRouteImport } from './routes/app.preferences'
-import { Route as AppPpdsRouteImport } from './routes/app.ppds'
-import { Route as AppPestRouteImport } from './routes/app.pest'
-import { Route as AppOilRouteImport } from './routes/app.oil'
-import { Route as AppMenuRouteImport } from './routes/app.menu'
-import { Route as AppLogsRouteImport } from './routes/app.logs'
-import { Route as AppLabelsRouteImport } from './routes/app.labels'
-import { Route as AppIntegrationsRouteImport } from './routes/app.integrations'
-import { Route as AppInspectionRouteImport } from './routes/app.inspection'
-import { Route as AppInductionsRouteImport } from './routes/app.inductions'
-import { Route as AppIncidentsRouteImport } from './routes/app.incidents'
-import { Route as AppHealthRouteImport } from './routes/app.health'
-import { Route as AppHaccpFlowsRouteImport } from './routes/app.haccp-flows'
-import { Route as AppHaccpRouteImport } from './routes/app.haccp'
-import { Route as AppGoodsinRouteImport } from './routes/app.goodsin'
-import { Route as AppGetStartedRouteImport } from './routes/app.get-started'
-import { Route as AppExpiryRouteImport } from './routes/app.expiry'
-import { Route as AppDocumentsRouteImport } from './routes/app.documents'
-import { Route as AppDiaryRouteImport } from './routes/app.diary'
-import { Route as AppControlCentreRouteImport } from './routes/app.control-centre'
-import { Route as AppComplaintsRouteImport } from './routes/app.complaints'
-import { Route as AppCoachRouteImport } from './routes/app.coach'
-import { Route as AppCleaningRouteImport } from './routes/app.cleaning'
-import { Route as AppChemicalsRouteImport } from './routes/app.chemicals'
-import { Route as AppChecksRouteImport } from './routes/app.checks'
-import { Route as AppCalibrationRouteImport } from './routes/app.calibration'
-import { Route as AppBillingRouteImport } from './routes/app.billing'
-import { Route as AppAuditsRouteImport } from './routes/app.audits'
-import { Route as AppAssetsRouteImport } from './routes/app.assets'
 import { Route as AppAlertsRouteImport } from './routes/app.alerts'
-import { Route as AppAssetsScanRouteImport } from './routes/app.assets.scan'
+import { Route as AppAssetsRouteImport } from './routes/app.assets'
+import { Route as AppAuditsRouteImport } from './routes/app.audits'
+import { Route as AppBillingRouteImport } from './routes/app.billing'
+import { Route as AppCalibrationRouteImport } from './routes/app.calibration'
+import { Route as AppChecksRouteImport } from './routes/app.checks'
+import { Route as AppChemicalsRouteImport } from './routes/app.chemicals'
+import { Route as AppCleaningRouteImport } from './routes/app.cleaning'
+import { Route as AppCoachRouteImport } from './routes/app.coach'
+import { Route as AppComplaintsRouteImport } from './routes/app.complaints'
+import { Route as AppControlCentreRouteImport } from './routes/app.control-centre'
+import { Route as AppDiaryRouteImport } from './routes/app.diary'
+import { Route as AppDocumentsRouteImport } from './routes/app.documents'
+import { Route as AppExpiryRouteImport } from './routes/app.expiry'
+import { Route as AppGetStartedRouteImport } from './routes/app.get-started'
+import { Route as AppGoodsinRouteImport } from './routes/app.goodsin'
+import { Route as AppHaccpRouteImport } from './routes/app.haccp'
+import { Route as AppHaccpFlowsRouteImport } from './routes/app.haccp-flows'
+import { Route as AppHealthRouteImport } from './routes/app.health'
+import { Route as AppIncidentsRouteImport } from './routes/app.incidents'
+import { Route as AppInductionsRouteImport } from './routes/app.inductions'
+import { Route as AppInspectionRouteImport } from './routes/app.inspection'
+import { Route as AppIntegrationsRouteImport } from './routes/app.integrations'
+import { Route as AppLabelsRouteImport } from './routes/app.labels'
+import { Route as AppLogsRouteImport } from './routes/app.logs'
+import { Route as AppMenuRouteImport } from './routes/app.menu'
+import { Route as AppOilRouteImport } from './routes/app.oil'
+import { Route as AppOrganisationRouteImport } from './routes/app.organisation'
+import { Route as AppPestRouteImport } from './routes/app.pest'
+import { Route as AppPpdsRouteImport } from './routes/app.ppds'
+import { Route as AppPreferencesRouteImport } from './routes/app.preferences'
+import { Route as AppPurchasingRouteImport } from './routes/app.purchasing'
+import { Route as AppReadinessRouteImport } from './routes/app.readiness'
+import { Route as AppRecallsRouteImport } from './routes/app.recalls'
+import { Route as AppRecipesRouteImport } from './routes/app.recipes'
+import { Route as AppRotaRouteImport } from './routes/app.rota'
+import { Route as AppRoutinesRouteImport } from './routes/app.routines'
+import { Route as AppSafeMethodsRouteImport } from './routes/app.safe-methods'
+import { Route as AppSecurityRouteImport } from './routes/app.security'
+import { Route as AppSettingsRouteImport } from './routes/app.settings'
+import { Route as AppStockRouteImport } from './routes/app.stock'
+import { Route as AppSuppliersRouteImport } from './routes/app.suppliers'
+import { Route as AppTemperatureRouteImport } from './routes/app.temperature'
+import { Route as AppTodayRouteImport } from './routes/app.today'
+import { Route as AppTrainingRouteImport } from './routes/app.training'
+import { Route as AppUkComplianceRouteImport } from './routes/app.uk-compliance'
+import { Route as AppWasteRouteImport } from './routes/app.waste'
+import { Route as AppWorkflowsRouteImport } from './routes/app.workflows'
+import { Route as BlogIndexRouteImport } from './routes/blog.index'
+import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
+import { Route as LegalAccessibilityRouteImport } from './routes/legal.accessibility'
+import { Route as LegalCompanyDetailsRouteImport } from './routes/legal.company-details'
+import { Route as LegalComplaintsRouteImport } from './routes/legal.complaints'
+import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
+import { Route as LegalDataProcessingRouteImport } from './routes/legal.data-processing'
+import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
+import { Route as LegalTermsRouteImport } from './routes/legal.terms'
 import { Route as AppAssetsAssetIdRouteImport } from './routes/app.assets.$assetId'
+import { Route as AppAssetsScanRouteImport } from './routes/app.assets.scan'
 
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PlatformRoute = PlatformRouteImport.update({
-  id: '/platform',
-  path: '/platform',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OnboardingRoute = OnboardingRouteImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LegalRoute = LegalRouteImport.update({
-  id: '/legal',
-  path: '/legal',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HealthDotjsonRoute = HealthDotjsonRouteImport.update({
-  id: '/health.json',
-  path: '/health.json',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BlogRoute = BlogRouteImport.update({
-  id: '/blog',
-  path: '/blog',
+const AccountStatusRoute = AccountStatusRouteImport.update({
+  id: '/account-status',
+  path: '/account-status',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRoute = AppRouteImport.update({
@@ -118,289 +95,44 @@ const AppRoute = AppRouteImport.update({
   path: '/app',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const BlogRoute = BlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BlogIndexRoute = BlogIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => BlogRoute,
+const HealthDotjsonRoute = HealthDotjsonRouteImport.update({
+  id: '/health.json',
+  path: '/health.json',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalRoute = LegalRouteImport.update({
+  id: '/legal',
+  path: '/legal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlatformRoute = PlatformRouteImport.update({
+  id: '/platform',
+  path: '/platform',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AppRoute,
-} as any)
-const LegalTermsRoute = LegalTermsRouteImport.update({
-  id: '/terms',
-  path: '/terms',
-  getParentRoute: () => LegalRoute,
-} as any)
-const LegalPrivacyRoute = LegalPrivacyRouteImport.update({
-  id: '/privacy',
-  path: '/privacy',
-  getParentRoute: () => LegalRoute,
-} as any)
-const LegalDataProcessingRoute = LegalDataProcessingRouteImport.update({
-  id: '/data-processing',
-  path: '/data-processing',
-  getParentRoute: () => LegalRoute,
-} as any)
-const LegalCookiesRoute = LegalCookiesRouteImport.update({
-  id: '/cookies',
-  path: '/cookies',
-  getParentRoute: () => LegalRoute,
-} as any)
-const LegalComplaintsRoute = LegalComplaintsRouteImport.update({
-  id: '/complaints',
-  path: '/complaints',
-  getParentRoute: () => LegalRoute,
-} as any)
-const LegalCompanyDetailsRoute = LegalCompanyDetailsRouteImport.update({
-  id: '/company-details',
-  path: '/company-details',
-  getParentRoute: () => LegalRoute,
-} as any)
-const LegalAccessibilityRoute = LegalAccessibilityRouteImport.update({
-  id: '/accessibility',
-  path: '/accessibility',
-  getParentRoute: () => LegalRoute,
-} as any)
-const BlogSlugRoute = BlogSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => BlogRoute,
-} as any)
-const AppWorkflowsRoute = AppWorkflowsRouteImport.update({
-  id: '/workflows',
-  path: '/workflows',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppWasteRoute = AppWasteRouteImport.update({
-  id: '/waste',
-  path: '/waste',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppUkComplianceRoute = AppUkComplianceRouteImport.update({
-  id: '/uk-compliance',
-  path: '/uk-compliance',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppTrainingRoute = AppTrainingRouteImport.update({
-  id: '/training',
-  path: '/training',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppTodayRoute = AppTodayRouteImport.update({
-  id: '/today',
-  path: '/today',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppTemperatureRoute = AppTemperatureRouteImport.update({
-  id: '/temperature',
-  path: '/temperature',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppSuppliersRoute = AppSuppliersRouteImport.update({
-  id: '/suppliers',
-  path: '/suppliers',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppStockRoute = AppStockRouteImport.update({
-  id: '/stock',
-  path: '/stock',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppSettingsRoute = AppSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppSecurityRoute = AppSecurityRouteImport.update({
-  id: '/security',
-  path: '/security',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppSafeMethodsRoute = AppSafeMethodsRouteImport.update({
-  id: '/safe-methods',
-  path: '/safe-methods',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppRoutinesRoute = AppRoutinesRouteImport.update({
-  id: '/routines',
-  path: '/routines',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppRotaRoute = AppRotaRouteImport.update({
-  id: '/rota',
-  path: '/rota',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppRecipesRoute = AppRecipesRouteImport.update({
-  id: '/recipes',
-  path: '/recipes',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppRecallsRoute = AppRecallsRouteImport.update({
-  id: '/recalls',
-  path: '/recalls',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppReadinessRoute = AppReadinessRouteImport.update({
-  id: '/readiness',
-  path: '/readiness',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppPurchasingRoute = AppPurchasingRouteImport.update({
-  id: '/purchasing',
-  path: '/purchasing',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppPreferencesRoute = AppPreferencesRouteImport.update({
-  id: '/preferences',
-  path: '/preferences',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppPpdsRoute = AppPpdsRouteImport.update({
-  id: '/ppds',
-  path: '/ppds',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppPestRoute = AppPestRouteImport.update({
-  id: '/pest',
-  path: '/pest',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppOilRoute = AppOilRouteImport.update({
-  id: '/oil',
-  path: '/oil',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppMenuRoute = AppMenuRouteImport.update({
-  id: '/menu',
-  path: '/menu',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppLogsRoute = AppLogsRouteImport.update({
-  id: '/logs',
-  path: '/logs',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppLabelsRoute = AppLabelsRouteImport.update({
-  id: '/labels',
-  path: '/labels',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppIntegrationsRoute = AppIntegrationsRouteImport.update({
-  id: '/integrations',
-  path: '/integrations',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppInspectionRoute = AppInspectionRouteImport.update({
-  id: '/inspection',
-  path: '/inspection',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppInductionsRoute = AppInductionsRouteImport.update({
-  id: '/inductions',
-  path: '/inductions',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppIncidentsRoute = AppIncidentsRouteImport.update({
-  id: '/incidents',
-  path: '/incidents',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppHealthRoute = AppHealthRouteImport.update({
-  id: '/health',
-  path: '/health',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppHaccpFlowsRoute = AppHaccpFlowsRouteImport.update({
-  id: '/haccp-flows',
-  path: '/haccp-flows',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppHaccpRoute = AppHaccpRouteImport.update({
-  id: '/haccp',
-  path: '/haccp',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppGoodsinRoute = AppGoodsinRouteImport.update({
-  id: '/goodsin',
-  path: '/goodsin',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppGetStartedRoute = AppGetStartedRouteImport.update({
-  id: '/get-started',
-  path: '/get-started',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppExpiryRoute = AppExpiryRouteImport.update({
-  id: '/expiry',
-  path: '/expiry',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppDocumentsRoute = AppDocumentsRouteImport.update({
-  id: '/documents',
-  path: '/documents',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppDiaryRoute = AppDiaryRouteImport.update({
-  id: '/diary',
-  path: '/diary',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppControlCentreRoute = AppControlCentreRouteImport.update({
-  id: '/control-centre',
-  path: '/control-centre',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppComplaintsRoute = AppComplaintsRouteImport.update({
-  id: '/complaints',
-  path: '/complaints',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppCoachRoute = AppCoachRouteImport.update({
-  id: '/coach',
-  path: '/coach',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppCleaningRoute = AppCleaningRouteImport.update({
-  id: '/cleaning',
-  path: '/cleaning',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppChemicalsRoute = AppChemicalsRouteImport.update({
-  id: '/chemicals',
-  path: '/chemicals',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppChecksRoute = AppChecksRouteImport.update({
-  id: '/checks',
-  path: '/checks',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppCalibrationRoute = AppCalibrationRouteImport.update({
-  id: '/calibration',
-  path: '/calibration',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppBillingRoute = AppBillingRouteImport.update({
-  id: '/billing',
-  path: '/billing',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppAuditsRoute = AppAuditsRouteImport.update({
-  id: '/audits',
-  path: '/audits',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppAssetsRoute = AppAssetsRouteImport.update({
-  id: '/assets',
-  path: '/assets',
   getParentRoute: () => AppRoute,
 } as any)
 const AppAlertsRoute = AppAlertsRouteImport.update({
@@ -408,19 +140,300 @@ const AppAlertsRoute = AppAlertsRouteImport.update({
   path: '/alerts',
   getParentRoute: () => AppRoute,
 } as any)
-const AppAssetsScanRoute = AppAssetsScanRouteImport.update({
-  id: '/scan',
-  path: '/scan',
-  getParentRoute: () => AppAssetsRoute,
+const AppAssetsRoute = AppAssetsRouteImport.update({
+  id: '/assets',
+  path: '/assets',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAuditsRoute = AppAuditsRouteImport.update({
+  id: '/audits',
+  path: '/audits',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBillingRoute = AppBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCalibrationRoute = AppCalibrationRouteImport.update({
+  id: '/calibration',
+  path: '/calibration',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppChecksRoute = AppChecksRouteImport.update({
+  id: '/checks',
+  path: '/checks',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppChemicalsRoute = AppChemicalsRouteImport.update({
+  id: '/chemicals',
+  path: '/chemicals',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCleaningRoute = AppCleaningRouteImport.update({
+  id: '/cleaning',
+  path: '/cleaning',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCoachRoute = AppCoachRouteImport.update({
+  id: '/coach',
+  path: '/coach',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppComplaintsRoute = AppComplaintsRouteImport.update({
+  id: '/complaints',
+  path: '/complaints',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppControlCentreRoute = AppControlCentreRouteImport.update({
+  id: '/control-centre',
+  path: '/control-centre',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDiaryRoute = AppDiaryRouteImport.update({
+  id: '/diary',
+  path: '/diary',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDocumentsRoute = AppDocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppExpiryRoute = AppExpiryRouteImport.update({
+  id: '/expiry',
+  path: '/expiry',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppGetStartedRoute = AppGetStartedRouteImport.update({
+  id: '/get-started',
+  path: '/get-started',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppGoodsinRoute = AppGoodsinRouteImport.update({
+  id: '/goodsin',
+  path: '/goodsin',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppHaccpRoute = AppHaccpRouteImport.update({
+  id: '/haccp',
+  path: '/haccp',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppHaccpFlowsRoute = AppHaccpFlowsRouteImport.update({
+  id: '/haccp-flows',
+  path: '/haccp-flows',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppHealthRoute = AppHealthRouteImport.update({
+  id: '/health',
+  path: '/health',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppIncidentsRoute = AppIncidentsRouteImport.update({
+  id: '/incidents',
+  path: '/incidents',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppInductionsRoute = AppInductionsRouteImport.update({
+  id: '/inductions',
+  path: '/inductions',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppInspectionRoute = AppInspectionRouteImport.update({
+  id: '/inspection',
+  path: '/inspection',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppIntegrationsRoute = AppIntegrationsRouteImport.update({
+  id: '/integrations',
+  path: '/integrations',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLabelsRoute = AppLabelsRouteImport.update({
+  id: '/labels',
+  path: '/labels',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLogsRoute = AppLogsRouteImport.update({
+  id: '/logs',
+  path: '/logs',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMenuRoute = AppMenuRouteImport.update({
+  id: '/menu',
+  path: '/menu',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppOilRoute = AppOilRouteImport.update({
+  id: '/oil',
+  path: '/oil',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppOrganisationRoute = AppOrganisationRouteImport.update({
+  id: '/organisation',
+  path: '/organisation',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPestRoute = AppPestRouteImport.update({
+  id: '/pest',
+  path: '/pest',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPpdsRoute = AppPpdsRouteImport.update({
+  id: '/ppds',
+  path: '/ppds',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPreferencesRoute = AppPreferencesRouteImport.update({
+  id: '/preferences',
+  path: '/preferences',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPurchasingRoute = AppPurchasingRouteImport.update({
+  id: '/purchasing',
+  path: '/purchasing',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppReadinessRoute = AppReadinessRouteImport.update({
+  id: '/readiness',
+  path: '/readiness',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRecallsRoute = AppRecallsRouteImport.update({
+  id: '/recalls',
+  path: '/recalls',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRecipesRoute = AppRecipesRouteImport.update({
+  id: '/recipes',
+  path: '/recipes',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRotaRoute = AppRotaRouteImport.update({
+  id: '/rota',
+  path: '/rota',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRoutinesRoute = AppRoutinesRouteImport.update({
+  id: '/routines',
+  path: '/routines',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSafeMethodsRoute = AppSafeMethodsRouteImport.update({
+  id: '/safe-methods',
+  path: '/safe-methods',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSecurityRoute = AppSecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppStockRoute = AppStockRouteImport.update({
+  id: '/stock',
+  path: '/stock',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSuppliersRoute = AppSuppliersRouteImport.update({
+  id: '/suppliers',
+  path: '/suppliers',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTemperatureRoute = AppTemperatureRouteImport.update({
+  id: '/temperature',
+  path: '/temperature',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTodayRoute = AppTodayRouteImport.update({
+  id: '/today',
+  path: '/today',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTrainingRoute = AppTrainingRouteImport.update({
+  id: '/training',
+  path: '/training',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppUkComplianceRoute = AppUkComplianceRouteImport.update({
+  id: '/uk-compliance',
+  path: '/uk-compliance',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppWasteRoute = AppWasteRouteImport.update({
+  id: '/waste',
+  path: '/waste',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppWorkflowsRoute = AppWorkflowsRouteImport.update({
+  id: '/workflows',
+  path: '/workflows',
+  getParentRoute: () => AppRoute,
+} as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BlogRoute,
+} as any)
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => BlogRoute,
+} as any)
+const LegalAccessibilityRoute = LegalAccessibilityRouteImport.update({
+  id: '/accessibility',
+  path: '/accessibility',
+  getParentRoute: () => LegalRoute,
+} as any)
+const LegalCompanyDetailsRoute = LegalCompanyDetailsRouteImport.update({
+  id: '/company-details',
+  path: '/company-details',
+  getParentRoute: () => LegalRoute,
+} as any)
+const LegalComplaintsRoute = LegalComplaintsRouteImport.update({
+  id: '/complaints',
+  path: '/complaints',
+  getParentRoute: () => LegalRoute,
+} as any)
+const LegalCookiesRoute = LegalCookiesRouteImport.update({
+  id: '/cookies',
+  path: '/cookies',
+  getParentRoute: () => LegalRoute,
+} as any)
+const LegalDataProcessingRoute = LegalDataProcessingRouteImport.update({
+  id: '/data-processing',
+  path: '/data-processing',
+  getParentRoute: () => LegalRoute,
+} as any)
+const LegalPrivacyRoute = LegalPrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => LegalRoute,
+} as any)
+const LegalTermsRoute = LegalTermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => LegalRoute,
 } as any)
 const AppAssetsAssetIdRoute = AppAssetsAssetIdRouteImport.update({
   id: '/$assetId',
   path: '/$assetId',
   getParentRoute: () => AppAssetsRoute,
 } as any)
+const AppAssetsScanRoute = AppAssetsScanRouteImport.update({
+  id: '/scan',
+  path: '/scan',
+  getParentRoute: () => AppAssetsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account-status': typeof AccountStatusRoute
   '/app': typeof AppRouteWithChildren
   '/blog': typeof BlogRouteWithChildren
   '/health.json': typeof HealthDotjsonRoute
@@ -456,6 +469,7 @@ export interface FileRoutesByFullPath {
   '/app/logs': typeof AppLogsRoute
   '/app/menu': typeof AppMenuRoute
   '/app/oil': typeof AppOilRoute
+  '/app/organisation': typeof AppOrganisationRoute
   '/app/pest': typeof AppPestRoute
   '/app/ppds': typeof AppPpdsRoute
   '/app/preferences': typeof AppPreferencesRoute
@@ -491,6 +505,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account-status': typeof AccountStatusRoute
   '/health.json': typeof HealthDotjsonRoute
   '/legal': typeof LegalRouteWithChildren
   '/login': typeof LoginRoute
@@ -524,6 +539,7 @@ export interface FileRoutesByTo {
   '/app/logs': typeof AppLogsRoute
   '/app/menu': typeof AppMenuRoute
   '/app/oil': typeof AppOilRoute
+  '/app/organisation': typeof AppOrganisationRoute
   '/app/pest': typeof AppPestRoute
   '/app/ppds': typeof AppPpdsRoute
   '/app/preferences': typeof AppPreferencesRoute
@@ -560,6 +576,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account-status': typeof AccountStatusRoute
   '/app': typeof AppRouteWithChildren
   '/blog': typeof BlogRouteWithChildren
   '/health.json': typeof HealthDotjsonRoute
@@ -595,6 +612,7 @@ export interface FileRoutesById {
   '/app/logs': typeof AppLogsRoute
   '/app/menu': typeof AppMenuRoute
   '/app/oil': typeof AppOilRoute
+  '/app/organisation': typeof AppOrganisationRoute
   '/app/pest': typeof AppPestRoute
   '/app/ppds': typeof AppPpdsRoute
   '/app/preferences': typeof AppPreferencesRoute
@@ -632,6 +650,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/account-status'
     | '/app'
     | '/blog'
     | '/health.json'
@@ -667,6 +686,7 @@ export interface FileRouteTypes {
     | '/app/logs'
     | '/app/menu'
     | '/app/oil'
+    | '/app/organisation'
     | '/app/pest'
     | '/app/ppds'
     | '/app/preferences'
@@ -702,6 +722,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/account-status'
     | '/health.json'
     | '/legal'
     | '/login'
@@ -735,6 +756,7 @@ export interface FileRouteTypes {
     | '/app/logs'
     | '/app/menu'
     | '/app/oil'
+    | '/app/organisation'
     | '/app/pest'
     | '/app/ppds'
     | '/app/preferences'
@@ -770,6 +792,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/account-status'
     | '/app'
     | '/blog'
     | '/health.json'
@@ -805,6 +828,7 @@ export interface FileRouteTypes {
     | '/app/logs'
     | '/app/menu'
     | '/app/oil'
+    | '/app/organisation'
     | '/app/pest'
     | '/app/ppds'
     | '/app/preferences'
@@ -841,6 +865,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountStatusRoute: typeof AccountStatusRoute
   AppRoute: typeof AppRouteWithChildren
   BlogRoute: typeof BlogRouteWithChildren
   HealthDotjsonRoute: typeof HealthDotjsonRoute
@@ -853,53 +878,18 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/platform': {
-      id: '/platform'
-      path: '/platform'
-      fullPath: '/platform'
-      preLoaderRoute: typeof PlatformRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/onboarding': {
-      id: '/onboarding'
-      path: '/onboarding'
-      fullPath: '/onboarding'
-      preLoaderRoute: typeof OnboardingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/legal': {
-      id: '/legal'
-      path: '/legal'
-      fullPath: '/legal'
-      preLoaderRoute: typeof LegalRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/health.json': {
-      id: '/health.json'
-      path: '/health.json'
-      fullPath: '/health.json'
-      preLoaderRoute: typeof HealthDotjsonRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/blog': {
-      id: '/blog'
-      path: '/blog'
-      fullPath: '/blog'
-      preLoaderRoute: typeof BlogRouteImport
+    '/account-status': {
+      id: '/account-status'
+      path: '/account-status'
+      fullPath: '/account-status'
+      preLoaderRoute: typeof AccountStatusRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app': {
@@ -909,403 +899,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/blog': {
+      id: '/blog'
+      path: '/blog'
+      fullPath: '/blog'
+      preLoaderRoute: typeof BlogRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/blog/': {
-      id: '/blog/'
-      path: '/'
-      fullPath: '/blog/'
-      preLoaderRoute: typeof BlogIndexRouteImport
-      parentRoute: typeof BlogRoute
+    '/health.json': {
+      id: '/health.json'
+      path: '/health.json'
+      fullPath: '/health.json'
+      preLoaderRoute: typeof HealthDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal': {
+      id: '/legal'
+      path: '/legal'
+      fullPath: '/legal'
+      preLoaderRoute: typeof LegalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/platform': {
+      id: '/platform'
+      path: '/platform'
+      fullPath: '/platform'
+      preLoaderRoute: typeof PlatformRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/app/': {
       id: '/app/'
       path: '/'
       fullPath: '/app/'
       preLoaderRoute: typeof AppIndexRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/legal/terms': {
-      id: '/legal/terms'
-      path: '/terms'
-      fullPath: '/legal/terms'
-      preLoaderRoute: typeof LegalTermsRouteImport
-      parentRoute: typeof LegalRoute
-    }
-    '/legal/privacy': {
-      id: '/legal/privacy'
-      path: '/privacy'
-      fullPath: '/legal/privacy'
-      preLoaderRoute: typeof LegalPrivacyRouteImport
-      parentRoute: typeof LegalRoute
-    }
-    '/legal/data-processing': {
-      id: '/legal/data-processing'
-      path: '/data-processing'
-      fullPath: '/legal/data-processing'
-      preLoaderRoute: typeof LegalDataProcessingRouteImport
-      parentRoute: typeof LegalRoute
-    }
-    '/legal/cookies': {
-      id: '/legal/cookies'
-      path: '/cookies'
-      fullPath: '/legal/cookies'
-      preLoaderRoute: typeof LegalCookiesRouteImport
-      parentRoute: typeof LegalRoute
-    }
-    '/legal/complaints': {
-      id: '/legal/complaints'
-      path: '/complaints'
-      fullPath: '/legal/complaints'
-      preLoaderRoute: typeof LegalComplaintsRouteImport
-      parentRoute: typeof LegalRoute
-    }
-    '/legal/company-details': {
-      id: '/legal/company-details'
-      path: '/company-details'
-      fullPath: '/legal/company-details'
-      preLoaderRoute: typeof LegalCompanyDetailsRouteImport
-      parentRoute: typeof LegalRoute
-    }
-    '/legal/accessibility': {
-      id: '/legal/accessibility'
-      path: '/accessibility'
-      fullPath: '/legal/accessibility'
-      preLoaderRoute: typeof LegalAccessibilityRouteImport
-      parentRoute: typeof LegalRoute
-    }
-    '/blog/$slug': {
-      id: '/blog/$slug'
-      path: '/$slug'
-      fullPath: '/blog/$slug'
-      preLoaderRoute: typeof BlogSlugRouteImport
-      parentRoute: typeof BlogRoute
-    }
-    '/app/workflows': {
-      id: '/app/workflows'
-      path: '/workflows'
-      fullPath: '/app/workflows'
-      preLoaderRoute: typeof AppWorkflowsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/waste': {
-      id: '/app/waste'
-      path: '/waste'
-      fullPath: '/app/waste'
-      preLoaderRoute: typeof AppWasteRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/uk-compliance': {
-      id: '/app/uk-compliance'
-      path: '/uk-compliance'
-      fullPath: '/app/uk-compliance'
-      preLoaderRoute: typeof AppUkComplianceRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/training': {
-      id: '/app/training'
-      path: '/training'
-      fullPath: '/app/training'
-      preLoaderRoute: typeof AppTrainingRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/today': {
-      id: '/app/today'
-      path: '/today'
-      fullPath: '/app/today'
-      preLoaderRoute: typeof AppTodayRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/temperature': {
-      id: '/app/temperature'
-      path: '/temperature'
-      fullPath: '/app/temperature'
-      preLoaderRoute: typeof AppTemperatureRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/suppliers': {
-      id: '/app/suppliers'
-      path: '/suppliers'
-      fullPath: '/app/suppliers'
-      preLoaderRoute: typeof AppSuppliersRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/stock': {
-      id: '/app/stock'
-      path: '/stock'
-      fullPath: '/app/stock'
-      preLoaderRoute: typeof AppStockRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/settings': {
-      id: '/app/settings'
-      path: '/settings'
-      fullPath: '/app/settings'
-      preLoaderRoute: typeof AppSettingsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/security': {
-      id: '/app/security'
-      path: '/security'
-      fullPath: '/app/security'
-      preLoaderRoute: typeof AppSecurityRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/safe-methods': {
-      id: '/app/safe-methods'
-      path: '/safe-methods'
-      fullPath: '/app/safe-methods'
-      preLoaderRoute: typeof AppSafeMethodsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/routines': {
-      id: '/app/routines'
-      path: '/routines'
-      fullPath: '/app/routines'
-      preLoaderRoute: typeof AppRoutinesRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/rota': {
-      id: '/app/rota'
-      path: '/rota'
-      fullPath: '/app/rota'
-      preLoaderRoute: typeof AppRotaRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/recipes': {
-      id: '/app/recipes'
-      path: '/recipes'
-      fullPath: '/app/recipes'
-      preLoaderRoute: typeof AppRecipesRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/recalls': {
-      id: '/app/recalls'
-      path: '/recalls'
-      fullPath: '/app/recalls'
-      preLoaderRoute: typeof AppRecallsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/readiness': {
-      id: '/app/readiness'
-      path: '/readiness'
-      fullPath: '/app/readiness'
-      preLoaderRoute: typeof AppReadinessRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/purchasing': {
-      id: '/app/purchasing'
-      path: '/purchasing'
-      fullPath: '/app/purchasing'
-      preLoaderRoute: typeof AppPurchasingRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/preferences': {
-      id: '/app/preferences'
-      path: '/preferences'
-      fullPath: '/app/preferences'
-      preLoaderRoute: typeof AppPreferencesRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/ppds': {
-      id: '/app/ppds'
-      path: '/ppds'
-      fullPath: '/app/ppds'
-      preLoaderRoute: typeof AppPpdsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/pest': {
-      id: '/app/pest'
-      path: '/pest'
-      fullPath: '/app/pest'
-      preLoaderRoute: typeof AppPestRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/oil': {
-      id: '/app/oil'
-      path: '/oil'
-      fullPath: '/app/oil'
-      preLoaderRoute: typeof AppOilRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/menu': {
-      id: '/app/menu'
-      path: '/menu'
-      fullPath: '/app/menu'
-      preLoaderRoute: typeof AppMenuRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/logs': {
-      id: '/app/logs'
-      path: '/logs'
-      fullPath: '/app/logs'
-      preLoaderRoute: typeof AppLogsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/labels': {
-      id: '/app/labels'
-      path: '/labels'
-      fullPath: '/app/labels'
-      preLoaderRoute: typeof AppLabelsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/integrations': {
-      id: '/app/integrations'
-      path: '/integrations'
-      fullPath: '/app/integrations'
-      preLoaderRoute: typeof AppIntegrationsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/inspection': {
-      id: '/app/inspection'
-      path: '/inspection'
-      fullPath: '/app/inspection'
-      preLoaderRoute: typeof AppInspectionRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/inductions': {
-      id: '/app/inductions'
-      path: '/inductions'
-      fullPath: '/app/inductions'
-      preLoaderRoute: typeof AppInductionsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/incidents': {
-      id: '/app/incidents'
-      path: '/incidents'
-      fullPath: '/app/incidents'
-      preLoaderRoute: typeof AppIncidentsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/health': {
-      id: '/app/health'
-      path: '/health'
-      fullPath: '/app/health'
-      preLoaderRoute: typeof AppHealthRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/haccp-flows': {
-      id: '/app/haccp-flows'
-      path: '/haccp-flows'
-      fullPath: '/app/haccp-flows'
-      preLoaderRoute: typeof AppHaccpFlowsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/haccp': {
-      id: '/app/haccp'
-      path: '/haccp'
-      fullPath: '/app/haccp'
-      preLoaderRoute: typeof AppHaccpRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/goodsin': {
-      id: '/app/goodsin'
-      path: '/goodsin'
-      fullPath: '/app/goodsin'
-      preLoaderRoute: typeof AppGoodsinRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/get-started': {
-      id: '/app/get-started'
-      path: '/get-started'
-      fullPath: '/app/get-started'
-      preLoaderRoute: typeof AppGetStartedRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/expiry': {
-      id: '/app/expiry'
-      path: '/expiry'
-      fullPath: '/app/expiry'
-      preLoaderRoute: typeof AppExpiryRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/documents': {
-      id: '/app/documents'
-      path: '/documents'
-      fullPath: '/app/documents'
-      preLoaderRoute: typeof AppDocumentsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/diary': {
-      id: '/app/diary'
-      path: '/diary'
-      fullPath: '/app/diary'
-      preLoaderRoute: typeof AppDiaryRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/control-centre': {
-      id: '/app/control-centre'
-      path: '/control-centre'
-      fullPath: '/app/control-centre'
-      preLoaderRoute: typeof AppControlCentreRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/complaints': {
-      id: '/app/complaints'
-      path: '/complaints'
-      fullPath: '/app/complaints'
-      preLoaderRoute: typeof AppComplaintsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/coach': {
-      id: '/app/coach'
-      path: '/coach'
-      fullPath: '/app/coach'
-      preLoaderRoute: typeof AppCoachRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/cleaning': {
-      id: '/app/cleaning'
-      path: '/cleaning'
-      fullPath: '/app/cleaning'
-      preLoaderRoute: typeof AppCleaningRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/chemicals': {
-      id: '/app/chemicals'
-      path: '/chemicals'
-      fullPath: '/app/chemicals'
-      preLoaderRoute: typeof AppChemicalsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/checks': {
-      id: '/app/checks'
-      path: '/checks'
-      fullPath: '/app/checks'
-      preLoaderRoute: typeof AppChecksRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/calibration': {
-      id: '/app/calibration'
-      path: '/calibration'
-      fullPath: '/app/calibration'
-      preLoaderRoute: typeof AppCalibrationRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/billing': {
-      id: '/app/billing'
-      path: '/billing'
-      fullPath: '/app/billing'
-      preLoaderRoute: typeof AppBillingRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/audits': {
-      id: '/app/audits'
-      path: '/audits'
-      fullPath: '/app/audits'
-      preLoaderRoute: typeof AppAuditsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/assets': {
-      id: '/app/assets'
-      path: '/assets'
-      fullPath: '/app/assets'
-      preLoaderRoute: typeof AppAssetsRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/alerts': {
@@ -1315,18 +962,410 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAlertsRouteImport
       parentRoute: typeof AppRoute
     }
-    '/app/assets/scan': {
-      id: '/app/assets/scan'
-      path: '/scan'
-      fullPath: '/app/assets/scan'
-      preLoaderRoute: typeof AppAssetsScanRouteImport
-      parentRoute: typeof AppAssetsRoute
+    '/app/assets': {
+      id: '/app/assets'
+      path: '/assets'
+      fullPath: '/app/assets'
+      preLoaderRoute: typeof AppAssetsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/audits': {
+      id: '/app/audits'
+      path: '/audits'
+      fullPath: '/app/audits'
+      preLoaderRoute: typeof AppAuditsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/billing': {
+      id: '/app/billing'
+      path: '/billing'
+      fullPath: '/app/billing'
+      preLoaderRoute: typeof AppBillingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/calibration': {
+      id: '/app/calibration'
+      path: '/calibration'
+      fullPath: '/app/calibration'
+      preLoaderRoute: typeof AppCalibrationRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/checks': {
+      id: '/app/checks'
+      path: '/checks'
+      fullPath: '/app/checks'
+      preLoaderRoute: typeof AppChecksRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/chemicals': {
+      id: '/app/chemicals'
+      path: '/chemicals'
+      fullPath: '/app/chemicals'
+      preLoaderRoute: typeof AppChemicalsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/cleaning': {
+      id: '/app/cleaning'
+      path: '/cleaning'
+      fullPath: '/app/cleaning'
+      preLoaderRoute: typeof AppCleaningRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/coach': {
+      id: '/app/coach'
+      path: '/coach'
+      fullPath: '/app/coach'
+      preLoaderRoute: typeof AppCoachRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/complaints': {
+      id: '/app/complaints'
+      path: '/complaints'
+      fullPath: '/app/complaints'
+      preLoaderRoute: typeof AppComplaintsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/control-centre': {
+      id: '/app/control-centre'
+      path: '/control-centre'
+      fullPath: '/app/control-centre'
+      preLoaderRoute: typeof AppControlCentreRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/diary': {
+      id: '/app/diary'
+      path: '/diary'
+      fullPath: '/app/diary'
+      preLoaderRoute: typeof AppDiaryRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/documents': {
+      id: '/app/documents'
+      path: '/documents'
+      fullPath: '/app/documents'
+      preLoaderRoute: typeof AppDocumentsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/expiry': {
+      id: '/app/expiry'
+      path: '/expiry'
+      fullPath: '/app/expiry'
+      preLoaderRoute: typeof AppExpiryRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/get-started': {
+      id: '/app/get-started'
+      path: '/get-started'
+      fullPath: '/app/get-started'
+      preLoaderRoute: typeof AppGetStartedRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/goodsin': {
+      id: '/app/goodsin'
+      path: '/goodsin'
+      fullPath: '/app/goodsin'
+      preLoaderRoute: typeof AppGoodsinRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/haccp': {
+      id: '/app/haccp'
+      path: '/haccp'
+      fullPath: '/app/haccp'
+      preLoaderRoute: typeof AppHaccpRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/haccp-flows': {
+      id: '/app/haccp-flows'
+      path: '/haccp-flows'
+      fullPath: '/app/haccp-flows'
+      preLoaderRoute: typeof AppHaccpFlowsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/health': {
+      id: '/app/health'
+      path: '/health'
+      fullPath: '/app/health'
+      preLoaderRoute: typeof AppHealthRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/incidents': {
+      id: '/app/incidents'
+      path: '/incidents'
+      fullPath: '/app/incidents'
+      preLoaderRoute: typeof AppIncidentsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/inductions': {
+      id: '/app/inductions'
+      path: '/inductions'
+      fullPath: '/app/inductions'
+      preLoaderRoute: typeof AppInductionsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/inspection': {
+      id: '/app/inspection'
+      path: '/inspection'
+      fullPath: '/app/inspection'
+      preLoaderRoute: typeof AppInspectionRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/integrations': {
+      id: '/app/integrations'
+      path: '/integrations'
+      fullPath: '/app/integrations'
+      preLoaderRoute: typeof AppIntegrationsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/labels': {
+      id: '/app/labels'
+      path: '/labels'
+      fullPath: '/app/labels'
+      preLoaderRoute: typeof AppLabelsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/logs': {
+      id: '/app/logs'
+      path: '/logs'
+      fullPath: '/app/logs'
+      preLoaderRoute: typeof AppLogsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/menu': {
+      id: '/app/menu'
+      path: '/menu'
+      fullPath: '/app/menu'
+      preLoaderRoute: typeof AppMenuRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/oil': {
+      id: '/app/oil'
+      path: '/oil'
+      fullPath: '/app/oil'
+      preLoaderRoute: typeof AppOilRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/organisation': {
+      id: '/app/organisation'
+      path: '/organisation'
+      fullPath: '/app/organisation'
+      preLoaderRoute: typeof AppOrganisationRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/pest': {
+      id: '/app/pest'
+      path: '/pest'
+      fullPath: '/app/pest'
+      preLoaderRoute: typeof AppPestRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/ppds': {
+      id: '/app/ppds'
+      path: '/ppds'
+      fullPath: '/app/ppds'
+      preLoaderRoute: typeof AppPpdsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/preferences': {
+      id: '/app/preferences'
+      path: '/preferences'
+      fullPath: '/app/preferences'
+      preLoaderRoute: typeof AppPreferencesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/purchasing': {
+      id: '/app/purchasing'
+      path: '/purchasing'
+      fullPath: '/app/purchasing'
+      preLoaderRoute: typeof AppPurchasingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/readiness': {
+      id: '/app/readiness'
+      path: '/readiness'
+      fullPath: '/app/readiness'
+      preLoaderRoute: typeof AppReadinessRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/recalls': {
+      id: '/app/recalls'
+      path: '/recalls'
+      fullPath: '/app/recalls'
+      preLoaderRoute: typeof AppRecallsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/recipes': {
+      id: '/app/recipes'
+      path: '/recipes'
+      fullPath: '/app/recipes'
+      preLoaderRoute: typeof AppRecipesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/rota': {
+      id: '/app/rota'
+      path: '/rota'
+      fullPath: '/app/rota'
+      preLoaderRoute: typeof AppRotaRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/routines': {
+      id: '/app/routines'
+      path: '/routines'
+      fullPath: '/app/routines'
+      preLoaderRoute: typeof AppRoutinesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/safe-methods': {
+      id: '/app/safe-methods'
+      path: '/safe-methods'
+      fullPath: '/app/safe-methods'
+      preLoaderRoute: typeof AppSafeMethodsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/security': {
+      id: '/app/security'
+      path: '/security'
+      fullPath: '/app/security'
+      preLoaderRoute: typeof AppSecurityRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/settings': {
+      id: '/app/settings'
+      path: '/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/stock': {
+      id: '/app/stock'
+      path: '/stock'
+      fullPath: '/app/stock'
+      preLoaderRoute: typeof AppStockRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/suppliers': {
+      id: '/app/suppliers'
+      path: '/suppliers'
+      fullPath: '/app/suppliers'
+      preLoaderRoute: typeof AppSuppliersRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/temperature': {
+      id: '/app/temperature'
+      path: '/temperature'
+      fullPath: '/app/temperature'
+      preLoaderRoute: typeof AppTemperatureRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/today': {
+      id: '/app/today'
+      path: '/today'
+      fullPath: '/app/today'
+      preLoaderRoute: typeof AppTodayRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/training': {
+      id: '/app/training'
+      path: '/training'
+      fullPath: '/app/training'
+      preLoaderRoute: typeof AppTrainingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/uk-compliance': {
+      id: '/app/uk-compliance'
+      path: '/uk-compliance'
+      fullPath: '/app/uk-compliance'
+      preLoaderRoute: typeof AppUkComplianceRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/waste': {
+      id: '/app/waste'
+      path: '/waste'
+      fullPath: '/app/waste'
+      preLoaderRoute: typeof AppWasteRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/workflows': {
+      id: '/app/workflows'
+      path: '/workflows'
+      fullPath: '/app/workflows'
+      preLoaderRoute: typeof AppWorkflowsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/blog/': {
+      id: '/blog/'
+      path: '/'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof BlogRoute
+    }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
+      parentRoute: typeof BlogRoute
+    }
+    '/legal/accessibility': {
+      id: '/legal/accessibility'
+      path: '/accessibility'
+      fullPath: '/legal/accessibility'
+      preLoaderRoute: typeof LegalAccessibilityRouteImport
+      parentRoute: typeof LegalRoute
+    }
+    '/legal/company-details': {
+      id: '/legal/company-details'
+      path: '/company-details'
+      fullPath: '/legal/company-details'
+      preLoaderRoute: typeof LegalCompanyDetailsRouteImport
+      parentRoute: typeof LegalRoute
+    }
+    '/legal/complaints': {
+      id: '/legal/complaints'
+      path: '/complaints'
+      fullPath: '/legal/complaints'
+      preLoaderRoute: typeof LegalComplaintsRouteImport
+      parentRoute: typeof LegalRoute
+    }
+    '/legal/cookies': {
+      id: '/legal/cookies'
+      path: '/cookies'
+      fullPath: '/legal/cookies'
+      preLoaderRoute: typeof LegalCookiesRouteImport
+      parentRoute: typeof LegalRoute
+    }
+    '/legal/data-processing': {
+      id: '/legal/data-processing'
+      path: '/data-processing'
+      fullPath: '/legal/data-processing'
+      preLoaderRoute: typeof LegalDataProcessingRouteImport
+      parentRoute: typeof LegalRoute
+    }
+    '/legal/privacy': {
+      id: '/legal/privacy'
+      path: '/privacy'
+      fullPath: '/legal/privacy'
+      preLoaderRoute: typeof LegalPrivacyRouteImport
+      parentRoute: typeof LegalRoute
+    }
+    '/legal/terms': {
+      id: '/legal/terms'
+      path: '/terms'
+      fullPath: '/legal/terms'
+      preLoaderRoute: typeof LegalTermsRouteImport
+      parentRoute: typeof LegalRoute
     }
     '/app/assets/$assetId': {
       id: '/app/assets/$assetId'
       path: '/$assetId'
       fullPath: '/app/assets/$assetId'
       preLoaderRoute: typeof AppAssetsAssetIdRouteImport
+      parentRoute: typeof AppAssetsRoute
+    }
+    '/app/assets/scan': {
+      id: '/app/assets/scan'
+      path: '/scan'
+      fullPath: '/app/assets/scan'
+      preLoaderRoute: typeof AppAssetsScanRouteImport
       parentRoute: typeof AppAssetsRoute
     }
   }
@@ -1374,6 +1413,7 @@ interface AppRouteChildren {
   AppLogsRoute: typeof AppLogsRoute
   AppMenuRoute: typeof AppMenuRoute
   AppOilRoute: typeof AppOilRoute
+  AppOrganisationRoute: typeof AppOrganisationRoute
   AppPestRoute: typeof AppPestRoute
   AppPpdsRoute: typeof AppPpdsRoute
   AppPreferencesRoute: typeof AppPreferencesRoute
@@ -1425,6 +1465,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppLogsRoute: AppLogsRoute,
   AppMenuRoute: AppMenuRoute,
   AppOilRoute: AppOilRoute,
+  AppOrganisationRoute: AppOrganisationRoute,
   AppPestRoute: AppPestRoute,
   AppPpdsRoute: AppPpdsRoute,
   AppPreferencesRoute: AppPreferencesRoute,
@@ -1486,6 +1527,7 @@ const LegalRouteWithChildren = LegalRoute._addFileChildren(LegalRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountStatusRoute: AccountStatusRoute,
   AppRoute: AppRouteWithChildren,
   BlogRoute: BlogRouteWithChildren,
   HealthDotjsonRoute: HealthDotjsonRoute,

@@ -1,6 +1,6 @@
 begin;
 
-select plan(12);
+select plan(17);
 
 select ok(
   (select relrowsecurity from pg_class where oid = 'public.organizations'::regclass),
@@ -215,6 +215,110 @@ select is(
   ),
   'a0000000-0000-0000-0000-000000000001'::uuid,
   'equipment events derive tenant and location from the protected asset'
+);
+
+insert into public.organization_roles (
+  id, organization_id, name, base_role, action_permissions, created_by
+) values (
+  'a4000000-0000-0000-0000-000000000001',
+  'a0000000-0000-0000-0000-000000000001',
+  'Restricted equipment staff',
+  'staff',
+  '{}',
+  '10000000-0000-0000-0000-000000000001'
+);
+update public.organization_memberships
+set role_profile_id = 'a4000000-0000-0000-0000-000000000001'
+where organization_id = 'a0000000-0000-0000-0000-000000000001'
+  and user_id = '10000000-0000-0000-0000-000000000003';
+
+set local role authenticated;
+select set_config(
+  'request.jwt.claim.sub',
+  '10000000-0000-0000-0000-000000000003',
+  true
+);
+select set_config('request.jwt.claim.role', 'authenticated', true);
+select throws_ok(
+  format(
+    'select public.record_asset_scan(%L, %L, now(), 51.5074, -0.1278, 8)',
+    (select qr_token from public.assets where id = 'a2000000-0000-0000-0000-000000000001'),
+    'deep_link'
+  ),
+  '42501',
+  'equipment access denied',
+  'a custom staff role without assets.record cannot create an equipment scan'
+);
+
+reset role;
+update public.organization_roles
+set action_permissions = array['assets.record']
+where id = 'a4000000-0000-0000-0000-000000000001';
+
+set local role authenticated;
+select set_config(
+  'request.jwt.claim.sub',
+  '10000000-0000-0000-0000-000000000003',
+  true
+);
+select set_config('request.jwt.claim.role', 'authenticated', true);
+select lives_ok(
+  format(
+    'select public.record_asset_scan(%L, %L, now(), 51.5074, -0.1278, 8)',
+    (select qr_token from public.assets where id = 'a2000000-0000-0000-0000-000000000001'),
+    'deep_link'
+  ),
+  'a custom staff role with assets.record can create a scoped scan'
+);
+
+reset role;
+select ok(
+  exists (
+    select 1 from public.asset_scans scan_record
+     where scan_record.asset_id = 'a2000000-0000-0000-0000-000000000001'
+       and scan_record.organization_id = 'a0000000-0000-0000-0000-000000000001'
+       and scan_record.location_id = 'a0000000-0000-0000-0000-000000000011'
+       and scan_record.scanner_user_id = '10000000-0000-0000-0000-000000000003'
+       and scan_record.scanned_at is not null
+       and scan_record.latitude = 51.5074
+       and scan_record.longitude = -0.1278
+  ),
+  'scan evidence derives asset and premises and preserves server time, actor and GPS'
+);
+
+update public.organizations
+set service_status = 'frozen', service_status_reason = 'RLS acceptance test'
+where id = 'a0000000-0000-0000-0000-000000000001';
+set local role authenticated;
+select set_config(
+  'request.jwt.claim.sub',
+  '10000000-0000-0000-0000-000000000003',
+  true
+);
+select set_config('request.jwt.claim.role', 'authenticated', true);
+select is(
+  (select count(*) from public.assets),
+  0::bigint,
+  'a frozen tenant loses all operational equipment visibility'
+);
+
+reset role;
+update public.organizations
+set service_status = 'active', service_status_reason = 'RLS acceptance test restored'
+where id = 'a0000000-0000-0000-0000-000000000001';
+insert into public.tenant_admin_events (
+  id, organization_id, actor_id, event_type
+) values (
+  'a5000000-0000-0000-0000-000000000001',
+  'a0000000-0000-0000-0000-000000000001',
+  '10000000-0000-0000-0000-000000000001',
+  'rls_acceptance_event'
+);
+select throws_ok(
+  $$update public.tenant_admin_events set event_type = 'tampered' where id = 'a5000000-0000-0000-0000-000000000001'$$,
+  'P0001',
+  'Governance audit history is append-only',
+  'tenant governance audit events cannot be changed'
 );
 
 reset role;

@@ -10,12 +10,19 @@ export interface AuthUser {
   email: string;
   initials: string;
   role: Role;
+  roleName: string;
+  actionPermissions: string[];
   platformRole: PlatformRole | null;
   location: string;
   organizationId: string | null;
   locationId: string | null;
   organizationName: string | null;
   inspectorScopes: string[];
+  serviceStatus: "active" | "frozen" | "closed";
+  serviceStatusReason: string | null;
+  plan: string;
+  seatLimit: number;
+  locationLimit: number;
 }
 
 const NAV_KEYS = [
@@ -290,6 +297,11 @@ async function fetchAuthUser(userId: string, email: string): Promise<AuthUser | 
       ? (platform.role as PlatformRole)
       : null;
   const role = (workspace.role ?? "staff") as Role;
+  const actionPermissions = Array.isArray(workspace.action_permissions)
+    ? workspace.action_permissions.filter(
+        (permission): permission is string => typeof permission === "string",
+      )
+    : [];
   const organizationName =
     typeof workspace.organization_name === "string" ? workspace.organization_name : null;
   const inspectorScopes = Array.isArray(workspace.evidence_scopes)
@@ -307,6 +319,8 @@ async function fetchAuthUser(userId: string, email: string): Promise<AuthUser | 
     email,
     initials: initialsOf(name),
     role,
+    roleName: typeof workspace.role_name === "string" ? workspace.role_name : role,
+    actionPermissions,
     platformRole,
     location,
     organizationId:
@@ -314,6 +328,15 @@ async function fetchAuthUser(userId: string, email: string): Promise<AuthUser | 
     locationId: typeof workspace.location_id === "string" ? workspace.location_id : null,
     organizationName,
     inspectorScopes,
+    serviceStatus:
+      workspace.service_status === "frozen" || workspace.service_status === "closed"
+        ? workspace.service_status
+        : "active",
+    serviceStatusReason:
+      typeof workspace.service_status_reason === "string" ? workspace.service_status_reason : null,
+    plan: typeof workspace.plan === "string" ? workspace.plan : "trial",
+    seatLimit: typeof workspace.seat_limit === "number" ? workspace.seat_limit : 5,
+    locationLimit: typeof workspace.location_limit === "number" ? workspace.location_limit : 1,
   };
 }
 

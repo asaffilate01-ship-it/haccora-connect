@@ -9,6 +9,7 @@ const Input = z.object({
     .max(254)
     .transform((value) => value.toLowerCase()),
   role: z.enum(["manager", "chef", "staff"]),
+  roleProfileId: z.string().uuid().nullable().optional(),
 });
 
 Deno.serve(async (request) => {
@@ -29,8 +30,19 @@ Deno.serve(async (request) => {
     if (!organizationId || !["owner", "manager"].includes(actorRole)) {
       return json(request, { error: "forbidden" }, 403);
     }
-    if (input.role === "manager" && actorRole !== "owner") {
-      return json(request, { error: "owner_required_for_manager_role" }, 403);
+    const { error: capacityError } = await client.rpc(
+      "assert_tenant_invite_allowed",
+      {
+        p_role: input.role,
+        p_role_profile_id: input.roleProfileId ?? null,
+      },
+    );
+    if (capacityError) {
+      return json(
+        request,
+        { error: capacityError.message },
+        capacityError.code === "42501" ? 403 : 409,
+      );
     }
 
     const token = crypto.randomUUID() + crypto.randomUUID();
@@ -59,6 +71,7 @@ Deno.serve(async (request) => {
         organization_id: organizationId,
         email: input.email,
         role: input.role,
+        role_profile_id: input.roleProfileId ?? null,
         token_hash: await sha256(token),
         invited_by: user.id,
         expires_at: new Date(Date.now() + 7 * 86400000).toISOString(),
