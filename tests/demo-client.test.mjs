@@ -57,6 +57,8 @@ test("demo client covers the primary operational journey", () => {
 test("demo seed covers every tenant role, a SaaS owner and an isolation tenant", () => {
   for (const identity of [
     "platformOwner",
+    "platformSupport",
+    "platformAuditor",
     "owner",
     "manager",
     "chef",
@@ -75,6 +77,9 @@ test("demo access runner signs in with publishable auth and checks tenant isolat
   assert.match(access, /signInWithPassword/);
   assert.match(access, /publishableKey/);
   assert.match(access, /SaaS owner does not bypass tenant RLS/);
+  assert.match(access, /SaaS support/);
+  assert.match(access, /SaaS auditor/);
+  assert.match(access, /financial visibility matches its platform role/);
   assert.match(access, /get_platform_customers/);
   assert.match(access, /cannot call the SaaS operator overview/);
   assert.match(access, /ISOLATION_ORGANIZATION_ID/);

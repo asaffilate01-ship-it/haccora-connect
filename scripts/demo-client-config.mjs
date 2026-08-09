@@ -40,6 +40,8 @@ export function demoEmails() {
   if (!/^[a-z0-9.-]+$/i.test(domain)) throw new Error("DEMO_EMAIL_DOMAIN is invalid.");
   return {
     platformOwner: `saas-owner@${domain}`,
+    platformSupport: `saas-support@${domain}`,
+    platformAuditor: `saas-auditor@${domain}`,
     owner: `tenant-admin@${domain}`,
     manager: `manager@${domain}`,
     chef: `chef@${domain}`,

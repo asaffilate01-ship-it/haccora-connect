@@ -198,6 +198,21 @@ export const HELP_CENTRE_SECTIONS: HelpCentreSection[] = [
         answer:
           "Use the verified support channel shown in Haccora. Do not include passwords, full payment details or unnecessary personal data. Urgent food-safety incidents must still follow the business's incident procedure and any authority reporting requirement.",
       },
+      {
+        question: "Does a Haccora subscription include accredited training or a HACCP consultant?",
+        answer:
+          "Not unless that service is expressly included in a signed order. The software records training, certificates, plans and approvals, but Haccora must not imply that a software subscription includes accredited courses, a food-safety hotline or business-specific consultancy. Use a competent adviser or recognised training provider where your operation needs one.",
+      },
+      {
+        question: "How should I respond when official guidance or my process changes?",
+        answer:
+          "Review the relevant official source, assess the change for each affected premises, update the controlled procedure or HACCP version and record competent approval before relying on it. Haccora can preserve source and review evidence, but it does not automatically turn general guidance into a safe business-specific decision.",
+      },
+      {
+        question: "Do reminders replace day-to-day food-safety supervision?",
+        answer:
+          "No. In-app, email and push reminders help responsible people see due work and exceptions after the providers are configured, but connectivity, device settings and provider delivery can fail. The business must maintain suitable supervision, escalation and contingency arrangements instead of treating a notification as proof that a control was completed.",
+      },
     ],
   },
 ];

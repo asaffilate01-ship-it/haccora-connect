@@ -18,6 +18,7 @@ import {
 } from "lucide-react-native";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useEffect, useMemo, useState } from "react";
+import { BrandLogo } from "@/components/BrandLogo";
 import { supabase } from "@/lib/supabase";
 import { useSession } from "@/lib/session";
 import { getQueueStatus } from "@/lib/offline-queue";
@@ -175,7 +176,7 @@ export default function Dashboard() {
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.brandRow}>
-        <Text style={styles.brand}>HACCORA</Text>
+        <BrandLogo maxWidth={132} minWidth={112} />
         <View style={styles.rolePill}>
           <Text style={styles.roleText}>{roleName || role || "team"}</Text>
         </View>
@@ -338,7 +339,6 @@ const styles = StyleSheet.create({
   page: { ...screen, gap: 12 },
   flex: { flex: 1 },
   brandRow: { alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
-  brand: { color: colours.ink, fontSize: 12, fontWeight: "900", letterSpacing: 1.8 },
   rolePill: {
     backgroundColor: colours.brandSoft,
     borderRadius: 99,

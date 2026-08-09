@@ -2,6 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as LocalAuthentication from "expo-local-authentication";
 import { createContext, useContext, useEffect, useState, type PropsWithChildren } from "react";
 import { AppState, Pressable, StyleSheet, Text, View } from "react-native";
+import { BrandLogo } from "@/components/BrandLogo";
 
 const KEY = "haccora-biometric-lock-v1";
 type LockContextValue = { enabled: boolean; setEnabled: (value: boolean) => Promise<boolean> };
@@ -56,7 +57,7 @@ export function AppLockProvider({ children }: PropsWithChildren) {
       {children}
       {enabled && locked && (
         <View style={styles.overlay} accessibilityViewIsModal>
-          <Text style={styles.logo}>HACCORA</Text>
+          <BrandLogo light maxWidth={210} />
           <Text style={styles.title}>App locked</Text>
           <Text style={styles.body}>
             Authenticate with your device to protect food-safety records.
@@ -84,7 +85,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 28,
   },
-  logo: { color: "#e43f2c", fontWeight: "900", letterSpacing: 3 },
   title: { marginTop: 18, color: "white", fontSize: 24, fontWeight: "800" },
   body: { marginTop: 8, color: "#bbb", textAlign: "center", lineHeight: 21 },
   button: {

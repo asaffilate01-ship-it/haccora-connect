@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 168" role="img" aria-labelledby="title description">
+  <title id="title">Haccora</title>
+  <desc id="description">Haccora shield, wordmark and Safe Clean Traceable slogan</desc>
+  <path d="M84 8 146 32v46c0 38-24 66-62 82-38-16-62-44-62-82V32L84 8Z" fill="#c8102e"/>
+  <path d="m54 82 20 20 42-48" fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="182" y="86" fill="#111111" font-family="Arial, Helvetica, sans-serif" font-size="76" font-weight="900" letter-spacing="2">HACCORA</text>
+  <text x="186" y="128" fill="#111111" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="800" letter-spacing="4.8">SAFE · CLEAN · TRACEABLE</text>
+</svg>

@@ -1,6 +1,7 @@
 import { Redirect, router } from "expo-router";
 import { useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { BrandLogo } from "@/components/BrandLogo";
 import { supabase } from "@/lib/supabase";
 import { useSession } from "@/lib/session";
 
@@ -19,8 +20,8 @@ export default function Login() {
   };
   return (
     <View style={styles.page}>
-      <Text style={styles.brand}>HACCORA</Text>
-      <Text style={styles.title}>Safe. Clean. Traceable.</Text>
+      <BrandLogo maxWidth={220} style={styles.brand} />
+      <Text style={styles.title}>Welcome back</Text>
       <TextInput
         autoCapitalize="none"
         autoComplete="email"
@@ -53,7 +54,7 @@ export default function Login() {
 
 const styles = StyleSheet.create({
   page: { flex: 1, justifyContent: "center", padding: 24, gap: 14, backgroundColor: "#fff" },
-  brand: { color: "#e43f2c", fontSize: 14, fontWeight: "900", letterSpacing: 2 },
+  brand: { alignSelf: "flex-start", marginBottom: 4 },
   title: { color: "#111", fontSize: 24, fontWeight: "800", marginBottom: 16 },
   input: { borderWidth: 1, borderColor: "#d8d8d8", borderRadius: 12, padding: 14, fontSize: 16 },
   button: { backgroundColor: "#e43f2c", borderRadius: 24, padding: 15, alignItems: "center" },

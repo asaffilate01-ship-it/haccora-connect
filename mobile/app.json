@@ -3,12 +3,12 @@
     "name": "Haccora",
     "slug": "haccora-uk",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/icon.png",
     "scheme": "haccora",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/icon.png",
+      "image": "./assets/splash-logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -28,7 +28,7 @@
     "android": {
       "package": "uk.co.haccora.app",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icon.png",
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#c8102e"
       },
       "blockedPermissions": ["RECORD_AUDIO"],
@@ -46,7 +46,7 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
-      "expo-notifications",
+      ["expo-notifications", { "icon": "./assets/notification-icon.png", "color": "#c8102e" }],
       "expo-local-authentication",
       [
         "expo-image-picker",

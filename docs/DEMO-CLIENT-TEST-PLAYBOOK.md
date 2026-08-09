@@ -51,15 +51,17 @@ Use Expo Go for a rapid device test, or the repository's EAS profiles for develo
 
 With the default `DEMO_EMAIL_DOMAIN=demo.haccora.co.uk`, the seed creates:
 
-| Test identity      | Login                                | Expected boundary                                              |
-| ------------------ | ------------------------------------ | -------------------------------------------------------------- |
-| Haccora SaaS owner | `saas-owner@demo.haccora.co.uk`      | Aggregate, audited platform console; no tenant evidence bypass |
-| Tenant admin       | `tenant-admin@demo.haccora.co.uk`    | Riverside owner, team and billing                              |
-| Manager            | `manager@demo.haccora.co.uk`         | Riverside operational management; no billing                   |
-| Chef               | `chef@demo.haccora.co.uk`            | Riverside kitchen leadership and record contribution           |
-| Staff              | `staff@demo.haccora.co.uk`           | Riverside selected-site daily work                             |
-| Inspector          | `inspector@demo.haccora.co.uk`       | Read-only, time/location/scope-limited Riverside evidence      |
-| Isolation owner    | `isolation-owner@demo.haccora.co.uk` | Harbour Café only; proves cross-tenant denial                  |
+| Test identity        | Login                                | Expected boundary                                              |
+| -------------------- | ------------------------------------ | -------------------------------------------------------------- |
+| Haccora SaaS owner   | `saas-owner@demo.haccora.co.uk`      | Aggregate, audited platform console; no tenant evidence bypass |
+| Haccora SaaS support | `saas-support@demo.haccora.co.uk`    | Service metadata only; no financials or tenant evidence bypass |
+| Haccora SaaS auditor | `saas-auditor@demo.haccora.co.uk`    | Read-only audit/financial controls; no tenant evidence bypass  |
+| Tenant admin         | `tenant-admin@demo.haccora.co.uk`    | Riverside owner, team and billing                              |
+| Manager              | `manager@demo.haccora.co.uk`         | Riverside operational management; no billing                   |
+| Chef                 | `chef@demo.haccora.co.uk`            | Riverside kitchen leadership and record contribution           |
+| Staff                | `staff@demo.haccora.co.uk`           | Riverside selected-site daily work                             |
+| Inspector            | `inspector@demo.haccora.co.uk`       | Read-only, time/location/scope-limited Riverside evidence      |
+| Isolation owner      | `isolation-owner@demo.haccora.co.uk` | Harbour Café only; proves cross-tenant denial                  |
 
 All accounts use the private `DEMO_PASSWORD` from `.env.demo`. The password is intentionally never committed or printed. If `DEMO_EMAIL_DOMAIN` changes, use the same local parts at that domain.
 
@@ -73,6 +75,12 @@ All accounts use the private `DEMO_PASSWORD` from `.env.demo`. The password is i
 4. Confirm the page explains that platform status does not bypass tenant RLS.
 5. Run `npm run demo:access` and retain proof that this account sees zero rows through normal tenant tables.
 6. Refresh the overview and confirm server-timestamped overview/directory audit events are added.
+
+### SaaS support and auditor journeys
+
+1. Sign in as `saas-support@<DEMO_EMAIL_DOMAIN>` and confirm the platform dashboard hides financial values and all owner-only mutation controls.
+2. Sign in as `saas-auditor@<DEMO_EMAIL_DOMAIN>` and confirm read-only financial and audit values are visible while mutation controls stay unavailable.
+3. For both roles, run `npm run demo:access` and retain proof that direct organisation, subscription and food-safety tables remain invisible through tenant RLS.
 
 ### Tenant admin journey
 
