@@ -45,6 +45,7 @@ import { Route as AppRotaRouteImport } from './routes/app.rota'
 import { Route as AppRecipesRouteImport } from './routes/app.recipes'
 import { Route as AppRecallsRouteImport } from './routes/app.recalls'
 import { Route as AppReadinessRouteImport } from './routes/app.readiness'
+import { Route as AppQuickLogRouteImport } from './routes/app.quick-log'
 import { Route as AppPurchasingRouteImport } from './routes/app.purchasing'
 import { Route as AppPreferencesRouteImport } from './routes/app.preferences'
 import { Route as AppPpdsRouteImport } from './routes/app.ppds'
@@ -258,6 +259,11 @@ const AppRecallsRoute = AppRecallsRouteImport.update({
 const AppReadinessRoute = AppReadinessRouteImport.update({
   id: '/readiness',
   path: '/readiness',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppQuickLogRoute = AppQuickLogRouteImport.update({
+  id: '/quick-log',
+  path: '/quick-log',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPurchasingRoute = AppPurchasingRouteImport.update({
@@ -474,6 +480,7 @@ export interface FileRoutesByFullPath {
   '/app/ppds': typeof AppPpdsRoute
   '/app/preferences': typeof AppPreferencesRoute
   '/app/purchasing': typeof AppPurchasingRoute
+  '/app/quick-log': typeof AppQuickLogRoute
   '/app/readiness': typeof AppReadinessRoute
   '/app/recalls': typeof AppRecallsRoute
   '/app/recipes': typeof AppRecipesRoute
@@ -544,6 +551,7 @@ export interface FileRoutesByTo {
   '/app/ppds': typeof AppPpdsRoute
   '/app/preferences': typeof AppPreferencesRoute
   '/app/purchasing': typeof AppPurchasingRoute
+  '/app/quick-log': typeof AppQuickLogRoute
   '/app/readiness': typeof AppReadinessRoute
   '/app/recalls': typeof AppRecallsRoute
   '/app/recipes': typeof AppRecipesRoute
@@ -617,6 +625,7 @@ export interface FileRoutesById {
   '/app/ppds': typeof AppPpdsRoute
   '/app/preferences': typeof AppPreferencesRoute
   '/app/purchasing': typeof AppPurchasingRoute
+  '/app/quick-log': typeof AppQuickLogRoute
   '/app/readiness': typeof AppReadinessRoute
   '/app/recalls': typeof AppRecallsRoute
   '/app/recipes': typeof AppRecipesRoute
@@ -691,6 +700,7 @@ export interface FileRouteTypes {
     | '/app/ppds'
     | '/app/preferences'
     | '/app/purchasing'
+    | '/app/quick-log'
     | '/app/readiness'
     | '/app/recalls'
     | '/app/recipes'
@@ -761,6 +771,7 @@ export interface FileRouteTypes {
     | '/app/ppds'
     | '/app/preferences'
     | '/app/purchasing'
+    | '/app/quick-log'
     | '/app/readiness'
     | '/app/recalls'
     | '/app/recipes'
@@ -833,6 +844,7 @@ export interface FileRouteTypes {
     | '/app/ppds'
     | '/app/preferences'
     | '/app/purchasing'
+    | '/app/quick-log'
     | '/app/readiness'
     | '/app/recalls'
     | '/app/recipes'
@@ -1130,6 +1142,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppReadinessRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/quick-log': {
+      id: '/app/quick-log'
+      path: '/quick-log'
+      fullPath: '/app/quick-log'
+      preLoaderRoute: typeof AppQuickLogRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/purchasing': {
       id: '/app/purchasing'
       path: '/purchasing'
@@ -1418,6 +1437,7 @@ interface AppRouteChildren {
   AppPpdsRoute: typeof AppPpdsRoute
   AppPreferencesRoute: typeof AppPreferencesRoute
   AppPurchasingRoute: typeof AppPurchasingRoute
+  AppQuickLogRoute: typeof AppQuickLogRoute
   AppReadinessRoute: typeof AppReadinessRoute
   AppRecallsRoute: typeof AppRecallsRoute
   AppRecipesRoute: typeof AppRecipesRoute
@@ -1470,6 +1490,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppPpdsRoute: AppPpdsRoute,
   AppPreferencesRoute: AppPreferencesRoute,
   AppPurchasingRoute: AppPurchasingRoute,
+  AppQuickLogRoute: AppQuickLogRoute,
   AppReadinessRoute: AppReadinessRoute,
   AppRecallsRoute: AppRecallsRoute,
   AppRecipesRoute: AppRecipesRoute,
@@ -1540,13 +1561,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

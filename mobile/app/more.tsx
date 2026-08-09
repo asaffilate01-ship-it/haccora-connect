@@ -1,66 +1,100 @@
 import { router } from "expo-router";
+import {
+  BellRing,
+  BookOpenCheck,
+  ChevronRight,
+  ClipboardCheck,
+  FileArchive,
+  FileCheck2,
+  GraduationCap,
+  HeartPulse,
+  Lightbulb,
+  ScanLine,
+  ShieldCheck,
+  Tag,
+  Users,
+  type LucideIcon,
+} from "lucide-react-native";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSession } from "@/lib/session";
+import { cardShadow, colours, screen } from "@/lib/theme";
 
 const ALL_TENANT_ROLES = ["owner", "manager", "chef", "staff"] as const;
 const ALL_WORKSPACE_ROLES = [...ALL_TENANT_ROLES, "inspector"] as const;
 
-const groups = [
+type Tool = [string, string, readonly string[], LucideIcon];
+type Group = [string, readonly Tool[]];
+
+const groups: readonly Group[] = [
   [
     "Food safety",
     [
-      ["Safe methods", "/safe-methods", ALL_TENANT_ROLES],
-      ["Allergen lookup", "/allergens", ALL_TENANT_ROLES],
-      ["PPDS labels", "/ppds", ALL_TENANT_ROLES],
-      ["Evidence readiness", "/inspection-readiness", ALL_WORKSPACE_ROLES],
-      ["Equipment & QR history", "/assets", ALL_WORKSPACE_ROLES],
+      ["Safe methods", "/safe-methods", ALL_TENANT_ROLES, BookOpenCheck],
+      ["Allergen lookup", "/allergens", ALL_TENANT_ROLES, ShieldCheck],
+      ["PPDS labels", "/ppds", ALL_TENANT_ROLES, Tag],
+      ["Evidence readiness", "/inspection-readiness", ALL_WORKSPACE_ROLES, FileCheck2],
+      ["Equipment & QR history", "/assets", ALL_WORKSPACE_ROLES, ScanLine],
     ],
   ],
   [
     "People",
     [
-      ["Training & certificates", "/training", ALL_TENANT_ROLES],
-      ["Staff induction", "/inductions", ALL_TENANT_ROLES],
-      ["Fitness to work", "/fitness-to-work", ALL_TENANT_ROLES],
-      ["Staff compliance", "/staff-compliance", ["owner", "manager"]],
+      ["Training & certificates", "/training", ALL_TENANT_ROLES, GraduationCap],
+      ["Staff induction", "/inductions", ALL_TENANT_ROLES, ClipboardCheck],
+      ["Fitness to work", "/fitness-to-work", ALL_TENANT_ROLES, HeartPulse],
+      ["Staff compliance", "/staff-compliance", ["owner", "manager"], Users],
     ],
   ],
   [
     "Records & support",
     [
-      ["Evidence library", "/documents", ALL_WORKSPACE_ROLES],
-      ["Corrective actions", "/actions", ALL_TENANT_ROLES],
-      ["Compliance coach", "/coach", ["owner", "manager"]],
-      ["Alerts & security", "/settings", ALL_WORKSPACE_ROLES],
+      ["Evidence library", "/documents", ALL_WORKSPACE_ROLES, FileArchive],
+      ["Corrective actions", "/actions", ALL_TENANT_ROLES, BellRing],
+      ["Compliance coach", "/coach", ["owner", "manager"], Lightbulb],
+      ["Alerts & security", "/settings", ALL_WORKSPACE_ROLES, ShieldCheck],
     ],
   ],
-] as const;
+];
+
 export default function More() {
-  const { role } = useSession();
+  const { role, organizationName, locationName } = useSession();
   const visibleGroups = groups
     .map(
       ([name, items]) =>
-        [
-          name,
-          items.filter(([, , roles]) => !role || (roles as readonly string[]).includes(role)),
-        ] as const,
+        [name, items.filter(([, , roles]) => !role || roles.includes(role))] as const,
     )
     .filter(([, items]) => items.length > 0);
 
   return (
-    <ScrollView contentContainerStyle={styles.page}>
+    <ScrollView
+      style={styles.canvas}
+      contentContainerStyle={styles.page}
+      showsVerticalScrollIndicator={false}
+    >
       <Text style={styles.eyebrow}>WORKSPACE</Text>
       <Text style={styles.title}>All tools</Text>
+      <Text numberOfLines={1} style={styles.workspace}>
+        {[organizationName, locationName].filter(Boolean).join(" · ") || "Your Haccora workspace"}
+      </Text>
       <Text style={styles.intro}>
-        Frequently used logging tools stay under Log. Everything else is grouped here.
+        Frequent tasks stay under Log. Less-used evidence, people and management tools are grouped
+        here.
       </Text>
       {visibleGroups.map(([name, items]) => (
         <View key={name} style={styles.group}>
           <Text style={styles.groupTitle}>{name}</Text>
-          {items.map(([label, route]) => (
-            <Pressable key={route} style={styles.row} onPress={() => router.push(route)}>
+          {items.map(([label, route, , Icon]) => (
+            <Pressable
+              accessibilityRole="button"
+              key={route}
+              style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+              onPress={() => router.push(route)}
+            >
+              <View style={styles.icon}>
+                <Icon color={colours.brand} size={17} strokeWidth={2.35} />
+              </View>
               <Text style={styles.label}>{label}</Text>
-              <Text style={styles.arrow}>›</Text>
+              <ChevronRight color={colours.subtle} size={18} />
             </Pressable>
           ))}
         </View>
@@ -68,36 +102,49 @@ export default function More() {
     </ScrollView>
   );
 }
+
 const styles = StyleSheet.create({
-  page: { gap: 12, padding: 18, paddingBottom: 90 },
-  eyebrow: { color: "#c8102e", fontSize: 10, fontWeight: "900", letterSpacing: 1.8 },
-  title: { fontSize: 22, fontWeight: "800" },
-  intro: { color: "#666", fontSize: 12, lineHeight: 17 },
+  canvas: { backgroundColor: colours.canvas },
+  page: { ...screen, gap: 10 },
+  eyebrow: { color: colours.brand, fontSize: 9, fontWeight: "900", letterSpacing: 1.6 },
+  title: { color: colours.ink, fontSize: 21, fontWeight: "900", letterSpacing: -0.35 },
+  workspace: { color: colours.ink, fontSize: 10.5, fontWeight: "800", marginTop: -5 },
+  intro: { color: colours.muted, fontSize: 10.5, lineHeight: 15, marginBottom: 3 },
   group: {
-    backgroundColor: "#fff",
-    borderColor: "#e1e1e1",
+    ...cardShadow,
+    backgroundColor: colours.card,
+    borderColor: colours.line,
     borderRadius: 14,
     borderWidth: 1,
     overflow: "hidden",
   },
   groupTitle: {
-    backgroundColor: "#f7f7f7",
-    color: "#555",
-    fontSize: 10,
+    backgroundColor: "#f1f1ed",
+    color: colours.muted,
+    fontSize: 9,
     fontWeight: "900",
-    letterSpacing: 1,
+    letterSpacing: 1.1,
     paddingHorizontal: 13,
-    paddingVertical: 9,
+    paddingVertical: 8,
     textTransform: "uppercase",
   },
   row: {
     alignItems: "center",
-    borderTopColor: "#eee",
+    borderTopColor: colours.line,
     borderTopWidth: 1,
     flexDirection: "row",
-    minHeight: 46,
-    paddingHorizontal: 13,
+    gap: 10,
+    minHeight: 49,
+    paddingHorizontal: 12,
   },
-  label: { flex: 1, fontSize: 12, fontWeight: "700" },
-  arrow: { color: "#777", fontSize: 20 },
+  pressed: { backgroundColor: colours.brandSoft },
+  icon: {
+    alignItems: "center",
+    backgroundColor: colours.brandSoft,
+    borderRadius: 8,
+    height: 30,
+    justifyContent: "center",
+    width: 30,
+  },
+  label: { color: colours.ink, flex: 1, fontSize: 11.5, fontWeight: "800" },
 });

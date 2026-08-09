@@ -4,6 +4,7 @@ import { SessionProvider } from "@/lib/session";
 import { AppLockProvider } from "@/lib/app-lock";
 import { View } from "react-native";
 import { BottomNav } from "@/components/bottom-nav";
+import { colours } from "@/lib/theme";
 
 export default function RootLayout() {
   return (
@@ -11,13 +12,26 @@ export default function RootLayout() {
       <AppLockProvider>
         <StatusBar style="dark" />
         <View style={{ flex: 1 }}>
-          <Stack screenOptions={{ headerTintColor: "#111", headerShadowVisible: false }}>
+          <Stack
+            screenOptions={{
+              contentStyle: { backgroundColor: colours.canvas },
+              headerBackButtonDisplayMode: "minimal",
+              headerShadowVisible: false,
+              headerStyle: { backgroundColor: colours.canvas },
+              headerTintColor: colours.ink,
+              headerTitleStyle: { fontSize: 15, fontWeight: "800" },
+            }}
+          >
             <Stack.Screen name="index" options={{ headerShown: false }} />
             <Stack.Screen name="login" options={{ title: "Haccora" }} />
             <Stack.Screen name="onboarding" options={{ title: "Set up workspace" }} />
             <Stack.Screen
               name="platform-access"
               options={{ title: "Haccora platform", headerBackVisible: false }}
+            />
+            <Stack.Screen
+              name="account-status"
+              options={{ title: "Account status", headerBackVisible: false }}
             />
             <Stack.Screen name="dashboard" options={{ title: "Today", headerBackVisible: false }} />
             <Stack.Screen name="temperature" options={{ title: "Temperature check" }} />

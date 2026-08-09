@@ -9,12 +9,13 @@ import { supabase } from "@/lib/supabase";
 const TOKEN = /[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i;
 
 export default function ScanAsset() {
-  const { session, loading } = useSession();
+  const { session, actionPermissions, loading } = useSession();
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const [error, setError] = useState("");
   if (loading) return null;
   if (!session) return <Redirect href="/login" />;
+  if (!actionPermissions.includes("assets.record")) return <Redirect href="/assets" />;
   if (!permission)
     return (
       <View style={styles.center}>
@@ -37,7 +38,12 @@ export default function ScanAsset() {
   const receive = async (data: string) => {
     if (scanned) return;
     const token = data.match(TOKEN)?.[0];
-    if (!token || (!data.includes("/app/assets/") && !data.startsWith("haccorauk://"))) {
+    if (
+      !token ||
+      (!data.includes("/app/assets/") &&
+        !data.startsWith("haccora://") &&
+        !data.startsWith("haccorauk://"))
+    ) {
       setError("This is not a Haccora equipment label.");
       setScanned(true);
       return;

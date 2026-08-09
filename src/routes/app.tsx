@@ -59,6 +59,7 @@ import {
   Sunrise,
   Lightbulb,
   Building2,
+  PlusCircle,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app")({
@@ -80,6 +81,7 @@ const GROUPS: NavGroup[] = [
     items: [
       { to: "/app", icon: LayoutDashboard, key: "menu.dashboard", nav: "dashboard", exact: true },
       { to: "/app/today", icon: Sunrise, key: "Today's shift", nav: "checks" },
+      { to: "/app/quick-log", icon: PlusCircle, key: "Quick log", nav: "checks" },
       { to: "/app/coach", icon: Lightbulb, key: "Compliance coach", nav: "dashboard" },
       { to: "/app/get-started", icon: Rocket, key: "Get started", nav: "dashboard" },
       { to: "/app/readiness", icon: Gauge, key: "UK readiness", nav: "dashboard" },
@@ -224,6 +226,7 @@ function AppShell() {
     if (!user) return;
     const PATH_KEY: Array<{ prefix: string; nav: NavKey }> = [
       { prefix: "/app/today", nav: "checks" },
+      { prefix: "/app/quick-log", nav: "checks" },
       { prefix: "/app/coach", nav: "dashboard" },
       { prefix: "/app/readiness", nav: "dashboard" },
       { prefix: "/app/get-started", nav: "dashboard" },
@@ -311,8 +314,8 @@ function AppShell() {
   const quickItems = useMemo(() => {
     if (!user) return [];
     const preferred: Record<string, string[]> = {
-      staff: ["/app/today", "/app/checks", "/app/temperature", "/app/diary", "/app/incidents"],
-      chef: ["/app/today", "/app/checks", "/app/temperature", "/app/diary", "/app/incidents"],
+      staff: ["/app/today", "/app/quick-log", "/app/checks", "/app/temperature", "/app/incidents"],
+      chef: ["/app/today", "/app/quick-log", "/app/checks", "/app/temperature", "/app/incidents"],
       manager: [
         "/app/today",
         "/app/coach",
@@ -847,7 +850,7 @@ function MobileBottomNav({
   const [moreOpen, setMoreOpen] = useState(false);
 
   // Preferred order for the 4 pinned tabs; fall back to whatever the role has.
-  const PREFERRED = ["/app", "/app/routines", "/app/checks", "/app/alerts", "/app/inspection"];
+  const PREFERRED = ["/app", "/app/today", "/app/quick-log", "/app/alerts", "/app/inspection"];
   const pinned: NavItem[] = [];
   for (const p of PREFERRED) {
     const item = visibleFlat.find((i) => i.to === p);
@@ -861,18 +864,33 @@ function MobileBottomNav({
 
   return (
     <>
-      <nav className="md:hidden sticky bottom-0 z-30 grid grid-cols-5 border-t border-border bg-card pb-safe">
+      <nav
+        className="md:hidden sticky bottom-0 z-30 grid border-t border-border bg-card pb-safe"
+        style={{ gridTemplateColumns: `repeat(${pinned.length + 1}, minmax(0, 1fr))` }}
+      >
         {pinned.map(({ to, icon: Icon, key, exact }) => {
           const active = exact ? pathname === to : pathname.startsWith(to);
           return (
             <Link
               key={to}
               to={to as never}
-              className={`py-2.5 flex flex-col items-center gap-0.5 text-[10px] font-semibold transition ${
-                active ? "text-primary" : "text-muted-foreground"
+              className={`py-2.5 flex flex-col items-center gap-0.5 text-[9px] font-semibold transition ${
+                to === "/app/quick-log"
+                  ? "text-[color:var(--color-alert-red)]"
+                  : active
+                    ? "text-primary"
+                    : "text-muted-foreground"
               }`}
             >
-              <Icon size={18} />
+              <span
+                className={
+                  to === "/app/quick-log"
+                    ? "-mt-4 grid h-10 w-12 place-items-center rounded-full bg-[color:var(--color-alert-red)] text-white shadow-lg"
+                    : "grid h-6 place-items-center"
+                }
+              >
+                <Icon size={to === "/app/quick-log" ? 21 : 18} />
+              </span>
               <span className="truncate max-w-[68px]">{t(key)}</span>
             </Link>
           );

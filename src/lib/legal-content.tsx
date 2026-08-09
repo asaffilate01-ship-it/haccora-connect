@@ -76,7 +76,7 @@ const CompanyAddress = () => (
   </address>
 );
 
-const UPDATED = "7 August 2026";
+const UPDATED = "9 August 2026";
 
 const content: Record<LegalKey, LegalDoc> = {
   company: {
@@ -135,6 +135,10 @@ const content: Record<LegalKey, LegalDoc> = {
           </li>
           <li>Induction, training, certificate-expiry and limited fitness-to-work information.</li>
           <li>Documents, photographs and files that authorised users choose to upload.</li>
+          <li>
+            Optional foreground GPS coordinates, accuracy, device time and server time when an
+            authorised user scans an equipment QR label and permits location access.
+          </li>
           <li>Device, sign-in, security, diagnostic, notification-token and audit-log data.</li>
         </UL>
         <H>3. Sensitive information</H>
@@ -156,21 +160,35 @@ const content: Record<LegalKey, LegalDoc> = {
           interests, legal obligation or consent. When acting as processor, the customer determines
           the relevant legal bases.
         </P>
-        <H>5. Recipients and international transfers</H>
+        <H>5. Equipment scans and worker transparency</H>
+        <P>
+          Haccora does not perform continuous or background location tracking. A location reading is
+          requested only during an equipment QR workflow, is optional at device level and is stored
+          with the scan accuracy so reviewers can understand its limits. The scan remains
+          attributable when location is denied or unavailable.
+        </P>
+        <P>
+          Customers using scan location as worker-monitoring evidence must document why it is
+          necessary and proportionate, identify an appropriate lawful basis, give workers clear
+          privacy information, set a suitable retention period and complete a data-protection impact
+          assessment where required. Employment consent should not be treated as valid merely
+          because an app permission was accepted.
+        </P>
+        <H>6. Recipients and international transfers</H>
         <P>
           Access is limited to authorised customer users and suppliers needed for hosting,
           authentication, storage, payments, email, push notifications, malware scanning, support
           and monitoring. Where data leaves the UK, a lawful transfer mechanism and supplementary
           safeguards are used where required.
         </P>
-        <H>6. Retention and security</H>
+        <H>7. Retention and security</H>
         <P>
           Data is retained only as long as needed for its purpose, legal claims, security,
           accounting or the customer's documented retention schedule. Haccora uses tenant-scoped
           controls, role and location permissions, private storage, encryption in transit,
           attributable timestamps and audit logging.
         </P>
-        <H>7. Your rights</H>
+        <H>8. Your rights</H>
         <UL>
           <li>Access, rectification and, where applicable, erasure.</li>
           <li>Restriction, objection and portability where the legal conditions apply.</li>

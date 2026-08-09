@@ -1,66 +1,106 @@
 import { router } from "expo-router";
+import {
+  AlertTriangle,
+  BookOpenCheck,
+  ChevronRight,
+  ClipboardCheck,
+  ScanLine,
+  Sparkles,
+  Thermometer,
+  Truck,
+  type LucideIcon,
+} from "lucide-react-native";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-const actions = [
-  ["Temperature", "Fridge, freezer, cooking or cooling reading", "/temperature", "°"],
-  ["Daily check", "Opening, closing and routine evidence", "/checks", "✓"],
-  ["Delivery", "Accept or reject incoming goods", "/goods-in", "↘"],
-  ["Cleaning", "Complete the site cleaning schedule", "/cleaning", "✦"],
-  ["Daily diary", "Record problems and corrective action", "/diary", "▤"],
-  ["Incident", "Report a food-safety event", "/incidents", "!"],
-  ["Scan equipment", "Open its details and add a timestamped record", "/scan-asset", "⌗"],
-] as const;
+import { cardShadow, colours, screen } from "@/lib/theme";
+import { useSession } from "@/lib/session";
+
+type Action = [string, string, string, LucideIcon, string?];
+const actions: Action[] = [
+  ["Temperature", "Fridge, freezer, cooking or cooling reading", "/temperature", Thermometer],
+  ["Daily check", "Opening, closing and routine evidence", "/checks", ClipboardCheck],
+  ["Delivery", "Accept or reject incoming goods", "/goods-in", Truck, "purchasing.receive"],
+  ["Cleaning", "Complete the site cleaning schedule", "/cleaning", Sparkles],
+  ["Daily diary", "Record problems and corrective action", "/diary", BookOpenCheck],
+  ["Incident", "Report a food-safety event", "/incidents", AlertTriangle, "incidents.report"],
+  [
+    "Scan equipment",
+    "Open its details and add a timestamped record",
+    "/scan-asset",
+    ScanLine,
+    "assets.record",
+  ],
+];
+
 export default function QuickLog() {
+  const { actionPermissions } = useSession();
+  const visibleActions = actions.filter(
+    ([, , , , permission]) => !permission || actionPermissions.includes(permission),
+  );
   return (
-    <ScrollView contentContainerStyle={styles.page}>
+    <ScrollView
+      style={styles.canvas}
+      contentContainerStyle={styles.page}
+      showsVerticalScrollIndicator={false}
+    >
       <Text style={styles.eyebrow}>QUICK LOG</Text>
       <Text style={styles.title}>What are you recording?</Text>
       <Text style={styles.intro}>
-        Choose one task. Haccora will take you directly to the shortest safe workflow.
+        Choose one task. Haccora opens the shortest safe workflow and keeps its evidence
+        attributable.
       </Text>
       <View style={styles.grid}>
-        {actions.map(([title, body, route, icon]) => (
-          <Pressable key={route} style={styles.card} onPress={() => router.push(route)}>
-            <Text style={styles.icon}>{icon}</Text>
+        {visibleActions.map(([title, body, route, Icon]) => (
+          <Pressable
+            accessibilityLabel={`${title}. ${body}`}
+            accessibilityRole="button"
+            key={route}
+            style={({ pressed }) => [styles.card, pressed && styles.pressed]}
+            onPress={() => router.push(route)}
+          >
+            <View style={styles.icon}>
+              <Icon color={colours.brand} size={20} strokeWidth={2.4} />
+            </View>
             <View style={styles.flex}>
               <Text style={styles.cardTitle}>{title}</Text>
               <Text style={styles.body}>{body}</Text>
             </View>
-            <Text style={styles.arrow}>›</Text>
+            <ChevronRight color={colours.subtle} size={19} />
           </Pressable>
         ))}
       </View>
     </ScrollView>
   );
 }
+
 const styles = StyleSheet.create({
-  page: { gap: 11, padding: 18, paddingBottom: 90 },
-  eyebrow: { color: "#c8102e", fontSize: 10, fontWeight: "900", letterSpacing: 1.8 },
-  title: { fontSize: 22, fontWeight: "800" },
-  intro: { color: "#666", fontSize: 12, lineHeight: 17 },
-  grid: { gap: 8, marginTop: 3 },
+  canvas: { backgroundColor: colours.canvas },
+  page: { ...screen, gap: 9 },
+  eyebrow: { color: colours.brand, fontSize: 9, fontWeight: "900", letterSpacing: 1.6 },
+  title: { color: colours.ink, fontSize: 21, fontWeight: "900", letterSpacing: -0.35 },
+  intro: { color: colours.muted, fontSize: 11, lineHeight: 16, marginBottom: 4 },
+  grid: { gap: 8 },
   card: {
+    ...cardShadow,
     alignItems: "center",
-    backgroundColor: "#fff",
-    borderColor: "#e1e1e1",
+    backgroundColor: colours.card,
+    borderColor: colours.line,
     borderRadius: 14,
     borderWidth: 1,
     flexDirection: "row",
     gap: 11,
-    padding: 13,
+    minHeight: 66,
+    padding: 12,
   },
+  pressed: { opacity: 0.75, transform: [{ scale: 0.99 }] },
   icon: {
-    backgroundColor: "#fce8e6",
+    alignItems: "center",
+    backgroundColor: colours.brandSoft,
     borderRadius: 10,
-    color: "#c8102e",
-    fontSize: 17,
-    fontWeight: "900",
-    overflow: "hidden",
-    paddingVertical: 8,
-    textAlign: "center",
+    height: 38,
+    justifyContent: "center",
     width: 38,
   },
   flex: { flex: 1 },
-  cardTitle: { fontSize: 13, fontWeight: "800" },
-  body: { color: "#666", fontSize: 10, lineHeight: 15, marginTop: 2 },
-  arrow: { color: "#777", fontSize: 22 },
+  cardTitle: { color: colours.ink, fontSize: 12.5, fontWeight: "900" },
+  body: { color: colours.muted, fontSize: 9.5, lineHeight: 14, marginTop: 2 },
 });

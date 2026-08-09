@@ -91,8 +91,8 @@ test("web and native typography use compact operational sizes", () => {
   const css = read("src/styles.css");
   assert.match(css, /\.app-shell/);
   assert.match(css, /\.marketing-shell/);
-  assert.match(read("mobile/app/dashboard.tsx"), /title: \{ fontSize: 22/);
-  assert.match(read("mobile/app/dashboard.tsx"), /cardTitle: \{ fontSize: 14/);
+  assert.match(read("mobile/app/dashboard.tsx"), /title: \{[^}]*fontSize: 23/);
+  assert.match(read("mobile/app/dashboard.tsx"), /quickTitle: \{[^}]*fontSize: 12\.5/);
   assert.match(read("mobile/app/dashboard.tsx"), /flexWrap: "wrap"/);
 });
 test("PPDS warns when a controlled label no longer matches ingredient specifications", () => {
@@ -290,7 +290,7 @@ test("every visible operational route is connected to persistence or the authent
     const source = read(`src/routes/${file}`);
     assert.match(
       source,
-      /supabase|<Outlet|createFileRoute\("\/app\/"|BrowserQRCodeReader/,
+      /supabase|useAuth|<Outlet|createFileRoute\("\/app\/"|BrowserQRCodeReader/,
       `${file} must be wired`,
     );
   }
@@ -437,7 +437,9 @@ test("Phase 18 simplifies mobile navigation around Today Log Alerts and More", (
   const more = read("mobile/app/more.tsx");
   for (const label of ["Today", "Checks", "Log", "Alerts", "More"])
     assert.match(nav, new RegExp(`label: "${label}"`));
-  assert.equal((dashboard.match(/style=\{styles\.card\}/g) ?? []).length, 6);
+  assert.match(dashboard, /QUICK_TOOLS/);
+  assert.match(dashboard, /Next required action/i);
+  assert.match(nav, /lucide-react-native/);
   assert.match(quickLog, /What are you recording/);
   assert.match(more, /Food safety/);
   assert.match(more, /People/);

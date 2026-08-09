@@ -1,6 +1,6 @@
 # Haccora UK competitor and UX gap review
 
-Reviewed 6 August 2026 against current public product pages for Leafe, Blueroll, Lemon, Seito, Rated5, Checkit and FoodDocs.
+Reviewed 9 August 2026 against current public product pages for Leafe, Trail, Blueroll, Lemon, Seito, Rated5, Checkit and FoodDocs.
 
 ## Patterns worth adopting
 
@@ -10,6 +10,18 @@ Reviewed 6 August 2026 against current public product pages for Leafe, Blueroll,
 - Use short, plain-language cards, compact type and one primary action per screen.
 - Make failures explicit and require corrective action rather than allowing a misleading completion.
 - Keep EHO evidence export, expiry alerts and multi-site oversight available but outside high-frequency staff navigation.
+- Show the current business and premises at the point of capture so staff do not accidentally log against the wrong context.
+- Keep optional equipment-scan GPS explicit, foreground-only and visibly separate from continuous worker tracking.
+
+## Phase 29 mobile/PWA result
+
+- Native Today now prioritises shift completion, the next safe action, offline state and exceptions before the full tool catalogue.
+- Native and PWA have a persistent Quick Log action for temperature, routines, deliveries, cleaning, diary, incidents and equipment scans.
+- Custom subscription roles now reduce visible native mutation flows as well as being enforced by database RLS.
+- Frozen/closed tenant status is shown explicitly and mutations fail closed.
+- Haccora retains a meaningful evidence advantage: asset, premises, user, server/device time, optional GPS accuracy and subsequent reading are linked in append-only history.
+
+Remaining product gaps are provider- or evidence-dependent: signed store distribution, real push/email delivery, sensor/POS integrations, measured multi-site analytics, support operations and real-premises pilot results. They must not be represented as live until configured and verified.
 
 ## Haccora position after Phase 18
 
@@ -30,6 +42,8 @@ The market review was refreshed against Leafe plus current low-cost UK kitchen p
 ## Sources
 
 - https://www.leafeapp.com/
+- https://www.leafeapp.com/features
+- https://trailapp.com/
 - https://blueroll.app/
 - https://www.getlemon.app/
 - https://seito.app/

@@ -14,7 +14,8 @@ import { enqueue } from "@/lib/offline-queue";
 import { useSession } from "@/lib/session";
 
 export default function GoodsIn() {
-  const { session, workspaceReady, organizationId, locationId, loading } = useSession();
+  const { session, workspaceReady, organizationId, locationId, actionPermissions, loading } =
+    useSession();
   const [supplier, setSupplier] = useState("");
   const [product, setProduct] = useState("");
   const [reference, setReference] = useState("");
@@ -32,6 +33,7 @@ export default function GoodsIn() {
   if (loading) return null;
   if (!session) return <Redirect href="/login" />;
   if (!workspaceReady) return <Redirect href="/onboarding" />;
+  if (!actionPermissions.includes("purchasing.receive")) return <Redirect href="/more" />;
 
   const save = async (status: "accepted" | "rejected") => {
     const temp = temperature.trim() ? Number(temperature.replace(",", ".")) : null;

@@ -1,8 +1,8 @@
-# Haccora UK
+# Haccora
 
-Haccora UK is a commercial food-safety compliance SaaS for cafés, restaurants, takeaways, caterers, food retailers, care settings, hotels, mobile traders and multi-site operators.
+Haccora is a commercial UK food-safety compliance SaaS from Haccora Ltd for cafés, restaurants, takeaways, caterers, food retailers, care settings, hotels, mobile traders and multi-site operators. The production public domain is `haccora.co.uk`; authenticated web access is designed for `app.haccora.co.uk`.
 
-This clean Stage 1 repository combines:
+This production-candidate repository combines:
 
 - Haccora's production tenancy, RLS, billing, audit, inspection and native-app architecture
 - UK-specific product direction from Food Safety Hub
@@ -44,10 +44,11 @@ npm run migrations:check
 cd mobile
 npm ci
 npm run typecheck
-npm run store:check
+npm run export:check
+npm run release:preflight
 ```
 
-`store:check` intentionally fails until real EAS project and store settings have been configured.
+`release:preflight` intentionally fails until the real EAS project and store settings have been configured.
 
 ## Documentation
 
@@ -55,6 +56,7 @@ npm run store:check
 - `docs/UK_COMPLIANCE_VALIDATION.md`
 - `docs/GO_LIVE_CHECKLIST.md`
 - `docs/GO_LIVE_STATUS_2026-08-07.md`
+- `docs/PHASE-29-MOBILE-UX-AND-LAUNCH-TRUTH.md`
 - `docs/DEMO-CLIENT-TEST-PLAYBOOK.md`
 - `docs/PRODUCTION_READINESS.md`
 - `docs/DEPLOYMENT.md`
