@@ -7,6 +7,7 @@ Production release is approved only when every P0 item is complete and linked ev
 - [x] The eight duplicate migrations in `MIGRATION_RECONCILIATION.md` are absent and the 18-file lineage gate rejects duplicate policy/function definitions.
 - [x] The tracked-file secret gate passes; the hosting-managed root `.env` contains only allowlisted publishable Supabase client declarations.
 - [ ] GitHub secret scanning, push protection and private vulnerability reporting are enabled in repository settings.
+- [ ] The deployed release is on `haccora.co.uk` / `app.haccora.co.uk`, contains no Lovable editor badge or preview hostname, and matches the approved release SHA.
 - [ ] `npm ci`, `npm run quality` and `npm audit --omit=dev` pass from the committed root lockfile.
 - [ ] The clean production artifact contains no stale assets and every JavaScript chunk passes the 500 KiB build budget.
 - [ ] Native `npm ci`, typecheck, all-platform Expo export and runtime dependency audit pass from `mobile/package-lock.json`.
@@ -44,6 +45,7 @@ Production release is approved only when every P0 item is complete and linked ev
 ## P0 — legal, privacy and food safety
 
 - [ ] Real company identity, support and status details replace placeholders.
+- [ ] The public company-details route contains no draft warning and matches the verified Haccora Ltd Companies House record.
 - [ ] UK English privacy, cookies, terms and company information receive documented UK counsel approval.
 - [ ] GDPR/DPA, retention, deletion and legal-hold handling receive approval.
 - [ ] A qualified food-safety specialist approves HACCP templates, limits and claims.
@@ -56,6 +58,7 @@ Production release is approved only when every P0 item is complete and linked ev
 - [ ] Offline capture, termination, reconnect, duplicate retry and conflict review pass on two devices.
 - [ ] `mobile/npm run release:preflight` passes; EAS project ID, Apple/Google teams, signing, privacy declarations and store metadata are complete.
 - [ ] Camera/document denial, biometric fallback and notification permissions pass on representative iOS/Android devices.
+- [ ] Equipment QR GPS is confirmed foreground-only; denial still records a valid scan, and worker-facing privacy information matches the approved DPIA.
 - [ ] Signed release candidates are installed from TestFlight and Play internal testing before submission.
 - [ ] The native internal-candidate workflow succeeds for both platforms and its EAS build evidence is retained.
 

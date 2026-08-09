@@ -20,3 +20,9 @@ verify_jwt = false
 
 [functions.operations-health]
 verify_jwt = false
+
+[functions.platform-admin]
+verify_jwt = false
+
+[functions.platform-admin]
+verify_jwt = false

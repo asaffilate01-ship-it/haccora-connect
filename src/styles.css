@@ -282,11 +282,16 @@ html.haccora-reduced-motion *::after {
 
 @media (max-width: 767px) {
   .app-shell {
-    font-size: 0.8375rem;
+    font-size: 0.8125rem;
   }
 
   .app-shell h1 {
-    font-size: 1.45rem;
+    font-size: 1.35rem;
+    line-height: 1.1;
+  }
+
+  .app-shell h2 {
+    font-size: 1.1rem;
   }
 }
 

@@ -58,8 +58,10 @@ export const Route = createFileRoute("/")({
           "HACCP, SFBB-style workflows, allergen controls and structured inspection evidence in one platform.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://haccora.co.uk/" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://haccora.co.uk/" }],
   }),
   component: Landing,
 });

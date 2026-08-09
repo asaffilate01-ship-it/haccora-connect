@@ -80,7 +80,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { name: "theme-color", content: "#e43f2c" },
+      { name: "theme-color", content: "#c8102e" },
+      { name: "application-name", content: "Haccora" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-title", content: "Haccora" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
@@ -90,7 +91,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "Haccora unifies HACCP, daily checks, temperature, allergens, training and inspection preparation for food businesses in the United Kingdom.",
       },
-      { name: "author", content: "Haccora" },
+      { name: "author", content: "Haccora Ltd" },
+      { property: "og:site_name", content: "Haccora" },
       { property: "og:title", content: "Haccora — Digital food safety for UK food businesses" },
       {
         property: "og:description",

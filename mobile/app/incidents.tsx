@@ -7,7 +7,7 @@ import { useSession } from "@/lib/session";
 import { supabase } from "@/lib/supabase";
 
 export default function Incidents() {
-  const { session, organizationId, locationId, loading } = useSession();
+  const { session, organizationId, locationId, actionPermissions, loading } = useSession();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [severity, setSeverity] = useState("medium");
@@ -15,6 +15,7 @@ export default function Incidents() {
   const [busy, setBusy] = useState(false);
   if (loading) return null;
   if (!session) return <Redirect href="/login" />;
+  if (!actionPermissions.includes("incidents.report")) return <Redirect href="/more" />;
   const capture = async () => {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) return Alert.alert("Camera permission required");

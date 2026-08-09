@@ -37,7 +37,6 @@ export const PUBLIC_CONFIG = {
   statusUrl: httpsUrlWithDefault("VITE_STATUS_URL", `https://status.${COMPANY_DOMAIN}`),
 };
 
-
 const requiredLegalIdentity = [
   PUBLIC_CONFIG.legal.companyName,
   PUBLIC_CONFIG.legal.addressLine1,

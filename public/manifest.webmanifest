@@ -8,7 +8,7 @@
   "orientation": "portrait",
   "id": "/app",
   "background_color": "#ffffff",
-  "theme_color": "#e43f2c",
+  "theme_color": "#c8102e",
   "categories": ["business", "productivity", "food"],
   "lang": "en-GB",
   "icons": [

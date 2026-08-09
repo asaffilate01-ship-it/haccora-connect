@@ -69,7 +69,7 @@ type Schedule = {
 
 export default function AssetDetail() {
   const { assetId, scanId } = useLocalSearchParams<{ assetId: string; scanId?: string }>();
-  const { session, loading, role } = useSession();
+  const { session, loading, role, actionPermissions } = useSession();
   const [asset, setAsset] = useState<Asset | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -144,6 +144,7 @@ export default function AssetDetail() {
       </View>
     );
   if (!asset) return null;
+  const canRecord = role !== "inspector" && actionPermissions.includes("assets.record");
   const selectedSchedule = schedules.find((item) => item.id === scheduleId);
   const currentReading = measuredValue.trim() ? Number(measuredValue) : null;
   const readingOutsideRange =
@@ -295,7 +296,7 @@ export default function AssetDetail() {
           <Text style={styles.empty}>No recurring checks are scheduled for this item.</Text>
         )}
       </View>
-      {role !== "inspector" && !asset.retired_at && (
+      {canRecord && !asset.retired_at && (
         <View style={styles.form}>
           <Text style={styles.formTitle}>Add timestamped record</Text>
           <View style={styles.choices}>
