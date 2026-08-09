@@ -19,7 +19,6 @@ const httpsUrl = (name: string) => {
 // office, Companies House number, phone, VAT/ICO) remain unset until supplied.
 const COMPANY_DOMAIN = "haccora.co.uk";
 const withDefault = (name: string, fallback: string) => value(name) ?? fallback;
-const httpsUrlWithDefault = (name: string, fallback: string) => httpsUrl(name) ?? fallback;
 
 export const PUBLIC_CONFIG = {
   legal: {
@@ -33,8 +32,11 @@ export const PUBLIC_CONFIG = {
     vatId: value("VITE_LEGAL_VAT_ID"),
     icoRegistration: value("VITE_LEGAL_ICO_REGISTRATION"),
   },
-  supportUrl: httpsUrlWithDefault("VITE_SUPPORT_URL", `https://support.${COMPANY_DOMAIN}`),
-  statusUrl: httpsUrlWithDefault("VITE_STATUS_URL", `https://status.${COMPANY_DOMAIN}`),
+  // Do not publish guessed subdomains. The public Help Centre remains local
+  // until a verified support URL is configured; Status stays hidden until its
+  // production monitor is live.
+  supportUrl: httpsUrl("VITE_SUPPORT_URL"),
+  statusUrl: httpsUrl("VITE_STATUS_URL"),
 };
 
 const requiredLegalIdentity = [
@@ -50,3 +52,11 @@ const requiredLegalIdentity = [
 export const legalIdentityComplete = requiredLegalIdentity.every(Boolean);
 export const legalPublishReady =
   legalIdentityComplete && value("VITE_LEGAL_CONTENT_APPROVED") === "true";
+
+export const PUBLIC_LAUNCH_READINESS = {
+  legalIdentityComplete,
+  legalPublishReady,
+  supportConfigured: Boolean(PUBLIC_CONFIG.supportUrl),
+  statusConfigured: Boolean(PUBLIC_CONFIG.statusUrl),
+  browserPushConfigured: Boolean(value("VITE_WEB_PUSH_PUBLIC_KEY")),
+};

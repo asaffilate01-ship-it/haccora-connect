@@ -8,10 +8,10 @@ Verified: 2026-08-09
 | --------------------------- | ------------------------------------------------------------------- |
 | Reproducible installs       | Root, native and Edge lockfile installs passed                      |
 | Production structure        | Passed                                                              |
-| Migration lineage           | Passed for 61 migrations, 266 policies and 116 function definitions |
+| Migration lineage           | Passed for 62 migrations, 266 policies and 117 function definitions |
 | Secret-pattern scan         | Passed across every tracked source file                             |
 | Web TypeScript              | Passed                                                              |
-| Security regression suite   | 167 of 167 tests passed                                             |
+| Security regression suite   | 170 of 170 tests passed                                             |
 | Web lint                    | Passed with zero warnings                                           |
 | Repository formatting       | Passed Prettier verification and `git diff --check`                 |
 | Cloudflare production build | Passed                                                              |

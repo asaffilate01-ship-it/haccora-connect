@@ -22,6 +22,7 @@ const required = [
   "supabase/functions/sensor-provision/index.ts",
   "supabase/functions/team-invite/index.ts",
   "supabase/functions/platform-admin/index.ts",
+  "supabase/functions/platform-readiness/index.ts",
   "supabase/functions/privacy-requests/index.ts",
   "supabase/functions/security-center/index.ts",
   "supabase/functions/file-scan/index.ts",
@@ -37,10 +38,12 @@ const required = [
   "supabase/migrations/20260808190000_native_evidence_and_push_hardening.sql",
   "supabase/migrations/20260809120000_production_job_heartbeats.sql",
   "supabase/migrations/20260809150000_saas_control_plane_and_asset_scan_evidence.sql",
+  "supabase/migrations/20260809230000_platform_step_up_security.sql",
   "docs/PHASE-24-NATIVE-EVIDENCE-AND-NOTIFICATIONS.md",
   "docs/PHASE-25-STAGING-RELEASE-AUTOMATION.md",
   "docs/PHASE-26-PRODUCTION-OPERATIONS.md",
   "docs/PHASE-27-LAUNCH-ACCEPTANCE.md",
+  "docs/PHASE-34-PLATFORM-LAUNCH-CENTRE.md",
   "docs/launch-acceptance.example.json",
   "supabase/functions/billing/index.ts",
   "supabase/functions/integration-admin/index.ts",
@@ -67,6 +70,7 @@ const required = [
   "scripts/verify-launch-env.mjs",
   "playwright.config.ts",
   "tests/e2e/public-accessibility.spec.ts",
+  "tests/phase34-platform-launch-centre.test.mjs",
   "src/routes/health[.]json.ts",
   ".github/workflows/database.yml",
   ".github/workflows/release-readiness.yml",
@@ -166,6 +170,7 @@ for (const functionName of [
   "notification-dispatch",
   "operations-health",
   "platform-admin",
+  "platform-readiness",
 ]) {
   if (!supabaseConfig.includes(`[functions.${functionName}]`)) {
     failures.push(`Supabase config is missing function: ${functionName}`);
@@ -184,6 +189,7 @@ for (const functionName of [
   "notification-dispatch",
   "operations-health",
   "platform-admin",
+  "platform-readiness",
 ]) {
   if (!ci.includes(`${functionName}/index.ts`)) {
     failures.push(`CI does not type-check Edge Function: ${functionName}`);

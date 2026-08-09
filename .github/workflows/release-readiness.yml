@@ -45,7 +45,9 @@ jobs:
       NOTIFICATION_FROM_EMAIL: ${{ vars.NOTIFICATION_FROM_EMAIL }}
       STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
       STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
-      STRIPE_PRICE_PRO: ${{ vars.STRIPE_PRICE_PRO }}
+      STRIPE_PRICE_SOLO: ${{ vars.STRIPE_PRICE_SOLO }}
+      STRIPE_PRICE_COMPLETE: ${{ vars.STRIPE_PRICE_COMPLETE }}
+      STRIPE_PRICE_GROUP: ${{ vars.STRIPE_PRICE_GROUP }}
       STRIPE_LIVE_MODE: ${{ vars.STRIPE_LIVE_MODE }}
       CONTACT_HASH_SALT: ${{ secrets.CONTACT_HASH_SALT }}
       CRON_SECRET: ${{ secrets.CRON_SECRET }}
@@ -95,7 +97,8 @@ jobs:
           deno check --node-modules-dir=manual --no-lock \
             contact/index.ts inspector-invite/index.ts inspection-export/index.ts \
             notification-dispatch/index.ts sensor-ingest/index.ts sensor-provision/index.ts \
-            team-invite/index.ts platform-admin/index.ts privacy-requests/index.ts security-center/index.ts \
+            team-invite/index.ts platform-admin/index.ts platform-readiness/index.ts \
+            privacy-requests/index.ts security-center/index.ts \
             file-scan/index.ts operations-dispatch/index.ts billing/index.ts \
             integration-admin/index.ts integration-dispatch/index.ts \
             operations-health/index.ts

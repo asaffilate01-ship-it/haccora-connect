@@ -4,6 +4,7 @@ on:
   pull_request:
   push:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -87,6 +88,7 @@ jobs:
           sensor-provision/index.ts
           team-invite/index.ts
           platform-admin/index.ts
+          platform-readiness/index.ts
           privacy-requests/index.ts
           security-center/index.ts
           file-scan/index.ts

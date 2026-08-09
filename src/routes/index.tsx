@@ -971,9 +971,15 @@ function SiteFooter() {
               </Link>
             </li>
             <li>
-              <a href={PUBLIC_CONFIG.supportUrl ?? "#contact"} className="hover:text-white">
-                {t("footer.help")}
-              </a>
+              {PUBLIC_CONFIG.supportUrl ? (
+                <a href={PUBLIC_CONFIG.supportUrl} className="hover:text-white">
+                  {t("footer.help")}
+                </a>
+              ) : (
+                <Link to="/help" className="hover:text-white">
+                  {t("footer.help")}
+                </Link>
+              )}
             </li>
             {PUBLIC_CONFIG.statusUrl && (
               <li>

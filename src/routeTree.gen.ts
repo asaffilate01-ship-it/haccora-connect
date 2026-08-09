@@ -14,6 +14,7 @@ import { Route as PlatformRouteImport } from './routes/platform'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LegalRouteImport } from './routes/legal'
+import { Route as HelpRouteImport } from './routes/help'
 import { Route as HealthDotjsonRouteImport } from './routes/health[.]json'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as AppRouteImport } from './routes/app'
@@ -104,6 +105,11 @@ const LoginRoute = LoginRouteImport.update({
 const LegalRoute = LegalRouteImport.update({
   id: '/legal',
   path: '/legal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HelpRoute = HelpRouteImport.update({
+  id: '/help',
+  path: '/help',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HealthDotjsonRoute = HealthDotjsonRouteImport.update({
@@ -443,6 +449,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteWithChildren
   '/blog': typeof BlogRouteWithChildren
   '/health.json': typeof HealthDotjsonRoute
+  '/help': typeof HelpRoute
   '/legal': typeof LegalRouteWithChildren
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
@@ -514,6 +521,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account-status': typeof AccountStatusRoute
   '/health.json': typeof HealthDotjsonRoute
+  '/help': typeof HelpRoute
   '/legal': typeof LegalRouteWithChildren
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
@@ -588,6 +596,7 @@ export interface FileRoutesById {
   '/app': typeof AppRouteWithChildren
   '/blog': typeof BlogRouteWithChildren
   '/health.json': typeof HealthDotjsonRoute
+  '/help': typeof HelpRoute
   '/legal': typeof LegalRouteWithChildren
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
@@ -663,6 +672,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/blog'
     | '/health.json'
+    | '/help'
     | '/legal'
     | '/login'
     | '/onboarding'
@@ -734,6 +744,7 @@ export interface FileRouteTypes {
     | '/'
     | '/account-status'
     | '/health.json'
+    | '/help'
     | '/legal'
     | '/login'
     | '/onboarding'
@@ -807,6 +818,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/blog'
     | '/health.json'
+    | '/help'
     | '/legal'
     | '/login'
     | '/onboarding'
@@ -881,6 +893,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   BlogRoute: typeof BlogRouteWithChildren
   HealthDotjsonRoute: typeof HealthDotjsonRoute
+  HelpRoute: typeof HelpRoute
   LegalRoute: typeof LegalRouteWithChildren
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
@@ -923,6 +936,13 @@ declare module '@tanstack/react-router' {
       path: '/legal'
       fullPath: '/legal'
       preLoaderRoute: typeof LegalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/help': {
+      id: '/help'
+      path: '/help'
+      fullPath: '/help'
+      preLoaderRoute: typeof HelpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/health.json': {
@@ -1552,6 +1572,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   BlogRoute: BlogRouteWithChildren,
   HealthDotjsonRoute: HealthDotjsonRoute,
+  HelpRoute: HelpRoute,
   LegalRoute: LegalRouteWithChildren,
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
@@ -1561,3 +1582,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

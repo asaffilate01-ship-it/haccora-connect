@@ -47,6 +47,11 @@ Deno.serve(async (request) => {
     if (role !== "platform_owner") {
       return json(request, { error: "forbidden" }, 403);
     }
+    const { data: assurance, error: assuranceError } = await client.auth.mfa
+      .getAuthenticatorAssuranceLevel();
+    if (assuranceError || assurance?.currentLevel !== "aal2") {
+      return json(request, { error: "mfa_step_up_required" }, 403);
+    }
 
     const service = serviceClient();
     const redirectTo = `${env("PUBLIC_APP_URL").replace(/\/$/, "")}/login`;

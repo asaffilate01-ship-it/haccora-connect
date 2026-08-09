@@ -45,6 +45,11 @@ const publishedNoopFunctionReplays = new Set([
   // canonical timestamp. Both immutable ledger entries are idempotent. Allow
   // only this exact replay while continuing to reject every other duplicate.
   "public.record_service_job_heartbeat:20260809112615_bdaf520a-1b59-46e8-9302-8fce9cac64e9.sql:20260809120000_production_job_heartbeats.sql",
+  // Phase 32 was committed under the packaged timestamp and then replayed by
+  // Lovable under its linked-project timestamp. Both files may already be in
+  // hosted ledgers. Keep the immutable entries and permit only this exact,
+  // idempotent dashboard replacement; future identical replays still fail.
+  "public.get_platform_dashboard:20260809193720_ae583ee2-089e-4eae-9406-2502454f3cde.sql:20260809213000_fix_platform_temperature_timestamp.sql",
 ]);
 
 const files = (await readdir(migrationDirectory)).filter((file) => file.endsWith(".sql")).sort();
