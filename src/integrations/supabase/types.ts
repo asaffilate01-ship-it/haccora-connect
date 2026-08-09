@@ -6233,6 +6233,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      __setup_exec: { Args: { sql: string }; Returns: undefined }
       accept_inspector_invitation: { Args: { p_token: string }; Returns: Json }
       accept_organization_invitation: {
         Args: { p_token: string }
