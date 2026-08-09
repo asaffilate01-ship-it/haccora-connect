@@ -10,7 +10,11 @@ import { execFileSync } from "node:child_process";
 const fullCommitSha = /^[0-9a-f]{40}$/i;
 
 function resolveReleaseSha() {
-  for (const candidate of [process.env.HACCORA_RELEASE_SHA, process.env.GITHUB_SHA]) {
+  for (const candidate of [
+    process.env.PUBLIC_RELEASE_SHA,
+    process.env.HACCORA_RELEASE_SHA,
+    process.env.GITHUB_SHA,
+  ]) {
     const value = candidate?.trim() ?? "";
     if (fullCommitSha.test(value)) return value.toLowerCase();
   }
