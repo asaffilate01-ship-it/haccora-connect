@@ -198,8 +198,14 @@ for (const functionName of [
 if (!ci.includes("npm run export:check")) {
   failures.push("CI does not export native iOS/Android bundles");
 }
+if (!ci.includes("needs: release-integrity") || !ci.includes("npm run source:integrity")) {
+  failures.push("CI does not block generated source drift before dependency installation");
+}
 
 const rootPackage = JSON.parse(await readFile(path.join(root, "package.json"), "utf8"));
+if (rootPackage.packageManager !== "npm@10.9.4") {
+  failures.push("The root npm version is not pinned to the CI-compatible release");
+}
 if (!rootPackage.scripts?.quality?.includes("npm run format:check")) {
   failures.push("The local quality gate does not enforce formatting");
 }
@@ -230,6 +236,7 @@ for (const marker of [
   "npm run export:check",
   "npm run release:preflight",
   "npm run deployment:smoke",
+  "npm run auth:health",
   "npm run readiness:check",
   "npm run operations:health",
   "npm run launch:acceptance",
@@ -255,6 +262,7 @@ for (const marker of [
   "npm run staging:ledger",
   "supabase functions deploy",
   "npm run demo:access",
+  "npm run auth:health",
   "npm run deployment:smoke",
   "generate-staging-evidence.mjs",
 ]) {
@@ -267,6 +275,8 @@ const uptimeWorkflow = await readFile(path.join(root, ".github/workflows/uptime.
 for (const marker of [
   "check-deployment-health.mjs",
   "check-deployment-smoke.mjs",
+  "check-deployment-readiness.mjs",
+  "check-supabase-auth-health.mjs",
   "check-operations-health.mjs",
 ]) {
   if (!uptimeWorkflow.includes(marker)) {

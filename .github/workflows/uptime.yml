@@ -21,6 +21,10 @@ jobs:
         env:
           PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
           OPERATIONS_HEALTH_URL: ${{ vars.OPERATIONS_HEALTH_URL }}
+          PRODUCTION_RELEASE_SHA: ${{ vars.PRODUCTION_RELEASE_SHA }}
+          PRODUCTION_PUBLIC_LAUNCH: ${{ vars.PRODUCTION_PUBLIC_LAUNCH }}
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
         run: |
           if [ -z "$PRODUCTION_URL" ]; then
             echo "::warning::PRODUCTION_URL is not configured; production probes are disabled until deployment."
@@ -35,6 +39,15 @@ jobs:
           else
             echo "Scheduler heartbeat and dead-letter probes are enabled." >> "$GITHUB_STEP_SUMMARY"
           fi
+          if [ -z "$PRODUCTION_RELEASE_SHA" ]; then
+            echo "::warning::PRODUCTION_RELEASE_SHA is not configured; uptime probes cannot detect release drift."
+          fi
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_PUBLISHABLE_KEY" ]; then
+            echo "::warning::Supabase public health variables are not configured; authentication monitoring is disabled."
+          fi
+          if [ "$PRODUCTION_PUBLIC_LAUNCH" != "true" ]; then
+            echo "Public launch readiness enforcement remains disabled until PRODUCTION_PUBLIC_LAUNCH is true." >> "$GITHUB_STEP_SUMMARY"
+          fi
 
   health:
     if: ${{ vars.PRODUCTION_URL != '' }}
@@ -42,6 +55,7 @@ jobs:
     timeout-minutes: 3
     env:
       PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
+      EXPECTED_RELEASE_SHA: ${{ vars.PRODUCTION_RELEASE_SHA }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -49,6 +63,34 @@ jobs:
           node-version: 22
       - run: node scripts/check-deployment-health.mjs
       - run: node scripts/check-deployment-smoke.mjs
+
+  authentication:
+    if: ${{ vars.SUPABASE_URL != '' && vars.SUPABASE_PUBLISHABLE_KEY != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22
+      - run: node scripts/check-supabase-auth-health.mjs
+
+  readiness:
+    if: ${{ vars.PRODUCTION_PUBLIC_LAUNCH == 'true' && vars.PRODUCTION_URL != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
+      EXPECTED_RELEASE_SHA: ${{ vars.PRODUCTION_RELEASE_SHA }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22
+      - run: node scripts/check-deployment-readiness.mjs
 
   operations:
     if: ${{ vars.OPERATIONS_HEALTH_URL != '' }}
