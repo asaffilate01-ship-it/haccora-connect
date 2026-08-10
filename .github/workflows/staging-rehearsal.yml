@@ -145,6 +145,12 @@ jobs:
           npm run health:check | tee release-evidence/hosted-health.txt
           echo "HOSTED_HEALTH_PASSED=true" >> "$GITHUB_ENV"
 
+      - name: Verify the staging authentication service is reachable
+        run: |
+          set -o pipefail
+          npm run auth:health | tee release-evidence/auth-health.txt
+          echo "AUTH_HEALTH_PASSED=true" >> "$GITHUB_ENV"
+
       - name: Smoke-test the hosted UK release candidate
         run: |
           set -o pipefail

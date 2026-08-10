@@ -14,7 +14,19 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  release-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22
+      - name: Block generated authentication or brand drift before installing dependencies
+        run: npm run source:integrity
+
   web:
+    needs: release-integrity
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -41,6 +53,7 @@ jobs:
           PUBLIC_APP_URL: https://example.com
 
   mobile:
+    needs: release-integrity
     runs-on: ubuntu-latest
     timeout-minutes: 20
     defaults:
@@ -60,6 +73,7 @@ jobs:
           EXPO_NO_TELEMETRY: "1"
 
   edge-functions:
+    needs: release-integrity
     runs-on: ubuntu-latest
     timeout-minutes: 10
     defaults:

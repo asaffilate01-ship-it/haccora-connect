@@ -40,5 +40,7 @@ Sensor secrets are returned once by `sensor-provision`. Deliver each secret thro
 - Verify real redirect URLs, CORS origins, email delivery, push receipts, signed-document expiry and scheduler alerts.
 - Configure an external uptime monitor for `/health.json`; it intentionally reports only service identity and release liveness.
 - Verify `/readiness.json` before customer traffic is enabled. It reports only non-secret public-web gates—authentication, UK legal publication, support/status links and browser push—and the protected production workflow fails if any remain incomplete.
+- Set the repository variables `PRODUCTION_RELEASE_SHA`, `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`. The scheduled workflow then detects release drift and directly checks the official Supabase Auth health endpoint.
+- Set `PRODUCTION_PUBLIC_LAUNCH=true` only after the protected release gate passes. Scheduled readiness checks then fail closed if legal, support, status, push or authentication configuration regresses.
 - Obtain legal/privacy, food-safety, security and product-owner sign-off before production traffic.
 - Complete `docs/launch-acceptance.example.json` privately, set it as the protected production Environment secret `LAUNCH_ACCEPTANCE_JSON`, and require `npm run launch:acceptance` to pass for the exact deployed SHA and URL.

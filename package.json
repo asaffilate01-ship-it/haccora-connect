@@ -1,6 +1,7 @@
 {
   "name": "haccora-uk",
   "version": "1.0.0",
+  "packageManager": "npm@10.9.4",
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -24,6 +25,7 @@
     "health:check": "node scripts/check-deployment-health.mjs",
     "deployment:smoke": "node scripts/check-deployment-smoke.mjs",
     "readiness:check": "node scripts/check-deployment-readiness.mjs",
+    "auth:health": "node scripts/check-supabase-auth-health.mjs",
     "source:integrity": "node scripts/check-source-integrity.mjs",
     "release:evidence": "node scripts/generate-release-evidence.mjs",
     "release:sbom": "node scripts/generate-sboms.mjs",
