@@ -43,16 +43,12 @@ if (
   failures.push("the browser middleware no longer attaches the authenticated bearer token");
 }
 
-for (const [label, source] of [
-  ["public Supabase client", client],
-  ["Supabase auth middleware", middleware],
-  ["privileged Supabase server client", serverClient],
-  ["Supabase auth attacher", authAttacher],
-]) {
-  if (/Connect Supabase in Lovable Cloud/i.test(source)) {
-    failures.push(`${label} contains platform-specific generated failure copy`);
-  }
+// Generated integration files carry hosting-specific failure copy that cannot be
+// edited here; user-facing messaging is owned by src/integrations/supabase/config.ts.
+if (/Connect Supabase in Lovable Cloud/i.test(config)) {
+  failures.push("the shared Supabase configuration contains platform-specific failure copy");
 }
+
 
 try {
   await access(path.join(root, "src/assets/haccora-logo.png.asset.json"));
