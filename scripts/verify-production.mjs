@@ -209,6 +209,9 @@ if (!rootPackage.scripts?.build?.includes("check-build-budget.mjs")) {
 if (!rootPackage.scripts?.build?.includes("check-built-worker.mjs")) {
   failures.push("The production build does not smoke-test the generated worker");
 }
+if ((rootPackage.scripts?.build?.match(/check-source-integrity\.mjs/g) ?? []).length !== 2) {
+  failures.push("The production build does not check source integrity before and after bundling");
+}
 if (!rootPackage.scripts?.build?.startsWith("node scripts/clean-build-output.mjs")) {
   failures.push("The production build does not remove stale output before bundling");
 }
@@ -227,6 +230,7 @@ for (const marker of [
   "npm run export:check",
   "npm run release:preflight",
   "npm run deployment:smoke",
+  "npm run readiness:check",
   "npm run operations:health",
   "npm run launch:acceptance",
   "npm run release:evidence",

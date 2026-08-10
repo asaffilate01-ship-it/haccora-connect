@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "node scripts/clean-build-output.mjs && vite build && node scripts/check-build-budget.mjs && node scripts/check-built-worker.mjs",
+    "build": "node scripts/clean-build-output.mjs && node scripts/check-source-integrity.mjs && vite build && node scripts/check-source-integrity.mjs && node scripts/check-build-budget.mjs && node scripts/check-built-worker.mjs",
     "build:dev": "vite build --mode development",
     "preview": "nitro preview",
     "lint": "eslint .",
@@ -23,6 +23,8 @@
     "actions:check": "node scripts/check-action-pins.mjs",
     "health:check": "node scripts/check-deployment-health.mjs",
     "deployment:smoke": "node scripts/check-deployment-smoke.mjs",
+    "readiness:check": "node scripts/check-deployment-readiness.mjs",
+    "source:integrity": "node scripts/check-source-integrity.mjs",
     "release:evidence": "node scripts/generate-release-evidence.mjs",
     "release:sbom": "node scripts/generate-sboms.mjs",
     "release:record-deployment": "node scripts/report-github-deployment.mjs",

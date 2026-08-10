@@ -38,6 +38,7 @@ Sensor secrets are returned once by `sensor-provision`. Deliver each secret thro
 - Populate a production `.env` outside Git, then run `npm run launch:preflight`; placeholders and missing legal, Stripe, scanner or EAS configuration must block release.
 - Exercise the ten acceptance tests in `PRODUCTION_READINESS.md` against staging.
 - Verify real redirect URLs, CORS origins, email delivery, push receipts, signed-document expiry and scheduler alerts.
-- Configure an external uptime monitor for `/health.json`; the endpoint intentionally reports only service identity and readiness state.
+- Configure an external uptime monitor for `/health.json`; it intentionally reports only service identity and release liveness.
+- Verify `/readiness.json` before customer traffic is enabled. It reports only non-secret public-web gates—authentication, UK legal publication, support/status links and browser push—and the protected production workflow fails if any remain incomplete.
 - Obtain legal/privacy, food-safety, security and product-owner sign-off before production traffic.
 - Complete `docs/launch-acceptance.example.json` privately, set it as the protected production Environment secret `LAUNCH_ACCEPTANCE_JSON`, and require `npm run launch:acceptance` to pass for the exact deployed SHA and URL.

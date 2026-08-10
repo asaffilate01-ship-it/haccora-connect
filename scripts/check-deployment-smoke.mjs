@@ -41,6 +41,7 @@ const checks = [
   { path: "/blog", contentType: "text/html" },
   { path: "/legal/privacy", contentType: "text/html" },
   { path: "/health.json", contentType: "application/json", health: true },
+  { path: "/readiness.json", contentType: "application/json", readiness: true },
 ];
 const failures = [];
 
@@ -105,6 +106,23 @@ for (const check of checks) {
         }
       } catch {
         failures.push(`${check.path}: health payload is not valid JSON`);
+      }
+    }
+    if (check.readiness) {
+      if (!/\bno-store\b/i.test(cacheControl)) {
+        failures.push(`${check.path}: missing Cache-Control: no-store`);
+      }
+      try {
+        const payload = JSON.parse(body);
+        if (
+          payload.service !== "haccora-web" ||
+          !new Set(["ready", "action_required"]).has(payload.status) ||
+          typeof payload.publicWebReady !== "boolean"
+        ) {
+          failures.push(`${check.path}: readiness payload has an unexpected shape`);
+        }
+      } catch {
+        failures.push(`${check.path}: readiness payload is not valid JSON`);
       }
     }
   } catch (error) {
