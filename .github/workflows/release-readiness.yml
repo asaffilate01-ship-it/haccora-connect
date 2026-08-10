@@ -104,6 +104,8 @@ jobs:
             operations-health/index.ts
       - name: Verify deployed commit identity and health
         run: npm run health:check
+      - name: Verify deployed public runtime readiness
+        run: npm run readiness:check
       - name: Smoke-test the deployed release candidate
         run: npm run deployment:smoke
       - name: Verify scheduler heartbeats and dead-letter queues
@@ -122,6 +124,7 @@ jobs:
           NATIVE_EXPORT_PASSED: "true"
           EDGE_FUNCTIONS_PASSED: "true"
           DEPLOYMENT_HEALTH_PASSED: "true"
+          DEPLOYMENT_READINESS_PASSED: "true"
           DEPLOYMENT_SMOKE_PASSED: "true"
           OPERATIONS_HEALTH_PASSED: "true"
           LAUNCH_ACCEPTANCE_PASSED: "true"

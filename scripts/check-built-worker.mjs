@@ -53,6 +53,7 @@ const routes = [
   ["/blog", "text/html"],
   ["/legal/privacy", "text/html"],
   ["/health.json", "application/json"],
+  ["/readiness.json", "application/json"],
   ["/app", "text/html"],
 ];
 const failures = [];
@@ -76,6 +77,21 @@ for (const [pathname, expectedContentType] of routes) {
   }
   if (body.includes('"message":"HTTPError"')) {
     failures.push(`${pathname}: production worker returned the generic HTTPError payload`);
+  }
+  if (pathname === "/readiness.json") {
+    try {
+      const payload = JSON.parse(body);
+      if (
+        payload.service !== "haccora-web" ||
+        !new Set(["ready", "action_required"]).has(payload.status) ||
+        typeof payload.publicWebReady !== "boolean" ||
+        typeof payload.checks?.authentication !== "boolean"
+      ) {
+        failures.push(`${pathname}: readiness payload has an unexpected shape`);
+      }
+    } catch {
+      failures.push(`${pathname}: readiness payload is not valid JSON`);
+    }
   }
   if (response.headers.get("x-content-type-options") !== "nosniff") {
     failures.push(`${pathname}: missing X-Content-Type-Options security header`);
