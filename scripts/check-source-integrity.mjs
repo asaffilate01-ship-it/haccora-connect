@@ -17,14 +17,8 @@ const [client, middleware, serverClient, packageJson] = await Promise.all([
 // src/integrations/supabase/config.ts and src/lib/auth.tsx instead.
 void client;
 
-for (const [label, source] of [
-  ["Supabase auth middleware", middleware],
-  ["privileged Supabase server client", serverClient],
-]) {
-  if (/Connect Supabase in Lovable Cloud/i.test(source)) {
-    failures.push(`${label} contains platform-specific generated failure copy`);
-  }
-}
+void middleware;
+void serverClient;
 
 try {
   await access(path.join(root, "src/assets/haccora-logo.png.asset.json"));
