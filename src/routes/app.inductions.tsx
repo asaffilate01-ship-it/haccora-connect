@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { CheckCircle2, Clock3, UserCheck } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/haccora-client";
 
 export const Route = createFileRoute("/app/inductions")({ component: InductionsPage });
 

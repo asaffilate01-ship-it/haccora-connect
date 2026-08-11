@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/haccora-client";
 const db = supabase as any;
 
 export const Route = createFileRoute("/app/safe-methods")({ component: SafeMethods });

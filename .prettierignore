@@ -7,5 +7,9 @@ package-lock.json
 bun.lock
 routeTree.gen.ts
 src/integrations/supabase/types.ts
+src/integrations/supabase/client.ts
+src/integrations/supabase/auth-attacher.ts
+src/integrations/supabase/auth-middleware.ts
+src/integrations/supabase/client.server.ts
 supabase/functions
 AGENTS.md

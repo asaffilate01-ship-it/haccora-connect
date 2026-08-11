@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/haccora-client";
 
 function decodePublicKey(value: string) {
   const padding = "=".repeat((4 - (value.length % 4)) % 4);

@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/haccora-client";
 import { isSupabaseConfigured, SUPABASE_UNAVAILABLE_MESSAGE } from "@/integrations/supabase/config";
 
 export type Role = "owner" | "manager" | "chef" | "staff" | "inspector";

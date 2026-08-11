@@ -8,13 +8,14 @@ import { promisify } from "node:util";
 const run = promisify(execFile);
 const read = (file) => readFile(new URL(`../${file}`, import.meta.url), "utf8");
 
-test("Phase 38 restores and independently enforces every generated authentication boundary", async () => {
-  const [integrity, client, middleware, serverClient, attacher, ci] = await Promise.all([
+test("Phase 38 independently enforces every authentication boundary", async () => {
+  const [integrity, client, middleware, serverClient, attacher, start, ci] = await Promise.all([
     read("scripts/check-source-integrity.mjs"),
-    read("src/integrations/supabase/client.ts"),
+    read("src/integrations/supabase/haccora-client.ts"),
     read("src/integrations/supabase/auth-middleware.ts"),
     read("src/integrations/supabase/client.server.ts"),
-    read("src/integrations/supabase/auth-attacher.ts"),
+    read("src/integrations/supabase/haccora-auth-attacher.ts"),
+    read("src/start.ts"),
     read(".github/workflows/ci.yml"),
   ]);
 
@@ -23,8 +24,9 @@ test("Phase 38 restores and independently enforces every generated authenticatio
   assert.match(middleware, /supabase\.auth\.getClaims\(token\)/);
   assert.match(serverClient, /SUPABASE_SERVICE_ROLE_KEY/);
   assert.match(attacher, /Authorization: `Bearer \$\{token\}`/);
+  assert.match(start, /haccora-auth-attacher/);
   for (const marker of [
-    "auth-attacher.ts",
+    "haccora-auth-attacher.ts",
     "getPublicSupabaseConfig",
     "supabase.auth.getClaims(token)",
     "SUPABASE_SERVICE_ROLE_KEY",

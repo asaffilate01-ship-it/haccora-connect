@@ -12,7 +12,7 @@ import {
   ShieldCheck,
   Thermometer,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/haccora-client";
 
 export const Route = createFileRoute("/app/coach")({ component: ComplianceCoach });
 

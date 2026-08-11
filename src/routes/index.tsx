@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useI18n } from "@/lib/i18n";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/haccora-client";
 import { isSupabaseConfigured } from "@/integrations/supabase/config";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import {

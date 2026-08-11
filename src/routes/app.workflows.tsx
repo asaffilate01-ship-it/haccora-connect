@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { CheckCircle2, GitBranch, Loader2, Plus, Rocket, Workflow } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/haccora-client";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 

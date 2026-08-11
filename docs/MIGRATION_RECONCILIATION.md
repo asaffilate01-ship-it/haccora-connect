@@ -31,6 +31,10 @@ The Phase 26 heartbeat schema was published twice: first by Lovable as `20260809
 
 The Phase 34 platform MFA guard was also applied twice: first by Lovable as `20260809212658_86b75e75-ddd4-4ecc-8273-a1a80d42645d.sql`, then by the named package as `20260809230000_platform_step_up_security.sql`. Both files use idempotent function and trigger replacement and may already exist in linked ledgers. Preserve both timestamps. The lineage checker permits only this exact `require_platform_operator_aal2` replay.
 
+## Clean replay compatibility
+
+Historic Lovable setup migrations reference the platform-owned `sandbox_exec` role before revoking its temporary grants. Haccora preserves those published migrations unchanged. `supabase/roles.sql` creates an equivalent local compatibility role as `NOLOGIN`, `NOINHERIT`, `NOBYPASSRLS` and non-administrative before a clean replay; pgTAP then proves that the completed ledger leaves it without access to `auth.users` or the `auth` schema.
+
 ## Safe reconciliation procedure
 
 1. Back up the linked Supabase database and storage before changing migration history.

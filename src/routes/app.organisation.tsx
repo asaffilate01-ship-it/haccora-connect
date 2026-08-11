@@ -14,7 +14,7 @@ import {
   UserPlus,
   Users,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/haccora-client";
 import { useAuth, type Role } from "@/lib/auth";
 import { ACTION_GROUPS, ACTION_LABELS, ROLE_ACTIONS, can, type Action } from "@/lib/permissions";
 

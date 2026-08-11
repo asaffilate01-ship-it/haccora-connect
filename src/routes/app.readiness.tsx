@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AlertTriangle, ArrowRight, CheckCircle2, CircleDashed, RefreshCw } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/haccora-client";
 import { useAuth } from "@/lib/auth";
 import { UK_PRODUCT_DISCLAIMER } from "@/lib/uk-compliance";
 

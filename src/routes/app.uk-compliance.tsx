@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/haccora-client";
 import { useAuth } from "@/lib/auth";
 import { UK_COMPLIANCE_VERSION, UK_PRODUCT_DISCLAIMER } from "@/lib/uk-compliance";
 import { UK_AUTHORITY_PROFILES, isUkJurisdiction, type UkJurisdiction } from "@/lib/uk-authorities";

@@ -13,7 +13,7 @@ import {
   Trash2,
   UserRoundCheck,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/haccora-client";
 import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/app/security")({ component: SecurityCentre });

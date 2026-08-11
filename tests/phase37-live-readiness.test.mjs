@@ -8,9 +8,9 @@ import { promisify } from "node:util";
 const run = promisify(execFile);
 const read = (file) => readFile(new URL(`../${file}`, import.meta.url), "utf8");
 
-test("Phase 37 blocks generated-client and obsolete-brand drift during every build", async () => {
+test("Phase 37 blocks public-client and obsolete-brand drift during every build", async () => {
   const [client, integrity, packageText] = await Promise.all([
-    read("src/integrations/supabase/client.ts"),
+    read("src/integrations/supabase/haccora-client.ts"),
     read("scripts/check-source-integrity.mjs"),
     read("package.json"),
   ]);
@@ -18,6 +18,7 @@ test("Phase 37 blocks generated-client and obsolete-brand drift during every bui
 
   assert.match(client, /getPublicSupabaseConfig/);
   assert.doesNotMatch(client, /Connect Supabase in Lovable Cloud/);
+  assert.match(integrity, /hosting integration's generated public client/);
   assert.match(integrity, /haccora-logo\.png\.asset\.json/);
   assert.equal((scripts.build.match(/check-source-integrity\.mjs/g) ?? []).length, 2);
   await assert.rejects(

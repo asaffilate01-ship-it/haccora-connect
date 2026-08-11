@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/haccora-client";
 import { Thermometer, CheckCircle2, AlertTriangle, Loader2, PlusCircle } from "lucide-react";
 
 export const Route = createFileRoute("/app/temperature")({ component: TemperaturePage });

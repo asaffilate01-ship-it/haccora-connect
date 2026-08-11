@@ -10,7 +10,7 @@ import {
   WifiOff,
 } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/haccora-client";
 import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/app/control-centre")({ component: ControlCentrePage });

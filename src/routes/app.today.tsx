@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { AlertTriangle, CheckCircle2, ChevronRight, Loader2, Sun, Sunset } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/haccora-client";
 
 export const Route = createFileRoute("/app/today")({ component: Today });
 

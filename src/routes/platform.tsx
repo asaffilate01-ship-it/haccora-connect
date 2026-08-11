@@ -24,7 +24,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/haccora-client";
 import { homeFor, useAuth } from "@/lib/auth";
 import { PUBLIC_LAUNCH_READINESS } from "@/lib/public-config";
 

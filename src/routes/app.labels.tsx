@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { can } from "@/lib/permissions";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/haccora-client";
 import { Printer, Tag, Snowflake, AlertTriangle, ChefHat, History } from "lucide-react";
 
 export const Route = createFileRoute("/app/labels")({
