@@ -39,11 +39,15 @@ const required = [
   "supabase/migrations/20260809120000_production_job_heartbeats.sql",
   "supabase/migrations/20260809150000_saas_control_plane_and_asset_scan_evidence.sql",
   "supabase/migrations/20260809230000_platform_step_up_security.sql",
+  "supabase/roles.sql",
+  "src/integrations/supabase/haccora-client.ts",
+  "src/integrations/supabase/haccora-auth-attacher.ts",
   "docs/PHASE-24-NATIVE-EVIDENCE-AND-NOTIFICATIONS.md",
   "docs/PHASE-25-STAGING-RELEASE-AUTOMATION.md",
   "docs/PHASE-26-PRODUCTION-OPERATIONS.md",
   "docs/PHASE-27-LAUNCH-ACCEPTANCE.md",
   "docs/PHASE-34-PLATFORM-LAUNCH-CENTRE.md",
+  "docs/PHASE-39-CI-DATABASE-RECOVERY.md",
   "docs/launch-acceptance.example.json",
   "supabase/functions/billing/index.ts",
   "supabase/functions/integration-admin/index.ts",
@@ -71,6 +75,7 @@ const required = [
   "playwright.config.ts",
   "tests/e2e/public-accessibility.spec.ts",
   "tests/phase34-platform-launch-centre.test.mjs",
+  "tests/phase39-ci-database-recovery.test.mjs",
   "src/routes/health[.]json.ts",
   ".github/workflows/database.yml",
   ".github/workflows/release-readiness.yml",
@@ -120,6 +125,29 @@ for (const file of required) {
 const auth = await readFile(path.join(root, "src/lib/auth.tsx"), "utf8");
 if (/data:\s*\{[^}]*\brole\b/s.test(auth))
   failures.push("Public sign-up still sends role metadata");
+
+const haccoraClient = await readFile(
+  path.join(root, "src/integrations/supabase/haccora-client.ts"),
+  "utf8",
+);
+if (
+  !haccoraClient.includes("getPublicSupabaseConfig") ||
+  /import\.meta\.env|process\.env|SUPABASE_SERVICE_ROLE_KEY/.test(haccoraClient)
+) {
+  failures.push("The Haccora-owned public client does not use its shared safe boundary");
+}
+const haccoraStart = await readFile(path.join(root, "src/start.ts"), "utf8");
+if (
+  !haccoraStart.includes("haccora-auth-attacher") ||
+  !haccoraStart.includes("attachHaccoraAuth")
+) {
+  failures.push("TanStack Start does not use the Haccora-owned authentication attacher");
+}
+const rolesSql = await readFile(path.join(root, "supabase/roles.sql"), "utf8");
+for (const marker of ["sandbox_exec", "NOLOGIN", "NOINHERIT", "NOBYPASSRLS"]) {
+  if (!rolesSql.includes(marker))
+    failures.push(`Migration compatibility role is missing: ${marker}`);
+}
 
 const login = await readFile(path.join(root, "src/routes/login.tsx"), "utf8");
 if (/setRole\(|onClick=\{\(\) => setRole/.test(login))
@@ -273,6 +301,8 @@ for (const marker of [
 
 const uptimeWorkflow = await readFile(path.join(root, ".github/workflows/uptime.yml"), "utf8");
 for (const marker of [
+  "https://hacccora-chums.lovable.app",
+  "vars.PRODUCTION_RELEASE_SHA || github.sha",
   "check-deployment-health.mjs",
   "check-deployment-smoke.mjs",
   "check-deployment-readiness.mjs",
@@ -281,6 +311,16 @@ for (const marker of [
 ]) {
   if (!uptimeWorkflow.includes(marker)) {
     failures.push(`Production uptime workflow is missing: ${marker}`);
+  }
+}
+
+const deploymentSmoke = await readFile(
+  path.join(root, "scripts/check-deployment-smoke.mjs"),
+  "utf8",
+);
+for (const route of ["/help", "/platform", "/legal/terms", "/legal/company-details"]) {
+  if (!deploymentSmoke.includes(route)) {
+    failures.push(`Production deployment smoke test is missing route: ${route}`);
   }
 }
 

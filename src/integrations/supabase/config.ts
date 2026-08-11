@@ -7,6 +7,11 @@ type PublicSupabaseConfig = {
 const nonEmpty = (value: unknown): string | null =>
   typeof value === "string" && value.trim() ? value.trim() : null;
 
+const publicKey = (value: unknown): string | null => {
+  const key = nonEmpty(value);
+  return key && !key.startsWith("sb_secret_") ? key : null;
+};
+
 /**
  * Resolve the public Supabase connection without touching the client singleton.
  * VITE_* values are embedded for browsers; the aliases support SSR runtimes.
@@ -21,9 +26,9 @@ export function getPublicSupabaseConfig(): PublicSupabaseConfig {
     nonEmpty(runtimeEnvironment.SUPABASE_URL) ??
     nonEmpty(runtimeEnvironment.VITE_SUPABASE_URL);
   const publishableKey =
-    nonEmpty(browserEnvironment.VITE_SUPABASE_PUBLISHABLE_KEY) ??
-    nonEmpty(runtimeEnvironment.SUPABASE_PUBLISHABLE_KEY) ??
-    nonEmpty(runtimeEnvironment.VITE_SUPABASE_PUBLISHABLE_KEY);
+    publicKey(browserEnvironment.VITE_SUPABASE_PUBLISHABLE_KEY) ??
+    publicKey(runtimeEnvironment.SUPABASE_PUBLISHABLE_KEY) ??
+    publicKey(runtimeEnvironment.VITE_SUPABASE_PUBLISHABLE_KEY);
 
   return { url, publishableKey, configured: Boolean(url && publishableKey) };
 }

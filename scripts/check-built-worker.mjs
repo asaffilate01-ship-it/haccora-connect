@@ -49,16 +49,19 @@ const context = {
 const routes = [
   ["/", "text/html"],
   ["/help", "text/html"],
-  ["/login", "text/html"],
+  ["/login", "text/html", true],
   ["/blog", "text/html"],
   ["/legal/privacy", "text/html"],
   ["/health.json", "application/json"],
   ["/readiness.json", "application/json"],
-  ["/app", "text/html"],
+  ["/app", "text/html", true],
+  ["/onboarding", "text/html", true],
+  ["/platform", "text/html", true],
+  ["/account-status", "text/html", true],
 ];
 const failures = [];
 
-for (const [pathname, expectedContentType] of routes) {
+for (const [pathname, expectedContentType, privateCache] of routes) {
   const response = await worker.fetch(
     new Request(`https://worker-smoke.haccora.invalid${pathname}`),
     env,
@@ -104,6 +107,9 @@ for (const [pathname, expectedContentType] of routes) {
   }
   if (!response.headers.has("content-security-policy")) {
     failures.push(`${pathname}: missing Content-Security-Policy security header`);
+  }
+  if (privateCache && !/\bno-store\b/i.test(response.headers.get("cache-control") ?? "")) {
+    failures.push(`${pathname}: private route is missing Cache-Control: no-store`);
   }
 }
 

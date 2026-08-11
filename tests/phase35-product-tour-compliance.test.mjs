@@ -59,7 +59,7 @@ test("published Lovable AAL2 replay is narrowly reconciled and public config rem
   const [lineage, reconciliation, client] = await Promise.all([
     read("scripts/check-migration-lineage.mjs"),
     read("docs/MIGRATION_RECONCILIATION.md"),
-    read("src/integrations/supabase/client.ts"),
+    read("src/integrations/supabase/haccora-client.ts"),
   ]);
 
   assert.match(

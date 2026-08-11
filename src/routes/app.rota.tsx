@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/haccora-client";
 import { CalendarDays, Clock, Play, Square, User, Loader2, Plus, Trash2, X } from "lucide-react";
 
 export const Route = createFileRoute("/app/rota")({ component: RotaPage });

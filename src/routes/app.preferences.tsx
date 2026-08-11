@@ -6,7 +6,7 @@ import {
   applyExperiencePreferences,
   type ExperiencePreferences,
 } from "@/components/ExperienceController";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/haccora-client";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/haccora-client";
 import { useI18n } from "@/lib/i18n";
 import { AlertOctagon, Thermometer, Bell, ClipboardCheck, Loader2 } from "lucide-react";
 import { Link } from "@tanstack/react-router";

@@ -1,6 +1,23 @@
 begin;
 
-select plan(17);
+select plan(21);
+
+select ok(
+  not (select rolcanlogin from pg_roles where rolname = 'sandbox_exec'),
+  'historic migration compatibility role cannot sign in'
+);
+select ok(
+  not (select rolsuper or rolbypassrls from pg_roles where rolname = 'sandbox_exec'),
+  'historic migration compatibility role cannot bypass RLS or act as superuser'
+);
+select ok(
+  not has_table_privilege('sandbox_exec', 'auth.users', 'REFERENCES'),
+  'historic migration compatibility role retains no auth.users privilege'
+);
+select ok(
+  not has_schema_privilege('sandbox_exec', 'auth', 'USAGE'),
+  'historic migration compatibility role retains no auth schema access'
+);
 
 select ok(
   (select relrowsecurity from pg_class where oid = 'public.organizations'::regclass),

@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { Gavel, Download, FileCheck2, Lock, Loader2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/haccora-client";
 
 export const Route = createFileRoute("/app/inspection")({
   component: InspectionPage,

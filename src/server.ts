@@ -8,6 +8,8 @@ type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
 };
 
+const PRIVATE_ROUTE_PREFIXES = ["/app", "/login", "/onboarding", "/platform", "/account-status"];
+
 let serverEntryPromise: Promise<ServerEntry> | undefined;
 
 async function getServerEntry(): Promise<ServerEntry> {
@@ -80,11 +82,11 @@ function withSecurityHeaders(response: Response, request: Request): Response {
     headers.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
   }
   if (
-    requestUrl.pathname.startsWith("/app") ||
-    requestUrl.pathname.startsWith("/login") ||
-    requestUrl.pathname.startsWith("/onboarding")
+    PRIVATE_ROUTE_PREFIXES.some(
+      (prefix) => requestUrl.pathname === prefix || requestUrl.pathname.startsWith(`${prefix}/`),
+    )
   ) {
-    headers.set("Cache-Control", "no-store, private");
+    headers.set("Cache-Control", "private, no-store, no-cache, max-age=0, must-revalidate");
   }
   return new Response(response.body, {
     status: response.status,

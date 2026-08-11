@@ -5,7 +5,7 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import { useAuth, ROLES, homeFor, type Role } from "@/lib/auth";
 import { Crown, ClipboardList, ChefHat, User, Gavel, ArrowLeft, Loader2 } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/haccora-client";
 import { SUPABASE_UNAVAILABLE_MESSAGE } from "@/integrations/supabase/config";
 
 export const Route = createFileRoute("/login")({

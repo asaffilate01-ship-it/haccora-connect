@@ -15,7 +15,7 @@ import {
   ShieldCheck,
   Wrench,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/haccora-client";
 import { useAuth } from "@/lib/auth";
 import { can } from "@/lib/permissions";
 import { renderQrDataUrl } from "@/lib/qr";

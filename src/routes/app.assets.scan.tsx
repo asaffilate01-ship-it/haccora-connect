@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import type { IScannerControls } from "@zxing/browser";
 import { ArrowLeft, Camera, Keyboard, Loader2, QrCode, ShieldCheck } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/haccora-client";
 
 export const Route = createFileRoute("/app/assets/scan")({ component: AssetScannerPage });
 

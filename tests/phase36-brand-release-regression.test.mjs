@@ -4,17 +4,19 @@ import test from "node:test";
 
 const text = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("Lovable publishing cannot replace the resilient public Supabase configuration", async () => {
-  const [client, middleware, serverClient] = await Promise.all([
-    text("src/integrations/supabase/client.ts"),
+test("Lovable publishing cannot replace the Haccora-owned Supabase boundary", async () => {
+  const [client, attacher, middleware, serverClient] = await Promise.all([
+    text("src/integrations/supabase/haccora-client.ts"),
+    text("src/integrations/supabase/haccora-auth-attacher.ts"),
     text("src/integrations/supabase/auth-middleware.ts"),
     text("src/integrations/supabase/client.server.ts"),
   ]);
 
   assert.match(client, /getPublicSupabaseConfig/);
   assert.doesNotMatch(client, /Connect Supabase in Lovable Cloud/);
-  assert.doesNotMatch(middleware, /Connect Supabase in Lovable Cloud/);
-  assert.doesNotMatch(serverClient, /Connect Supabase in Lovable Cloud/);
+  assert.match(attacher, /from "\.\/haccora-client"/);
+  assert.match(middleware, /supabase\.auth\.getClaims\(token\)/);
+  assert.match(serverClient, /SUPABASE_SERVICE_ROLE_KEY/);
 });
 
 test("web, PWA and native surfaces use the canonical Haccora identity", async () => {

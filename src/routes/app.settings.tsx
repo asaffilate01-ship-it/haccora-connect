@@ -3,7 +3,7 @@ import { Fragment, useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth, canAccess, ROLES, type Role } from "@/lib/auth";
 import { ACTION_GROUPS, ACTION_LABELS, ROLE_ACTIONS, type Action } from "@/lib/permissions";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/haccora-client";
 import { disableWebPush, registerWebPush } from "@/lib/web-push";
 import {
   Settings as SettingsIcon,

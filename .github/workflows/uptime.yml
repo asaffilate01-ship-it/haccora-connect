@@ -19,43 +19,49 @@ jobs:
     steps:
       - name: Report monitoring configuration
         env:
-          PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
+          CONFIGURED_PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
+          PRODUCTION_URL: ${{ vars.PRODUCTION_URL || 'https://hacccora-chums.lovable.app' }}
           OPERATIONS_HEALTH_URL: ${{ vars.OPERATIONS_HEALTH_URL }}
-          PRODUCTION_RELEASE_SHA: ${{ vars.PRODUCTION_RELEASE_SHA }}
+          CONFIGURED_PRODUCTION_RELEASE_SHA: ${{ vars.PRODUCTION_RELEASE_SHA }}
+          PRODUCTION_RELEASE_SHA: ${{ vars.PRODUCTION_RELEASE_SHA || github.sha }}
           PRODUCTION_PUBLIC_LAUNCH: ${{ vars.PRODUCTION_PUBLIC_LAUNCH }}
           SUPABASE_URL: ${{ vars.SUPABASE_URL }}
           SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
         run: |
-          if [ -z "$PRODUCTION_URL" ]; then
-            echo "::warning::PRODUCTION_URL is not configured; production probes are disabled until deployment."
-            echo "### Production monitoring pending" >> "$GITHUB_STEP_SUMMARY"
-            echo "Set the repository variable \`PRODUCTION_URL\` to enable scheduled health and smoke probes." >> "$GITHUB_STEP_SUMMARY"
+          launch_monitoring_missing=false
+          if [ -z "$CONFIGURED_PRODUCTION_URL" ]; then
+            echo "::warning::PRODUCTION_URL is not configured; monitoring the temporary Lovable release URL."
+            echo "Temporary Lovable monitoring is active until the haccora.co.uk production URL is configured." >> "$GITHUB_STEP_SUMMARY"
           else
             echo "Production probes are enabled for the configured URL." >> "$GITHUB_STEP_SUMMARY"
           fi
           if [ -z "$OPERATIONS_HEALTH_URL" ]; then
             echo "::warning::OPERATIONS_HEALTH_URL is not configured; scheduler and queue probes are disabled."
             echo "Set the operations-health URL and dedicated OPERATIONS_MONITOR_SECRET to monitor production jobs." >> "$GITHUB_STEP_SUMMARY"
+            launch_monitoring_missing=true
           else
             echo "Scheduler heartbeat and dead-letter probes are enabled." >> "$GITHUB_STEP_SUMMARY"
           fi
-          if [ -z "$PRODUCTION_RELEASE_SHA" ]; then
-            echo "::warning::PRODUCTION_RELEASE_SHA is not configured; uptime probes cannot detect release drift."
+          if [ -z "$CONFIGURED_PRODUCTION_RELEASE_SHA" ]; then
+            echo "Release drift monitoring is using the current main commit until PRODUCTION_RELEASE_SHA is configured." >> "$GITHUB_STEP_SUMMARY"
           fi
           if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_PUBLISHABLE_KEY" ]; then
             echo "::warning::Supabase public health variables are not configured; authentication monitoring is disabled."
+            launch_monitoring_missing=true
           fi
           if [ "$PRODUCTION_PUBLIC_LAUNCH" != "true" ]; then
             echo "Public launch readiness enforcement remains disabled until PRODUCTION_PUBLIC_LAUNCH is true." >> "$GITHUB_STEP_SUMMARY"
+          elif [ "$launch_monitoring_missing" = "true" ]; then
+            echo "::error::Public launch monitoring is incomplete. Configure authentication and operations probes."
+            exit 1
           fi
 
   health:
-    if: ${{ vars.PRODUCTION_URL != '' }}
     runs-on: ubuntu-latest
     timeout-minutes: 3
     env:
-      PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
-      EXPECTED_RELEASE_SHA: ${{ vars.PRODUCTION_RELEASE_SHA }}
+      PRODUCTION_URL: ${{ vars.PRODUCTION_URL || 'https://hacccora-chums.lovable.app' }}
+      EXPECTED_RELEASE_SHA: ${{ vars.PRODUCTION_RELEASE_SHA || github.sha }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -79,12 +85,12 @@ jobs:
       - run: node scripts/check-supabase-auth-health.mjs
 
   readiness:
-    if: ${{ vars.PRODUCTION_PUBLIC_LAUNCH == 'true' && vars.PRODUCTION_URL != '' }}
+    if: ${{ vars.PRODUCTION_PUBLIC_LAUNCH == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 3
     env:
-      PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
-      EXPECTED_RELEASE_SHA: ${{ vars.PRODUCTION_RELEASE_SHA }}
+      PRODUCTION_URL: ${{ vars.PRODUCTION_URL || 'https://hacccora-chums.lovable.app' }}
+      EXPECTED_RELEASE_SHA: ${{ vars.PRODUCTION_RELEASE_SHA || github.sha }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
