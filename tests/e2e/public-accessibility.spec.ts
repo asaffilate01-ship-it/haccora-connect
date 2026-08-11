@@ -42,7 +42,7 @@ test("sign-in form is keyboard reachable and exposes named controls", async ({ p
   await expect(email).toBeVisible();
   await expect(password).toBeVisible();
   await expect(email).toHaveAccessibleName(/e-?mail/i);
-  await expect(password).toHaveAccessibleName(/passwort|password/i);
+  await expect(password).toHaveAccessibleName(/password/i);
 
   await page.keyboard.press("Tab");
   await expect(page.locator(":focus")).toBeVisible();

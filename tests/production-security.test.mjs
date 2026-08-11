@@ -452,7 +452,8 @@ test("production preflight blocks placeholders, missing approvals and incomplete
   const preflight = await readFile("scripts/verify-launch-env.mjs", "utf8");
   assert.match(preflight, /VITE_LEGAL_CONTENT_APPROVED/);
   assert.match(preflight, /STRIPE_LIVE_MODE/);
-  assert.match(preflight, /EAS project placeholder/);
+  assert.match(preflight, /nativeReleaseEnvironmentFailures/);
+  assert.match(preflight, /process\.env\.EAS_PROJECT_ID/);
   assert.match(preflight, /INTEGRATION_ENCRYPTION_KEY/);
 });
 
@@ -494,9 +495,11 @@ test("release governance requires preflight, deployment smoke and tamper-evident
 test("native release configuration has a fail-closed store gate and privacy map", async () => {
   const mobile = JSON.parse(await readFile("mobile/package.json", "utf8"));
   const preflight = await readFile("mobile/scripts/verify-store-readiness.mjs", "utf8");
+  const environment = await readFile("mobile/scripts/native-release-environment.mjs", "utf8");
   const privacy = await readFile("mobile/store/PRIVACY_DATA_MAP.md", "utf8");
   assert.equal(mobile.scripts["release:preflight"], "node scripts/verify-store-readiness.mjs");
-  assert.match(preflight, /EAS projectId/);
+  assert.match(preflight, /nativeReleaseEnvironmentFailures/);
+  assert.match(environment, /EAS_PROJECT_ID/);
   assert.match(preflight, /NSCameraUsageDescription/);
   assert.match(preflight, /blockedPermissions/);
   assert.match(privacy, /App Store privacy questionnaire/);

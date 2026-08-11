@@ -48,7 +48,7 @@ Phase 27 was started from GitHub `main` commit
 
 - Configure and run the protected staging workflow against the intended backend project and hosted candidate.
 - Retain successful remote migration, Edge Function, demo-account and every-role RLS evidence.
-- Replace the EAS project placeholder using `eas init`, then configure Apple/Google signing and APNs/FCM credentials.
+- Run `eas init`, store its UUID as protected `EAS_PROJECT_ID`, then configure Apple/Google signing and APNs/FCM credentials.
 - Configure Expo enhanced push security, the access token and scheduled delivery-receipt checks.
 - Configure the production backend, Stripe, email, malware scanning, monitoring, backups and scheduled jobs.
 - Complete physical-device push-notification, offline-sync, tenant-isolation, restore and penetration testing.

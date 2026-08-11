@@ -110,7 +110,8 @@ test("Phase 25 native candidate is pinned, committed and internal", async () => 
   assert.equal(eas.build.preview.distribution, "internal");
   assert.equal(eas.build.preview.channel, "staging");
   assert.match(preflight, /EXPO_TOKEN/);
-  assert.match(preflight, /EAS projectId/);
+  assert.match(preflight, /nativeReleaseEnvironmentFailures/);
+  assert.match(workflow, /EAS_PROJECT_ID/);
 });
 
 test("Phase 25 hosted RLS rehearsal checks sensitive evidence and inspector writes", async () => {

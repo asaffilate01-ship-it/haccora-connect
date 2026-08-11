@@ -35,6 +35,10 @@ jobs:
       MALWARE_SCAN_URL: ${{ vars.MALWARE_SCAN_URL }}
       MALWARE_SCAN_TOKEN: ${{ secrets.MALWARE_SCAN_TOKEN }}
       EXPO_ACCESS_TOKEN: ${{ secrets.EXPO_ACCESS_TOKEN }}
+      EAS_PROJECT_ID: ${{ vars.EAS_PROJECT_ID }}
+      EXPO_PUBLIC_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+      EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
+      EXPO_PUBLIC_WEB_APP_URL: ${{ inputs.deployment_url }}
       VITE_SUPPORT_URL: ${{ vars.VITE_SUPPORT_URL }}
       VITE_STATUS_URL: ${{ vars.VITE_STATUS_URL }}
       VITE_WEB_PUSH_PUBLIC_KEY: ${{ vars.VITE_WEB_PUSH_PUBLIC_KEY }}
@@ -110,6 +114,14 @@ jobs:
         run: npm run readiness:check
       - name: Smoke-test the deployed release candidate
         run: npm run deployment:smoke
+      - name: Run desktop and mobile browser accessibility against production
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ inputs.deployment_url }}
+          PLAYWRIGHT_JSON_OUTPUT_FILE: release-evidence/hosted-browser-results.json
+        run: |
+          mkdir -p release-evidence
+          npx playwright install --with-deps chromium
+          npm run test:e2e
       - name: Verify scheduler heartbeats and dead-letter queues
         run: npm run operations:health
       - name: Verify protected human and operational launch acceptance
@@ -129,6 +141,7 @@ jobs:
           AUTH_HEALTH_PASSED: "true"
           DEPLOYMENT_READINESS_PASSED: "true"
           DEPLOYMENT_SMOKE_PASSED: "true"
+          HOSTED_BROWSER_E2E_PASSED: "true"
           OPERATIONS_HEALTH_PASSED: "true"
           LAUNCH_ACCEPTANCE_PASSED: "true"
           SBOM_GENERATED: "true"
