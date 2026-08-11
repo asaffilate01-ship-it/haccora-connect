@@ -49,7 +49,7 @@ The workflow follows Supabase's forward migration model: it uses `db push --dry-
 
 ## Create signed internal apps
 
-1. From `mobile`, run `eas init`/`eas build:configure` with the intended Haccora Expo account and commit the real EAS project UUID.
+1. From `mobile`, run `eas init`/`eas build:configure` with the intended Haccora Expo account and store the real UUID as protected `EAS_PROJECT_ID`.
 2. Configure Apple/Google credentials and APNs/FCM in Expo.
 3. Run **Actions → Native internal candidate** for iOS, Android or both.
 4. Install the resulting internal distributions on representative physical devices.

@@ -1,6 +1,6 @@
 # Native store release checklist
 
-- [ ] Run `eas init`, commit the real EAS project UUID and run `npm run release:preflight`.
+- [ ] Run `eas init`, store the real project UUID as protected `EAS_PROJECT_ID` and run `npm run release:preflight` with the production `EXPO_PUBLIC_*` values.
 - [ ] Configure Apple team, App Store Connect application, Google Play application and least-privilege submit credentials outside Git.
 - [ ] Complete App Store privacy, export-compliance and Google Play Data safety declarations against `PRIVACY_DATA_MAP.md` and the production SDK inventory.
 - [ ] Add reviewed UK English store descriptions, keywords, support/privacy URLs, category, age rating and current device screenshots.

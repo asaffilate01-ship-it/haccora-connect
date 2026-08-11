@@ -68,9 +68,17 @@ jobs:
           cache-dependency-path: mobile/package-lock.json
       - run: npm ci
       - run: npm run typecheck
+      - run: npm run runtime:preflight
+        env:
+          EXPO_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+          EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+          EXPO_PUBLIC_WEB_APP_URL: https://ci.haccora.invalid
       - run: npm run export:check
         env:
           EXPO_NO_TELEMETRY: "1"
+          EXPO_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+          EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+          EXPO_PUBLIC_WEB_APP_URL: https://ci.haccora.invalid
 
   edge-functions:
     needs: release-integrity

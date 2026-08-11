@@ -65,9 +65,6 @@
       ],
       ["expo-camera", { "cameraPermission": "Scan Haccora equipment QR labels." }]
     ],
-    "experiments": { "typedRoutes": true },
-    "extra": {
-      "eas": { "projectId": "SET_WITH_EAS_INIT" }
-    }
+    "experiments": { "typedRoutes": true }
   }
 }

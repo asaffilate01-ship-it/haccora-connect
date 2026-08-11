@@ -1,10 +1,11 @@
 import { readFile } from "node:fs/promises";
+import { nativeReleaseEnvironmentFailures } from "./native-release-environment.mjs";
 
 const failures = [];
 const value = (name) => (process.env[name] ?? "").trim();
-const app = JSON.parse(await readFile("app.json", "utf8")).expo;
 const eas = JSON.parse(await readFile("eas.json", "utf8"));
-const projectId = String(app?.extra?.eas?.projectId ?? "");
+
+failures.push(...nativeReleaseEnvironmentFailures(process.env));
 
 if (value("HACCORA_ENV") !== "staging") {
   failures.push("HACCORA_ENV must be staging for an internal candidate");
@@ -14,9 +15,6 @@ if (value("EXPO_TOKEN").length < 20) {
 }
 if (!/^\d+\.\d+\.\d+$/.test(value("EAS_CLI_VERSION"))) {
   failures.push("EAS_CLI_VERSION must pin an explicit three-part version");
-}
-if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(projectId)) {
-  failures.push("EAS projectId must be replaced with the UUID returned by eas init");
 }
 if (eas?.cli?.requireCommit !== true) {
   failures.push("EAS must require a committed source snapshot");

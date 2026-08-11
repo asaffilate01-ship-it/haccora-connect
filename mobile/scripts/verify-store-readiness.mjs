@@ -1,11 +1,15 @@
 import { access, readFile } from "node:fs/promises";
 import path from "node:path";
+import { nativeReleaseEnvironmentFailures } from "./native-release-environment.mjs";
 
 const root = process.cwd();
 const failures = [];
 const readJson = async (file) => JSON.parse(await readFile(path.join(root, file), "utf8"));
 const app = (await readJson("app.json")).expo;
 const eas = await readJson("eas.json");
+const appConfig = await readFile(path.join(root, "app.config.js"), "utf8");
+
+failures.push(...nativeReleaseEnvironmentFailures(process.env));
 
 const reverseDns = /^[a-z][a-z0-9]*(?:\.[a-z][a-z0-9-]*){2,}$/i;
 if (!reverseDns.test(app?.ios?.bundleIdentifier ?? "")) {
@@ -21,9 +25,11 @@ if (!/^\d+\.\d+\.\d+$/.test(app?.version ?? "")) {
   failures.push("Expo version must use a three-part semantic version");
 }
 
-const projectId = app?.extra?.eas?.projectId ?? "";
-if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(projectId)) {
-  failures.push("EAS projectId must be replaced with the UUID returned by eas init");
+if (
+  !appConfig.includes("process.env.EAS_PROJECT_ID") ||
+  !appConfig.includes("eas: { projectId }")
+) {
+  failures.push("app.config.js must inject the protected EAS_PROJECT_ID into signed builds");
 }
 if (eas?.cli?.appVersionSource !== "remote") {
   failures.push("EAS must use remote app version management");

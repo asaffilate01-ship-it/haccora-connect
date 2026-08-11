@@ -66,7 +66,11 @@ const required = [
   "mobile/app/incidents.tsx",
   "mobile/app/settings.tsx",
   "mobile/app.json",
+  "mobile/app.config.js",
   "mobile/eas.json",
+  "mobile/scripts/native-release-environment.mjs",
+  "mobile/scripts/verify-runtime-config.mjs",
+  "mobile/scripts/verify-eas-build-result.mjs",
   ".github/workflows/ci.yml",
   ".github/workflows/codeql.yml",
   "scripts/check-migration-lineage.mjs",
@@ -76,6 +80,7 @@ const required = [
   "tests/e2e/public-accessibility.spec.ts",
   "tests/phase34-platform-launch-centre.test.mjs",
   "tests/phase39-ci-database-recovery.test.mjs",
+  "tests/phase40-native-hosted-acceptance.test.mjs",
   "src/routes/health[.]json.ts",
   ".github/workflows/database.yml",
   ".github/workflows/release-readiness.yml",
@@ -112,6 +117,7 @@ const required = [
   "mobile/store/STORE_RELEASE_CHECKLIST.md",
   "docs/GO_LIVE_STATUS_2026-08-02.md",
   "docs/V2_FILE_3_COMPLETE.md",
+  "docs/PHASE-40-NATIVE-AND-HOSTED-ACCEPTANCE.md",
 ];
 
 for (const file of required) {
@@ -180,6 +186,7 @@ for (const key of [
   "STRIPE_LIVE_MODE",
   "INTEGRATION_ENCRYPTION_KEY",
   "EXPO_ACCESS_TOKEN",
+  "EAS_PROJECT_ID",
   "OPERATIONS_HEALTH_URL",
   "OPERATIONS_MONITOR_SECRET",
 ]) {
@@ -226,6 +233,14 @@ for (const functionName of [
 if (!ci.includes("npm run export:check")) {
   failures.push("CI does not export native iOS/Android bundles");
 }
+for (const marker of [
+  "npm run runtime:preflight",
+  "EXPO_PUBLIC_SUPABASE_URL",
+  "EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
+  "EXPO_PUBLIC_WEB_APP_URL",
+]) {
+  if (!ci.includes(marker)) failures.push(`Native CI runtime verification is missing: ${marker}`);
+}
 if (!ci.includes("needs: release-integrity") || !ci.includes("npm run source:integrity")) {
   failures.push("CI does not block generated source drift before dependency installation");
 }
@@ -268,6 +283,10 @@ for (const marker of [
   "npm run readiness:check",
   "npm run operations:health",
   "npm run launch:acceptance",
+  "PLAYWRIGHT_BASE_URL",
+  "HOSTED_BROWSER_E2E_PASSED",
+  "EAS_PROJECT_ID",
+  "EXPO_PUBLIC_SUPABASE_URL",
   "npm run release:evidence",
   "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
 ]) {
@@ -292,6 +311,9 @@ for (const marker of [
   "npm run demo:access",
   "npm run auth:health",
   "npm run deployment:smoke",
+  "PLAYWRIGHT_BASE_URL",
+  "HOSTED_BROWSER_E2E_PASSED",
+  "npm run runtime:preflight",
   "generate-staging-evidence.mjs",
 ]) {
   if (!stagingWorkflow.includes(marker)) {
@@ -413,11 +435,27 @@ if (trackedEnvironmentFiles.length) {
 }
 
 const mobilePackage = JSON.parse(await readFile(path.join(root, "mobile/package.json"), "utf8"));
+const mobileApp = await readFile(path.join(root, "mobile/app.json"), "utf8");
+const mobileDynamicConfig = await readFile(path.join(root, "mobile/app.config.js"), "utf8");
+if (/SET_WITH_EAS_INIT/.test(mobileApp)) {
+  failures.push("Native static configuration still contains the obsolete EAS placeholder");
+}
+if (!mobileDynamicConfig.includes("process.env.EAS_PROJECT_ID")) {
+  failures.push("Native dynamic configuration does not inject EAS_PROJECT_ID");
+}
 if (mobilePackage.dependencies?.["expo-file-system"] !== "~57.0.1") {
   failures.push("Native evidence upload must declare expo-file-system as a direct dependency");
 }
 if (!mobilePackage.scripts?.["export:check"]?.includes("--platform all")) {
   failures.push("Native release verification must export iOS, Android and web bundles");
+}
+if (mobilePackage.scripts?.["runtime:preflight"] !== "node scripts/verify-runtime-config.mjs") {
+  failures.push("Native exports must enforce their public runtime configuration");
+}
+if (
+  mobilePackage.scripts?.["release:verify-build"] !== "node scripts/verify-eas-build-result.mjs"
+) {
+  failures.push("Native signed builds must produce a redacted verified evidence manifest");
 }
 if (mobilePackage.scripts?.["release:preflight"] !== "node scripts/verify-store-readiness.mjs") {
   failures.push("Native release verification must enforce the store configuration preflight");
@@ -427,6 +465,29 @@ if (
   "node scripts/verify-internal-build-env.mjs"
 ) {
   failures.push("Native internal builds must enforce the protected staging preflight");
+}
+
+const nativeWorkflow = await readFile(
+  path.join(root, ".github/workflows/native-internal-candidate.yml"),
+  "utf8",
+);
+for (const marker of [
+  "deployment_url:",
+  "EAS_PROJECT_ID",
+  "EXPO_PUBLIC_SUPABASE_URL",
+  "eas-internal-build.raw.json",
+  "npm run release:verify-build",
+]) {
+  if (!nativeWorkflow.includes(marker)) {
+    failures.push(`Native internal candidate workflow is missing: ${marker}`);
+  }
+}
+
+const playwright = await readFile(path.join(root, "playwright.config.ts"), "utf8");
+for (const marker of ["PLAYWRIGHT_BASE_URL", "PLAYWRIGHT_JSON_OUTPUT_FILE", "hostedURL"]) {
+  if (!playwright.includes(marker)) {
+    failures.push(`Hosted browser acceptance configuration is missing: ${marker}`);
+  }
 }
 
 const forbiddenDuplicateMigrations = [

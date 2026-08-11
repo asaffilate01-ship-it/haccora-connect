@@ -12,6 +12,10 @@ on:
           - all
           - ios
           - android
+      deployment_url:
+        description: HTTPS staging application URL embedded in the candidate
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -29,6 +33,10 @@ jobs:
       HACCORA_ENV: staging
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
       EAS_CLI_VERSION: ${{ vars.EAS_CLI_VERSION }}
+      EAS_PROJECT_ID: ${{ vars.EAS_PROJECT_ID }}
+      EXPO_PUBLIC_SUPABASE_URL: ${{ vars.STAGING_SUPABASE_URL }}
+      EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.STAGING_SUPABASE_PUBLISHABLE_KEY }}
+      EXPO_PUBLIC_WEB_APP_URL: ${{ inputs.deployment_url }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -52,7 +60,15 @@ jobs:
         run: |
           mkdir -p ../release-evidence
           eas build --platform "${{ inputs.platform }}" --profile preview \
-            --non-interactive --wait --json > ../release-evidence/eas-internal-build.json
+            --non-interactive --wait --json > ../release-evidence/eas-internal-build.raw.json
+      - name: Verify and redact signed-build evidence
+        working-directory: mobile
+        env:
+          EAS_BUILD_RESULT_FILE: ../release-evidence/eas-internal-build.raw.json
+          EAS_BUILD_MANIFEST_FILE: ../release-evidence/eas-internal-build.json
+          EAS_EXPECTED_PLATFORM: ${{ inputs.platform }}
+          HACCORA_RELEASE_SHA: ${{ github.sha }}
+        run: npm run release:verify-build
       - name: Upload signed-build evidence
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:

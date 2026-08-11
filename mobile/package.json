@@ -9,7 +9,9 @@
     "android": "expo run:android",
     "typecheck": "tsc --noEmit",
     "export:check": "expo export --platform all --output-dir dist --clear",
+    "runtime:preflight": "node scripts/verify-runtime-config.mjs",
     "release:preflight": "node scripts/verify-store-readiness.mjs",
+    "release:verify-build": "node scripts/verify-eas-build-result.mjs",
     "build:ios": "eas build --platform ios --profile production",
     "build:android": "eas build --platform android --profile production",
     "release:internal-preflight": "node scripts/verify-internal-build-env.mjs"

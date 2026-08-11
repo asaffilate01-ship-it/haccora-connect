@@ -49,6 +49,9 @@ jobs:
       DEMO_SEED_CONFIRM: HACCORA_DEMO_ONLY
       DEMO_EMAIL_DOMAIN: ${{ vars.DEMO_EMAIL_DOMAIN }}
       DEMO_PASSWORD: ${{ secrets.DEMO_PASSWORD }}
+      EXPO_PUBLIC_SUPABASE_URL: ${{ vars.STAGING_SUPABASE_URL }}
+      EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.STAGING_SUPABASE_PUBLISHABLE_KEY }}
+      EXPO_PUBLIC_WEB_APP_URL: ${{ inputs.deployment_url }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -77,6 +80,7 @@ jobs:
           EXPO_NO_TELEMETRY: "1"
         run: |
           npm ci
+          npm run runtime:preflight
           npm run typecheck
           npm run export:check
           echo "NATIVE_EXPORT_PASSED=true" >> "$GITHUB_ENV"
@@ -156,6 +160,15 @@ jobs:
           set -o pipefail
           npm run deployment:smoke | tee release-evidence/hosted-smoke.txt
           echo "HOSTED_SMOKE_PASSED=true" >> "$GITHUB_ENV"
+
+      - name: Run desktop and mobile browser accessibility against staging
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ inputs.deployment_url }}
+          PLAYWRIGHT_JSON_OUTPUT_FILE: release-evidence/hosted-browser-results.json
+        run: |
+          npx playwright install --with-deps chromium
+          npm run test:e2e
+          echo "HOSTED_BROWSER_E2E_PASSED=true" >> "$GITHUB_ENV"
 
       - name: Generate a redacted staging readiness manifest
         if: always()

@@ -19,6 +19,7 @@ const gateNames = [
   "DEMO_RLS_PASSED",
   "HOSTED_HEALTH_PASSED",
   "HOSTED_SMOKE_PASSED",
+  "HOSTED_BROWSER_E2E_PASSED",
   "NATIVE_EXPORT_PASSED",
   "NATIVE_INTERNAL_BUILD_PASSED",
 ];
@@ -32,6 +33,7 @@ const evidenceFiles = [
   "demo-role-access.txt",
   "hosted-health.txt",
   "hosted-smoke.txt",
+  "hosted-browser-results.json",
   "eas-internal-build.json",
 ];
 
@@ -85,6 +87,7 @@ const requiredWebPilotGates = [
   "DEMO_RLS_PASSED",
   "HOSTED_HEALTH_PASSED",
   "HOSTED_SMOKE_PASSED",
+  "HOSTED_BROWSER_E2E_PASSED",
 ];
 const manifest = {
   schemaVersion: 1,

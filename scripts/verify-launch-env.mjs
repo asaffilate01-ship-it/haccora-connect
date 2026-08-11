@@ -1,8 +1,11 @@
 import { readFile } from "node:fs/promises";
+import { nativeReleaseEnvironmentFailures } from "../mobile/scripts/native-release-environment.mjs";
 
 const failures = [];
 const value = (name) => (process.env[name] ?? "").trim();
 const placeholder = /(replace|your_project|example\.com|example\.supabase|set_with)/i;
+
+failures.push(...nativeReleaseEnvironmentFailures(process.env));
 
 function requireValue(name) {
   const current = value(name);
@@ -120,9 +123,9 @@ if (value("STRIPE_LIVE_MODE") !== "true") {
 }
 
 const mobileConfig = JSON.parse(await readFile("mobile/app.json", "utf8"));
-const projectId = String(mobileConfig?.expo?.extra?.eas?.projectId ?? "");
-if (!projectId || placeholder.test(projectId)) {
-  failures.push("mobile/app.json still has an EAS project placeholder");
+const mobileDynamicConfig = await readFile("mobile/app.config.js", "utf8");
+if (!mobileDynamicConfig.includes("process.env.EAS_PROJECT_ID")) {
+  failures.push("mobile/app.config.js does not inject the protected EAS_PROJECT_ID");
 }
 if (!mobileConfig?.expo?.ios?.bundleIdentifier) {
   failures.push("mobile/app.json is missing the iOS bundle identifier");
