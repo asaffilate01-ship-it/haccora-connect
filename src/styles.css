@@ -320,7 +320,7 @@ html.haccora-reduced-motion *::after {
 }
 
 .marketing-shell .hero-title {
-  max-width: 12ch;
+  max-width: 15ch;
   font-size: clamp(2rem, 4.6vw, 4rem);
   line-height: 0.98;
   text-wrap: balance;
