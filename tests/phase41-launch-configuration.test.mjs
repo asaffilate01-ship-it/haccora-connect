@@ -175,4 +175,3 @@ test("Phase 41 bootstrap refuses to write secrets into a tracked file", async (t
   }
   await assert.rejects(bootstrapLaunchConfiguration({ root: directory }), /is tracked by Git/);
 });
-
