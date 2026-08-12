@@ -830,10 +830,11 @@ function OutcomesBand() {
         </div>
         <div className="mt-12 grid grid-cols-2 lg:grid-cols-4 gap-5">
           {stats.map(({ icon: Icon, v, l }) => (
-            <div key={l} className="rounded-2xl bg-white/[0.04] border border-white/10 p-6 md:p-8">
-              <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[color:var(--color-alert-red)]/20 text-[color:var(--color-alert-red)]">
+            <div key={l} className="card-polished-dark p-6 md:p-8">
+              <span className="icon-3d icon-3d-sm">
                 <Icon size={20} strokeWidth={2.4} />
               </span>
+
               <div className="mt-5 display-black text-3xl md:text-4xl leading-none">{v}</div>
               <div className="mt-2 text-sm text-white/70 leading-snug">{l}</div>
             </div>
