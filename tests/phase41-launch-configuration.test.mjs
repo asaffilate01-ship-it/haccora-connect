@@ -49,6 +49,7 @@ function completeEnvironment() {
     NOTIFICATION_FROM_EMAIL: "Haccora Alerts <alerts@haccora.co.uk>",
     MALWARE_SCAN_URL: "https://scanner.haccora.co.uk/scan",
     MALWARE_SCAN_TOKEN: "m".repeat(24),
+    VIRUSTOTAL_API_KEY: "v".repeat(24),
     VITE_WEB_PUSH_PUBLIC_KEY: "vapid_public_validation_key",
     WEB_PUSH_GATEWAY_URL: "https://push.haccora.co.uk/send",
     WEB_PUSH_GATEWAY_TOKEN: "w".repeat(43),
@@ -61,7 +62,7 @@ function completeEnvironment() {
     EXPO_PUBLIC_SUPABASE_URL: "https://phase41.supabase.co",
     EXPO_PUBLIC_WEB_APP_URL: "https://app.haccora.co.uk",
     EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: publishable,
-    EAS_PROJECT_ID: "123e4567-e89b-42d3-a456-426614174000",
+    EAS_PROJECT_ID: "123e4567-e89b-43d3-a456-436614174000",
     EXPO_ACCESS_TOKEN: "e".repeat(24),
   };
 }
@@ -76,12 +77,12 @@ function parseAssignments(content) {
   );
 }
 
-test("Phase 41 reports 42 unique production configuration controls by accountable owner", async () => {
-  assert.equal(launchRequirements.length, 42);
-  assert.equal(new Set(launchRequirements.map((item) => item.name)).size, 42);
+test("Phase 41 reports 43 unique production configuration controls by accountable owner", async () => {
+  assert.equal(launchRequirements.length, 43);
+  assert.equal(new Set(launchRequirements.map((item) => item.name)).size, 43);
   const result = await evaluateLaunchReadiness({ environment: {}, root });
-  assert.equal(result.failedControls, 42);
-  assert.equal(result.issues.length, 42);
+  assert.equal(result.failedControls, 43);
+  assert.equal(result.issues.length, 43);
   assert.equal(result.groups.filter((group) => group.issues.length).length, 10);
   const output = formatLaunchReadiness(result);
   assert.match(output, /Application and Supabase/);
@@ -95,7 +96,7 @@ test("Phase 41 reports 42 unique production configuration controls by accountabl
 test("Phase 41 accepts a complete production-shaped environment without weakening the gate", async () => {
   const result = await evaluateLaunchReadiness({ environment: completeEnvironment(), root });
   assert.equal(result.ready, true, formatLaunchReadiness(result));
-  assert.equal(result.passedControls, 42);
+  assert.equal(result.passedControls, 43);
   assert.equal(result.issues.length, 0);
 });
 

@@ -138,6 +138,11 @@ export const launchRequirements = [
     minimumLength: 20,
   }),
 
+  requirement("VIRUSTOTAL_API_KEY", "malware", "secret", {
+    ...providerSecret,
+    minimumLength: 20,
+  }),
+
   requirement("VITE_WEB_PUSH_PUBLIC_KEY", "push", "value", variable),
   requirement("WEB_PUSH_GATEWAY_URL", "push", "https", variable),
   requirement("WEB_PUSH_GATEWAY_TOKEN", "push", "secret", internalSecret),
