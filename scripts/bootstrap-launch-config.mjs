@@ -84,6 +84,26 @@ export async function bootstrapLaunchConfiguration({ root = process.cwd() } = {}
     generated.push(name);
   }
 
+  // Mirror the public, non-secret web values Haccora already owns into the
+  // native runtime names. Nothing is invented: a source value is only copied
+  // when it is real, and an existing native value is never overwritten.
+  const mirrored = [];
+  const mirrors = [
+    ["EXPO_PUBLIC_SUPABASE_URL", "SUPABASE_URL"],
+    ["EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "SUPABASE_PUBLISHABLE_KEY"],
+    ["EXPO_PUBLIC_WEB_APP_URL", "PUBLIC_APP_URL"],
+  ];
+  for (const [name, sourceName] of mirrors) {
+    const values = assignments(content);
+    const existingValue = values.get(name)?.trim() ?? "";
+    if (existingValue && !mirrorPlaceholder.test(existingValue)) continue;
+    const sourceValue = values.get(sourceName)?.trim() ?? "";
+    if (!sourceValue || mirrorPlaceholder.test(sourceValue)) continue;
+    content = replaceAssignment(content, name, sourceValue);
+    mirrored.push(name);
+  }
+
+
   await writeFile(target, content.endsWith("\n") ? content : `${content}\n`, {
     encoding: "utf8",
     mode: 0o600,
