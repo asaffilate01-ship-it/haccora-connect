@@ -326,7 +326,6 @@ html.haccora-reduced-motion *::after {
   text-wrap: balance;
 }
 
-
 .marketing-shell h2 {
   font-size: clamp(1.6rem, 3vw, 2.85rem);
   line-height: 1.04;
