@@ -5,16 +5,16 @@ configuration and accountable human approval, which cannot be produced from the 
 
 ## Verified green
 
-| Gate | Result |
-| --- | --- |
-| `npm run verify` | Production structure verification passed |
-| `npm run migrations:check` | 67 migrations, 271 policies, 119 functions, no duplicates |
-| `npm run secrets:check` | Passed |
-| `npm run typecheck` | Passed |
-| `npm test` | 196/197 (the single failure is a sandbox `git add` restriction, not a product defect) |
-| `npm run lint:check` / `format:check` | Passed |
-| `npm run build` | Passed, including source integrity, bundle budget and built-worker smoke (11 routes) |
-| Route smoke | `/`, `/login`, `/help`, `/platform`, `/app`, `/blog`, `/legal/company-details`, `/readiness.json`, `/health.json` all return 200 |
+| Gate                                  | Result                                                                                                                           |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run verify`                      | Production structure verification passed                                                                                         |
+| `npm run migrations:check`            | 67 migrations, 271 policies, 119 functions, no duplicates                                                                        |
+| `npm run secrets:check`               | Passed                                                                                                                           |
+| `npm run typecheck`                   | Passed                                                                                                                           |
+| `npm test`                            | 196/197 (the single failure is a sandbox `git add` restriction, not a product defect)                                            |
+| `npm run lint:check` / `format:check` | Passed                                                                                                                           |
+| `npm run build`                       | Passed, including source integrity, bundle budget and built-worker smoke (11 routes)                                             |
+| Route smoke                           | `/`, `/login`, `/help`, `/platform`, `/app`, `/blog`, `/legal/company-details`, `/readiness.json`, `/health.json` all return 200 |
 
 ## Security audit
 
