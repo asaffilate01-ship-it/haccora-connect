@@ -35,7 +35,7 @@ Production release is approved only when every P0 item is complete and linked ev
 - [ ] `npm run launch:preflight` passes using production values outside Git.
 - [ ] Auth redirects, CORS origins, MFA, rate limits and recovery policy are configured.
 - [ ] Resend email and Expo push delivery/receipt handling are verified.
-- [ ] The malware scanner fails closed and clean/infected/retry/dead-letter paths are tested.
+- [ ] The malware scanner (`/api/public/malware-scan`, VirusTotal-backed) fails closed and clean/infected/retry/dead-letter paths are tested — see `docs/PHASE-41-MALWARE-SCANNING.md`.
 - [ ] Stripe live-mode checkout, renewal, failure, cancellation, duplicate and out-of-order events pass.
 - [ ] Webhook delivery signature, SSRF egress control, retry and dead-letter behaviour pass.
 - [ ] All four dispatch schedules have missed-run and dead-letter alerts.

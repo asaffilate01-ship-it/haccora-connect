@@ -178,6 +178,7 @@ const envExample = await readFile(path.join(root, ".env.example"), "utf8");
 for (const key of [
   "MALWARE_SCAN_URL",
   "MALWARE_SCAN_TOKEN",
+  "VIRUSTOTAL_API_KEY",
   "STRIPE_SECRET_KEY",
   "STRIPE_WEBHOOK_SECRET",
   "STRIPE_PRICE_SOLO",
