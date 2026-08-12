@@ -450,11 +450,12 @@ test("native and Edge manifests declare every imported production dependency", a
 
 test("production preflight blocks placeholders, missing approvals and incomplete native setup", async () => {
   const preflight = await readFile("scripts/verify-launch-env.mjs", "utf8");
-  assert.match(preflight, /VITE_LEGAL_CONTENT_APPROVED/);
-  assert.match(preflight, /STRIPE_LIVE_MODE/);
+  const requirements = await readFile("scripts/launch-requirements.mjs", "utf8");
+  assert.match(requirements, /VITE_LEGAL_CONTENT_APPROVED/);
+  assert.match(requirements, /STRIPE_LIVE_MODE/);
   assert.match(preflight, /nativeReleaseEnvironmentFailures/);
-  assert.match(preflight, /process\.env\.EAS_PROJECT_ID/);
-  assert.match(preflight, /INTEGRATION_ENCRYPTION_KEY/);
+  assert.match(requirements, /process\.env\.EAS_PROJECT_ID/);
+  assert.match(requirements, /INTEGRATION_ENCRYPTION_KEY/);
 });
 
 test("release governance requires preflight, deployment smoke and tamper-evident artifacts", async () => {
