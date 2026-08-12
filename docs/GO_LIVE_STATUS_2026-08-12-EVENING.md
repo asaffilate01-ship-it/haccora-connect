@@ -6,20 +6,20 @@ launch-configuration engine landed.
 
 ## Verified in this audit
 
-| Gate | Command | Result |
-| --- | --- | --- |
-| Formatting | `npm run format:check` | pass |
-| Lint | `npm run lint:check` | pass |
-| Types | `npm run typecheck` | pass |
-| Unit and contract tests | `npm test` | 202/204 (2 sandbox-only Git failures) |
-| Production structure | `npm run verify` | pass |
-| Migration lineage | `npm run migrations:check` | pass — 69 migrations, 279 policies, 119 functions |
-| Secret gate | `npm run secrets:check` | pass |
-| Source integrity | `npm run source:integrity` | pass |
-| Bundle budget | build gate | pass — 650 KiB raw / 200 KiB gzip per chunk |
-| Built worker smoke | build gate | pass — 11 routes |
-| Dependency vulnerabilities | dependency scan | no high or critical findings |
-| Backend security scan | platform scanner | 0 active findings |
+| Gate                       | Command                    | Result                                            |
+| -------------------------- | -------------------------- | ------------------------------------------------- |
+| Formatting                 | `npm run format:check`     | pass                                              |
+| Lint                       | `npm run lint:check`       | pass                                              |
+| Types                      | `npm run typecheck`        | pass                                              |
+| Unit and contract tests    | `npm test`                 | 202/204 (2 sandbox-only Git failures)             |
+| Production structure       | `npm run verify`           | pass                                              |
+| Migration lineage          | `npm run migrations:check` | pass — 69 migrations, 279 policies, 119 functions |
+| Secret gate                | `npm run secrets:check`    | pass                                              |
+| Source integrity           | `npm run source:integrity` | pass                                              |
+| Bundle budget              | build gate                 | pass — 650 KiB raw / 200 KiB gzip per chunk       |
+| Built worker smoke         | build gate                 | pass — 11 routes                                  |
+| Dependency vulnerabilities | dependency scan            | no high or critical findings                      |
+| Backend security scan      | platform scanner           | 0 active findings                                 |
 
 The two failing tests both assert behaviour that requires `git add` inside the
 build sandbox, which is blocked by the environment. They pass in CI.
@@ -39,18 +39,18 @@ Two migrations were applied during this audit:
 
 ### OWASP Top 10 mapping
 
-| Risk | Control |
-| --- | --- |
-| A01 Broken access control | Organisation, location and role RLS on every tenant table; time-boxed inspector grants; platform console requires operator role plus MFA step-up |
-| A02 Cryptographic failures | HTTPS enforced on every configured URL; webhook secrets encrypted at rest; secret hashes never selectable by signed-in users |
-| A03 Injection | Parameterised queries only; Zod validation on server functions and public endpoints |
-| A04 Insecure design | Uploads fail closed without a working malware scanner; rate limiting; high-risk actions require a second approver |
-| A05 Security misconfiguration | Secret gate, source-integrity gate and launch preflight all block the release workflow |
-| A06 Vulnerable components | Dependency scan clean; Dependabot and CodeQL enabled; GitHub Actions pinned by SHA |
-| A07 Identification and authentication | Managed auth, no anonymous sign-up, MFA for platform operators, app lock on native |
-| A08 Software and data integrity | Release manifest, SBOMs and build provenance attestation |
-| A09 Logging and monitoring | Audit event trail, scheduler heartbeats, dead-letter queue checks, uptime workflow |
-| A10 Server-side request forgery | Webhook egress allowlist plus a documented network-level egress proxy requirement |
+| Risk                                  | Control                                                                                                                                          |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| A01 Broken access control             | Organisation, location and role RLS on every tenant table; time-boxed inspector grants; platform console requires operator role plus MFA step-up |
+| A02 Cryptographic failures            | HTTPS enforced on every configured URL; webhook secrets encrypted at rest; secret hashes never selectable by signed-in users                     |
+| A03 Injection                         | Parameterised queries only; Zod validation on server functions and public endpoints                                                              |
+| A04 Insecure design                   | Uploads fail closed without a working malware scanner; rate limiting; high-risk actions require a second approver                                |
+| A05 Security misconfiguration         | Secret gate, source-integrity gate and launch preflight all block the release workflow                                                           |
+| A06 Vulnerable components             | Dependency scan clean; Dependabot and CodeQL enabled; GitHub Actions pinned by SHA                                                               |
+| A07 Identification and authentication | Managed auth, no anonymous sign-up, MFA for platform operators, app lock on native                                                               |
+| A08 Software and data integrity       | Release manifest, SBOMs and build provenance attestation                                                                                         |
+| A09 Logging and monitoring            | Audit event trail, scheduler heartbeats, dead-letter queue checks, uptime workflow                                                               |
+| A10 Server-side request forgery       | Webhook egress allowlist plus a documented network-level egress proxy requirement                                                                |
 
 ## Remaining blockers — all external, none in code
 

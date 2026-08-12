@@ -104,7 +104,6 @@ export async function bootstrapLaunchConfiguration({ root = process.cwd() } = {}
     mirrored.push(name);
   }
 
-
   await writeFile(target, content.endsWith("\n") ? content : `${content}\n`, {
     encoding: "utf8",
     mode: 0o600,
