@@ -10,6 +10,7 @@ import { generatedLaunchSecretNames } from "./launch-requirements.mjs";
 const run = promisify(execFile);
 const targetName = ".env.launch.local";
 const generatedPlaceholder = /^(?:generate-|set_with|replace)/i;
+const mirrorPlaceholder = /(replace|your_project|your-|example\.com|set_with)/i;
 
 function assignments(content) {
   const values = new Map();
@@ -109,7 +110,7 @@ export async function bootstrapLaunchConfiguration({ root = process.cwd() } = {}
     mode: 0o600,
   });
   await chmod(target, 0o600);
-  return { target, generated, preserved };
+  return { target, generated, preserved, mirrored };
 }
 
 const invokedPath = process.argv[1] ? path.resolve(process.argv[1]) : "";
@@ -119,6 +120,11 @@ if (invokedPath === fileURLToPath(import.meta.url)) {
   console.log(
     `Generated ${result.generated.length} Haccora-owned secret(s); preserved ${result.preserved.length}.`,
   );
+  if (result.mirrored.length) {
+    console.log(
+      `Mirrored ${result.mirrored.length} public web value(s) into native runtime names: ${result.mirrored.join(", ")}.`,
+    );
+  }
   console.log("Provider credentials, legal identity and approvals were not fabricated or changed.");
   console.log("Next: complete the remaining blanks, then run `npm run launch:status`.");
 }
