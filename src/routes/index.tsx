@@ -834,7 +834,7 @@ function OutcomesBand() {
       <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-14 md:py-28">
         <div className="max-w-3xl">
           <div className="inline-flex items-center gap-2 text-[color:var(--color-alert-red-on-dark)] uppercase tracking-widest text-xs font-black">
-            <TrendingUp size={14} /> {t("outcomes.title").split(".")[0]}.
+            <TrendingUp size={14} /> {t("outcomes.eyebrow")}
           </div>
           <h2 className="mt-4 display-black text-3xl md:text-6xl">{t("outcomes.title")}</h2>
           <p className="mt-4 text-white/70 max-w-2xl">{t("outcomes.subtitle")}</p>
