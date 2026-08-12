@@ -10,6 +10,7 @@ import { generatedLaunchSecretNames } from "./launch-requirements.mjs";
 const run = promisify(execFile);
 const targetName = ".env.launch.local";
 const generatedPlaceholder = /^(?:generate-|set_with|replace)/i;
+const mirrorPlaceholder = /(replace|your_project|your-|example\.com|set_with)/i;
 
 function assignments(content) {
   const values = new Map();
@@ -84,12 +85,31 @@ export async function bootstrapLaunchConfiguration({ root = process.cwd() } = {}
     generated.push(name);
   }
 
+  // Mirror the public, non-secret web values Haccora already owns into the
+  // native runtime names. Nothing is invented: a source value is only copied
+  // when it is real, and an existing native value is never overwritten.
+  const mirrored = [];
+  const mirrors = [
+    ["EXPO_PUBLIC_SUPABASE_URL", "SUPABASE_URL"],
+    ["EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "SUPABASE_PUBLISHABLE_KEY"],
+    ["EXPO_PUBLIC_WEB_APP_URL", "PUBLIC_APP_URL"],
+  ];
+  for (const [name, sourceName] of mirrors) {
+    const values = assignments(content);
+    const existingValue = values.get(name)?.trim() ?? "";
+    if (existingValue && !mirrorPlaceholder.test(existingValue)) continue;
+    const sourceValue = values.get(sourceName)?.trim() ?? "";
+    if (!sourceValue || mirrorPlaceholder.test(sourceValue)) continue;
+    content = replaceAssignment(content, name, sourceValue);
+    mirrored.push(name);
+  }
+
   await writeFile(target, content.endsWith("\n") ? content : `${content}\n`, {
     encoding: "utf8",
     mode: 0o600,
   });
   await chmod(target, 0o600);
-  return { target, generated, preserved };
+  return { target, generated, preserved, mirrored };
 }
 
 const invokedPath = process.argv[1] ? path.resolve(process.argv[1]) : "";
@@ -99,6 +119,11 @@ if (invokedPath === fileURLToPath(import.meta.url)) {
   console.log(
     `Generated ${result.generated.length} Haccora-owned secret(s); preserved ${result.preserved.length}.`,
   );
+  if (result.mirrored.length) {
+    console.log(
+      `Mirrored ${result.mirrored.length} public web value(s) into native runtime names: ${result.mirrored.join(", ")}.`,
+    );
+  }
   console.log("Provider credentials, legal identity and approvals were not fabricated or changed.");
   console.log("Next: complete the remaining blanks, then run `npm run launch:status`.");
 }

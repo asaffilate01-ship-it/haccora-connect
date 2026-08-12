@@ -1,0 +1,83 @@
+# Go-live status — 12 August 2026 (evening audit)
+
+This supersedes `GO_LIVE_STATUS_2026-08-12.md`. It records the second full
+production audit of the day, after the OWASP/RLS hardening pass and the
+launch-configuration engine landed.
+
+## Verified in this audit
+
+| Gate                       | Command                    | Result                                            |
+| -------------------------- | -------------------------- | ------------------------------------------------- |
+| Formatting                 | `npm run format:check`     | pass                                              |
+| Lint                       | `npm run lint:check`       | pass                                              |
+| Types                      | `npm run typecheck`        | pass                                              |
+| Unit and contract tests    | `npm test`                 | 202/204 (2 sandbox-only Git failures)             |
+| Production structure       | `npm run verify`           | pass                                              |
+| Migration lineage          | `npm run migrations:check` | pass — 69 migrations, 279 policies, 119 functions |
+| Secret gate                | `npm run secrets:check`    | pass                                              |
+| Source integrity           | `npm run source:integrity` | pass                                              |
+| Bundle budget              | build gate                 | pass — 650 KiB raw / 200 KiB gzip per chunk       |
+| Built worker smoke         | build gate                 | pass — 11 routes                                  |
+| Dependency vulnerabilities | dependency scan            | no high or critical findings                      |
+| Backend security scan      | platform scanner           | 0 active findings                                 |
+
+The two failing tests both assert behaviour that requires `git add` inside the
+build sandbox, which is blocked by the environment. They pass in CI.
+
+## Security posture
+
+Two migrations were applied during this audit:
+
+- `20260812194726` — tenant-scoped insert, update and delete policies on
+  `sensor_readings`, with an insert check that the device belongs to the same
+  organisation. Automated ingestion stays service-role only.
+- `20260812194818` — explicit owner/manager write policies on
+  `organization_roles`; removal of the blanket owner/manager/chef write path on
+  `recipe_ingredients` so allergen edits always respect a person's permission
+  profile; organisation-scoped insert and delete on `sensor_devices` so managers
+  can rotate device credentials without support.
+
+### OWASP Top 10 mapping
+
+| Risk                                  | Control                                                                                                                                          |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| A01 Broken access control             | Organisation, location and role RLS on every tenant table; time-boxed inspector grants; platform console requires operator role plus MFA step-up |
+| A02 Cryptographic failures            | HTTPS enforced on every configured URL; webhook secrets encrypted at rest; secret hashes never selectable by signed-in users                     |
+| A03 Injection                         | Parameterised queries only; Zod validation on server functions and public endpoints                                                              |
+| A04 Insecure design                   | Uploads fail closed without a working malware scanner; rate limiting; high-risk actions require a second approver                                |
+| A05 Security misconfiguration         | Secret gate, source-integrity gate and launch preflight all block the release workflow                                                           |
+| A06 Vulnerable components             | Dependency scan clean; Dependabot and CodeQL enabled; GitHub Actions pinned by SHA                                                               |
+| A07 Identification and authentication | Managed auth, no anonymous sign-up, MFA for platform operators, app lock on native                                                               |
+| A08 Software and data integrity       | Release manifest, SBOMs and build provenance attestation                                                                                         |
+| A09 Logging and monitoring            | Audit event trail, scheduler heartbeats, dead-letter queue checks, uptime workflow                                                               |
+| A10 Server-side request forgery       | Webhook egress allowlist plus a documented network-level egress proxy requirement                                                                |
+
+## Remaining blockers — all external, none in code
+
+`npm run launch:status` reports 21 of 43 controls outstanding. Every one needs a
+person or a provider account; nothing further can be completed from the codebase.
+
+1. **Legal identity** — registered office address, town/city, Companies House
+   number and public phone number.
+2. **Legal and ICO approval** — counsel approval reference and date, ICO
+   registration or exemption confirmation, and the content-approved flag.
+3. **Stripe live billing** — live secret key, webhook secret, the three price
+   IDs and `STRIPE_LIVE_MODE=true`.
+4. **Transactional email** — Resend production key and a verified
+   `haccora.co.uk` sender.
+5. **Document malware scanning** — production VirusTotal API key.
+6. **Browser push** — VAPID public key from the push provider.
+7. **Native release** — `eas init` project UUID, Expo access token, the two
+   Expo public Supabase values, and Apple/Google signing credentials.
+
+Haccora-owned secrets (`CRON_SECRET`, `CONTACT_HASH_SALT`,
+`OPERATIONS_MONITOR_SECRET`, `INTEGRATION_ENCRYPTION_KEY`,
+`MALWARE_SCAN_TOKEN`, `WEB_PUSH_GATEWAY_TOKEN`) are generated by
+`npm run launch:bootstrap` into the ignored `.env.launch.local`, and the public
+web values are now mirrored automatically into their native runtime names.
+
+## Sign-offs still required
+
+- UK counsel review of every public legal page.
+- Food-safety specialist review of the statutory reference content.
+- Independent penetration test against the deployed release candidate.
