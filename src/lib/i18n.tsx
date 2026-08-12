@@ -776,6 +776,7 @@ const en: Dict = {
   "inspection.item.audit.sub": "Internal audits in the selected period",
 
   // Landing outcome stats
+  "outcomes.eyebrow": "Outcomes you can evidence",
   "outcomes.title": "One system for measurable improvement.",
   "outcomes.subtitle":
     "Time, cost and waste outcomes depend on the operation and usage. Haccora makes baselines and progress visible.",
