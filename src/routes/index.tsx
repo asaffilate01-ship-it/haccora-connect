@@ -906,12 +906,10 @@ function PlatformPillars() {
         <div className="mt-10 md:mt-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
           {pillars.map(({ icon: Icon, k, tone }) => (
             <div key={k} className="group card-polished p-6 md:p-7">
-              <span
-                className={`icon-3d icon-3d-sm bg-gradient-to-br ${tone} shadow-md`}
-                style={{ backgroundImage: undefined }}
-              >
+              <span className={k === "hosting" ? "icon-3d-dark icon-3d-sm" : "icon-3d icon-3d-sm"}>
                 <Icon size={20} strokeWidth={2.2} />
               </span>
+
 
               <div className="mt-5 font-black text-lg md:text-xl leading-tight">
                 {t(`platform.${k}.title`)}
