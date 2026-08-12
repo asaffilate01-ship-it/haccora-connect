@@ -298,7 +298,7 @@ function LoginPage() {
                 if (result.error) setError(result.error);
                 else setInfo("Password reset link sent.");
               }}
-              className="mt-3 w-full text-xs font-semibold text-muted-foreground hover:text-foreground disabled:opacity-40"
+              className="mt-3 w-full text-xs font-semibold underline underline-offset-2 text-foreground/70 hover:text-foreground disabled:opacity-40"
             >
               {"Forgot your password?"}
             </button>
