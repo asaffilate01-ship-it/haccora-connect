@@ -888,10 +888,10 @@ function IndustriesStrip() {
 function PlatformPillars() {
   const { t } = useI18n();
   const pillars = [
-    { icon: Smartphone, k: "mobile", tone: "from-[color:var(--color-alert-red)] to-orange-500" },
-    { icon: Bell, k: "alerts", tone: "from-emerald-500 to-emerald-600" },
-    { icon: Server, k: "hosting", tone: "from-slate-800 to-black" },
-    { icon: Plug, k: "integrations", tone: "from-blue-600 to-indigo-600" },
+    { icon: Smartphone, k: "mobile" },
+    { icon: Bell, k: "alerts" },
+    { icon: Server, k: "hosting" },
+    { icon: Plug, k: "integrations" },
   ];
   return (
     <section className="bg-white border-t border-black/5">
@@ -904,7 +904,7 @@ function PlatformPillars() {
           <p className="mt-4 text-black/60 max-w-2xl">{t("platform.subtitle")}</p>
         </div>
         <div className="mt-10 md:mt-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
-          {pillars.map(({ icon: Icon, k, tone }) => (
+          {pillars.map(({ icon: Icon, k }) => (
             <div key={k} className="group card-polished p-6 md:p-7">
               <span className={k === "hosting" ? "icon-3d-dark icon-3d-sm" : "icon-3d icon-3d-sm"}>
                 <Icon size={20} strokeWidth={2.2} />
