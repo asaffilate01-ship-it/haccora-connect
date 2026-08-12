@@ -1,6 +1,6 @@
 # Phase 42 — secret column protection
 
-Row-level security already restricted *which rows* an organisation manager can read. It did not restrict *which columns*, so hashed secrets and invitation tokens were technically selectable by any signed-in manager through the Data API.
+Row-level security already restricted _which rows_ an organisation manager can read. It did not restrict _which columns_, so hashed secrets and invitation tokens were technically selectable by any signed-in manager through the Data API.
 
 ## Delivered
 
