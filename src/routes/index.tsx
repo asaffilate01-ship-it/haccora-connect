@@ -762,9 +762,11 @@ function Pricing() {
               </p>
               <div className="mt-6 flex flex-wrap items-baseline gap-x-2 gap-y-1">
                 <span className="display-black text-5xl">{p.price}</span>
-                <span className={`text-sm ${p.featured ? "text-white/70" : "text-black/60"}`}>
-                  {t("pricing.perMonth")}
-                </span>
+                {p.k !== "enterprise" && (
+                  <span className={`text-sm ${p.featured ? "text-white/70" : "text-black/60"}`}>
+                    {t("pricing.perMonth")}
+                  </span>
+                )}
               </div>
               <ul className="mt-5 space-y-2 text-sm">
                 {p.features.map((feature) => (
