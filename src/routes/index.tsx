@@ -736,27 +736,31 @@ function Pricing() {
           <h2 className="mt-4 display-black text-3xl md:text-6xl">{t("pricing.title")}</h2>
           <p className="mt-5 text-black/60">{t("pricing.subtitle")}</p>
         </div>
-        <div className="mt-12 grid md:grid-cols-2 xl:grid-cols-4 gap-5">
+        <div className="mt-12 grid md:grid-cols-2 xl:grid-cols-4 gap-5 items-stretch">
           {plans.map((p) => (
             <div
               key={p.k}
-              className={`relative p-8 ${
+              className={`relative flex h-full flex-col p-8 ${
                 p.featured
                   ? "card-polished-dark text-white ring-4 ring-[color:var(--color-alert-red)]/60"
                   : "card-polished text-black"
               }`}
             >
-              {p.featured && (
-                <span className="absolute top-4 right-4 z-10 rounded-full px-3 py-1 text-[10px] font-black tracking-widest uppercase text-white bg-[color:var(--color-alert-red)] shadow-lg">
-                  {t("pricing.featured") ?? "Most Popular"}
-                </span>
-              )}
+              <div className="mb-4 flex min-h-[1.75rem] items-start">
+                {p.featured && (
+                  <span className="inline-flex items-center rounded-full px-3 py-1 text-[10px] font-black leading-tight tracking-[0.14em] uppercase text-white bg-[color:var(--color-alert-red)] shadow-lg">
+                    {t("pricing.featured") ?? "Most Popular"}
+                  </span>
+                )}
+              </div>
 
               <h3 className="display-black text-2xl">{t(`pricing.plan.${p.k}`)}</h3>
-              <p className={`text-sm mt-2 ${p.featured ? "text-white/70" : "text-black/60"}`}>
+              <p
+                className={`text-sm mt-2 min-h-[2.5rem] leading-snug ${p.featured ? "text-white/70" : "text-black/60"}`}
+              >
                 {t(`pricing.plan.${p.k}.desc`)}
               </p>
-              <div className="mt-6 flex items-baseline gap-2">
+              <div className="mt-6 flex flex-wrap items-baseline gap-x-2 gap-y-1">
                 <span className="display-black text-5xl">{p.price}</span>
                 <span className={`text-sm ${p.featured ? "text-white/70" : "text-black/60"}`}>
                   {t("pricing.perMonth")}
@@ -771,7 +775,7 @@ function Pricing() {
               </ul>
               <a
                 href={p.k === "enterprise" ? "#contact" : "/login"}
-                className={`mt-7 inline-flex w-full items-center justify-center rounded-full py-3 text-sm font-black tracking-wider uppercase transition ${
+                className={`mt-auto pt-7 inline-flex w-full items-center justify-center rounded-full py-3 text-sm font-black tracking-wider uppercase transition ${
                   p.featured
                     ? "bg-[color:var(--color-alert-green)] text-white hover:brightness-110"
                     : "bg-black text-white hover:bg-[color:var(--color-alert-red)]"
@@ -782,6 +786,7 @@ function Pricing() {
             </div>
           ))}
         </div>
+
         <p className="mt-6 text-sm text-black/60">
           VAT is added where applicable. No card required for the trial; cancel before renewal.
         </p>
