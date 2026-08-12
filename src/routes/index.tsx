@@ -867,10 +867,7 @@ function IndustriesStrip() {
         </div>
         <div className="mt-10 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {items.map(({ icon: Icon, k }) => (
-            <div
-              key={k}
-              className="card-polished p-5 flex flex-col items-center text-center"
-            >
+            <div key={k} className="card-polished p-5 flex flex-col items-center text-center">
               <span className="icon-3d icon-3d-sm">
                 <Icon size={20} strokeWidth={2.2} />
               </span>
@@ -909,7 +906,6 @@ function PlatformPillars() {
               <span className={k === "hosting" ? "icon-3d-dark icon-3d-sm" : "icon-3d icon-3d-sm"}>
                 <Icon size={20} strokeWidth={2.2} />
               </span>
-
 
               <div className="mt-5 font-black text-lg md:text-xl leading-tight">
                 {t(`platform.${k}.title`)}
