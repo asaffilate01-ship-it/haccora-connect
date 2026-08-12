@@ -30,7 +30,12 @@ test("login clearly fails closed while secure services are unconfigured", async 
 });
 
 test("production preflight still requires both browser and server Supabase values", async () => {
-  const preflight = await read("scripts/verify-launch-env.mjs");
+  const [preflight, requirements] = await Promise.all([
+    read("scripts/verify-launch-env.mjs"),
+    read("scripts/launch-requirements.mjs"),
+  ]);
+
+  assert.match(preflight, /evaluateLaunchReadiness/);
 
   for (const name of [
     "VITE_SUPABASE_URL",
@@ -38,7 +43,7 @@ test("production preflight still requires both browser and server Supabase value
     "VITE_SUPABASE_PUBLISHABLE_KEY",
     "SUPABASE_PUBLISHABLE_KEY",
   ]) {
-    assert.match(preflight, new RegExp(`['\"]${name}['\"]`));
+    assert.match(requirements, new RegExp(`['\"]${name}['\"]`));
   }
 });
 

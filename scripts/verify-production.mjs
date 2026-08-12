@@ -81,6 +81,7 @@ const required = [
   "tests/phase34-platform-launch-centre.test.mjs",
   "tests/phase39-ci-database-recovery.test.mjs",
   "tests/phase40-native-hosted-acceptance.test.mjs",
+  "tests/phase41-launch-configuration.test.mjs",
   "src/routes/health[.]json.ts",
   ".github/workflows/database.yml",
   ".github/workflows/release-readiness.yml",
@@ -94,6 +95,9 @@ const required = [
   "scripts/check-deployment-smoke.mjs",
   "scripts/check-operations-health.mjs",
   "scripts/check-production-audits.mjs",
+  "scripts/launch-requirements.mjs",
+  "scripts/bootstrap-launch-config.mjs",
+  "scripts/report-launch-readiness.mjs",
   "scripts/check-action-pins.mjs",
   "scripts/verify-launch-acceptance.mjs",
   "security/dependency-audit-exceptions.json",
@@ -118,6 +122,8 @@ const required = [
   "docs/GO_LIVE_STATUS_2026-08-02.md",
   "docs/V2_FILE_3_COMPLETE.md",
   "docs/PHASE-40-NATIVE-AND-HOSTED-ACCEPTANCE.md",
+  "docs/PHASE-41-LAUNCH-CONFIGURATION.md",
+  "docs/LAUNCH-CONFIGURATION.md",
 ];
 
 for (const file of required) {

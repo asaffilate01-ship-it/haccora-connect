@@ -36,7 +36,7 @@ Sensor secrets are returned once by `sensor-provision`. Deliver each secret thro
 - Run `npm run quality`, `npm run audit:production`, the native typecheck/export and the Edge Function Deno checks.
 - Configure protected `EAS_PROJECT_ID` from Haccora's `eas init` result. The native workflows map the protected staging/production Supabase variables to `EXPO_PUBLIC_*`; never copy a service-role or `sb_secret_` key into those values.
 - Run `npm run test:e2e` locally and through the protected staging workflow. Staging and production now set `PLAYWRIGHT_BASE_URL` to the deployed HTTPS candidate and retain desktop/mobile accessibility results as release evidence.
-- Populate a production `.env` outside Git, then run `npm run launch:preflight`; placeholders and missing legal, Stripe, scanner or EAS configuration must block release.
+- Run `npm run launch:bootstrap` to create the ignored local checklist and generate only Haccora-owned operational secrets. Complete the provider/legal values described in `LAUNCH-CONFIGURATION.md`, use `npm run launch:status` for a redacted gap report, then run `npm run launch:preflight`; placeholders and missing legal, Stripe, scanner or EAS configuration must block release.
 - Exercise the ten acceptance tests in `PRODUCTION_READINESS.md` against staging.
 - Verify real redirect URLs, CORS origins, email delivery, push receipts, signed-document expiry and scheduler alerts.
 - Configure an external uptime monitor for `/health.json`; it intentionally reports only service identity and release liveness.
