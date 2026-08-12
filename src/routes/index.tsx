@@ -740,17 +740,18 @@ function Pricing() {
           {plans.map((p) => (
             <div
               key={p.k}
-              className={`relative rounded-2xl p-8 ${
+              className={`relative p-8 ${
                 p.featured
-                  ? "bg-black text-white ring-4 ring-[color:var(--color-alert-red)]/60"
-                  : "bg-white border border-black/10 text-black"
+                  ? "card-polished-dark text-white ring-4 ring-[color:var(--color-alert-red)]/60"
+                  : "card-polished text-black"
               }`}
             >
               {p.featured && (
-                <span className="absolute -top-3 left-6 rounded-full px-3 py-1 text-[10px] font-black tracking-widest uppercase text-white bg-[color:var(--color-alert-red)]">
+                <span className="absolute top-4 right-4 z-10 rounded-full px-3 py-1 text-[10px] font-black tracking-widest uppercase text-white bg-[color:var(--color-alert-red)] shadow-lg">
                   {t("pricing.featured") ?? "Most Popular"}
                 </span>
               )}
+
               <h3 className="display-black text-2xl">{t(`pricing.plan.${p.k}`)}</h3>
               <p className={`text-sm mt-2 ${p.featured ? "text-white/70" : "text-black/60"}`}>
                 {t(`pricing.plan.${p.k}.desc`)}
