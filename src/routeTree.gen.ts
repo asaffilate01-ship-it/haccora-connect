@@ -82,6 +82,7 @@ import { Route as AppAssetsRouteImport } from './routes/app.assets'
 import { Route as AppAlertsRouteImport } from './routes/app.alerts'
 import { Route as AppAssetsScanRouteImport } from './routes/app.assets.scan'
 import { Route as AppAssetsAssetIdRouteImport } from './routes/app.assets.$assetId'
+import { Route as ApiPublicMalwareScanRouteImport } from './routes/api/public/malware-scan'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -448,6 +449,11 @@ const AppAssetsAssetIdRoute = AppAssetsAssetIdRouteImport.update({
   path: '/$assetId',
   getParentRoute: () => AppAssetsRoute,
 } as any)
+const ApiPublicMalwareScanRoute = ApiPublicMalwareScanRouteImport.update({
+  id: '/api/public/malware-scan',
+  path: '/api/public/malware-scan',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -521,6 +527,7 @@ export interface FileRoutesByFullPath {
   '/legal/terms': typeof LegalTermsRoute
   '/app/': typeof AppIndexRoute
   '/blog/': typeof BlogIndexRoute
+  '/api/public/malware-scan': typeof ApiPublicMalwareScanRoute
   '/app/assets/$assetId': typeof AppAssetsAssetIdRoute
   '/app/assets/scan': typeof AppAssetsScanRoute
 }
@@ -594,6 +601,7 @@ export interface FileRoutesByTo {
   '/legal/terms': typeof LegalTermsRoute
   '/app': typeof AppIndexRoute
   '/blog': typeof BlogIndexRoute
+  '/api/public/malware-scan': typeof ApiPublicMalwareScanRoute
   '/app/assets/$assetId': typeof AppAssetsAssetIdRoute
   '/app/assets/scan': typeof AppAssetsScanRoute
 }
@@ -670,6 +678,7 @@ export interface FileRoutesById {
   '/legal/terms': typeof LegalTermsRoute
   '/app/': typeof AppIndexRoute
   '/blog/': typeof BlogIndexRoute
+  '/api/public/malware-scan': typeof ApiPublicMalwareScanRoute
   '/app/assets/$assetId': typeof AppAssetsAssetIdRoute
   '/app/assets/scan': typeof AppAssetsScanRoute
 }
@@ -747,6 +756,7 @@ export interface FileRouteTypes {
     | '/legal/terms'
     | '/app/'
     | '/blog/'
+    | '/api/public/malware-scan'
     | '/app/assets/$assetId'
     | '/app/assets/scan'
   fileRoutesByTo: FileRoutesByTo
@@ -820,6 +830,7 @@ export interface FileRouteTypes {
     | '/legal/terms'
     | '/app'
     | '/blog'
+    | '/api/public/malware-scan'
     | '/app/assets/$assetId'
     | '/app/assets/scan'
   id:
@@ -895,6 +906,7 @@ export interface FileRouteTypes {
     | '/legal/terms'
     | '/app/'
     | '/blog/'
+    | '/api/public/malware-scan'
     | '/app/assets/$assetId'
     | '/app/assets/scan'
   fileRoutesById: FileRoutesById
@@ -912,6 +924,7 @@ export interface RootRouteChildren {
   PlatformRoute: typeof PlatformRoute
   ReadinessDotjsonRoute: typeof ReadinessDotjsonRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ApiPublicMalwareScanRoute: typeof ApiPublicMalwareScanRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1427,6 +1440,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAssetsAssetIdRouteImport
       parentRoute: typeof AppAssetsRoute
     }
+    '/api/public/malware-scan': {
+      id: '/api/public/malware-scan'
+      path: '/api/public/malware-scan'
+      fullPath: '/api/public/malware-scan'
+      preLoaderRoute: typeof ApiPublicMalwareScanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1599,6 +1619,7 @@ const rootRouteChildren: RootRouteChildren = {
   PlatformRoute: PlatformRoute,
   ReadinessDotjsonRoute: ReadinessDotjsonRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ApiPublicMalwareScanRoute: ApiPublicMalwareScanRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
