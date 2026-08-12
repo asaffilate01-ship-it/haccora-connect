@@ -47,7 +47,7 @@ function completeEnvironment() {
     STRIPE_LIVE_MODE: "true",
     RESEND_API_KEY: "re_validation_only",
     NOTIFICATION_FROM_EMAIL: "Haccora Alerts <alerts@haccora.co.uk>",
-    MALWARE_SCAN_URL: "https://scanner.haccora.co.uk/scan",
+    MALWARE_SCAN_URL: "https://app.haccora.co.uk/api/public/malware-scan",
     MALWARE_SCAN_TOKEN: "m".repeat(24),
     VIRUSTOTAL_API_KEY: "v".repeat(24),
     VITE_WEB_PUSH_PUBLIC_KEY: "vapid_public_validation_key",

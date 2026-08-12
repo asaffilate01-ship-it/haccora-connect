@@ -193,6 +193,10 @@ function valueFailure(requirement, environment) {
     }
   }
 
+  if (requirement.name === "MALWARE_SCAN_URL" && !current.endsWith("/api/public/malware-scan")) {
+    return `${requirement.name} must point at the Haccora scanning endpoint /api/public/malware-scan`;
+  }
+
   if (requirement.type === "secret" && current.length < requirement.minimumLength) {
     return `${requirement.name} must contain at least ${requirement.minimumLength} characters`;
   }
