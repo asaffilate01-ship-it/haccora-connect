@@ -740,17 +740,18 @@ function Pricing() {
           {plans.map((p) => (
             <div
               key={p.k}
-              className={`relative rounded-2xl p-8 ${
+              className={`relative p-8 ${
                 p.featured
-                  ? "bg-black text-white ring-4 ring-[color:var(--color-alert-red)]/60"
-                  : "bg-white border border-black/10 text-black"
+                  ? "card-polished-dark text-white ring-4 ring-[color:var(--color-alert-red)]/60"
+                  : "card-polished text-black"
               }`}
             >
               {p.featured && (
-                <span className="absolute -top-3 left-6 rounded-full px-3 py-1 text-[10px] font-black tracking-widest uppercase text-white bg-[color:var(--color-alert-red)]">
+                <span className="absolute top-4 right-4 z-10 rounded-full px-3 py-1 text-[10px] font-black tracking-widest uppercase text-white bg-[color:var(--color-alert-red)] shadow-lg">
                   {t("pricing.featured") ?? "Most Popular"}
                 </span>
               )}
+
               <h3 className="display-black text-2xl">{t(`pricing.plan.${p.k}`)}</h3>
               <p className={`text-sm mt-2 ${p.featured ? "text-white/70" : "text-black/60"}`}>
                 {t(`pricing.plan.${p.k}.desc`)}
@@ -830,10 +831,11 @@ function OutcomesBand() {
         </div>
         <div className="mt-12 grid grid-cols-2 lg:grid-cols-4 gap-5">
           {stats.map(({ icon: Icon, v, l }) => (
-            <div key={l} className="rounded-2xl bg-white/[0.04] border border-white/10 p-6 md:p-8">
-              <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[color:var(--color-alert-red)]/20 text-[color:var(--color-alert-red)]">
+            <div key={l} className="card-polished-dark p-6 md:p-8">
+              <span className="icon-3d icon-3d-sm">
                 <Icon size={20} strokeWidth={2.4} />
               </span>
+
               <div className="mt-5 display-black text-3xl md:text-4xl leading-none">{v}</div>
               <div className="mt-2 text-sm text-white/70 leading-snug">{l}</div>
             </div>
@@ -865,13 +867,11 @@ function IndustriesStrip() {
         </div>
         <div className="mt-10 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {items.map(({ icon: Icon, k }) => (
-            <div
-              key={k}
-              className="rounded-2xl bg-white border border-black/5 p-5 flex flex-col items-center text-center hover:shadow-lg transition"
-            >
-              <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-[color:var(--color-alert-red)]/10 text-[color:var(--color-alert-red)]">
-                <Icon size={22} strokeWidth={2.2} />
+            <div key={k} className="card-polished p-5 flex flex-col items-center text-center">
+              <span className="icon-3d icon-3d-sm">
+                <Icon size={20} strokeWidth={2.2} />
               </span>
+
               <div className="mt-3 font-black text-sm">{t(`industries.${k}`)}</div>
             </div>
           ))}
@@ -885,10 +885,10 @@ function IndustriesStrip() {
 function PlatformPillars() {
   const { t } = useI18n();
   const pillars = [
-    { icon: Smartphone, k: "mobile", tone: "from-[color:var(--color-alert-red)] to-orange-500" },
-    { icon: Bell, k: "alerts", tone: "from-emerald-500 to-emerald-600" },
-    { icon: Server, k: "hosting", tone: "from-slate-800 to-black" },
-    { icon: Plug, k: "integrations", tone: "from-blue-600 to-indigo-600" },
+    { icon: Smartphone, k: "mobile" },
+    { icon: Bell, k: "alerts" },
+    { icon: Server, k: "hosting" },
+    { icon: Plug, k: "integrations" },
   ];
   return (
     <section className="bg-white border-t border-black/5">
@@ -901,16 +901,12 @@ function PlatformPillars() {
           <p className="mt-4 text-black/60 max-w-2xl">{t("platform.subtitle")}</p>
         </div>
         <div className="mt-10 md:mt-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
-          {pillars.map(({ icon: Icon, k, tone }) => (
-            <div
-              key={k}
-              className="group relative rounded-2xl border border-black/5 bg-white p-6 md:p-7 hover:shadow-xl transition-shadow overflow-hidden"
-            >
-              <span
-                className={`inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${tone} text-white shadow-md`}
-              >
-                <Icon size={22} strokeWidth={2.2} />
+          {pillars.map(({ icon: Icon, k }) => (
+            <div key={k} className="group card-polished p-6 md:p-7">
+              <span className={k === "hosting" ? "icon-3d-dark icon-3d-sm" : "icon-3d icon-3d-sm"}>
+                <Icon size={20} strokeWidth={2.2} />
               </span>
+
               <div className="mt-5 font-black text-lg md:text-xl leading-tight">
                 {t(`platform.${k}.title`)}
               </div>
