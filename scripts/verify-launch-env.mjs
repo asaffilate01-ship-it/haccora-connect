@@ -97,7 +97,9 @@ for (const name of ["MALWARE_SCAN_TOKEN", "EXPO_ACCESS_TOKEN", "VIRUSTOTAL_API_K
   requireSecret(name, 20);
 
 if (!value("MALWARE_SCAN_URL").endsWith("/api/public/malware-scan")) {
-  failures.push("MALWARE_SCAN_URL must point at the Haccora scanning endpoint /api/public/malware-scan");
+  failures.push(
+    "MALWARE_SCAN_URL must point at the Haccora scanning endpoint /api/public/malware-scan",
+  );
 }
 
 for (const name of [
