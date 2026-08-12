@@ -868,11 +868,12 @@ function IndustriesStrip() {
           {items.map(({ icon: Icon, k }) => (
             <div
               key={k}
-              className="rounded-2xl bg-white border border-black/5 p-5 flex flex-col items-center text-center hover:shadow-lg transition"
+              className="card-polished p-5 flex flex-col items-center text-center"
             >
-              <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-[color:var(--color-alert-red)]/10 text-[color:var(--color-alert-red)]">
-                <Icon size={22} strokeWidth={2.2} />
+              <span className="icon-3d icon-3d-sm">
+                <Icon size={20} strokeWidth={2.2} />
               </span>
+
               <div className="mt-3 font-black text-sm">{t(`industries.${k}`)}</div>
             </div>
           ))}
