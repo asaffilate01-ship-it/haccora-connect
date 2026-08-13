@@ -115,18 +115,39 @@ export async function bootstrapLaunchConfiguration({ root = process.cwd() } = {}
   // Mirror the public, non-secret web values Haccora already owns into the
   // native runtime names. Nothing is invented: a source value is only copied
   // when it is real, and an existing native value is never overwritten.
+  // Sources are read from this file first, then from the committed-ignored
+  // project environment file and the current process environment.
+  let projectEnv = new Map();
+  try {
+    projectEnv = assignments(await readFile(path.join(resolvedRoot, ".env"), "utf8"));
+  } catch {
+    projectEnv = new Map();
+  }
   const mirrored = [];
   const mirrors = [
-    ["EXPO_PUBLIC_SUPABASE_URL", "SUPABASE_URL"],
-    ["EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "SUPABASE_PUBLISHABLE_KEY"],
-    ["EXPO_PUBLIC_WEB_APP_URL", "PUBLIC_APP_URL"],
+    ["EXPO_PUBLIC_SUPABASE_URL", ["SUPABASE_URL", "VITE_SUPABASE_URL"]],
+    [
+      "EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
+      ["SUPABASE_PUBLISHABLE_KEY", "VITE_SUPABASE_PUBLISHABLE_KEY"],
+    ],
+    ["EXPO_PUBLIC_WEB_APP_URL", ["PUBLIC_APP_URL", "VITE_PUBLIC_APP_URL"]],
   ];
-  for (const [name, sourceName] of mirrors) {
+  for (const [name, sourceNames] of mirrors) {
     const values = assignments(content);
     const existingValue = values.get(name)?.trim() ?? "";
     if (existingValue && !mirrorPlaceholder.test(existingValue)) continue;
-    const sourceValue = values.get(sourceName)?.trim() ?? "";
-    if (!sourceValue || mirrorPlaceholder.test(sourceValue)) continue;
+    let sourceValue = "";
+    outer: for (const sourceName of sourceNames) {
+      for (const store of [values, projectEnv, new Map(Object.entries(process.env))]) {
+        const candidate = (store.get(sourceName) ?? "").trim().replace(/^["']|["']$/g, "");
+        if (candidate && !mirrorPlaceholder.test(candidate)) {
+          sourceValue = candidate;
+          break outer;
+        }
+      }
+    }
+
+    if (!sourceValue) continue;
     content = replaceAssignment(content, name, sourceValue);
     mirrored.push(name);
   }
