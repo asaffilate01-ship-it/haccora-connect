@@ -3,4 +3,6 @@ Allow: /
 Disallow: /app
 Disallow: /login
 Disallow: /onboarding
+Disallow: /platform
+Disallow: /account-status
 Sitemap: https://haccora.co.uk/sitemap.xml
