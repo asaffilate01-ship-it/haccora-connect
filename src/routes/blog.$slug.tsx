@@ -19,7 +19,7 @@ export const Route = createFileRoute("/blog/$slug")({
     }
     const title = `${loaderData.title} — Haccora`;
     const desc = loaderData.excerpt;
-    const url = `/blog/${params.slug}`;
+    const url = `https://haccora.co.uk/blog/${params.slug}`;
     return {
       meta: [
         { title },
