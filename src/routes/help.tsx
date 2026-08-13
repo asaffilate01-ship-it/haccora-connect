@@ -14,7 +14,17 @@ export const Route = createFileRoute("/help")({
         content:
           "Practical help for setting up and using Haccora records, roles, equipment QR labels, inspection evidence, subscriptions and native apps.",
       },
+      { property: "og:title", content: "Haccora Help Centre" },
+      {
+        property: "og:description",
+        content:
+          "Guides for Haccora records, roles, equipment QR labels, inspection evidence and subscriptions.",
+      },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://haccora.co.uk/help" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://haccora.co.uk/help" }],
   }),
   component: HelpCentrePage,
 });
