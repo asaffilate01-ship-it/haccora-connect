@@ -63,6 +63,12 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/app")({
+  head: () => ({
+    meta: [
+      { title: "Haccora workspace" },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   component: AppShell,
 });
 
