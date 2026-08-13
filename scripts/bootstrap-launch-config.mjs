@@ -134,7 +134,7 @@ export async function bootstrapLaunchConfiguration({ root = process.cwd() } = {}
     mode: 0o600,
   });
   await chmod(target, 0o600);
-  return { target, generated, preserved, mirrored };
+  return { target, generated, preserved, mirrored, vapidGenerated };
 }
 
 const invokedPath = process.argv[1] ? path.resolve(process.argv[1]) : "";
