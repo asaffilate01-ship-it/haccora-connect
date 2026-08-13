@@ -96,19 +96,21 @@ function Landing() {
     <div className="marketing-shell min-h-screen bg-white text-foreground pb-20 md:pb-0">
       <TopBar />
       <SubNav />
-      <Hero />
-      <ChefsMarquee />
-      <OutcomesBand />
-      <Support360 />
-      <ModulePillars />
-      <IndustriesStrip />
-      <PlatformPillars />
+      <main id="main-content" tabIndex={-1}>
+        <Hero />
+        <ChefsMarquee />
+        <OutcomesBand />
+        <Support360 />
+        <ModulePillars />
+        <IndustriesStrip />
+        <PlatformPillars />
 
-      <InspectorBand />
-      <Regulation />
-      <Pricing />
-      <FaqSection />
-      <CtaFooter />
+        <InspectorBand />
+        <Regulation />
+        <Pricing />
+        <FaqSection />
+        <CtaFooter />
+      </main>
       <SiteFooter />
       <StickyMobileCTA />
     </div>
