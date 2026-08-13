@@ -123,7 +123,7 @@ function ChefsMarquee() {
   const phrase = t("marquee.phrase") ?? "Built for UK kitchens · Safe. Simple. Evidenced.";
   const line = Array.from({ length: 8 }, (_, i) => (
     <span key={i} className="inline-flex items-center gap-4 md:gap-6">
-      <span className="display-black uppercase tracking-tight text-[clamp(1.25rem,4.5vw,3.75rem)]">
+      <span className="display-black uppercase tracking-tight text-[clamp(1rem,2.2vw,1.75rem)]">
         {phrase}
       </span>
       <span className="h-2 w-2 md:h-3 md:w-3 rounded-full bg-[color:var(--color-alert-red)] shrink-0" />
@@ -134,7 +134,7 @@ function ChefsMarquee() {
       aria-hidden="true"
       className="bg-black text-white overflow-hidden border-y border-white/10"
     >
-      <div className="marquee-track py-6 md:py-8">
+      <div className="marquee-track py-3 md:py-4">
         {line}
         {line}
       </div>
@@ -270,7 +270,7 @@ function Hero() {
         />
       </div>
 
-      <div className="relative mx-auto max-w-[1400px] px-4 md:px-8 pt-10 md:pt-24 pb-16 md:pb-40">
+      <div className="relative mx-auto max-w-[1400px] px-4 md:px-8 pt-10 md:pt-20 pb-14 md:pb-24">
         <div className="grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] gap-8 md:gap-16 items-start">
           <div className="text-white">
             <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-white/35 bg-black/35 px-3.5 py-1.5 text-[10px] leading-[1.35] md:text-[11px] font-black tracking-[0.16em] text-white uppercase backdrop-blur-sm">
