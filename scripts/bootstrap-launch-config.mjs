@@ -137,18 +137,16 @@ export async function bootstrapLaunchConfiguration({ root = process.cwd() } = {}
     const existingValue = values.get(name)?.trim() ?? "";
     if (existingValue && !mirrorPlaceholder.test(existingValue)) continue;
     let sourceValue = "";
-    for (const sourceName of sourceNames) {
-      const candidate = (
-        values.get(sourceName) ??
-        projectEnv.get(sourceName) ??
-        process.env[sourceName] ??
-        ""
-      ).trim();
-      if (candidate && !mirrorPlaceholder.test(candidate)) {
-        sourceValue = candidate;
-        break;
+    outer: for (const sourceName of sourceNames) {
+      for (const store of [values, projectEnv, new Map(Object.entries(process.env))]) {
+        const candidate = (store.get(sourceName) ?? "").trim().replace(/^["']|["']$/g, "");
+        if (candidate && !mirrorPlaceholder.test(candidate)) {
+          sourceValue = candidate;
+          break outer;
+        }
       }
     }
+
     if (!sourceValue) continue;
     content = replaceAssignment(content, name, sourceValue);
     mirrored.push(name);
