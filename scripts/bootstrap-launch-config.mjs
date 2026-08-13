@@ -100,7 +100,9 @@ export async function bootstrapLaunchConfiguration({ root = process.cwd() } = {}
   ) {
     const { privateKey } = generateKeyPairSync("ec", { namedCurve: "prime256v1" });
     const jwk = privateKey.export({ format: "jwk" });
-    const publicRaw = createPublicKey(privateKey).export({ format: "der", type: "spki" }).subarray(-65);
+    const publicRaw = createPublicKey(privateKey)
+      .export({ format: "der", type: "spki" })
+      .subarray(-65);
     content = replaceAssignment(
       content,
       "VITE_WEB_PUSH_PUBLIC_KEY",
