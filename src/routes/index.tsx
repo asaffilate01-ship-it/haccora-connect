@@ -123,7 +123,7 @@ function ChefsMarquee() {
   const phrase = t("marquee.phrase") ?? "Built for UK kitchens · Safe. Simple. Evidenced.";
   const line = Array.from({ length: 8 }, (_, i) => (
     <span key={i} className="inline-flex items-center gap-4 md:gap-6">
-      <span className="display-black uppercase tracking-tight text-[clamp(1.25rem,4.5vw,3.75rem)]">
+      <span className="display-black uppercase tracking-tight text-[clamp(1rem,2.2vw,1.75rem)]">
         {phrase}
       </span>
       <span className="h-2 w-2 md:h-3 md:w-3 rounded-full bg-[color:var(--color-alert-red)] shrink-0" />
