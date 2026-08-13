@@ -7,9 +7,9 @@ export const Route = createFileRoute("/legal/terms")({
       { title: "Terms and conditions — Haccora" },
       { name: "description", content: "Terms and conditions for the Haccora service." },
       { property: "og:title", content: "Terms and conditions — Haccora" },
-      { property: "og:url", content: "/legal/terms" },
+      { property: "og:url", content: "https://haccora.co.uk/legal/terms" },
     ],
-    links: [{ rel: "canonical", href: "/legal/terms" }],
+    links: [{ rel: "canonical", href: "https://haccora.co.uk/legal/terms" }],
   }),
   component: () => <LegalPage k="terms" />,
 });

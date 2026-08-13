@@ -7,9 +7,9 @@ export const Route = createFileRoute("/legal/company-details")({
       { title: "Company details — Haccora" },
       { name: "description", content: "UK company and contact details for Haccora." },
       { property: "og:title", content: "Company details — Haccora" },
-      { property: "og:url", content: "/legal/company-details" },
+      { property: "og:url", content: "https://haccora.co.uk/legal/company-details" },
     ],
-    links: [{ rel: "canonical", href: "/legal/company-details" }],
+    links: [{ rel: "canonical", href: "https://haccora.co.uk/legal/company-details" }],
   }),
   component: () => <LegalPage k="company" />,
 });

@@ -7,7 +7,7 @@ export const Route = createFileRoute("/legal/accessibility")({
       { title: "Accessibility — Haccora" },
       { name: "description", content: "Haccora accessibility statement and contact route." },
     ],
-    links: [{ rel: "canonical", href: "/legal/accessibility" }],
+    links: [{ rel: "canonical", href: "https://haccora.co.uk/legal/accessibility" }],
   }),
   component: () => <LegalPage k="accessibility" />,
 });

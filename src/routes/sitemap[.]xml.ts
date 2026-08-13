@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
+import { posts } from "@/lib/blog";
 
 const BASE_URL = process.env.PUBLIC_APP_URL || "https://haccora.co.uk";
 
@@ -18,6 +19,11 @@ export const Route = createFileRoute("/sitemap.xml")({
           { path: "/legal/data-processing", changefreq: "monthly", priority: "0.3" },
           { path: "/legal/accessibility", changefreq: "monthly", priority: "0.3" },
           { path: "/legal/complaints", changefreq: "monthly", priority: "0.3" },
+          ...posts.map((post) => ({
+            path: `/blog/${post.slug}`,
+            changefreq: "monthly",
+            priority: "0.6",
+          })),
         ];
         const urls = entries.map((e) =>
           [

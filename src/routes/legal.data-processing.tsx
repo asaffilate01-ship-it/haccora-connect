@@ -7,7 +7,7 @@ export const Route = createFileRoute("/legal/data-processing")({
       { title: "Data processing — Haccora" },
       { name: "description", content: "Summary of Haccora's UK GDPR processor commitments." },
     ],
-    links: [{ rel: "canonical", href: "/legal/data-processing" }],
+    links: [{ rel: "canonical", href: "https://haccora.co.uk/legal/data-processing" }],
   }),
   component: () => <LegalPage k="dataProcessing" />,
 });

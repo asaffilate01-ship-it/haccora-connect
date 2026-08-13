@@ -19,7 +19,10 @@ export const Route = createFileRoute("/blog/$slug")({
     }
     const title = `${loaderData.title} — Haccora`;
     const desc = loaderData.excerpt;
-    const url = `/blog/${params.slug}`;
+    const url = `https://haccora.co.uk/blog/${params.slug}`;
+    const image = loaderData.image.startsWith("http")
+      ? loaderData.image
+      : `https://haccora.co.uk${loaderData.image.startsWith("/") ? "" : "/"}${loaderData.image}`;
     return {
       meta: [
         { title },
@@ -28,13 +31,13 @@ export const Route = createFileRoute("/blog/$slug")({
         { property: "og:description", content: desc },
         { property: "og:type", content: "article" },
         { property: "og:url", content: url },
-        { property: "og:image", content: loaderData.image },
+        { property: "og:image", content: image },
         { property: "article:published_time", content: loaderData.date },
         { property: "article:author", content: loaderData.author },
         { name: "twitter:card", content: "summary_large_image" },
         { name: "twitter:title", content: loaderData.title },
         { name: "twitter:description", content: desc },
-        { name: "twitter:image", content: loaderData.image },
+        { name: "twitter:image", content: image },
       ],
       links: [{ rel: "canonical", href: url }],
       scripts: [
@@ -47,7 +50,7 @@ export const Route = createFileRoute("/blog/$slug")({
             description: desc,
             author: { "@type": "Organization", name: loaderData.author },
             datePublished: loaderData.date,
-            image: loaderData.image,
+            image,
           }),
         },
       ],

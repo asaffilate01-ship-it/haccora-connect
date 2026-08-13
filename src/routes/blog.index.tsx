@@ -25,10 +25,10 @@ export const Route = createFileRoute("/blog/")({
           "HACCP, Food-handler health, food hygiene and daily operations — practical guides for UK food businesses.",
       },
       { property: "og:type", content: "website" },
-      { property: "og:url", content: "/blog" },
+      { property: "og:url", content: "https://haccora.co.uk/blog" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
-    links: [{ rel: "canonical", href: "/blog" }],
+    links: [{ rel: "canonical", href: "https://haccora.co.uk/blog" }],
   }),
   component: BlogIndex,
 });
