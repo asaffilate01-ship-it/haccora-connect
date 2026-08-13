@@ -85,6 +85,31 @@ export async function bootstrapLaunchConfiguration({ root = process.cwd() } = {}
     generated.push(name);
   }
 
+  // Generate the VAPID (browser push) key pair Haccora owns outright. The
+  // public key is safe to ship to browsers; the private key stays local and is
+  // copied into the protected push gateway environment by the release owner.
+  const pushValues = assignments(content);
+  const existingPushPublic = pushValues.get("VITE_WEB_PUSH_PUBLIC_KEY")?.trim() ?? "";
+  const existingPushPrivate = pushValues.get("WEB_PUSH_PRIVATE_KEY")?.trim() ?? "";
+  let vapidGenerated = false;
+  if (
+    !existingPushPublic ||
+    generatedPlaceholder.test(existingPushPublic) ||
+    !existingPushPrivate ||
+    generatedPlaceholder.test(existingPushPrivate)
+  ) {
+    const { privateKey } = generateKeyPairSync("ec", { namedCurve: "prime256v1" });
+    const jwk = privateKey.export({ format: "jwk" });
+    const publicRaw = createPublicKey(privateKey).export({ format: "der", type: "spki" }).subarray(-65);
+    content = replaceAssignment(
+      content,
+      "VITE_WEB_PUSH_PUBLIC_KEY",
+      Buffer.from(publicRaw).toString("base64url"),
+    );
+    content = replaceAssignment(content, "WEB_PUSH_PRIVATE_KEY", String(jwk.d));
+    vapidGenerated = true;
+  }
+
   // Mirror the public, non-secret web values Haccora already owns into the
   // native runtime names. Nothing is invented: a source value is only copied
   // when it is real, and an existing native value is never overwritten.
