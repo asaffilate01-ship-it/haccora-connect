@@ -134,7 +134,7 @@ function ChefsMarquee() {
       aria-hidden="true"
       className="bg-black text-white overflow-hidden border-y border-white/10"
     >
-      <div className="marquee-track py-6 md:py-8">
+      <div className="marquee-track py-3 md:py-4">
         {line}
         {line}
       </div>
