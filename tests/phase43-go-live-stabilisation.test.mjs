@@ -55,13 +55,8 @@ test("Phase 43 keeps the web install and fresh database reset deterministic", as
     "can_read_organization(uuid)",
     "can_manage_organization(uuid)",
   ]) {
-    assert.match(
-      rlsHelperGrants,
-      new RegExp(`GRANT EXECUTE ON FUNCTION public\\.${helper.replace(/[()[\\]]/g, "\\  assert.ok(
-    trainingManagement.indexOf("ADD COLUMN IF NOT EXISTS updated_at") <
-      trainingManagement.indexOf("UPDATE public.training_courses"),
-  );
-});")}`),
+    assert.ok(
+      rlsHelperGrants.includes(`GRANT EXECUTE ON FUNCTION public.${helper} TO authenticated;`),
     );
   }
   assert.doesNotMatch(rlsHelperGrants, /TO (?:anon|PUBLIC)/i);
