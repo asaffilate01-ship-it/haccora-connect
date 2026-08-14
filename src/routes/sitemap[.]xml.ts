@@ -12,6 +12,18 @@ export const Route = createFileRoute("/sitemap.xml")({
           { path: "/", changefreq: "weekly", priority: "1.0" },
           { path: "/help", changefreq: "weekly", priority: "0.7" },
           { path: "/blog", changefreq: "weekly", priority: "0.8" },
+          {
+            path: "/free-tools/haccp-plan-template",
+            changefreq: "monthly",
+            priority: "0.9",
+          },
+          {
+            path: "/industries/restaurants-and-cafes",
+            changefreq: "monthly",
+            priority: "0.9",
+          },
+          { path: "/compare/haccora-vs-logit", changefreq: "monthly", priority: "0.7" },
+          { path: "/compare/haccora-vs-fooddocs", changefreq: "monthly", priority: "0.7" },
           { path: "/legal/privacy", changefreq: "monthly", priority: "0.3" },
           { path: "/legal/terms", changefreq: "monthly", priority: "0.3" },
           { path: "/legal/cookies", changefreq: "monthly", priority: "0.3" },

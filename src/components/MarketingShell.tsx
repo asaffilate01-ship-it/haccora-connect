@@ -1,0 +1,63 @@
+import type { ReactNode } from "react";
+import { Link } from "@tanstack/react-router";
+import { BrandLogo } from "@/components/BrandLogo";
+import { FollowBar } from "@/components/SocialIcons";
+import { LanguageToggle } from "@/components/LanguageToggle";
+import { PUBLIC_CONFIG } from "@/lib/public-config";
+
+interface MarketingShellProps {
+  children: ReactNode;
+}
+
+/**
+ * Lightweight header/footer wrapper for standalone marketing pages
+ * (free tools, comparisons, sector landing pages).
+ */
+export function MarketingShell({ children }: MarketingShellProps) {
+  return (
+    <div className="min-h-screen bg-white text-foreground flex flex-col">
+      <header className="bg-black text-white">
+        <div className="mx-auto max-w-[1400px] px-4 md:px-8 h-16 md:h-20 flex items-center justify-between gap-4">
+          <BrandLogo imgClassName="h-10 md:h-12 w-auto" />
+          <div className="flex items-center gap-3">
+            <FollowBar dark />
+            <LanguageToggle variant="dark" />
+            <Link
+              to="/login"
+              className="hidden sm:inline-flex items-center rounded-full bg-[color:var(--color-alert-red)] px-4 py-2 text-xs font-black uppercase tracking-widest text-white"
+            >
+              Sign in
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      <main id="main-content" tabIndex={-1} className="flex-1">
+        {children}
+      </main>
+
+      <footer className="bg-black text-white/70">
+        <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between text-sm">
+          <p className="text-white/50 text-xs">
+            © {new Date().getFullYear()} {PUBLIC_CONFIG.legal.companyName}. Food safety software for
+            UK food businesses.
+          </p>
+          <nav className="flex flex-wrap gap-4 text-xs uppercase tracking-widest font-black">
+            <Link to="/" className="hover:text-white">
+              Home
+            </Link>
+            <Link to="/blog" className="hover:text-white">
+              Blog
+            </Link>
+            <Link to="/free-tools/haccp-plan-template" className="hover:text-white">
+              Free HACCP template
+            </Link>
+            <Link to="/legal/privacy" className="hover:text-white">
+              Privacy
+            </Link>
+          </nav>
+        </div>
+      </footer>
+    </div>
+  );
+}
