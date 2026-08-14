@@ -78,12 +78,48 @@ export const Route = createFileRoute("/")({
         type: "application/ld+json",
         children: JSON.stringify({
           "@context": "https://schema.org",
-          "@type": "FAQPage",
-          mainEntity: MARKETING_FAQS.map(({ question, answer }) => ({
-            "@type": "Question",
-            name: question,
-            acceptedAnswer: { "@type": "Answer", text: answer },
-          })),
+          "@graph": [
+            {
+              "@type": "SoftwareApplication",
+              name: "Haccora",
+              applicationCategory: "BusinessApplication",
+              applicationSubCategory: "Food safety compliance software",
+              operatingSystem: "Web, iOS, Android",
+              url: "https://haccora.co.uk/",
+              description:
+                "Digital HACCP, temperature monitoring, cleaning schedules, allergen and PPDS controls and EHO inspection evidence for UK food businesses.",
+              areaServed: "GB",
+              inLanguage: "en-GB",
+              featureList: [
+                "Digital HACCP plan",
+                "Fridge, freezer and probe temperature logs",
+                "SFBB-style daily diary",
+                "Allergen matrix and PPDS labelling",
+                "Staff training and fitness to work",
+                "One-tap EHO inspection pack",
+              ],
+              publisher: {
+                "@type": "Organization",
+                name: PUBLIC_CONFIG.legal.companyName,
+                url: "https://haccora.co.uk/",
+              },
+            },
+            {
+              "@type": "Organization",
+              name: PUBLIC_CONFIG.legal.companyName,
+              url: "https://haccora.co.uk/",
+              email: PUBLIC_CONFIG.legal.email,
+              areaServed: "GB",
+            },
+            {
+              "@type": "FAQPage",
+              mainEntity: MARKETING_FAQS.map(({ question, answer }) => ({
+                "@type": "Question",
+                name: question,
+                acceptedAnswer: { "@type": "Answer", text: answer },
+              })),
+            },
+          ],
         }),
       },
     ],
