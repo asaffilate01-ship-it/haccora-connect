@@ -1,3 +1,6 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
+
 /**
  * Food Standards Agency (FHRS) open-data ingestion.
  *
@@ -169,13 +172,13 @@ type OperatorRole = "platform_owner" | "platform_support" | "platform_auditor";
 
 /** Fails closed unless the caller is an active Haccora platform operator. */
 export async function assertPlatformOperator(
-  client: { rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }> },
+  client: Pick<SupabaseClient<Database>, "rpc">,
   userId: string,
   roles: OperatorRole[] | null = null,
 ): Promise<void> {
   const { data, error } = await client.rpc("is_platform_operator", {
     p_user_id: userId,
-    p_roles: roles,
+    p_roles: roles as never,
   });
   if (error || data !== true) {
     throw new Error("Unauthorized: platform operator access required");
