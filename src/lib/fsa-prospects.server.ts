@@ -58,7 +58,10 @@ export async function fetchAuthorities(): Promise<FsaAuthority[]> {
   };
   return (payload.authorities ?? [])
     .filter((authority) => typeof authority.LocalAuthorityId === "number" && authority.Name)
-    .map((authority) => ({ id: authority.LocalAuthorityId as number, name: authority.Name as string }))
+    .map((authority) => ({
+      id: authority.LocalAuthorityId as number,
+      name: authority.Name as string,
+    }))
     .sort((left, right) => left.name.localeCompare(right.name));
 }
 
