@@ -89,6 +89,11 @@ export const Route = createFileRoute("/")({
                 "Digital HACCP, temperature monitoring, cleaning schedules, allergen and PPDS controls and EHO inspection evidence for UK food businesses.",
               areaServed: "GB",
               inLanguage: "en-GB",
+              offers: [
+                { "@type": "Offer", name: "Solo", price: "9.99", priceCurrency: "GBP" },
+                { "@type": "Offer", name: "Complete", price: "24.99", priceCurrency: "GBP" },
+                { "@type": "Offer", name: "Group", price: "59.99", priceCurrency: "GBP" },
+              ],
               featureList: [
                 "Digital HACCP plan",
                 "Fridge, freezer and probe temperature logs",
@@ -143,6 +148,7 @@ function Landing() {
         <InspectorBand />
         <Regulation />
         <Pricing />
+        <ResourcesBand />
         <FaqSection />
         <CtaFooter />
       </main>
@@ -917,15 +923,30 @@ function IndustriesStrip() {
           <p className="mt-4 text-black/60 max-w-2xl">{t("industries.subtitle")}</p>
         </div>
         <div className="mt-10 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {items.map(({ icon: Icon, k }) => (
-            <div key={k} className="card-polished p-5 flex flex-col items-center text-center">
-              <span className="icon-3d icon-3d-sm">
-                <Icon size={20} strokeWidth={2.2} />
-              </span>
-
-              <div className="mt-3 font-black text-sm">{t(`industries.${k}`)}</div>
-            </div>
-          ))}
+          {items.map(({ icon: Icon, k }) => {
+            const inner = (
+              <>
+                <span className="icon-3d icon-3d-sm">
+                  <Icon size={20} strokeWidth={2.2} />
+                </span>
+                <div className="mt-3 font-black text-sm">{t(`industries.${k}`)}</div>
+              </>
+            );
+            const className = "card-polished p-5 flex flex-col items-center text-center";
+            return k === "restaurant" || k === "cafe" ? (
+              <Link
+                key={k}
+                to="/industries/restaurants-and-cafes"
+                className={`${className} transition hover:-translate-y-0.5`}
+              >
+                {inner}
+              </Link>
+            ) : (
+              <div key={k} className={className}>
+                {inner}
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -965,6 +986,55 @@ function PlatformPillars() {
                 {t(`platform.${k}.desc`)}
               </p>
             </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ────────────────────────────────────────────── resources / internal links */
+function ResourcesBand() {
+  const resources = [
+    {
+      to: "/free-tools/haccp-plan-template",
+      title: "Free HACCP plan template (UK)",
+      body: "Download an editable HACCP plan built around SFBB-style records and EHO expectations.",
+    },
+    {
+      to: "/industries/restaurants-and-cafes",
+      title: "Food safety software for restaurants and cafés",
+      body: "See how daily diaries, temperature logs and allergen controls work in a busy kitchen.",
+    },
+    {
+      to: "/compare/haccora-vs-logit",
+      title: "Haccora vs Logit",
+      body: "Compare pricing, modules and inspection evidence side by side.",
+    },
+    {
+      to: "/compare/haccora-vs-fooddocs",
+      title: "Haccora vs FoodDocs",
+      body: "Understand the differences before you choose a digital food safety system.",
+    },
+  ] as const;
+  return (
+    <section id="resources" className="bg-white border-t border-black/5">
+      <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-24">
+        <div className="max-w-3xl">
+          <div className="eyebrow">Guides and resources</div>
+          <h2 className="mt-4 display-black text-3xl md:text-5xl">
+            Free tools, sector guides and honest comparisons.
+          </h2>
+        </div>
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {resources.map((r) => (
+            <Link key={r.to} to={r.to} className="card-polished p-6 transition hover:-translate-y-0.5">
+              <h3 className="font-black text-base leading-tight">{r.title}</h3>
+              <p className="mt-3 text-sm text-black/60">{r.body}</p>
+              <span className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-[color:var(--color-alert-red)]">
+                Read more <ArrowRight size={14} />
+              </span>
+            </Link>
           ))}
         </div>
       </div>
