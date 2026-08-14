@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/haccora-client";
 import { isSupabaseConfigured } from "@/integrations/supabase/config";
@@ -223,13 +223,14 @@ function TopBar() {
         <BrandLogo imgClassName="h-8 md:h-14 w-auto" />
 
         <div className="flex items-center gap-1.5 md:gap-3 shrink-0">
-          <div className="hidden md:flex items-center h-10 rounded-full bg-white/8 border border-white/12 px-4 min-w-[220px]">
-            <Search size={14} className="text-white/60" />
-            <input
-              placeholder={t("nav.search") ?? "Search"}
-              className="ml-2 bg-transparent text-sm placeholder:text-white/50 outline-none w-full"
-            />
-          </div>
+          <Link
+            to="/help"
+            aria-label="Search the Haccora Help Centre"
+            className="hidden md:flex items-center h-10 rounded-full bg-white/8 border border-white/12 px-4 min-w-[220px] text-sm text-white/60 hover:bg-white/12 hover:text-white transition"
+          >
+            <Search size={14} />
+            <span className="ml-2">{t("nav.search") ?? "Search help centre"}</span>
+          </Link>
           <Link
             to="/login"
             className="btn-red-outline !px-3 !py-2 !text-xs sm:!px-5 sm:!py-3 sm:!text-sm"
@@ -360,11 +361,16 @@ function Hero() {
 
 function ProductTourDialog() {
   const { t } = useI18n();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
+
   return (
     <Dialog>
       <DialogTrigger asChild>
         <button
           type="button"
+          disabled={!mounted}
           className="group inline-flex items-center gap-3 rounded-2xl bg-black/75 px-3 py-2.5 text-left text-sm text-white shadow-lg backdrop-blur-sm transition hover:bg-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white md:px-4 md:py-3"
           aria-label={`${t("hero.video.title")}. ${t("hero.play")}.`}
         >
@@ -467,6 +473,7 @@ function ContactCard() {
       <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
         <input
           name="firstName"
+          aria-label={t("contact.first") ?? "First Name"}
           required
           autoComplete="given-name"
           maxLength={80}
@@ -475,6 +482,7 @@ function ContactCard() {
         />
         <input
           name="lastName"
+          aria-label={t("contact.last") ?? "Last Name"}
           required
           autoComplete="family-name"
           maxLength={80}
@@ -485,6 +493,7 @@ function ContactCard() {
       <div className="mt-3 grid gap-3">
         <input
           name="email"
+          aria-label={t("contact.email") ?? "Email Address"}
           required
           type="email"
           autoComplete="email"
@@ -494,6 +503,7 @@ function ContactCard() {
         />
         <input
           name="phone"
+          aria-label={t("contact.phone") ?? "Phone Number"}
           type="tel"
           autoComplete="tel"
           maxLength={40}
@@ -502,6 +512,7 @@ function ContactCard() {
         />
         <input
           name="businessName"
+          aria-label={t("contact.business") ?? "Business Name"}
           autoComplete="organization"
           maxLength={160}
           placeholder={t("contact.business") ?? "Business Name"}
@@ -518,13 +529,20 @@ function ContactCard() {
       <label className="mt-4 flex items-start gap-2 text-[11px] text-black/60">
         <input name="consent" type="checkbox" required className="mt-0.5" />
         <span>
-          {t("contact.legal") ?? "By submitting this form, you agree to our privacy policy."}
+          By submitting this form, you agree to our{" "}
+          <Link
+            to="/legal/privacy"
+            className="font-semibold underline underline-offset-2 hover:text-black"
+          >
+            privacy policy
+          </Link>
+          .
         </span>
       </label>
       <button
         disabled={state === "sending"}
         type="submit"
-        className="btn-primary w-full mt-5 uppercase tracking-widest text-xs md:text-sm disabled:opacity-60"
+        className="btn-red w-full mt-5 justify-center uppercase tracking-widest text-xs md:text-sm disabled:opacity-60"
       >
         {state === "sending" ? "Sending…" : (t("contact.cta") ?? "Get In Touch")}
       </button>
@@ -1037,7 +1055,11 @@ function ResourcesBand() {
         </div>
         <div className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {resources.map((r) => (
-            <Link key={r.to} to={r.to} className="card-polished p-6 transition hover:-translate-y-0.5">
+            <Link
+              key={r.to}
+              to={r.to}
+              className="card-polished p-6 transition hover:-translate-y-0.5"
+            >
               <h3 className="font-black text-base leading-tight">{r.title}</h3>
               <p className="mt-3 text-sm text-black/60">{r.body}</p>
               <span className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-[color:var(--color-alert-red)]">
@@ -1175,7 +1197,7 @@ function ProductPreview() {
             </a>
           </div>
         </div>
-        <p className="mt-6 text-xs text-white/40">
+        <p className="mt-6 text-xs text-white/70">
           Illustrative example using sample data. Figures shown are not customer records.
         </p>
       </div>

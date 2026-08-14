@@ -45,7 +45,10 @@ INSERT INTO public.safe_method_templates (id,title,category,summary,prompts,offi
  ('cooking','Cooking controls','cooking','Define validated cooking, reheating and hot-holding controls.','["How is the control validated?","What happens after a failed check?"]','https://www.food.gov.uk/business-guidance/safer-food-better-business-sfbb','2026.1'),
  ('allergens','Allergen management','allergens','Control ingredient changes, communication, cross-contact and PPDS information.','["Who approves ingredient changes?","How is allergen information verified?"]','https://www.food.gov.uk/business-guidance/allergen-guidance-for-food-businesses','2026.1'),
  ('management','Management review','management','Assign ownership, train staff and review after operational changes.','["Who owns each control?","When will this method be reviewed?"]','https://www.food.gov.uk/business-guidance/managing-food-safety','2026.1');
-ALTER TABLE public.safe_method_templates,public.site_safe_methods,public.daily_diary_entries,public.ppds_label_versions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.safe_method_templates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.site_safe_methods ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.daily_diary_entries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ppds_label_versions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY safe_method_templates_read ON public.safe_method_templates FOR SELECT TO authenticated USING (true);
 CREATE POLICY site_safe_methods_read ON public.site_safe_methods FOR SELECT TO authenticated USING (public.can_read_organization(organization_id));
 CREATE POLICY site_safe_methods_manage ON public.site_safe_methods FOR ALL TO authenticated USING (public.can_manage_organization(organization_id)) WITH CHECK (public.can_manage_organization(organization_id));

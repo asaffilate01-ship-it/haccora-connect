@@ -13,6 +13,12 @@ ALTER TABLE public.training_records
     AND (certificate_reference IS NULL OR char_length(certificate_reference) <= 120)
   );
 
+-- An earlier migration attached touch_updated_at to the catalogue before the
+-- table had the matching column. Add it before the first catalogue update so
+-- both fresh installs and existing environments remain upgradeable.
+ALTER TABLE public.training_courses
+  ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
+
 -- Preserve IDs and completed records while replacing Germany-only catalogue content.
 UPDATE public.training_courses
 SET title_de = 'Food-handler health and fitness to work',

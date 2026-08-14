@@ -61,7 +61,8 @@ test("Phase 39 preserves migration history while making clean replay determinist
     read("supabase/tests/database/rls_isolation.test.sql"),
   ]);
 
-  assert.match(roles, /CREATE ROLE sandbox_exec NOLOGIN NOINHERIT/);
+  assert.match(roles, /CREATE ROLE sandbox_exec[\s\S]*NOLOGIN[\s\S]*NOINHERIT/);
+  assert.match(roles, /ELSIF NOT target_is_superuser/);
   assert.match(roles, /NOBYPASSRLS/);
   assert.match(grant, /GRANT REFERENCES ON TABLE auth\.users TO sandbox_exec/);
   assert.match(revoke, /REVOKE ALL ON auth\.users FROM sandbox_exec/);

@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/haccora-client";
 import { BrandLogoImage } from "@/components/BrandLogo";
@@ -190,6 +190,7 @@ function AppShell() {
   const { user, signOut, hydrated } = useAuth();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const authRedirectStarted = useRef(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -205,8 +206,14 @@ function AppShell() {
   });
 
   useEffect(() => {
-    if (hydrated && !user) {
-      navigate({ to: "/login", search: { redirect: pathname } as never });
+    if (hydrated && !user && !authRedirectStarted.current) {
+      const protectedPath = pathname.startsWith("/app") ? pathname : "/app";
+      authRedirectStarted.current = true;
+      navigate({
+        to: "/login",
+        search: { redirect: protectedPath } as never,
+        replace: true,
+      });
     } else if (hydrated && user?.platformRole && !user.organizationId) {
       navigate({ to: "/platform", replace: true });
     } else if (hydrated && user?.organizationId && user.serviceStatus !== "active") {
