@@ -5,15 +5,23 @@ import test from "node:test";
 const read = (file) => readFile(new URL(`../${file}`, import.meta.url), "utf8");
 
 test("Phase 43 keeps the web install and fresh database reset deterministic", async () => {
-  const [packageText, lockText, mobilePackageText, mobileLockText, roles, dailyCompliance] =
-    await Promise.all([
-      read("package.json"),
-      read("package-lock.json"),
-      read("mobile/package.json"),
-      read("mobile/package-lock.json"),
-      read("supabase/roles.sql"),
-      read("supabase/migrations/20260803190000_uk_daily_compliance.sql"),
-    ]);
+  const [
+    packageText,
+    lockText,
+    mobilePackageText,
+    mobileLockText,
+    roles,
+    dailyCompliance,
+    trainingManagement,
+  ] = await Promise.all([
+    read("package.json"),
+    read("package-lock.json"),
+    read("mobile/package.json"),
+    read("mobile/package-lock.json"),
+    read("supabase/roles.sql"),
+    read("supabase/migrations/20260803190000_uk_daily_compliance.sql"),
+    read("supabase/migrations/20260806003000_uk_training_certificate_management.sql"),
+  ]);
   const packageJson = JSON.parse(packageText);
   const packageLock = JSON.parse(lockText);
   const mobilePackage = JSON.parse(mobilePackageText);
@@ -34,6 +42,14 @@ test("Phase 43 keeps the web install and fresh database reset deterministic", as
   assert.doesNotMatch(roles, /^ALTER ROLE sandbox_exec/m);
   assert.doesNotMatch(dailyCompliance, /ALTER TABLE [^;]+,[^;]+ ENABLE ROW LEVEL SECURITY/);
   assert.equal((dailyCompliance.match(/ENABLE ROW LEVEL SECURITY/g) ?? []).length, 4);
+  assert.match(
+    trainingManagement,
+    /ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now\(\)/,
+  );
+  assert.ok(
+    trainingManagement.indexOf("ADD COLUMN IF NOT EXISTS updated_at") <
+      trainingManagement.indexOf("UPDATE public.training_courses"),
+  );
 });
 
 test("Phase 43 preserves protected auth redirects and canonical marketing URLs", async () => {
