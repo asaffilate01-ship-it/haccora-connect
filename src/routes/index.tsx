@@ -223,13 +223,14 @@ function TopBar() {
         <BrandLogo imgClassName="h-8 md:h-14 w-auto" />
 
         <div className="flex items-center gap-1.5 md:gap-3 shrink-0">
-          <div className="hidden md:flex items-center h-10 rounded-full bg-white/8 border border-white/12 px-4 min-w-[220px]">
-            <Search size={14} className="text-white/60" />
-            <input
-              placeholder={t("nav.search") ?? "Search"}
-              className="ml-2 bg-transparent text-sm placeholder:text-white/50 outline-none w-full"
-            />
-          </div>
+          <Link
+            to="/help"
+            aria-label="Search the Haccora Help Centre"
+            className="hidden md:flex items-center h-10 rounded-full bg-white/8 border border-white/12 px-4 min-w-[220px] text-sm text-white/60 hover:bg-white/12 hover:text-white transition"
+          >
+            <Search size={14} />
+            <span className="ml-2">{t("nav.search") ?? "Search help centre"}</span>
+          </Link>
           <Link
             to="/login"
             className="btn-red-outline !px-3 !py-2 !text-xs sm:!px-5 sm:!py-3 sm:!text-sm"
@@ -467,6 +468,7 @@ function ContactCard() {
       <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
         <input
           name="firstName"
+          aria-label={t("contact.first") ?? "First Name"}
           required
           autoComplete="given-name"
           maxLength={80}
@@ -475,6 +477,7 @@ function ContactCard() {
         />
         <input
           name="lastName"
+          aria-label={t("contact.last") ?? "Last Name"}
           required
           autoComplete="family-name"
           maxLength={80}
@@ -485,6 +488,7 @@ function ContactCard() {
       <div className="mt-3 grid gap-3">
         <input
           name="email"
+          aria-label={t("contact.email") ?? "Email Address"}
           required
           type="email"
           autoComplete="email"
@@ -494,6 +498,7 @@ function ContactCard() {
         />
         <input
           name="phone"
+          aria-label={t("contact.phone") ?? "Phone Number"}
           type="tel"
           autoComplete="tel"
           maxLength={40}
@@ -502,6 +507,7 @@ function ContactCard() {
         />
         <input
           name="businessName"
+          aria-label={t("contact.business") ?? "Business Name"}
           autoComplete="organization"
           maxLength={160}
           placeholder={t("contact.business") ?? "Business Name"}
@@ -518,13 +524,20 @@ function ContactCard() {
       <label className="mt-4 flex items-start gap-2 text-[11px] text-black/60">
         <input name="consent" type="checkbox" required className="mt-0.5" />
         <span>
-          {t("contact.legal") ?? "By submitting this form, you agree to our privacy policy."}
+          By submitting this form, you agree to our{" "}
+          <Link
+            to="/legal/privacy"
+            className="font-semibold underline underline-offset-2 hover:text-black"
+          >
+            privacy policy
+          </Link>
+          .
         </span>
       </label>
       <button
         disabled={state === "sending"}
         type="submit"
-        className="btn-primary w-full mt-5 uppercase tracking-widest text-xs md:text-sm disabled:opacity-60"
+        className="btn-red w-full mt-5 justify-center uppercase tracking-widest text-xs md:text-sm disabled:opacity-60"
       >
         {state === "sending" ? "Sending…" : (t("contact.cta") ?? "Get In Touch")}
       </button>
