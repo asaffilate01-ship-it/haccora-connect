@@ -31,7 +31,10 @@ import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
 import { Route as LegalComplaintsRouteImport } from './routes/legal.complaints'
 import { Route as LegalCompanyDetailsRouteImport } from './routes/legal.company-details'
 import { Route as LegalAccessibilityRouteImport } from './routes/legal.accessibility'
+import { Route as IndustriesTakeawaysAndFastFoodRouteImport } from './routes/industries.takeaways-and-fast-food'
 import { Route as IndustriesRestaurantsAndCafesRouteImport } from './routes/industries.restaurants-and-cafes'
+import { Route as IndustriesPubsAndBarsRouteImport } from './routes/industries.pubs-and-bars'
+import { Route as IndustriesCareHomesAndSchoolsRouteImport } from './routes/industries.care-homes-and-schools'
 import { Route as FreeToolsHaccpPlanTemplateRouteImport } from './routes/free-tools.haccp-plan-template'
 import { Route as CompareHaccoraVsLogitRouteImport } from './routes/compare.haccora-vs-logit'
 import { Route as CompareHaccoraVsFooddocsRouteImport } from './routes/compare.haccora-vs-fooddocs'
@@ -199,10 +202,27 @@ const LegalAccessibilityRoute = LegalAccessibilityRouteImport.update({
   path: '/accessibility',
   getParentRoute: () => LegalRoute,
 } as any)
+const IndustriesTakeawaysAndFastFoodRoute =
+  IndustriesTakeawaysAndFastFoodRouteImport.update({
+    id: '/industries/takeaways-and-fast-food',
+    path: '/industries/takeaways-and-fast-food',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const IndustriesRestaurantsAndCafesRoute =
   IndustriesRestaurantsAndCafesRouteImport.update({
     id: '/industries/restaurants-and-cafes',
     path: '/industries/restaurants-and-cafes',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const IndustriesPubsAndBarsRoute = IndustriesPubsAndBarsRouteImport.update({
+  id: '/industries/pubs-and-bars',
+  path: '/industries/pubs-and-bars',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndustriesCareHomesAndSchoolsRoute =
+  IndustriesCareHomesAndSchoolsRouteImport.update({
+    id: '/industries/care-homes-and-schools',
+    path: '/industries/care-homes-and-schools',
     getParentRoute: () => rootRouteImport,
   } as any)
 const FreeToolsHaccpPlanTemplateRoute =
@@ -555,7 +575,10 @@ export interface FileRoutesByFullPath {
   '/compare/haccora-vs-fooddocs': typeof CompareHaccoraVsFooddocsRoute
   '/compare/haccora-vs-logit': typeof CompareHaccoraVsLogitRoute
   '/free-tools/haccp-plan-template': typeof FreeToolsHaccpPlanTemplateRoute
+  '/industries/care-homes-and-schools': typeof IndustriesCareHomesAndSchoolsRoute
+  '/industries/pubs-and-bars': typeof IndustriesPubsAndBarsRoute
   '/industries/restaurants-and-cafes': typeof IndustriesRestaurantsAndCafesRoute
+  '/industries/takeaways-and-fast-food': typeof IndustriesTakeawaysAndFastFoodRoute
   '/legal/accessibility': typeof LegalAccessibilityRoute
   '/legal/company-details': typeof LegalCompanyDetailsRoute
   '/legal/complaints': typeof LegalComplaintsRoute
@@ -634,7 +657,10 @@ export interface FileRoutesByTo {
   '/compare/haccora-vs-fooddocs': typeof CompareHaccoraVsFooddocsRoute
   '/compare/haccora-vs-logit': typeof CompareHaccoraVsLogitRoute
   '/free-tools/haccp-plan-template': typeof FreeToolsHaccpPlanTemplateRoute
+  '/industries/care-homes-and-schools': typeof IndustriesCareHomesAndSchoolsRoute
+  '/industries/pubs-and-bars': typeof IndustriesPubsAndBarsRoute
   '/industries/restaurants-and-cafes': typeof IndustriesRestaurantsAndCafesRoute
+  '/industries/takeaways-and-fast-food': typeof IndustriesTakeawaysAndFastFoodRoute
   '/legal/accessibility': typeof LegalAccessibilityRoute
   '/legal/company-details': typeof LegalCompanyDetailsRoute
   '/legal/complaints': typeof LegalComplaintsRoute
@@ -716,7 +742,10 @@ export interface FileRoutesById {
   '/compare/haccora-vs-fooddocs': typeof CompareHaccoraVsFooddocsRoute
   '/compare/haccora-vs-logit': typeof CompareHaccoraVsLogitRoute
   '/free-tools/haccp-plan-template': typeof FreeToolsHaccpPlanTemplateRoute
+  '/industries/care-homes-and-schools': typeof IndustriesCareHomesAndSchoolsRoute
+  '/industries/pubs-and-bars': typeof IndustriesPubsAndBarsRoute
   '/industries/restaurants-and-cafes': typeof IndustriesRestaurantsAndCafesRoute
+  '/industries/takeaways-and-fast-food': typeof IndustriesTakeawaysAndFastFoodRoute
   '/legal/accessibility': typeof LegalAccessibilityRoute
   '/legal/company-details': typeof LegalCompanyDetailsRoute
   '/legal/complaints': typeof LegalComplaintsRoute
@@ -799,7 +828,10 @@ export interface FileRouteTypes {
     | '/compare/haccora-vs-fooddocs'
     | '/compare/haccora-vs-logit'
     | '/free-tools/haccp-plan-template'
+    | '/industries/care-homes-and-schools'
+    | '/industries/pubs-and-bars'
     | '/industries/restaurants-and-cafes'
+    | '/industries/takeaways-and-fast-food'
     | '/legal/accessibility'
     | '/legal/company-details'
     | '/legal/complaints'
@@ -878,7 +910,10 @@ export interface FileRouteTypes {
     | '/compare/haccora-vs-fooddocs'
     | '/compare/haccora-vs-logit'
     | '/free-tools/haccp-plan-template'
+    | '/industries/care-homes-and-schools'
+    | '/industries/pubs-and-bars'
     | '/industries/restaurants-and-cafes'
+    | '/industries/takeaways-and-fast-food'
     | '/legal/accessibility'
     | '/legal/company-details'
     | '/legal/complaints'
@@ -959,7 +994,10 @@ export interface FileRouteTypes {
     | '/compare/haccora-vs-fooddocs'
     | '/compare/haccora-vs-logit'
     | '/free-tools/haccp-plan-template'
+    | '/industries/care-homes-and-schools'
+    | '/industries/pubs-and-bars'
     | '/industries/restaurants-and-cafes'
+    | '/industries/takeaways-and-fast-food'
     | '/legal/accessibility'
     | '/legal/company-details'
     | '/legal/complaints'
@@ -991,7 +1029,10 @@ export interface RootRouteChildren {
   CompareHaccoraVsFooddocsRoute: typeof CompareHaccoraVsFooddocsRoute
   CompareHaccoraVsLogitRoute: typeof CompareHaccoraVsLogitRoute
   FreeToolsHaccpPlanTemplateRoute: typeof FreeToolsHaccpPlanTemplateRoute
+  IndustriesCareHomesAndSchoolsRoute: typeof IndustriesCareHomesAndSchoolsRoute
+  IndustriesPubsAndBarsRoute: typeof IndustriesPubsAndBarsRoute
   IndustriesRestaurantsAndCafesRoute: typeof IndustriesRestaurantsAndCafesRoute
+  IndustriesTakeawaysAndFastFoodRoute: typeof IndustriesTakeawaysAndFastFoodRoute
   ApiPublicMalwareScanRoute: typeof ApiPublicMalwareScanRoute
 }
 
@@ -1151,11 +1192,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LegalAccessibilityRouteImport
       parentRoute: typeof LegalRoute
     }
+    '/industries/takeaways-and-fast-food': {
+      id: '/industries/takeaways-and-fast-food'
+      path: '/industries/takeaways-and-fast-food'
+      fullPath: '/industries/takeaways-and-fast-food'
+      preLoaderRoute: typeof IndustriesTakeawaysAndFastFoodRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/industries/restaurants-and-cafes': {
       id: '/industries/restaurants-and-cafes'
       path: '/industries/restaurants-and-cafes'
       fullPath: '/industries/restaurants-and-cafes'
       preLoaderRoute: typeof IndustriesRestaurantsAndCafesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/industries/pubs-and-bars': {
+      id: '/industries/pubs-and-bars'
+      path: '/industries/pubs-and-bars'
+      fullPath: '/industries/pubs-and-bars'
+      preLoaderRoute: typeof IndustriesPubsAndBarsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/industries/care-homes-and-schools': {
+      id: '/industries/care-homes-and-schools'
+      path: '/industries/care-homes-and-schools'
+      fullPath: '/industries/care-homes-and-schools'
+      preLoaderRoute: typeof IndustriesCareHomesAndSchoolsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/free-tools/haccp-plan-template': {
@@ -1726,7 +1788,10 @@ const rootRouteChildren: RootRouteChildren = {
   CompareHaccoraVsFooddocsRoute: CompareHaccoraVsFooddocsRoute,
   CompareHaccoraVsLogitRoute: CompareHaccoraVsLogitRoute,
   FreeToolsHaccpPlanTemplateRoute: FreeToolsHaccpPlanTemplateRoute,
+  IndustriesCareHomesAndSchoolsRoute: IndustriesCareHomesAndSchoolsRoute,
+  IndustriesPubsAndBarsRoute: IndustriesPubsAndBarsRoute,
   IndustriesRestaurantsAndCafesRoute: IndustriesRestaurantsAndCafesRoute,
+  IndustriesTakeawaysAndFastFoodRoute: IndustriesTakeawaysAndFastFoodRoute,
   ApiPublicMalwareScanRoute: ApiPublicMalwareScanRoute,
 }
 export const routeTree = rootRouteImport

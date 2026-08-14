@@ -1016,6 +1016,22 @@ function ResourcesBand() {
       body: "See how daily diaries, temperature logs and allergen controls work in a busy kitchen.",
     },
     {
+      to: "/industries/takeaways-and-fast-food",
+      title: "Takeaways and fast food",
+      body: "Fryer and hot-hold checks, oil quality logs and allergen answers that match your listings.",
+    },
+    {
+      to: "/industries/pubs-and-bars",
+      title: "Pubs and bars",
+      body: "Kitchen, cellar and line cleaning records in one dated compliance trail.",
+    },
+    {
+      to: "/industries/care-homes-and-schools",
+      title: "Care homes and school kitchens",
+      body: "Cook-chill, regeneration and special-diet evidence built for vulnerable diners.",
+    },
+
+    {
       to: "/compare/haccora-vs-logit",
       title: "Haccora vs Logit",
       body: "Compare pricing, modules and inspection evidence side by side.",
