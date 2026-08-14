@@ -13,6 +13,7 @@ test("Phase 43 keeps the web install and fresh database reset deterministic", as
     roles,
     dailyCompliance,
     trainingManagement,
+    rlsHelperGrants,
   ] = await Promise.all([
     read("package.json"),
     read("package-lock.json"),
@@ -21,6 +22,7 @@ test("Phase 43 keeps the web install and fresh database reset deterministic", as
     read("supabase/roles.sql"),
     read("supabase/migrations/20260803190000_uk_daily_compliance.sql"),
     read("supabase/migrations/20260806003000_uk_training_certificate_management.sql"),
+    read("supabase/migrations/20260814210000_restore_authenticated_rls_helper_execution.sql"),
   ]);
   const packageJson = JSON.parse(packageText);
   const packageLock = JSON.parse(lockText);
@@ -47,6 +49,22 @@ test("Phase 43 keeps the web install and fresh database reset deterministic", as
     trainingManagement.indexOf("ADD COLUMN IF NOT EXISTS updated_at") <
       trainingManagement.indexOf("UPDATE public.training_courses"),
   );
+  for (const helper of [
+    "current_organization_id()",
+    "has_org_role(uuid, public.app_role[])",
+    "can_read_organization(uuid)",
+    "can_manage_organization(uuid)",
+  ]) {
+    assert.match(
+      rlsHelperGrants,
+      new RegExp(`GRANT EXECUTE ON FUNCTION public\\.${helper.replace(/[()[\\]]/g, "\\  assert.ok(
+    trainingManagement.indexOf("ADD COLUMN IF NOT EXISTS updated_at") <
+      trainingManagement.indexOf("UPDATE public.training_courses"),
+  );
+});")}`),
+    );
+  }
+  assert.doesNotMatch(rlsHelperGrants, /TO (?:anon|PUBLIC)/i);
 });
 
 test("Phase 43 preserves protected auth redirects and canonical marketing URLs", async () => {
