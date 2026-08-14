@@ -153,6 +153,7 @@ function Landing() {
         <IndustriesStrip />
         <PlatformPillars />
 
+        <ProductPreview />
         <InspectorBand />
         <Regulation />
         <Pricing />
