@@ -1,6 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
-import { LanguageToggle } from "@/components/LanguageToggle";
 import { ShareBar, FollowBar } from "@/components/SocialIcons";
 import { posts, getPost, formatDate, type BlogBlock, type BlogPost } from "@/lib/blog";
 import { ArrowLeft, Clock } from "lucide-react";
@@ -76,7 +75,6 @@ function BlogPostPage() {
           </Link>
           <div className="flex items-center gap-3">
             <FollowBar dark />
-            <LanguageToggle variant="dark" />
           </div>
         </div>
       </div>

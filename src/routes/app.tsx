@@ -2,7 +2,6 @@ import { createFileRoute, Outlet, Link, useRouterState, useNavigate } from "@tan
 import { useEffect, useMemo, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/haccora-client";
-import { LanguageToggle } from "@/components/LanguageToggle";
 import { BrandLogoImage } from "@/components/BrandLogo";
 import { ExperienceController } from "@/components/ExperienceController";
 import { useAuth, canAccess, homeFor, type NavKey } from "@/lib/auth";
@@ -632,8 +631,6 @@ function AppShell() {
             </button>
 
             <div className="flex items-center gap-2 md:gap-3 shrink-0">
-              <LanguageToggle />
-
               {/* Notifications */}
               <div className="relative">
                 <button

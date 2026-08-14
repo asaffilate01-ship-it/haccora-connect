@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/haccora-client";
 import { isSupabaseConfigured } from "@/integrations/supabase/config";
-import { LanguageToggle } from "@/components/LanguageToggle";
 import {
   Search,
   Phone,
@@ -216,7 +215,6 @@ function TopBar() {
               className="ml-2 bg-transparent text-sm placeholder:text-white/50 outline-none w-full"
             />
           </div>
-          <LanguageToggle variant="dark" />
           <Link
             to="/login"
             className="btn-red-outline !px-3 !py-2 !text-xs sm:!px-5 sm:!py-3 sm:!text-sm"
