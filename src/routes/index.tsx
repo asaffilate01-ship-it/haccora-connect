@@ -69,7 +69,15 @@ export const Route = createFileRoute("/")({
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://haccora.co.uk/" },
+      { property: "og:image", content: "https://haccora.co.uk/og-haccora.jpg" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      {
+        property: "og:image:alt",
+        content: "Haccora — food safety software for UK businesses",
+      },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: "https://haccora.co.uk/og-haccora.jpg" },
     ],
     links: [{ rel: "canonical", href: "https://haccora.co.uk/" }],
     scripts: [
@@ -145,6 +153,7 @@ function Landing() {
         <IndustriesStrip />
         <PlatformPillars />
 
+        <ProductPreview />
         <InspectorBand />
         <Regulation />
         <Pricing />
@@ -1037,6 +1046,138 @@ function ResourcesBand() {
             </Link>
           ))}
         </div>
+      </div>
+    </section>
+  );
+}
+
+/* ────────────────────────────────────────────── product preview */
+function ProductPreview() {
+  const checks = [
+    { label: "Walk-in fridge", value: "3.1°C", state: "ok" as const, time: "07:12" },
+    { label: "Chest freezer", value: "-19.4°C", state: "ok" as const, time: "07:14" },
+    { label: "Hot hold — curry", value: "61.8°C", state: "warn" as const, time: "12:05" },
+    { label: "Probe — chicken", value: "78.2°C", state: "ok" as const, time: "12:22" },
+  ];
+  const tasks = [
+    { label: "Opening checks", done: true },
+    { label: "Fridge and freezer temperatures", done: true },
+    { label: "Allergen matrix review", done: false },
+    { label: "Closing clean — kitchen line", done: false },
+  ];
+  return (
+    <section
+      id="product-preview"
+      className="bg-[#0b0b0c] text-white border-t border-white/10"
+      aria-labelledby="product-preview-heading"
+    >
+      <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-24">
+        <div className="max-w-3xl">
+          <div className="eyebrow text-white/60">What you actually see</div>
+          <h2 id="product-preview-heading" className="mt-4 display-black text-3xl md:text-5xl">
+            A day in Haccora, before you sign up.
+          </h2>
+          <p className="mt-4 text-sm md:text-base text-white/70 leading-relaxed">
+            Staff open the app, complete the checks for their shift and capture evidence as they
+            work. Managers see the gaps in real time and export an inspection pack in one tap.
+          </p>
+        </div>
+
+        <div className="mt-10 grid gap-4 lg:grid-cols-3">
+          <div className="rounded-3xl border border-white/12 bg-white/[0.04] p-5 md:p-6">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-black uppercase tracking-[0.14em] text-white/70">
+                Today&rsquo;s diary
+              </h3>
+              <span className="rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-bold">
+                2 of 4 done
+              </span>
+            </div>
+            <ul className="mt-5 space-y-3">
+              {tasks.map((task) => (
+                <li key={task.label} className="flex items-center gap-3 text-sm">
+                  <span
+                    className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
+                      task.done
+                        ? "bg-[color:var(--color-alert-red)] text-white"
+                        : "border border-white/25 text-white/40"
+                    }`}
+                  >
+                    {task.done ? <CheckCircle2 size={14} /> : <Clock size={13} />}
+                  </span>
+                  <span className={task.done ? "text-white/60 line-through" : "text-white"}>
+                    {task.label}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="rounded-3xl border border-white/12 bg-white/[0.04] p-5 md:p-6">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-black uppercase tracking-[0.14em] text-white/70">
+                Temperature log
+              </h3>
+              <Thermometer size={16} className="text-[color:var(--color-alert-red)]" />
+            </div>
+            <ul className="mt-5 space-y-3">
+              {checks.map((check) => (
+                <li
+                  key={check.label}
+                  className="flex items-center justify-between gap-3 rounded-2xl bg-black/40 px-3.5 py-2.5"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-bold">{check.label}</p>
+                    <p className="text-[11px] text-white/45">Logged {check.time}</p>
+                  </div>
+                  <span
+                    className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-black ${
+                      check.state === "ok"
+                        ? "bg-emerald-500/15 text-emerald-300"
+                        : "bg-amber-500/15 text-amber-300"
+                    }`}
+                  >
+                    {check.value}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="rounded-3xl border border-white/12 bg-white/[0.04] p-5 md:p-6">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-black uppercase tracking-[0.14em] text-white/70">
+                Inspection pack
+              </h3>
+              <ClipboardCheck size={16} className="text-[color:var(--color-alert-red)]" />
+            </div>
+            <p className="mt-5 text-sm text-white/70">
+              Every record, photo and corrective action from the period you choose, exported as one
+              time-stamped PDF for the inspector.
+            </p>
+            <dl className="mt-5 grid grid-cols-2 gap-3">
+              {[
+                { k: "Records", v: "1,284" },
+                { k: "Photos", v: "312" },
+                { k: "Corrective actions", v: "7" },
+                { k: "Signed off", v: "100%" },
+              ].map((item) => (
+                <div key={item.k} className="rounded-2xl bg-black/40 px-3.5 py-3">
+                  <dt className="text-[10px] uppercase tracking-[0.12em] text-white/45">
+                    {item.k}
+                  </dt>
+                  <dd className="mt-1 text-lg font-black">{item.v}</dd>
+                </div>
+              ))}
+            </dl>
+            <a href="#contact" className="btn-red mt-5 w-full justify-center !py-2.5 !text-xs">
+              See it on your own data <ArrowRight size={14} />
+            </a>
+          </div>
+        </div>
+        <p className="mt-6 text-xs text-white/40">
+          Illustrative example using sample data. Figures shown are not customer records.
+        </p>
       </div>
     </section>
   );
