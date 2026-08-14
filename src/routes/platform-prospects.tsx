@@ -59,7 +59,9 @@ function addressOf(prospect: Prospect) {
 }
 
 function ProspectPipeline() {
-  const { platformRole, loading } = useAuth();
+  const { user, hydrated } = useAuth();
+  const platformRole = user?.platformRole ?? null;
+  const loading = !hydrated;
   const navigate = useNavigate();
   const loadAuthorities = useServerFn(listFsaAuthorities);
   const runSync = useServerFn(runFsaProspectSync);
