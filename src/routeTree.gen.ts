@@ -30,6 +30,7 @@ import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
 import { Route as LegalComplaintsRouteImport } from './routes/legal.complaints'
 import { Route as LegalCompanyDetailsRouteImport } from './routes/legal.company-details'
 import { Route as LegalAccessibilityRouteImport } from './routes/legal.accessibility'
+import { Route as IndustriesRestaurantsAndCafesRouteImport } from './routes/industries.restaurants-and-cafes'
 import { Route as FreeToolsHaccpPlanTemplateRouteImport } from './routes/free-tools.haccp-plan-template'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as AppWorkflowsRouteImport } from './routes/app.workflows'
@@ -190,6 +191,12 @@ const LegalAccessibilityRoute = LegalAccessibilityRouteImport.update({
   path: '/accessibility',
   getParentRoute: () => LegalRoute,
 } as any)
+const IndustriesRestaurantsAndCafesRoute =
+  IndustriesRestaurantsAndCafesRouteImport.update({
+    id: '/industries/restaurants-and-cafes',
+    path: '/industries/restaurants-and-cafes',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const FreeToolsHaccpPlanTemplateRoute =
   FreeToolsHaccpPlanTemplateRouteImport.update({
     id: '/free-tools/haccp-plan-template',
@@ -526,6 +533,7 @@ export interface FileRoutesByFullPath {
   '/app/workflows': typeof AppWorkflowsRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/free-tools/haccp-plan-template': typeof FreeToolsHaccpPlanTemplateRoute
+  '/industries/restaurants-and-cafes': typeof IndustriesRestaurantsAndCafesRoute
   '/legal/accessibility': typeof LegalAccessibilityRoute
   '/legal/company-details': typeof LegalCompanyDetailsRoute
   '/legal/complaints': typeof LegalComplaintsRoute
@@ -601,6 +609,7 @@ export interface FileRoutesByTo {
   '/app/workflows': typeof AppWorkflowsRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/free-tools/haccp-plan-template': typeof FreeToolsHaccpPlanTemplateRoute
+  '/industries/restaurants-and-cafes': typeof IndustriesRestaurantsAndCafesRoute
   '/legal/accessibility': typeof LegalAccessibilityRoute
   '/legal/company-details': typeof LegalCompanyDetailsRoute
   '/legal/complaints': typeof LegalComplaintsRoute
@@ -679,6 +688,7 @@ export interface FileRoutesById {
   '/app/workflows': typeof AppWorkflowsRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/free-tools/haccp-plan-template': typeof FreeToolsHaccpPlanTemplateRoute
+  '/industries/restaurants-and-cafes': typeof IndustriesRestaurantsAndCafesRoute
   '/legal/accessibility': typeof LegalAccessibilityRoute
   '/legal/company-details': typeof LegalCompanyDetailsRoute
   '/legal/complaints': typeof LegalComplaintsRoute
@@ -758,6 +768,7 @@ export interface FileRouteTypes {
     | '/app/workflows'
     | '/blog/$slug'
     | '/free-tools/haccp-plan-template'
+    | '/industries/restaurants-and-cafes'
     | '/legal/accessibility'
     | '/legal/company-details'
     | '/legal/complaints'
@@ -833,6 +844,7 @@ export interface FileRouteTypes {
     | '/app/workflows'
     | '/blog/$slug'
     | '/free-tools/haccp-plan-template'
+    | '/industries/restaurants-and-cafes'
     | '/legal/accessibility'
     | '/legal/company-details'
     | '/legal/complaints'
@@ -910,6 +922,7 @@ export interface FileRouteTypes {
     | '/app/workflows'
     | '/blog/$slug'
     | '/free-tools/haccp-plan-template'
+    | '/industries/restaurants-and-cafes'
     | '/legal/accessibility'
     | '/legal/company-details'
     | '/legal/complaints'
@@ -938,6 +951,7 @@ export interface RootRouteChildren {
   ReadinessDotjsonRoute: typeof ReadinessDotjsonRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   FreeToolsHaccpPlanTemplateRoute: typeof FreeToolsHaccpPlanTemplateRoute
+  IndustriesRestaurantsAndCafesRoute: typeof IndustriesRestaurantsAndCafesRoute
   ApiPublicMalwareScanRoute: typeof ApiPublicMalwareScanRoute
 }
 
@@ -1089,6 +1103,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/legal/accessibility'
       preLoaderRoute: typeof LegalAccessibilityRouteImport
       parentRoute: typeof LegalRoute
+    }
+    '/industries/restaurants-and-cafes': {
+      id: '/industries/restaurants-and-cafes'
+      path: '/industries/restaurants-and-cafes'
+      fullPath: '/industries/restaurants-and-cafes'
+      preLoaderRoute: typeof IndustriesRestaurantsAndCafesRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/free-tools/haccp-plan-template': {
       id: '/free-tools/haccp-plan-template'
@@ -1641,6 +1662,7 @@ const rootRouteChildren: RootRouteChildren = {
   ReadinessDotjsonRoute: ReadinessDotjsonRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   FreeToolsHaccpPlanTemplateRoute: FreeToolsHaccpPlanTemplateRoute,
+  IndustriesRestaurantsAndCafesRoute: IndustriesRestaurantsAndCafesRoute,
   ApiPublicMalwareScanRoute: ApiPublicMalwareScanRoute,
 }
 export const routeTree = rootRouteImport
