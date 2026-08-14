@@ -32,6 +32,7 @@ import { Route as LegalCompanyDetailsRouteImport } from './routes/legal.company-
 import { Route as LegalAccessibilityRouteImport } from './routes/legal.accessibility'
 import { Route as IndustriesRestaurantsAndCafesRouteImport } from './routes/industries.restaurants-and-cafes'
 import { Route as FreeToolsHaccpPlanTemplateRouteImport } from './routes/free-tools.haccp-plan-template'
+import { Route as CompareHaccoraVsLogitRouteImport } from './routes/compare.haccora-vs-logit'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as AppWorkflowsRouteImport } from './routes/app.workflows'
 import { Route as AppWasteRouteImport } from './routes/app.waste'
@@ -203,6 +204,11 @@ const FreeToolsHaccpPlanTemplateRoute =
     path: '/free-tools/haccp-plan-template',
     getParentRoute: () => rootRouteImport,
   } as any)
+const CompareHaccoraVsLogitRoute = CompareHaccoraVsLogitRouteImport.update({
+  id: '/compare/haccora-vs-logit',
+  path: '/compare/haccora-vs-logit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BlogSlugRoute = BlogSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -532,6 +538,7 @@ export interface FileRoutesByFullPath {
   '/app/waste': typeof AppWasteRoute
   '/app/workflows': typeof AppWorkflowsRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/compare/haccora-vs-logit': typeof CompareHaccoraVsLogitRoute
   '/free-tools/haccp-plan-template': typeof FreeToolsHaccpPlanTemplateRoute
   '/industries/restaurants-and-cafes': typeof IndustriesRestaurantsAndCafesRoute
   '/legal/accessibility': typeof LegalAccessibilityRoute
@@ -608,6 +615,7 @@ export interface FileRoutesByTo {
   '/app/waste': typeof AppWasteRoute
   '/app/workflows': typeof AppWorkflowsRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/compare/haccora-vs-logit': typeof CompareHaccoraVsLogitRoute
   '/free-tools/haccp-plan-template': typeof FreeToolsHaccpPlanTemplateRoute
   '/industries/restaurants-and-cafes': typeof IndustriesRestaurantsAndCafesRoute
   '/legal/accessibility': typeof LegalAccessibilityRoute
@@ -687,6 +695,7 @@ export interface FileRoutesById {
   '/app/waste': typeof AppWasteRoute
   '/app/workflows': typeof AppWorkflowsRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/compare/haccora-vs-logit': typeof CompareHaccoraVsLogitRoute
   '/free-tools/haccp-plan-template': typeof FreeToolsHaccpPlanTemplateRoute
   '/industries/restaurants-and-cafes': typeof IndustriesRestaurantsAndCafesRoute
   '/legal/accessibility': typeof LegalAccessibilityRoute
@@ -767,6 +776,7 @@ export interface FileRouteTypes {
     | '/app/waste'
     | '/app/workflows'
     | '/blog/$slug'
+    | '/compare/haccora-vs-logit'
     | '/free-tools/haccp-plan-template'
     | '/industries/restaurants-and-cafes'
     | '/legal/accessibility'
@@ -843,6 +853,7 @@ export interface FileRouteTypes {
     | '/app/waste'
     | '/app/workflows'
     | '/blog/$slug'
+    | '/compare/haccora-vs-logit'
     | '/free-tools/haccp-plan-template'
     | '/industries/restaurants-and-cafes'
     | '/legal/accessibility'
@@ -921,6 +932,7 @@ export interface FileRouteTypes {
     | '/app/waste'
     | '/app/workflows'
     | '/blog/$slug'
+    | '/compare/haccora-vs-logit'
     | '/free-tools/haccp-plan-template'
     | '/industries/restaurants-and-cafes'
     | '/legal/accessibility'
@@ -950,6 +962,7 @@ export interface RootRouteChildren {
   PlatformRoute: typeof PlatformRoute
   ReadinessDotjsonRoute: typeof ReadinessDotjsonRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  CompareHaccoraVsLogitRoute: typeof CompareHaccoraVsLogitRoute
   FreeToolsHaccpPlanTemplateRoute: typeof FreeToolsHaccpPlanTemplateRoute
   IndustriesRestaurantsAndCafesRoute: typeof IndustriesRestaurantsAndCafesRoute
   ApiPublicMalwareScanRoute: typeof ApiPublicMalwareScanRoute
@@ -1116,6 +1129,13 @@ declare module '@tanstack/react-router' {
       path: '/free-tools/haccp-plan-template'
       fullPath: '/free-tools/haccp-plan-template'
       preLoaderRoute: typeof FreeToolsHaccpPlanTemplateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compare/haccora-vs-logit': {
+      id: '/compare/haccora-vs-logit'
+      path: '/compare/haccora-vs-logit'
+      fullPath: '/compare/haccora-vs-logit'
+      preLoaderRoute: typeof CompareHaccoraVsLogitRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/blog/$slug': {
@@ -1661,6 +1681,7 @@ const rootRouteChildren: RootRouteChildren = {
   PlatformRoute: PlatformRoute,
   ReadinessDotjsonRoute: ReadinessDotjsonRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  CompareHaccoraVsLogitRoute: CompareHaccoraVsLogitRoute,
   FreeToolsHaccpPlanTemplateRoute: FreeToolsHaccpPlanTemplateRoute,
   IndustriesRestaurantsAndCafesRoute: IndustriesRestaurantsAndCafesRoute,
   ApiPublicMalwareScanRoute: ApiPublicMalwareScanRoute,
