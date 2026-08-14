@@ -69,7 +69,15 @@ export const Route = createFileRoute("/")({
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://haccora.co.uk/" },
+      { property: "og:image", content: "https://haccora.co.uk/og-haccora.jpg" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      {
+        property: "og:image:alt",
+        content: "Haccora — food safety software for UK businesses",
+      },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: "https://haccora.co.uk/og-haccora.jpg" },
     ],
     links: [{ rel: "canonical", href: "https://haccora.co.uk/" }],
     scripts: [
