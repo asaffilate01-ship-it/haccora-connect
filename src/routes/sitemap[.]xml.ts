@@ -22,6 +22,18 @@ export const Route = createFileRoute("/sitemap.xml")({
             changefreq: "monthly",
             priority: "0.9",
           },
+          {
+            path: "/industries/takeaways-and-fast-food",
+            changefreq: "monthly",
+            priority: "0.9",
+          },
+          { path: "/industries/pubs-and-bars", changefreq: "monthly", priority: "0.9" },
+          {
+            path: "/industries/care-homes-and-schools",
+            changefreq: "monthly",
+            priority: "0.9",
+          },
+
           { path: "/compare/haccora-vs-logit", changefreq: "monthly", priority: "0.7" },
           { path: "/compare/haccora-vs-fooddocs", changefreq: "monthly", priority: "0.7" },
           { path: "/legal/privacy", changefreq: "monthly", priority: "0.3" },

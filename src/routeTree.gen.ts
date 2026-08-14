@@ -31,6 +31,7 @@ import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
 import { Route as LegalComplaintsRouteImport } from './routes/legal.complaints'
 import { Route as LegalCompanyDetailsRouteImport } from './routes/legal.company-details'
 import { Route as LegalAccessibilityRouteImport } from './routes/legal.accessibility'
+import { Route as IndustriesTakeawaysAndFastFoodRouteImport } from './routes/industries.takeaways-and-fast-food'
 import { Route as IndustriesRestaurantsAndCafesRouteImport } from './routes/industries.restaurants-and-cafes'
 import { Route as FreeToolsHaccpPlanTemplateRouteImport } from './routes/free-tools.haccp-plan-template'
 import { Route as CompareHaccoraVsLogitRouteImport } from './routes/compare.haccora-vs-logit'
@@ -199,6 +200,12 @@ const LegalAccessibilityRoute = LegalAccessibilityRouteImport.update({
   path: '/accessibility',
   getParentRoute: () => LegalRoute,
 } as any)
+const IndustriesTakeawaysAndFastFoodRoute =
+  IndustriesTakeawaysAndFastFoodRouteImport.update({
+    id: '/industries/takeaways-and-fast-food',
+    path: '/industries/takeaways-and-fast-food',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const IndustriesRestaurantsAndCafesRoute =
   IndustriesRestaurantsAndCafesRouteImport.update({
     id: '/industries/restaurants-and-cafes',
@@ -556,6 +563,7 @@ export interface FileRoutesByFullPath {
   '/compare/haccora-vs-logit': typeof CompareHaccoraVsLogitRoute
   '/free-tools/haccp-plan-template': typeof FreeToolsHaccpPlanTemplateRoute
   '/industries/restaurants-and-cafes': typeof IndustriesRestaurantsAndCafesRoute
+  '/industries/takeaways-and-fast-food': typeof IndustriesTakeawaysAndFastFoodRoute
   '/legal/accessibility': typeof LegalAccessibilityRoute
   '/legal/company-details': typeof LegalCompanyDetailsRoute
   '/legal/complaints': typeof LegalComplaintsRoute
@@ -635,6 +643,7 @@ export interface FileRoutesByTo {
   '/compare/haccora-vs-logit': typeof CompareHaccoraVsLogitRoute
   '/free-tools/haccp-plan-template': typeof FreeToolsHaccpPlanTemplateRoute
   '/industries/restaurants-and-cafes': typeof IndustriesRestaurantsAndCafesRoute
+  '/industries/takeaways-and-fast-food': typeof IndustriesTakeawaysAndFastFoodRoute
   '/legal/accessibility': typeof LegalAccessibilityRoute
   '/legal/company-details': typeof LegalCompanyDetailsRoute
   '/legal/complaints': typeof LegalComplaintsRoute
@@ -717,6 +726,7 @@ export interface FileRoutesById {
   '/compare/haccora-vs-logit': typeof CompareHaccoraVsLogitRoute
   '/free-tools/haccp-plan-template': typeof FreeToolsHaccpPlanTemplateRoute
   '/industries/restaurants-and-cafes': typeof IndustriesRestaurantsAndCafesRoute
+  '/industries/takeaways-and-fast-food': typeof IndustriesTakeawaysAndFastFoodRoute
   '/legal/accessibility': typeof LegalAccessibilityRoute
   '/legal/company-details': typeof LegalCompanyDetailsRoute
   '/legal/complaints': typeof LegalComplaintsRoute
@@ -800,6 +810,7 @@ export interface FileRouteTypes {
     | '/compare/haccora-vs-logit'
     | '/free-tools/haccp-plan-template'
     | '/industries/restaurants-and-cafes'
+    | '/industries/takeaways-and-fast-food'
     | '/legal/accessibility'
     | '/legal/company-details'
     | '/legal/complaints'
@@ -879,6 +890,7 @@ export interface FileRouteTypes {
     | '/compare/haccora-vs-logit'
     | '/free-tools/haccp-plan-template'
     | '/industries/restaurants-and-cafes'
+    | '/industries/takeaways-and-fast-food'
     | '/legal/accessibility'
     | '/legal/company-details'
     | '/legal/complaints'
@@ -960,6 +972,7 @@ export interface FileRouteTypes {
     | '/compare/haccora-vs-logit'
     | '/free-tools/haccp-plan-template'
     | '/industries/restaurants-and-cafes'
+    | '/industries/takeaways-and-fast-food'
     | '/legal/accessibility'
     | '/legal/company-details'
     | '/legal/complaints'
@@ -992,6 +1005,7 @@ export interface RootRouteChildren {
   CompareHaccoraVsLogitRoute: typeof CompareHaccoraVsLogitRoute
   FreeToolsHaccpPlanTemplateRoute: typeof FreeToolsHaccpPlanTemplateRoute
   IndustriesRestaurantsAndCafesRoute: typeof IndustriesRestaurantsAndCafesRoute
+  IndustriesTakeawaysAndFastFoodRoute: typeof IndustriesTakeawaysAndFastFoodRoute
   ApiPublicMalwareScanRoute: typeof ApiPublicMalwareScanRoute
 }
 
@@ -1150,6 +1164,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/legal/accessibility'
       preLoaderRoute: typeof LegalAccessibilityRouteImport
       parentRoute: typeof LegalRoute
+    }
+    '/industries/takeaways-and-fast-food': {
+      id: '/industries/takeaways-and-fast-food'
+      path: '/industries/takeaways-and-fast-food'
+      fullPath: '/industries/takeaways-and-fast-food'
+      preLoaderRoute: typeof IndustriesTakeawaysAndFastFoodRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/industries/restaurants-and-cafes': {
       id: '/industries/restaurants-and-cafes'
@@ -1727,6 +1748,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompareHaccoraVsLogitRoute: CompareHaccoraVsLogitRoute,
   FreeToolsHaccpPlanTemplateRoute: FreeToolsHaccpPlanTemplateRoute,
   IndustriesRestaurantsAndCafesRoute: IndustriesRestaurantsAndCafesRoute,
+  IndustriesTakeawaysAndFastFoodRoute: IndustriesTakeawaysAndFastFoodRoute,
   ApiPublicMalwareScanRoute: ApiPublicMalwareScanRoute,
 }
 export const routeTree = rootRouteImport
