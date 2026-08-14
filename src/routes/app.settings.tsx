@@ -8,7 +8,6 @@ import { disableWebPush, registerWebPush } from "@/lib/web-push";
 import {
   Settings as SettingsIcon,
   Bell,
-  Globe2,
   Shield,
   LogOut,
   RefreshCw,
@@ -513,18 +512,6 @@ function SettingsPage() {
           )}
         </section>
       )}
-
-      {/* Language */}
-      <section className="surface p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Globe2 size={18} className="text-primary" />
-          <h2 className="font-display text-lg">{t("settings.language")}</h2>
-        </div>
-        <p className="text-sm text-muted-foreground mb-4">{t("settings.language.hint")}</p>
-        <div className="inline-flex rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground">
-          UK English
-        </div>
-      </section>
 
       {/* Notifications */}
       <section className="surface p-6">
