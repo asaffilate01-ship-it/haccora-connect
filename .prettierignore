@@ -13,3 +13,5 @@ src/integrations/supabase/auth-middleware.ts
 src/integrations/supabase/client.server.ts
 supabase/functions
 AGENTS.md
+
+public/downloads/
