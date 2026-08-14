@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Activity,
@@ -18,6 +18,7 @@ import {
   RefreshCw,
   Save,
   ShieldCheck,
+  Target,
   ServerCog,
   UserPlus,
   Users,
@@ -449,6 +450,12 @@ function PlatformOperations() {
                 {user.platformRole.replace("platform_", "SaaS ")}
               </div>
             </div>
+            <Link
+              to="/platform-prospects"
+              className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/20 px-4 text-sm font-bold"
+            >
+              <Target size={15} /> Prospects
+            </Link>
             <button
               onClick={() => void signOut().then(() => navigate({ to: "/login" }))}
               className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/20 px-4 text-sm font-bold"
