@@ -1974,6 +1974,159 @@ export type Database = {
           },
         ]
       }
+      fsa_prospects: {
+        Row: {
+          address_line_1: string | null
+          address_line_2: string | null
+          address_line_3: string | null
+          address_line_4: string | null
+          assigned_to: string | null
+          awaiting_inspection: boolean
+          business_name: string
+          business_type: string | null
+          business_type_id: number | null
+          contact_email: string | null
+          contact_name: string | null
+          created_at: string
+          email_marketing_permitted: boolean
+          fhrs_id: string
+          id: string
+          last_contacted_at: string | null
+          latitude: number | null
+          legal_entity_type: string
+          local_authority: string | null
+          longitude: number | null
+          new_rating_pending: boolean
+          notes: string | null
+          outreach_status: string
+          phone: string | null
+          postcode: string | null
+          rating_date: string | null
+          rating_value: string | null
+          score_confidence: number | null
+          score_hygiene: number | null
+          score_structural: number | null
+          synced_at: string
+          tps_checked_at: string | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          address_line_1?: string | null
+          address_line_2?: string | null
+          address_line_3?: string | null
+          address_line_4?: string | null
+          assigned_to?: string | null
+          awaiting_inspection?: boolean
+          business_name: string
+          business_type?: string | null
+          business_type_id?: number | null
+          contact_email?: string | null
+          contact_name?: string | null
+          created_at?: string
+          email_marketing_permitted?: boolean
+          fhrs_id: string
+          id?: string
+          last_contacted_at?: string | null
+          latitude?: number | null
+          legal_entity_type?: string
+          local_authority?: string | null
+          longitude?: number | null
+          new_rating_pending?: boolean
+          notes?: string | null
+          outreach_status?: string
+          phone?: string | null
+          postcode?: string | null
+          rating_date?: string | null
+          rating_value?: string | null
+          score_confidence?: number | null
+          score_hygiene?: number | null
+          score_structural?: number | null
+          synced_at?: string
+          tps_checked_at?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          address_line_1?: string | null
+          address_line_2?: string | null
+          address_line_3?: string | null
+          address_line_4?: string | null
+          assigned_to?: string | null
+          awaiting_inspection?: boolean
+          business_name?: string
+          business_type?: string | null
+          business_type_id?: number | null
+          contact_email?: string | null
+          contact_name?: string | null
+          created_at?: string
+          email_marketing_permitted?: boolean
+          fhrs_id?: string
+          id?: string
+          last_contacted_at?: string | null
+          latitude?: number | null
+          legal_entity_type?: string
+          local_authority?: string | null
+          longitude?: number | null
+          new_rating_pending?: boolean
+          notes?: string | null
+          outreach_status?: string
+          phone?: string | null
+          postcode?: string | null
+          rating_date?: string | null
+          rating_value?: string | null
+          score_confidence?: number | null
+          score_hygiene?: number | null
+          score_structural?: number | null
+          synced_at?: string
+          tps_checked_at?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
+      fsa_sync_runs: {
+        Row: {
+          business_type_id: number | null
+          error_message: string | null
+          fetched_count: number
+          finished_at: string | null
+          id: string
+          inserted_count: number
+          local_authority: string | null
+          started_at: string
+          started_by: string | null
+          status: string
+          updated_count: number
+        }
+        Insert: {
+          business_type_id?: number | null
+          error_message?: string | null
+          fetched_count?: number
+          finished_at?: string | null
+          id?: string
+          inserted_count?: number
+          local_authority?: string | null
+          started_at?: string
+          started_by?: string | null
+          status?: string
+          updated_count?: number
+        }
+        Update: {
+          business_type_id?: number | null
+          error_message?: string | null
+          fetched_count?: number
+          finished_at?: string | null
+          id?: string
+          inserted_count?: number
+          local_authority?: string | null
+          started_at?: string
+          started_by?: string | null
+          status?: string
+          updated_count?: number
+        }
+        Relationships: []
+      }
       goods_in_logs: {
         Row: {
           allergen_label_ok: boolean | null
