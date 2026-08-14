@@ -130,8 +130,8 @@ function RestaurantsPage() {
           </h1>
           <p className="mt-5 max-w-3xl text-black/60 text-lg">
             Replace the folder of paper checks with digital HACCP, temperature logs, cleaning
-            schedules and allergen controls — so a surprise EHO visit is a five-minute
-            conversation, not a panic.
+            schedules and allergen controls — so a surprise EHO visit is a five-minute conversation,
+            not a panic.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
@@ -157,10 +157,7 @@ function RestaurantsPage() {
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {PAINS.map(({ icon: Icon, title, body }) => (
               <article key={title} className="rounded-3xl border border-black/10 bg-white p-6">
-                <Icon
-                  className="h-6 w-6 text-[color:var(--color-alert-red)]"
-                  aria-hidden="true"
-                />
+                <Icon className="h-6 w-6 text-[color:var(--color-alert-red)]" aria-hidden="true" />
                 <h3 className="mt-4 font-black text-lg">{title}</h3>
                 <p className="mt-2 text-black/60 text-sm leading-relaxed">{body}</p>
               </article>

@@ -67,13 +67,22 @@ export function ComparisonPage({
               </caption>
               <thead className="bg-black text-white">
                 <tr>
-                  <th scope="col" className="px-5 py-4 font-black uppercase tracking-widest text-xs">
+                  <th
+                    scope="col"
+                    className="px-5 py-4 font-black uppercase tracking-widest text-xs"
+                  >
                     Criterion
                   </th>
-                  <th scope="col" className="px-5 py-4 font-black uppercase tracking-widest text-xs">
+                  <th
+                    scope="col"
+                    className="px-5 py-4 font-black uppercase tracking-widest text-xs"
+                  >
                     Haccora
                   </th>
-                  <th scope="col" className="px-5 py-4 font-black uppercase tracking-widest text-xs">
+                  <th
+                    scope="col"
+                    className="px-5 py-4 font-black uppercase tracking-widest text-xs"
+                  >
                     {competitor}
                   </th>
                 </tr>
