@@ -94,7 +94,9 @@ export function IndustryPage({ content }: { content: IndustryContent }) {
       <section className="border-b border-black/10">
         <div className="mx-auto max-w-[1200px] px-4 md:px-8 py-14 grid md:grid-cols-2 gap-10">
           <div>
-            <h2 className="display-black text-2xl md:text-3xl">Your first two weeks with Haccora</h2>
+            <h2 className="display-black text-2xl md:text-3xl">
+              Your first two weeks with Haccora
+            </h2>
             <ul className="mt-6 space-y-3">
               {content.timeline.map((item) => (
                 <li key={item} className="flex gap-3 text-black/70">
