@@ -5,19 +5,30 @@ import test from "node:test";
 const read = (file) => readFile(new URL(`../${file}`, import.meta.url), "utf8");
 
 test("Phase 43 keeps the web install and fresh database reset deterministic", async () => {
-  const [packageText, lockText, roles, dailyCompliance] = await Promise.all([
-    read("package.json"),
-    read("package-lock.json"),
-    read("supabase/roles.sql"),
-    read("supabase/migrations/20260803190000_uk_daily_compliance.sql"),
-  ]);
+  const [packageText, lockText, mobilePackageText, mobileLockText, roles, dailyCompliance] =
+    await Promise.all([
+      read("package.json"),
+      read("package-lock.json"),
+      read("mobile/package.json"),
+      read("mobile/package-lock.json"),
+      read("supabase/roles.sql"),
+      read("supabase/migrations/20260803190000_uk_daily_compliance.sql"),
+    ]);
   const packageJson = JSON.parse(packageText);
   const packageLock = JSON.parse(lockText);
+  const mobilePackage = JSON.parse(mobilePackageText);
+  const mobileLock = JSON.parse(mobileLockText);
 
   assert.equal(
     packageJson.devDependencies["@lovable.dev/vite-tanstack-config"],
     packageLock.packages[""].devDependencies["@lovable.dev/vite-tanstack-config"],
   );
+  assert.equal(packageJson.overrides.nanoid, packageLock.packages["node_modules/nanoid"].version);
+  assert.equal(
+    mobilePackage.overrides.nanoid,
+    mobileLock.packages["node_modules/nanoid"].version,
+  );
+  assert.equal(packageJson.overrides.nanoid, "3.3.18");
   assert.match(roles, /SELECT rolsuper/);
   assert.match(roles, /ELSIF NOT target_is_superuser/);
   assert.doesNotMatch(roles, /^ALTER ROLE sandbox_exec/m);
