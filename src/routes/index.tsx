@@ -1050,7 +1050,11 @@ function ResourcesBand() {
         </div>
         <div className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {resources.map((r) => (
-            <Link key={r.to} to={r.to} className="card-polished p-6 transition hover:-translate-y-0.5">
+            <Link
+              key={r.to}
+              to={r.to}
+              className="card-polished p-6 transition hover:-translate-y-0.5"
+            >
               <h3 className="font-black text-base leading-tight">{r.title}</h3>
               <p className="mt-3 text-sm text-black/60">{r.body}</p>
               <span className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-[color:var(--color-alert-red)]">
