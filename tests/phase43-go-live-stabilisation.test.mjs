@@ -32,10 +32,7 @@ test("Phase 43 keeps the web install and fresh database reset deterministic", as
     packageLock.packages[""].devDependencies["@lovable.dev/vite-tanstack-config"],
   );
   assert.equal(packageJson.overrides.nanoid, packageLock.packages["node_modules/nanoid"].version);
-  assert.equal(
-    mobilePackage.overrides.nanoid,
-    mobileLock.packages["node_modules/nanoid"].version,
-  );
+  assert.equal(mobilePackage.overrides.nanoid, mobileLock.packages["node_modules/nanoid"].version);
   assert.equal(packageJson.overrides.nanoid, "3.3.18");
   assert.match(roles, /SELECT rolsuper/);
   assert.match(roles, /ELSIF NOT target_is_superuser/);
@@ -75,10 +72,7 @@ test("Phase 43 removes deceptive search UI and improves contact accessibility", 
   assert.match(marketing, /to="\/help"[\s\S]*Search the Haccora Help Centre/);
   assert.doesNotMatch(marketing, /placeholder=\{t\("nav\.search"\)/);
   for (const field of ["firstName", "lastName", "email", "phone", "businessName"]) {
-    assert.match(
-      marketing,
-      new RegExp(`name="${field}"[\\s\\S]{0,100}aria-label=`),
-    );
+    assert.match(marketing, new RegExp(`name="${field}"[\\s\\S]{0,100}aria-label=`));
   }
   assert.match(marketing, /to="\/legal\/privacy"/);
   assert.match(marketing, /className="btn-red w-full/);
