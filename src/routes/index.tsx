@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/haccora-client";
 import { isSupabaseConfigured } from "@/integrations/supabase/config";
@@ -361,11 +361,16 @@ function Hero() {
 
 function ProductTourDialog() {
   const { t } = useI18n();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
+
   return (
     <Dialog>
       <DialogTrigger asChild>
         <button
           type="button"
+          disabled={!mounted}
           className="group inline-flex items-center gap-3 rounded-2xl bg-black/75 px-3 py-2.5 text-left text-sm text-white shadow-lg backdrop-blur-sm transition hover:bg-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white md:px-4 md:py-3"
           aria-label={`${t("hero.video.title")}. ${t("hero.play")}.`}
         >
@@ -1192,7 +1197,7 @@ function ProductPreview() {
             </a>
           </div>
         </div>
-        <p className="mt-6 text-xs text-white/40">
+        <p className="mt-6 text-xs text-white/70">
           Illustrative example using sample data. Figures shown are not customer records.
         </p>
       </div>
