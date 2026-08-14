@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { BrandLogo } from "@/components/BrandLogo";
 import { FollowBar } from "@/components/SocialIcons";
-import { LanguageToggle } from "@/components/LanguageToggle";
 import { PUBLIC_CONFIG } from "@/lib/public-config";
 
 interface MarketingShellProps {
@@ -21,7 +20,6 @@ export function MarketingShell({ children }: MarketingShellProps) {
           <BrandLogo imgClassName="h-10 md:h-12 w-auto" />
           <div className="flex items-center gap-3">
             <FollowBar dark />
-            <LanguageToggle variant="dark" />
             <Link
               to="/login"
               className="hidden sm:inline-flex items-center rounded-full bg-[color:var(--color-alert-red)] px-4 py-2 text-xs font-black uppercase tracking-widest text-white"

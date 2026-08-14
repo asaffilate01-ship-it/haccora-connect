@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
-import { LanguageToggle } from "@/components/LanguageToggle";
 import { FollowBar } from "@/components/SocialIcons";
 import { posts, formatDate } from "@/lib/blog";
 import { ArrowRight, Clock } from "lucide-react";
@@ -46,7 +45,6 @@ function BlogIndex() {
 
           <div className="flex items-center gap-3">
             <FollowBar dark />
-            <LanguageToggle variant="dark" />
           </div>
         </div>
       </div>

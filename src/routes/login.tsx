@@ -1,7 +1,6 @@
 import { createFileRoute, Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useId, useState, type InputHTMLAttributes } from "react";
 import { useI18n } from "@/lib/i18n";
-import { LanguageToggle } from "@/components/LanguageToggle";
 import { useAuth, ROLES, homeFor, type Role } from "@/lib/auth";
 import { Crown, ClipboardList, ChefHat, User, Gavel, ArrowLeft, Loader2 } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
@@ -147,7 +146,6 @@ function LoginPage() {
           <BrandLogo imgClassName="h-10 md:h-12 w-auto" />
 
           <div className="flex items-center gap-3">
-            <LanguageToggle variant="dark" />
             <Link
               to="/"
               className="hidden sm:inline-flex items-center gap-1.5 text-sm text-white/80 hover:text-white"

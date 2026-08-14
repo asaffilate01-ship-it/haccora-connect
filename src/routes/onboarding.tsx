@@ -2,7 +2,6 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/haccora-client";
-import { LanguageToggle } from "@/components/LanguageToggle";
 import { BrandLogo } from "@/components/BrandLogo";
 import {
   ShieldCheck,
@@ -121,7 +120,6 @@ function OnboardingPage() {
     <div className="min-h-screen bg-secondary/40 flex flex-col">
       <header className="h-14 px-6 flex items-center justify-between border-b border-border bg-card">
         <BrandLogo imgClassName="h-9 sm:h-10 w-auto" />
-        <LanguageToggle />
       </header>
 
       <div className="max-w-3xl mx-auto w-full px-4 md:px-6 py-10">
