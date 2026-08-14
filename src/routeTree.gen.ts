@@ -30,6 +30,7 @@ import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
 import { Route as LegalComplaintsRouteImport } from './routes/legal.complaints'
 import { Route as LegalCompanyDetailsRouteImport } from './routes/legal.company-details'
 import { Route as LegalAccessibilityRouteImport } from './routes/legal.accessibility'
+import { Route as FreeToolsHaccpPlanTemplateRouteImport } from './routes/free-tools.haccp-plan-template'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as AppWorkflowsRouteImport } from './routes/app.workflows'
 import { Route as AppWasteRouteImport } from './routes/app.waste'
@@ -189,6 +190,12 @@ const LegalAccessibilityRoute = LegalAccessibilityRouteImport.update({
   path: '/accessibility',
   getParentRoute: () => LegalRoute,
 } as any)
+const FreeToolsHaccpPlanTemplateRoute =
+  FreeToolsHaccpPlanTemplateRouteImport.update({
+    id: '/free-tools/haccp-plan-template',
+    path: '/free-tools/haccp-plan-template',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const BlogSlugRoute = BlogSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -518,6 +525,7 @@ export interface FileRoutesByFullPath {
   '/app/waste': typeof AppWasteRoute
   '/app/workflows': typeof AppWorkflowsRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/free-tools/haccp-plan-template': typeof FreeToolsHaccpPlanTemplateRoute
   '/legal/accessibility': typeof LegalAccessibilityRoute
   '/legal/company-details': typeof LegalCompanyDetailsRoute
   '/legal/complaints': typeof LegalComplaintsRoute
@@ -592,6 +600,7 @@ export interface FileRoutesByTo {
   '/app/waste': typeof AppWasteRoute
   '/app/workflows': typeof AppWorkflowsRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/free-tools/haccp-plan-template': typeof FreeToolsHaccpPlanTemplateRoute
   '/legal/accessibility': typeof LegalAccessibilityRoute
   '/legal/company-details': typeof LegalCompanyDetailsRoute
   '/legal/complaints': typeof LegalComplaintsRoute
@@ -669,6 +678,7 @@ export interface FileRoutesById {
   '/app/waste': typeof AppWasteRoute
   '/app/workflows': typeof AppWorkflowsRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/free-tools/haccp-plan-template': typeof FreeToolsHaccpPlanTemplateRoute
   '/legal/accessibility': typeof LegalAccessibilityRoute
   '/legal/company-details': typeof LegalCompanyDetailsRoute
   '/legal/complaints': typeof LegalComplaintsRoute
@@ -747,6 +757,7 @@ export interface FileRouteTypes {
     | '/app/waste'
     | '/app/workflows'
     | '/blog/$slug'
+    | '/free-tools/haccp-plan-template'
     | '/legal/accessibility'
     | '/legal/company-details'
     | '/legal/complaints'
@@ -821,6 +832,7 @@ export interface FileRouteTypes {
     | '/app/waste'
     | '/app/workflows'
     | '/blog/$slug'
+    | '/free-tools/haccp-plan-template'
     | '/legal/accessibility'
     | '/legal/company-details'
     | '/legal/complaints'
@@ -897,6 +909,7 @@ export interface FileRouteTypes {
     | '/app/waste'
     | '/app/workflows'
     | '/blog/$slug'
+    | '/free-tools/haccp-plan-template'
     | '/legal/accessibility'
     | '/legal/company-details'
     | '/legal/complaints'
@@ -924,6 +937,7 @@ export interface RootRouteChildren {
   PlatformRoute: typeof PlatformRoute
   ReadinessDotjsonRoute: typeof ReadinessDotjsonRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  FreeToolsHaccpPlanTemplateRoute: typeof FreeToolsHaccpPlanTemplateRoute
   ApiPublicMalwareScanRoute: typeof ApiPublicMalwareScanRoute
 }
 
@@ -1075,6 +1089,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/legal/accessibility'
       preLoaderRoute: typeof LegalAccessibilityRouteImport
       parentRoute: typeof LegalRoute
+    }
+    '/free-tools/haccp-plan-template': {
+      id: '/free-tools/haccp-plan-template'
+      path: '/free-tools/haccp-plan-template'
+      fullPath: '/free-tools/haccp-plan-template'
+      preLoaderRoute: typeof FreeToolsHaccpPlanTemplateRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/blog/$slug': {
       id: '/blog/$slug'
@@ -1619,6 +1640,7 @@ const rootRouteChildren: RootRouteChildren = {
   PlatformRoute: PlatformRoute,
   ReadinessDotjsonRoute: ReadinessDotjsonRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  FreeToolsHaccpPlanTemplateRoute: FreeToolsHaccpPlanTemplateRoute,
   ApiPublicMalwareScanRoute: ApiPublicMalwareScanRoute,
 }
 export const routeTree = rootRouteImport
