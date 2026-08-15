@@ -771,7 +771,11 @@ function AppShell() {
             </div>
           </header>
 
-          <main id="main-content" tabIndex={-1} className="flex-1 min-w-0">
+          <main
+            id="main-content"
+            tabIndex={-1}
+            className="flex-1 min-w-0 pb-tabbar md:pb-0"
+          >
             <Outlet />
           </main>
 
@@ -781,6 +785,7 @@ function AppShell() {
             pathname={pathname}
             t={t}
           />
+
         </div>
       </div>
 
