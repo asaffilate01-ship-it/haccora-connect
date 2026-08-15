@@ -12,7 +12,7 @@ export const listFsaAuthorities = createServerFn({ method: "GET" })
 
 export const runFsaProspectSync = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) =>
+  .validator((data) =>
     z
       .object({
         localAuthorityId: z.number().int().positive(),

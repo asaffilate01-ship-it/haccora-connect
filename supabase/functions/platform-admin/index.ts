@@ -25,6 +25,20 @@ const Input = z.discriminatedUnion("action", [
     requestId: z.string().uuid(),
     status: z.enum(["new", "contacted", "closed", "spam"]),
   }),
+  z.object({
+    action: z.literal("update_support_case"),
+    caseId: z.string().uuid(),
+    status: z.enum([
+      "open",
+      "in_progress",
+      "pending_customer",
+      "resolved",
+      "closed",
+    ]),
+    priority: z.enum(["normal", "high", "urgent"]),
+    message: z.string().trim().min(2).max(4000).optional(),
+    internal: z.boolean().default(false),
+  }),
 ]);
 
 function slugFor(name: string) {
@@ -49,7 +63,9 @@ Deno.serve(async (request) => {
     const role = platformContext && typeof platformContext === "object"
       ? String((platformContext as Record<string, unknown>).role ?? "")
       : "";
-    if (role !== "platform_owner") {
+    const canManageSupport = input.action === "update_support_case" &&
+      role === "platform_support";
+    if (role !== "platform_owner" && !canManageSupport) {
       return json(request, { error: "forbidden" }, 403);
     }
     const { data: assurance, error: assuranceError } = await client.auth.mfa
@@ -70,7 +86,20 @@ Deno.serve(async (request) => {
       return json(request, { ok: true });
     }
 
-
+    if (input.action === "update_support_case") {
+      const { error: updateError } = await client.rpc(
+        "platform_manage_support_case",
+        {
+          p_case_id: input.caseId,
+          p_status: input.status,
+          p_priority: input.priority,
+          p_message: input.message ?? null,
+          p_internal: input.internal,
+        },
+      );
+      if (updateError) throw updateError;
+      return json(request, { ok: true });
+    }
 
     const service = serviceClient();
     const redirectTo = `${env("PUBLIC_APP_URL").replace(/\/$/, "")}/login`;
