@@ -20,6 +20,7 @@ import { Route as LegalRouteImport } from './routes/legal'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as HealthDotjsonRouteImport } from './routes/health[.]json'
 import { Route as FeaturesRouteImport } from './routes/features'
+import { Route as ContactRouteImport } from './routes/contact'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as AccountStatusRouteImport } from './routes/account-status'
@@ -147,6 +148,11 @@ const HealthDotjsonRoute = HealthDotjsonRouteImport.update({
 const FeaturesRoute = FeaturesRouteImport.update({
   id: '/features',
   path: '/features',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BlogRoute = BlogRouteImport.update({
@@ -525,6 +531,7 @@ export interface FileRoutesByFullPath {
   '/account-status': typeof AccountStatusRoute
   '/app': typeof AppRouteWithChildren
   '/blog': typeof BlogRouteWithChildren
+  '/contact': typeof ContactRoute
   '/features': typeof FeaturesRoute
   '/health.json': typeof HealthDotjsonRoute
   '/help': typeof HelpRoute
@@ -609,6 +616,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account-status': typeof AccountStatusRoute
+  '/contact': typeof ContactRoute
   '/features': typeof FeaturesRoute
   '/health.json': typeof HealthDotjsonRoute
   '/help': typeof HelpRoute
@@ -696,6 +704,7 @@ export interface FileRoutesById {
   '/account-status': typeof AccountStatusRoute
   '/app': typeof AppRouteWithChildren
   '/blog': typeof BlogRouteWithChildren
+  '/contact': typeof ContactRoute
   '/features': typeof FeaturesRoute
   '/health.json': typeof HealthDotjsonRoute
   '/help': typeof HelpRoute
@@ -784,6 +793,7 @@ export interface FileRouteTypes {
     | '/account-status'
     | '/app'
     | '/blog'
+    | '/contact'
     | '/features'
     | '/health.json'
     | '/help'
@@ -868,6 +878,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/account-status'
+    | '/contact'
     | '/features'
     | '/health.json'
     | '/help'
@@ -954,6 +965,7 @@ export interface FileRouteTypes {
     | '/account-status'
     | '/app'
     | '/blog'
+    | '/contact'
     | '/features'
     | '/health.json'
     | '/help'
@@ -1041,6 +1053,7 @@ export interface RootRouteChildren {
   AccountStatusRoute: typeof AccountStatusRoute
   AppRoute: typeof AppRouteWithChildren
   BlogRoute: typeof BlogRouteWithChildren
+  ContactRoute: typeof ContactRoute
   FeaturesRoute: typeof FeaturesRoute
   HealthDotjsonRoute: typeof HealthDotjsonRoute
   HelpRoute: typeof HelpRoute
@@ -1139,6 +1152,13 @@ declare module '@tanstack/react-router' {
       path: '/features'
       fullPath: '/features'
       preLoaderRoute: typeof FeaturesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/blog': {
@@ -1816,6 +1836,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountStatusRoute: AccountStatusRoute,
   AppRoute: AppRouteWithChildren,
   BlogRoute: BlogRouteWithChildren,
+  ContactRoute: ContactRoute,
   FeaturesRoute: FeaturesRoute,
   HealthDotjsonRoute: HealthDotjsonRoute,
   HelpRoute: HelpRoute,
