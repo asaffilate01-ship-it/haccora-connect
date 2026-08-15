@@ -35,9 +35,8 @@ test("the protected endpoint returns status only and preserves the evidence cave
   assert.match(platform, /Invalid or missing/);
 });
 
-test("release convergence uses the current TanStack validator API", () => {
-  assert.match(fsaProspects, /\.validator\(/);
-  assert.doesNotMatch(fsaProspects, /\.inputValidator\(/);
+test("release convergence uses the current TanStack input validator API", () => {
+  assert.match(fsaProspects, /\.inputValidator\(/);
 });
 
 test("CI and release readiness execute the provider shape tests", () => {
