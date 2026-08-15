@@ -631,7 +631,16 @@ function AppShell() {
             </button>
 
             <div className="flex items-center gap-2 md:gap-3 shrink-0">
+              {/* Mobile search */}
+              <button
+                onClick={() => setPaletteOpen(true)}
+                className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card active:scale-95 transition"
+                aria-label={t("nav.search")}
+              >
+                <Search size={16} />
+              </button>
               {/* Notifications */}
+
               <div className="relative">
                 <button
                   onClick={() => {
