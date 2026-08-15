@@ -5218,6 +5218,109 @@ export type Database = {
           },
         ]
       }
+      support_case_messages: {
+        Row: {
+          author_id: string
+          author_kind: string
+          author_label: string
+          body: string
+          case_id: string
+          created_at: string
+          id: string
+          is_internal: boolean
+        }
+        Insert: {
+          author_id: string
+          author_kind: string
+          author_label: string
+          body: string
+          case_id: string
+          created_at?: string
+          id?: string
+          is_internal?: boolean
+        }
+        Update: {
+          author_id?: string
+          author_kind?: string
+          author_label?: string
+          body?: string
+          case_id?: string
+          created_at?: string
+          id?: string
+          is_internal?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_case_messages_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "support_cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_cases: {
+        Row: {
+          assigned_operator_id: string | null
+          case_number: number
+          category: string
+          created_at: string
+          created_by: string
+          first_responded_at: string | null
+          id: string
+          organization_id: string
+          organization_name: string
+          priority: string
+          reporter_email: string
+          resolved_at: string | null
+          status: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_operator_id?: string | null
+          case_number?: number
+          category: string
+          created_at?: string
+          created_by: string
+          first_responded_at?: string | null
+          id?: string
+          organization_id: string
+          organization_name: string
+          priority?: string
+          reporter_email: string
+          resolved_at?: string | null
+          status?: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_operator_id?: string | null
+          case_number?: number
+          category?: string
+          created_at?: string
+          created_by?: string
+          first_responded_at?: string | null
+          id?: string
+          organization_id?: string
+          organization_name?: string
+          priority?: string
+          reporter_email?: string
+          resolved_at?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_cases_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscription_entitlements: {
         Row: {
           effective_from: string
@@ -6690,6 +6793,15 @@ export type Database = {
         }
         Returns: Json
       }
+      create_support_case: {
+        Args: {
+          p_category: string
+          p_message: string
+          p_priority?: string
+          p_subject: string
+        }
+        Returns: string
+      }
       can_contribute_to_organization: {
         Args: { p_organization_id: string }
         Returns: boolean
@@ -7025,6 +7137,16 @@ export type Database = {
         }
         Returns: undefined
       }
+      platform_manage_support_case: {
+        Args: {
+          p_case_id: string
+          p_internal?: boolean
+          p_message?: string
+          p_priority: string
+          p_status: string
+        }
+        Returns: undefined
+      }
       platform_manage_tenant: {
         Args: {
           p_action: string
@@ -7163,6 +7285,10 @@ export type Database = {
         }
       }
       try_uuid: { Args: { p_value: string }; Returns: string }
+      support_add_case_message: {
+        Args: { p_case_id: string; p_message: string }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "owner" | "manager" | "chef" | "staff" | "inspector"
