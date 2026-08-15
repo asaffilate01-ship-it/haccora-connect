@@ -48,6 +48,12 @@ test("the root lockfile is reproducible with the npm major used by GitHub", asyn
   const lock = JSON.parse(lockText);
 
   assert.equal(packageJson.packageManager, "npm@10.9.4");
+  assert.equal(lock.lockfileVersion, 3);
+  assert.equal(lock.packages?.[""]?.name, packageJson.name);
+  assert.equal(
+    lock.packages?.[""]?.devDependencies?.["@lovable.dev/vite-tanstack-config"],
+    packageJson.devDependencies["@lovable.dev/vite-tanstack-config"],
+  );
   assert.equal(lock.packages?.["node_modules/nitro/node_modules/lru-cache"]?.version, "11.5.2");
 });
 

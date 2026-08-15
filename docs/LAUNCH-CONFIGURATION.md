@@ -1,6 +1,6 @@
 # Production launch configuration
 
-Haccora's launch gate intentionally fails closed. It has 42 unique configuration controls. The repository can validate them and can safely generate five Haccora-owned secrets, but it cannot invent a company identity, legal approval or provider credential.
+Haccora's launch gate intentionally fails closed. It has 44 unique configuration controls. The repository can validate them and can safely generate five Haccora-owned secrets, but it cannot invent a company identity, legal approval or provider credential.
 
 ## One local setup flow
 
@@ -35,7 +35,7 @@ npm run launch:preflight
 
 | Group                       | Controls | Accountable owner                         | Production source                                                                                             |
 | --------------------------- | -------: | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| Application and Supabase    |        7 | Engineering / Supabase owner              | GitHub production variables, hosting values and Supabase project                                              |
+| Application and Supabase    |        8 | Engineering / Supabase owner              | GitHub production variables, hosting values and Supabase project                                              |
 | Haccora legal identity      |        7 | Haccora Ltd director                      | Verified Companies House and public contact details in GitHub variables                                       |
 | Legal and ICO approval      |        4 | Haccora Ltd director / UK counsel         | Approval record, review date and ICO evidence; GitHub production variables contain only the references/status |
 | Stripe live billing         |        6 | Finance / Stripe administrator            | Stripe live dashboard; secret values in GitHub and Supabase secrets, price IDs in variables                   |

@@ -26,6 +26,7 @@ jobs:
     env:
       VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
       SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+      PUBLIC_MARKETING_URL: ${{ vars.PUBLIC_MARKETING_URL }}
       PUBLIC_APP_URL: ${{ vars.PUBLIC_APP_URL }}
       OPERATIONS_HEALTH_URL: ${{ vars.OPERATIONS_HEALTH_URL }}
       PRODUCTION_URL: ${{ inputs.deployment_url }}

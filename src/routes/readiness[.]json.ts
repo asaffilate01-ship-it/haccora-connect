@@ -4,12 +4,30 @@ import { getPublicSupabaseConfig } from "@/integrations/supabase/config";
 import { PUBLIC_LAUNCH_READINESS } from "@/lib/public-config";
 import { RELEASE_SHA } from "@/lib/release";
 
+function hasValidHttpsOrigin(value: string | undefined) {
+  try {
+    const url = new URL((value ?? "").trim());
+    return (
+      url.protocol === "https:" &&
+      !url.username &&
+      !url.password &&
+      !url.search &&
+      !url.hash &&
+      (url.pathname === "/" || url.pathname === "")
+    );
+  } catch {
+    return false;
+  }
+}
+
 export const Route = createFileRoute("/readiness.json")({
   server: {
     handlers: {
       GET: async () => {
         const checks = {
           authentication: getPublicSupabaseConfig().configured,
+          marketingOrigin: hasValidHttpsOrigin(process.env.PUBLIC_MARKETING_URL),
+          applicationOrigin: hasValidHttpsOrigin(process.env.PUBLIC_APP_URL),
           legalIdentity: PUBLIC_LAUNCH_READINESS.legalIdentityComplete,
           legalApproval: PUBLIC_LAUNCH_READINESS.legalPublishReady,
           support: PUBLIC_LAUNCH_READINESS.supportConfigured,
