@@ -38,7 +38,7 @@ const FEATURES = [
   {
     icon: Wheat,
     title: "Allergens and PPDS labelling",
-    body: "Recipe-level allergen matrix and Natasha's Law compliant PPDS labels straight from your menu.",
+    body: "Recipe-level allergen records and PPDS label preparation, with review prompts when an ingredient or supplier specification changes.",
   },
   {
     icon: Users,
@@ -111,7 +111,8 @@ function FeaturesPage() {
           </h1>
           <p className="mt-5 max-w-2xl text-white/70">
             Haccora replaces paper diaries, spreadsheets and folder-based evidence with structured,
-            time-stamped records your environmental health officer can verify.
+            time-stamped records your environmental health officer can review alongside your
+            procedures and food-safety practices.
           </p>
         </div>
       </section>
