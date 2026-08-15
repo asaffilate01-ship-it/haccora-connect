@@ -50,6 +50,7 @@ jobs:
           VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
           SUPABASE_URL: https://example.supabase.co
           SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+          PUBLIC_MARKETING_URL: https://marketing.example.com
           PUBLIC_APP_URL: https://example.com
 
   mobile:
@@ -138,6 +139,7 @@ jobs:
           VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
           SUPABASE_URL: https://example.supabase.co
           SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+          PUBLIC_MARKETING_URL: https://marketing.example.com
           PUBLIC_APP_URL: https://example.com
       - name: Upload browser test evidence
         if: always()

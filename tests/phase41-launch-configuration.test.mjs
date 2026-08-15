@@ -23,6 +23,7 @@ function completeEnvironment() {
   return {
     VITE_SUPABASE_URL: "https://phase41.supabase.co",
     SUPABASE_URL: "https://phase41.supabase.co",
+    PUBLIC_MARKETING_URL: "https://haccora.co.uk",
     PUBLIC_APP_URL: "https://app.haccora.co.uk",
     OPERATIONS_HEALTH_URL: "https://phase41.supabase.co/functions/v1/operations-health",
     ALLOWED_ORIGINS: "https://app.haccora.co.uk,https://haccora.co.uk",
@@ -77,12 +78,12 @@ function parseAssignments(content) {
   );
 }
 
-test("Phase 41 reports 43 unique production configuration controls by accountable owner", async () => {
-  assert.equal(launchRequirements.length, 43);
-  assert.equal(new Set(launchRequirements.map((item) => item.name)).size, 43);
+test("Phase 41 reports 44 unique production configuration controls by accountable owner", async () => {
+  assert.equal(launchRequirements.length, 44);
+  assert.equal(new Set(launchRequirements.map((item) => item.name)).size, 44);
   const result = await evaluateLaunchReadiness({ environment: {}, root });
-  assert.equal(result.failedControls, 43);
-  assert.equal(result.issues.length, 43);
+  assert.equal(result.failedControls, 44);
+  assert.equal(result.issues.length, 44);
   assert.equal(result.groups.filter((group) => group.issues.length).length, 10);
   const output = formatLaunchReadiness(result);
   assert.match(output, /Application and Supabase/);
@@ -96,7 +97,7 @@ test("Phase 41 reports 43 unique production configuration controls by accountabl
 test("Phase 41 accepts a complete production-shaped environment without weakening the gate", async () => {
   const result = await evaluateLaunchReadiness({ environment: completeEnvironment(), root });
   assert.equal(result.ready, true, formatLaunchReadiness(result));
-  assert.equal(result.passedControls, 43);
+  assert.equal(result.passedControls, 44);
   assert.equal(result.issues.length, 0);
 });
 
