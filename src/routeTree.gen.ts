@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ReadinessDotjsonRouteImport } from './routes/readiness[.]json'
+import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PlatformProspectsRouteImport } from './routes/platform-prospects'
 import { Route as PlatformRouteImport } from './routes/platform'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -100,6 +101,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const ReadinessDotjsonRoute = ReadinessDotjsonRouteImport.update({
   id: '/readiness.json',
   path: '/readiness.json',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlatformProspectsRoute = PlatformProspectsRouteImport.update({
@@ -520,6 +526,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/platform': typeof PlatformRoute
   '/platform-prospects': typeof PlatformProspectsRoute
+  '/pricing': typeof PricingRoute
   '/readiness.json': typeof ReadinessDotjsonRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/app/alerts': typeof AppAlertsRoute
@@ -602,6 +609,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/platform': typeof PlatformRoute
   '/platform-prospects': typeof PlatformProspectsRoute
+  '/pricing': typeof PricingRoute
   '/readiness.json': typeof ReadinessDotjsonRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/app/alerts': typeof AppAlertsRoute
@@ -687,6 +695,7 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/platform': typeof PlatformRoute
   '/platform-prospects': typeof PlatformProspectsRoute
+  '/pricing': typeof PricingRoute
   '/readiness.json': typeof ReadinessDotjsonRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/app/alerts': typeof AppAlertsRoute
@@ -773,6 +782,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/platform'
     | '/platform-prospects'
+    | '/pricing'
     | '/readiness.json'
     | '/sitemap.xml'
     | '/app/alerts'
@@ -855,6 +865,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/platform'
     | '/platform-prospects'
+    | '/pricing'
     | '/readiness.json'
     | '/sitemap.xml'
     | '/app/alerts'
@@ -939,6 +950,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/platform'
     | '/platform-prospects'
+    | '/pricing'
     | '/readiness.json'
     | '/sitemap.xml'
     | '/app/alerts'
@@ -1024,6 +1036,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   PlatformRoute: typeof PlatformRoute
   PlatformProspectsRoute: typeof PlatformProspectsRoute
+  PricingRoute: typeof PricingRoute
   ReadinessDotjsonRoute: typeof ReadinessDotjsonRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   CompareHaccoraVsFooddocsRoute: typeof CompareHaccoraVsFooddocsRoute
@@ -1050,6 +1063,13 @@ declare module '@tanstack/react-router' {
       path: '/readiness.json'
       fullPath: '/readiness.json'
       preLoaderRoute: typeof ReadinessDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/platform-prospects': {
@@ -1783,6 +1803,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   PlatformRoute: PlatformRoute,
   PlatformProspectsRoute: PlatformProspectsRoute,
+  PricingRoute: PricingRoute,
   ReadinessDotjsonRoute: ReadinessDotjsonRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   CompareHaccoraVsFooddocsRoute: CompareHaccoraVsFooddocsRoute,
