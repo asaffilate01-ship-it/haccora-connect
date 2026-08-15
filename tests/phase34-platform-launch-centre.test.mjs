@@ -4,24 +4,34 @@ import test from "node:test";
 
 const read = (file) => readFile(new URL(`../${file}`, import.meta.url), "utf8");
 
-const [platform, readiness, admin, migration, config, ci, release, publicConfig] =
-  await Promise.all([
-    read("src/routes/platform.tsx"),
-    read("supabase/functions/platform-readiness/index.ts"),
-    read("supabase/functions/platform-admin/index.ts"),
-    read("supabase/migrations/20260809230000_platform_step_up_security.sql"),
-    read("supabase/config.toml"),
-    read(".github/workflows/ci.yml"),
-    read(".github/workflows/release-readiness.yml"),
-    read("src/lib/public-config.ts"),
-  ]);
+const [
+  platform,
+  readiness,
+  providerReadiness,
+  admin,
+  migration,
+  config,
+  ci,
+  release,
+  publicConfig,
+] = await Promise.all([
+  read("src/routes/platform.tsx"),
+  read("supabase/functions/platform-readiness/index.ts"),
+  read("supabase/functions/_shared/provider-readiness.ts"),
+  read("supabase/functions/platform-admin/index.ts"),
+  read("supabase/migrations/20260809230000_platform_step_up_security.sql"),
+  read("supabase/config.toml"),
+  read(".github/workflows/ci.yml"),
+  read(".github/workflows/release-readiness.yml"),
+  read("src/lib/public-config.ts"),
+]);
 
 test("Phase 34 adds an audited and aggregate SaaS-owner launch centre", () => {
   assert.match(platform, /Launch centre/);
   assert.match(platform, /platform-readiness/);
   assert.match(platform, /Scheduled operations/);
   assert.match(platform, /Production configuration/);
-  assert.match(platform, /Configuration is not proof/);
+  assert.match(platform, /configuration is not proof/i);
   assert.match(readiness, /get_my_platform_context/);
   assert.match(readiness, /platform_owner/);
   assert.match(readiness, /platform_auditor/);
@@ -30,7 +40,7 @@ test("Phase 34 adds an audited and aggregate SaaS-owner launch centre", () => {
   assert.doesNotMatch(readiness, /SUPABASE_SERVICE_ROLE_KEY.*json/i);
 });
 
-test("provider readiness reports presence without exposing or overstating verification", () => {
+test("provider readiness reports structural validity without exposing or overstating verification", () => {
   for (const marker of [
     "RESEND_API_KEY",
     "EXPO_ACCESS_TOKEN",
@@ -41,9 +51,9 @@ test("provider readiness reports presence without exposing or overstating verifi
     "OPERATIONS_MONITOR_SECRET",
     "LEGAL_COUNSEL_APPROVAL_REFERENCE",
   ]) {
-    assert.match(readiness, new RegExp(marker));
+    assert.match(providerReadiness, new RegExp(marker));
   }
-  assert.match(readiness, /Configured means required values are present/);
+  assert.match(readiness, /required values are present and structurally valid/);
   assert.match(publicConfig, /PUBLIC_LAUNCH_READINESS/);
   assert.match(publicConfig, /browserPushConfigured/);
 });
