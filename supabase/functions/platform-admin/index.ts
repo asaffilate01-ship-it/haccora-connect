@@ -20,6 +20,11 @@ const Input = z.discriminatedUnion("action", [
     displayName: z.string().trim().min(2).max(120),
     role: z.enum(["platform_owner", "platform_support", "platform_auditor"]),
   }),
+  z.object({
+    action: z.literal("update_contact_request"),
+    requestId: z.string().uuid(),
+    status: z.enum(["new", "contacted", "closed", "spam"]),
+  }),
 ]);
 
 function slugFor(name: string) {
