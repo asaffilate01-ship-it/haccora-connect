@@ -251,20 +251,35 @@ function TopBar() {
 /* ────────────────────────────────────────────── sub nav (white) */
 function SubNav() {
   const { t } = useI18n();
-  const links = [
-    { href: "#pillars", label: t("nav.modules") ?? "Food Safety Software" },
+  const routeLinks = [
+    { to: "/features" as const, label: t("nav.modules") ?? "Food Safety Software" },
+    { to: "/pricing" as const, label: t("nav.pricing") ?? "Pricing" },
+    { to: "/help" as const, label: "Help centre" },
+    { to: "/blog" as const, label: t("nav.blog") ?? "Blog" },
+    { to: "/contact" as const, label: t("nav.contact") ?? "Contact" },
+  ];
+  const anchorLinks = [
     { href: "#regulation", label: t("nav.regulation") ?? "Regulation" },
     { href: "#inspector", label: "Inspector Mode" },
-    { href: "#pricing", label: t("nav.pricing") ?? "Pricing" },
   ];
   return (
     <div className="border-b border-black/10 bg-white">
       <div className="mx-auto max-w-[1400px] px-3 md:px-8 h-12 md:h-14 flex items-center justify-between gap-4">
         <nav
-          className="flex-1 flex items-center gap-4 md:gap-10 text-[0.78rem] md:text-[0.95rem] font-bold text-black whitespace-nowrap overflow-x-auto no-scrollbar -mx-1 px-1"
+          aria-label="Primary"
+          className="flex-1 flex items-center gap-4 md:gap-8 text-[0.78rem] md:text-[0.95rem] font-bold text-black whitespace-nowrap overflow-x-auto no-scrollbar -mx-1 px-1"
           style={{ scrollbarWidth: "none" }}
         >
-          {links.map((l) => (
+          {routeLinks.map((l) => (
+            <Link
+              key={l.to}
+              to={l.to}
+              className="hover:text-[color:var(--color-alert-red)] transition shrink-0"
+            >
+              {l.label}
+            </Link>
+          ))}
+          {anchorLinks.map((l) => (
             <a
               key={l.href}
               href={l.href}
@@ -273,13 +288,8 @@ function SubNav() {
               {l.label}
             </a>
           ))}
-          <Link
-            to="/blog"
-            className="hover:text-[color:var(--color-alert-red)] transition shrink-0"
-          >
-            {t("nav.blog") ?? "Blog"}
-          </Link>
         </nav>
+
         {PUBLIC_CONFIG.legal.phone && (
           <a
             href={`tel:${PUBLIC_CONFIG.legal.phone.replace(/\s/g, "")}`}
