@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ReadinessDotjsonRouteImport } from './routes/readiness[.]json'
+import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PlatformProspectsRouteImport } from './routes/platform-prospects'
 import { Route as PlatformRouteImport } from './routes/platform'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -18,6 +19,8 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as LegalRouteImport } from './routes/legal'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as HealthDotjsonRouteImport } from './routes/health[.]json'
+import { Route as FeaturesRouteImport } from './routes/features'
+import { Route as ContactRouteImport } from './routes/contact'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as AccountStatusRouteImport } from './routes/account-status'
@@ -102,6 +105,11 @@ const ReadinessDotjsonRoute = ReadinessDotjsonRouteImport.update({
   path: '/readiness.json',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PlatformProspectsRoute = PlatformProspectsRouteImport.update({
   id: '/platform-prospects',
   path: '/platform-prospects',
@@ -135,6 +143,16 @@ const HelpRoute = HelpRouteImport.update({
 const HealthDotjsonRoute = HealthDotjsonRouteImport.update({
   id: '/health.json',
   path: '/health.json',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeaturesRoute = FeaturesRouteImport.update({
+  id: '/features',
+  path: '/features',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BlogRoute = BlogRouteImport.update({
@@ -513,6 +531,8 @@ export interface FileRoutesByFullPath {
   '/account-status': typeof AccountStatusRoute
   '/app': typeof AppRouteWithChildren
   '/blog': typeof BlogRouteWithChildren
+  '/contact': typeof ContactRoute
+  '/features': typeof FeaturesRoute
   '/health.json': typeof HealthDotjsonRoute
   '/help': typeof HelpRoute
   '/legal': typeof LegalRouteWithChildren
@@ -520,6 +540,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/platform': typeof PlatformRoute
   '/platform-prospects': typeof PlatformProspectsRoute
+  '/pricing': typeof PricingRoute
   '/readiness.json': typeof ReadinessDotjsonRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/app/alerts': typeof AppAlertsRoute
@@ -595,6 +616,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account-status': typeof AccountStatusRoute
+  '/contact': typeof ContactRoute
+  '/features': typeof FeaturesRoute
   '/health.json': typeof HealthDotjsonRoute
   '/help': typeof HelpRoute
   '/legal': typeof LegalRouteWithChildren
@@ -602,6 +625,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/platform': typeof PlatformRoute
   '/platform-prospects': typeof PlatformProspectsRoute
+  '/pricing': typeof PricingRoute
   '/readiness.json': typeof ReadinessDotjsonRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/app/alerts': typeof AppAlertsRoute
@@ -680,6 +704,8 @@ export interface FileRoutesById {
   '/account-status': typeof AccountStatusRoute
   '/app': typeof AppRouteWithChildren
   '/blog': typeof BlogRouteWithChildren
+  '/contact': typeof ContactRoute
+  '/features': typeof FeaturesRoute
   '/health.json': typeof HealthDotjsonRoute
   '/help': typeof HelpRoute
   '/legal': typeof LegalRouteWithChildren
@@ -687,6 +713,7 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/platform': typeof PlatformRoute
   '/platform-prospects': typeof PlatformProspectsRoute
+  '/pricing': typeof PricingRoute
   '/readiness.json': typeof ReadinessDotjsonRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/app/alerts': typeof AppAlertsRoute
@@ -766,6 +793,8 @@ export interface FileRouteTypes {
     | '/account-status'
     | '/app'
     | '/blog'
+    | '/contact'
+    | '/features'
     | '/health.json'
     | '/help'
     | '/legal'
@@ -773,6 +802,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/platform'
     | '/platform-prospects'
+    | '/pricing'
     | '/readiness.json'
     | '/sitemap.xml'
     | '/app/alerts'
@@ -848,6 +878,8 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/account-status'
+    | '/contact'
+    | '/features'
     | '/health.json'
     | '/help'
     | '/legal'
@@ -855,6 +887,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/platform'
     | '/platform-prospects'
+    | '/pricing'
     | '/readiness.json'
     | '/sitemap.xml'
     | '/app/alerts'
@@ -932,6 +965,8 @@ export interface FileRouteTypes {
     | '/account-status'
     | '/app'
     | '/blog'
+    | '/contact'
+    | '/features'
     | '/health.json'
     | '/help'
     | '/legal'
@@ -939,6 +974,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/platform'
     | '/platform-prospects'
+    | '/pricing'
     | '/readiness.json'
     | '/sitemap.xml'
     | '/app/alerts'
@@ -1017,6 +1053,8 @@ export interface RootRouteChildren {
   AccountStatusRoute: typeof AccountStatusRoute
   AppRoute: typeof AppRouteWithChildren
   BlogRoute: typeof BlogRouteWithChildren
+  ContactRoute: typeof ContactRoute
+  FeaturesRoute: typeof FeaturesRoute
   HealthDotjsonRoute: typeof HealthDotjsonRoute
   HelpRoute: typeof HelpRoute
   LegalRoute: typeof LegalRouteWithChildren
@@ -1024,6 +1062,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   PlatformRoute: typeof PlatformRoute
   PlatformProspectsRoute: typeof PlatformProspectsRoute
+  PricingRoute: typeof PricingRoute
   ReadinessDotjsonRoute: typeof ReadinessDotjsonRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   CompareHaccoraVsFooddocsRoute: typeof CompareHaccoraVsFooddocsRoute
@@ -1050,6 +1089,13 @@ declare module '@tanstack/react-router' {
       path: '/readiness.json'
       fullPath: '/readiness.json'
       preLoaderRoute: typeof ReadinessDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/platform-prospects': {
@@ -1099,6 +1145,20 @@ declare module '@tanstack/react-router' {
       path: '/health.json'
       fullPath: '/health.json'
       preLoaderRoute: typeof HealthDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/features': {
+      id: '/features'
+      path: '/features'
+      fullPath: '/features'
+      preLoaderRoute: typeof FeaturesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/blog': {
@@ -1776,6 +1836,8 @@ const rootRouteChildren: RootRouteChildren = {
   AccountStatusRoute: AccountStatusRoute,
   AppRoute: AppRouteWithChildren,
   BlogRoute: BlogRouteWithChildren,
+  ContactRoute: ContactRoute,
+  FeaturesRoute: FeaturesRoute,
   HealthDotjsonRoute: HealthDotjsonRoute,
   HelpRoute: HelpRoute,
   LegalRoute: LegalRouteWithChildren,
@@ -1783,6 +1845,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   PlatformRoute: PlatformRoute,
   PlatformProspectsRoute: PlatformProspectsRoute,
+  PricingRoute: PricingRoute,
   ReadinessDotjsonRoute: ReadinessDotjsonRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   CompareHaccoraVsFooddocsRoute: CompareHaccoraVsFooddocsRoute,

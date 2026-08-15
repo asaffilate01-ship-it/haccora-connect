@@ -43,6 +43,8 @@ import { FollowBar } from "@/components/SocialIcons";
 import { BrandLogo } from "@/components/BrandLogo";
 import { PUBLIC_CONFIG } from "@/lib/public-config";
 import { MARKETING_FAQS } from "@/lib/marketing-faqs";
+import { ContactCard } from "@/components/marketing/ContactForm";
+import { Pricing } from "@/components/marketing/PricingPlans";
 import {
   Dialog,
   DialogContent,
@@ -249,20 +251,35 @@ function TopBar() {
 /* ────────────────────────────────────────────── sub nav (white) */
 function SubNav() {
   const { t } = useI18n();
-  const links = [
-    { href: "#pillars", label: t("nav.modules") ?? "Food Safety Software" },
+  const routeLinks = [
+    { to: "/features" as const, label: t("nav.modules") ?? "Food Safety Software" },
+    { to: "/pricing" as const, label: t("nav.pricing") ?? "Pricing" },
+    { to: "/help" as const, label: "Help centre" },
+    { to: "/blog" as const, label: t("nav.blog") ?? "Blog" },
+    { to: "/contact" as const, label: t("nav.contact") ?? "Contact" },
+  ];
+  const anchorLinks = [
     { href: "#regulation", label: t("nav.regulation") ?? "Regulation" },
     { href: "#inspector", label: "Inspector Mode" },
-    { href: "#pricing", label: t("nav.pricing") ?? "Pricing" },
   ];
   return (
     <div className="border-b border-black/10 bg-white">
       <div className="mx-auto max-w-[1400px] px-3 md:px-8 h-12 md:h-14 flex items-center justify-between gap-4">
         <nav
-          className="flex-1 flex items-center gap-4 md:gap-10 text-[0.78rem] md:text-[0.95rem] font-bold text-black whitespace-nowrap overflow-x-auto no-scrollbar -mx-1 px-1"
+          aria-label="Primary"
+          className="flex-1 flex items-center gap-4 md:gap-8 text-[0.78rem] md:text-[0.95rem] font-bold text-black whitespace-nowrap overflow-x-auto no-scrollbar -mx-1 px-1"
           style={{ scrollbarWidth: "none" }}
         >
-          {links.map((l) => (
+          {routeLinks.map((l) => (
+            <Link
+              key={l.to}
+              to={l.to}
+              className="hover:text-[color:var(--color-alert-red)] transition shrink-0"
+            >
+              {l.label}
+            </Link>
+          ))}
+          {anchorLinks.map((l) => (
             <a
               key={l.href}
               href={l.href}
@@ -271,13 +288,8 @@ function SubNav() {
               {l.label}
             </a>
           ))}
-          <Link
-            to="/blog"
-            className="hover:text-[color:var(--color-alert-red)] transition shrink-0"
-          >
-            {t("nav.blog") ?? "Blog"}
-          </Link>
         </nav>
+
         {PUBLIC_CONFIG.legal.phone && (
           <a
             href={`tel:${PUBLIC_CONFIG.legal.phone.replace(/\s/g, "")}`}
@@ -420,143 +432,6 @@ function ProductTourDialog() {
         </details>
       </DialogContent>
     </Dialog>
-  );
-}
-
-function ContactCard() {
-  const { t, lang } = useI18n();
-  const [state, setState] = useState<"idle" | "sending" | "sent" | "error">("idle");
-  const [error, setError] = useState("");
-
-  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formElement = event.currentTarget;
-    setState("sending");
-    setError("");
-    if (!isSupabaseConfigured()) {
-      setState("error");
-      setError(`The form is temporarily unavailable. Email ${PUBLIC_CONFIG.legal.email}.`);
-      return;
-    }
-    const form = new FormData(formElement);
-    try {
-      const { error: invokeError } = await supabase.functions.invoke("contact", {
-        body: {
-          firstName: form.get("firstName"),
-          lastName: form.get("lastName"),
-          email: form.get("email"),
-          phone: form.get("phone"),
-          businessName: form.get("businessName"),
-          website: form.get("website"),
-          locale: lang,
-          consent: form.get("consent") === "on",
-        },
-      });
-      if (invokeError) throw invokeError;
-    } catch {
-      setState("error");
-      setError(`Your request could not be sent. Email ${PUBLIC_CONFIG.legal.email}.`);
-      return;
-    }
-    formElement.reset();
-    setState("sent");
-  };
-  return (
-    <form
-      id="contact"
-      onSubmit={submit}
-      className="rounded-2xl md:rounded-3xl bg-white p-5 md:p-8 shadow-2xl border border-black/5"
-    >
-      <h3 className="display-black text-xl md:text-3xl text-black text-center">
-        {t("contact.title") ?? "Get More Information"}
-      </h3>
-      <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <input
-          name="firstName"
-          aria-label={t("contact.first") ?? "First Name"}
-          required
-          autoComplete="given-name"
-          maxLength={80}
-          placeholder={t("contact.first") ?? "First Name"}
-          className="fld"
-        />
-        <input
-          name="lastName"
-          aria-label={t("contact.last") ?? "Last Name"}
-          required
-          autoComplete="family-name"
-          maxLength={80}
-          placeholder={t("contact.last") ?? "Last Name"}
-          className="fld"
-        />
-      </div>
-      <div className="mt-3 grid gap-3">
-        <input
-          name="email"
-          aria-label={t("contact.email") ?? "Email Address"}
-          required
-          type="email"
-          autoComplete="email"
-          maxLength={254}
-          placeholder={t("contact.email") ?? "Email Address"}
-          className="fld"
-        />
-        <input
-          name="phone"
-          aria-label={t("contact.phone") ?? "Phone Number"}
-          type="tel"
-          autoComplete="tel"
-          maxLength={40}
-          placeholder={t("contact.phone") ?? "Phone Number"}
-          className="fld"
-        />
-        <input
-          name="businessName"
-          aria-label={t("contact.business") ?? "Business Name"}
-          autoComplete="organization"
-          maxLength={160}
-          placeholder={t("contact.business") ?? "Business Name"}
-          className="fld"
-        />
-        <input
-          name="website"
-          tabIndex={-1}
-          autoComplete="off"
-          aria-hidden="true"
-          className="hidden"
-        />
-      </div>
-      <label className="mt-4 flex items-start gap-2 text-[11px] text-black/60">
-        <input name="consent" type="checkbox" required className="mt-0.5" />
-        <span>
-          By submitting this form, you agree to our{" "}
-          <Link
-            to="/legal/privacy"
-            className="font-semibold underline underline-offset-2 hover:text-black"
-          >
-            privacy policy
-          </Link>
-          .
-        </span>
-      </label>
-      <button
-        disabled={state === "sending"}
-        type="submit"
-        className="btn-red w-full mt-5 justify-center uppercase tracking-widest text-xs md:text-sm disabled:opacity-60"
-      >
-        {state === "sending" ? "Sending…" : (t("contact.cta") ?? "Get In Touch")}
-      </button>
-      {state === "sent" && (
-        <p role="status" className="mt-3 text-sm text-success text-center">
-          {"Thank you. We will be in touch shortly."}
-        </p>
-      )}
-      {state === "error" && (
-        <p role="alert" className="mt-3 text-sm text-destructive text-center">
-          {error}
-        </p>
-      )}
-    </form>
   );
 }
 
@@ -762,118 +637,6 @@ function Regulation() {
   );
 }
 
-/* ────────────────────────────────────────────── pricing */
-function Pricing() {
-  const { t } = useI18n();
-  const plans = [
-    {
-      k: "solo",
-      price: "£9.99",
-      featured: false,
-      features: [
-        "Daily routines and temperature logs",
-        "Document and training expiry alerts",
-        "Inspection-ready exports",
-      ],
-    },
-    {
-      k: "complete",
-      price: "£24.99",
-      featured: true,
-      features: [
-        "All Solo features",
-        "Unlimited staff and all modules",
-        "Printable QR equipment history",
-      ],
-    },
-    {
-      k: "group",
-      price: "£59.99",
-      featured: false,
-      features: ["Up to three locations", "Group oversight and alerts", "Scoped inspector access"],
-    },
-    {
-      k: "enterprise",
-      price: "Custom",
-      featured: false,
-      features: [
-        "Four or more locations",
-        "SLA and implementation support",
-        "Integrations and governance",
-      ],
-    },
-  ] as const;
-  return (
-    <section id="pricing" className="bg-white">
-      <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-32">
-        <div className="max-w-3xl">
-          <div className="eyebrow">{t("pricing.eyebrow") ?? "Plans"}</div>
-          <h2 className="mt-4 display-black text-3xl md:text-6xl">{t("pricing.title")}</h2>
-          <p className="mt-5 text-black/60">{t("pricing.subtitle")}</p>
-        </div>
-        <div className="mt-12 grid md:grid-cols-2 xl:grid-cols-4 gap-5 items-stretch">
-          {plans.map((p) => (
-            <div
-              key={p.k}
-              className={`relative flex h-full flex-col p-8 ${
-                p.featured
-                  ? "card-polished-dark text-white ring-4 ring-[color:var(--color-alert-red)]/60"
-                  : "card-polished text-black"
-              }`}
-            >
-              <div className="mb-4 flex min-h-[1.75rem] items-start">
-                {p.featured && (
-                  <span className="inline-flex items-center rounded-full px-3 py-1 text-[10px] font-black leading-tight tracking-[0.14em] uppercase text-white bg-[color:var(--color-alert-red)] shadow-lg">
-                    {t("pricing.featured") ?? "Most Popular"}
-                  </span>
-                )}
-              </div>
-
-              <h3 className="display-black text-2xl">{t(`pricing.plan.${p.k}`)}</h3>
-              <p
-                className={`text-sm mt-2 min-h-[2.5rem] leading-snug ${p.featured ? "text-white/70" : "text-black/60"}`}
-              >
-                {t(`pricing.plan.${p.k}.desc`)}
-              </p>
-              <div className="mt-6 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                <span className="display-black text-5xl">{p.price}</span>
-                {p.k !== "enterprise" && (
-                  <span className={`text-sm ${p.featured ? "text-white/70" : "text-black/60"}`}>
-                    {t("pricing.perMonth")}
-                  </span>
-                )}
-              </div>
-              <ul className="mt-5 space-y-2 text-sm">
-                {p.features.map((feature) => (
-                  <li key={feature} className={p.featured ? "text-white/80" : "text-black/65"}>
-                    ✓ {feature}
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-auto pt-7">
-                <a
-                  href={p.k === "enterprise" ? "#contact" : "/login"}
-                  className={`inline-flex w-full items-center justify-center rounded-full py-3 text-sm font-black tracking-wider uppercase transition ${
-                    p.featured
-                      ? "bg-[color:var(--color-alert-green)] text-white hover:brightness-110"
-                      : "bg-black text-white hover:bg-[color:var(--color-alert-red)]"
-                  }`}
-                >
-                  {p.k === "enterprise" ? "Contact sales" : "Start 7-day free trial"}
-                </a>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <p className="mt-6 text-sm text-black/60">
-          VAT is added where applicable. No card required for the trial; cancel before renewal.
-        </p>
-      </div>
-    </section>
-  );
-}
-
 /* ────────────────────────────────────────────── cta */
 function CtaFooter() {
   const { t } = useI18n();
@@ -934,12 +697,12 @@ function OutcomesBand() {
 function IndustriesStrip() {
   const { t } = useI18n();
   const items = [
-    { icon: Utensils, k: "restaurant" },
-    { icon: Hotel, k: "hotel" },
-    { icon: Coffee, k: "cafe" },
-    { icon: Beer, k: "pub" },
-    { icon: TruckIcon, k: "takeaway" },
-    { icon: ChefHat, k: "canteen" },
+    { icon: Utensils, k: "restaurant", to: "/industries/restaurants-and-cafes" as const },
+    { icon: Hotel, k: "hotel", to: null },
+    { icon: Coffee, k: "cafe", to: "/industries/restaurants-and-cafes" as const },
+    { icon: Beer, k: "pub", to: "/industries/pubs-and-bars" as const },
+    { icon: TruckIcon, k: "takeaway", to: "/industries/takeaways-and-fast-food" as const },
+    { icon: ChefHat, k: "canteen", to: "/industries/care-homes-and-schools" as const },
   ];
   return (
     <section className="bg-[color:var(--color-cream)]">
@@ -950,7 +713,7 @@ function IndustriesStrip() {
           <p className="mt-4 text-black/60 max-w-2xl">{t("industries.subtitle")}</p>
         </div>
         <div className="mt-10 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {items.map(({ icon: Icon, k }) => {
+          {items.map(({ icon: Icon, k, to }) => {
             const inner = (
               <>
                 <span className="icon-3d icon-3d-sm">
@@ -960,12 +723,8 @@ function IndustriesStrip() {
               </>
             );
             const className = "card-polished p-5 flex flex-col items-center text-center";
-            return k === "restaurant" || k === "cafe" ? (
-              <Link
-                key={k}
-                to="/industries/restaurants-and-cafes"
-                className={`${className} transition hover:-translate-y-0.5`}
-              >
+            return to ? (
+              <Link key={k} to={to} className={`${className} transition hover:-translate-y-0.5`}>
                 {inner}
               </Link>
             ) : (

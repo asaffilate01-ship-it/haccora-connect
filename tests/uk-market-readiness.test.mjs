@@ -221,11 +221,7 @@ test("Phase 8 keeps the coach a role-aware web and native destination", () => {
   assert.match(more, /\/coach/);
 });
 test("public pricing offers four clear packages and trial conversion", () => {
-  const landing = read("src/routes/index.tsx");
-  const pricingBlock = landing.slice(
-    landing.indexOf("function Pricing"),
-    landing.indexOf("function CtaFooter"),
-  );
+  const pricingBlock = read("src/components/marketing/PricingPlans.tsx");
   for (const plan of ["solo", "complete", "group", "enterprise"])
     assert.match(pricingBlock, new RegExp(`k: "${plan}"`));
   assert.match(pricingBlock, /Start 7-day free trial/);
