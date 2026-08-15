@@ -80,13 +80,16 @@ test("Phase 43 preserves protected auth redirects and canonical marketing URLs",
 });
 
 test("Phase 43 removes deceptive search UI and improves contact accessibility", async () => {
-  const marketing = await read("src/routes/index.tsx");
+  const [marketing, contactForm] = await Promise.all([
+    read("src/routes/index.tsx"),
+    read("src/components/marketing/ContactForm.tsx"),
+  ]);
 
   assert.match(marketing, /to="\/help"[\s\S]*Search the Haccora Help Centre/);
   assert.doesNotMatch(marketing, /placeholder=\{t\("nav\.search"\)/);
   for (const field of ["firstName", "lastName", "email", "phone", "businessName"]) {
-    assert.match(marketing, new RegExp(`name="${field}"[\\s\\S]{0,100}aria-label=`));
+    assert.match(contactForm, new RegExp(`name="${field}"[\\s\\S]{0,100}aria-label=`));
   }
-  assert.match(marketing, /to="\/legal\/privacy"/);
-  assert.match(marketing, /className="btn-red w-full/);
+  assert.match(contactForm, /to="\/legal\/privacy"/);
+  assert.match(contactForm, /className="btn-red w-full/);
 });

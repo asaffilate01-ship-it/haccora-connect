@@ -8,7 +8,7 @@ test("public pages remain available when the deployment connection is absent", a
   const [configuration, auth, landing] = await Promise.all([
     read("src/integrations/supabase/config.ts"),
     read("src/lib/auth.tsx"),
-    read("src/routes/index.tsx"),
+    read("src/components/marketing/ContactForm.tsx"),
   ]);
 
   assert.match(configuration, /export const isSupabaseConfigured/);
