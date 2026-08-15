@@ -59,6 +59,5 @@ test("marketing claims remain review-led and release convergence stays clean", (
   assert.doesNotMatch(features, /Natasha's Law compliant/i);
   assert.match(features, /supplier specification changes/);
   assert.match(features, /environmental health officer can review/i);
-  assert.match(fsaProspects, /\.validator\(/);
-  assert.doesNotMatch(fsaProspects, /\.inputValidator\(/);
+  assert.match(fsaProspects, /\.inputValidator\(/);
 });
