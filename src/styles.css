@@ -772,3 +772,30 @@ html[data-lang-changing="true"] * {
 @utility pb-safe {
   padding-bottom: max(0.25rem, env(safe-area-inset-bottom));
 }
+
+/* reserve room for the fixed mobile tab bar (nav height + safe area) */
+@utility pb-tabbar {
+  padding-bottom: calc(4.75rem + env(safe-area-inset-bottom));
+}
+
+/* native-feeling touch behaviour inside the workspace shell */
+@utility touch-native {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.app-shell {
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior-y: none;
+}
+
+@media (max-width: 767px) {
+  .app-shell input,
+  .app-shell select,
+  .app-shell textarea {
+    /* stop iOS Safari from zooming when a field gains focus */
+    font-size: max(16px, 1rem);
+  }
+}
+
