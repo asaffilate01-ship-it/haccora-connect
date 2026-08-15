@@ -509,8 +509,8 @@ function PlatformOperations() {
                 </div>
                 <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
                   Protected environment, scheduler, queue, legal-channel and operator-security
-                  signals. Configuration is not proof that a provider or accountable review has
-                  passed.
+                  signals. Shape-valid configuration is not proof that a provider or accountable
+                  review has passed.
                 </p>
               </div>
               <span
@@ -548,7 +548,7 @@ function PlatformOperations() {
                     ? `${readiness.configuration.configuredCount}/${readiness.configuration.totalCount}`
                     : "—"
                 }
-                detail="Presence only · verification required"
+                detail="Shape-valid · verification required"
                 ready={readiness?.status === "configured"}
               />
               <ReadinessMetric
@@ -592,7 +592,9 @@ function PlatformOperations() {
                       key={item.key}
                       label={item.label}
                       ready={item.configured}
-                      detail={item.configured ? "Configured · test evidence due" : "Not configured"}
+                      detail={
+                        item.configured ? "Shape-valid · test evidence due" : "Invalid or missing"
+                      }
                     />
                   ))}
                   {!readiness && <EmptySignal />}
