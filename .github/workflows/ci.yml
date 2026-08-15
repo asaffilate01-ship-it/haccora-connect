@@ -101,6 +101,7 @@ jobs:
           deno-version: v2.9.4
       - run: deno fmt --check .
       - run: deno lint .
+      - run: deno test --no-lock _shared/provider-readiness.test.ts
       - run: >-
           deno check --node-modules-dir=manual --no-lock
           contact/index.ts

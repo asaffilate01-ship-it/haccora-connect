@@ -1,4 +1,5 @@
 import { json, preflight, requirePost } from "../_shared/http.ts";
+import { evaluateProviderConfiguration } from "../_shared/provider-readiness.ts";
 import { requireUser, serviceClient } from "../_shared/supabase.ts";
 
 type Heartbeat = {
@@ -15,81 +16,6 @@ const requiredJobs = new Map([
   ["integration-dispatch", 15],
   ["notification-dispatch", 35],
 ]);
-
-const placeholder =
-  /(replace|your_project|example\.com|example\.supabase|set_with)/i;
-
-function hasValue(name: string) {
-  const current = Deno.env.get(name)?.trim() ?? "";
-  return current.length > 0 && !placeholder.test(current);
-}
-
-function allConfigured(...names: string[]) {
-  return names.every(hasValue);
-}
-
-function providerConfiguration() {
-  return [
-    {
-      key: "application",
-      label: "Application URL and CORS",
-      configured: allConfigured("PUBLIC_APP_URL", "ALLOWED_ORIGINS"),
-    },
-    {
-      key: "email",
-      label: "Transactional email",
-      configured: allConfigured("RESEND_API_KEY", "NOTIFICATION_FROM_EMAIL"),
-    },
-    {
-      key: "push",
-      label: "Native and browser push",
-      configured: allConfigured(
-        "EXPO_ACCESS_TOKEN",
-        "WEB_PUSH_GATEWAY_URL",
-        "WEB_PUSH_GATEWAY_TOKEN",
-      ),
-    },
-    {
-      key: "malware",
-      label: "Document malware scanning",
-      configured: allConfigured("MALWARE_SCAN_URL", "MALWARE_SCAN_TOKEN"),
-    },
-    {
-      key: "billing",
-      label: "Stripe live billing",
-      configured: allConfigured(
-        "STRIPE_SECRET_KEY",
-        "STRIPE_WEBHOOK_SECRET",
-        "STRIPE_PRICE_SOLO",
-        "STRIPE_PRICE_COMPLETE",
-        "STRIPE_PRICE_GROUP",
-      ) && Deno.env.get("STRIPE_LIVE_MODE") === "true",
-    },
-    {
-      key: "schedulers",
-      label: "Scheduled dispatchers",
-      configured: hasValue("CRON_SECRET"),
-    },
-    {
-      key: "monitoring",
-      label: "Operations monitoring",
-      configured: hasValue("OPERATIONS_MONITOR_SECRET"),
-    },
-    {
-      key: "integrations",
-      label: "Encrypted outbound integrations",
-      configured: hasValue("INTEGRATION_ENCRYPTION_KEY"),
-    },
-    {
-      key: "legal",
-      label: "UK legal approval record",
-      configured: allConfigured(
-        "LEGAL_COUNSEL_APPROVAL_REFERENCE",
-        "LEGAL_COUNSEL_APPROVED_AT",
-      ) && Deno.env.get("LEGAL_ICO_FEE_STATUS_CONFIRMED") === "true",
-    },
-  ];
-}
 
 async function countRows(
   client: ReturnType<typeof serviceClient>,
@@ -174,7 +100,9 @@ Deno.serve(async (request) => {
     };
     const operationsHealthy = jobs.every((job) => !job.overdue) &&
       Object.values(queues).every((count) => count === 0);
-    const configuration = providerConfiguration();
+    const configuration = evaluateProviderConfiguration((name) =>
+      Deno.env.get(name)
+    );
     const configuredCount = configuration.filter((item) =>
       item.configured
     ).length;
@@ -207,7 +135,7 @@ Deno.serve(async (request) => {
         items: configuration,
       },
       caveat:
-        "Configured means required values are present. Production evidence must still prove each provider and accountable approval.",
+        "Configured means required values are present and structurally valid. Production evidence must still prove each provider and accountable approval.",
     });
   } catch (error) {
     console.error("platform_readiness_failed", error);

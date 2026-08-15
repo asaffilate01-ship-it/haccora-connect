@@ -10,16 +10,16 @@ At any point run `npm run launch:preflight` (or `node scripts/report-launch-read
 
 Collect from Companies House and your ICO registration, then set as protected environment values (hosting + GitHub `vars`):
 
-| Variable | Where it comes from |
-| --- | --- |
-| `VITE_LEGAL_COMPANY_NAME` | Haccora Ltd |
-| `VITE_LEGAL_COMPANY_NUMBER` | Companies House record |
-| `VITE_LEGAL_ADDRESS_LINE_1`, `VITE_LEGAL_POSTAL_CITY` | Registered office |
-| `VITE_LEGAL_REGISTERED_IN` | England and Wales |
-| `VITE_LEGAL_EMAIL`, `VITE_LEGAL_PHONE` | Public contact details |
-| `VITE_LEGAL_VAT_ID` | HMRC (leave blank if not registered) |
-| `VITE_LEGAL_ICO_REGISTRATION` | ICO data-protection register entry |
-| `LEGAL_ICO_FEE_STATUS_CONFIRMED` | `true` once the fee is paid |
+| Variable                                              | Where it comes from                  |
+| ----------------------------------------------------- | ------------------------------------ |
+| `VITE_LEGAL_COMPANY_NAME`                             | Haccora Ltd                          |
+| `VITE_LEGAL_COMPANY_NUMBER`                           | Companies House record               |
+| `VITE_LEGAL_ADDRESS_LINE_1`, `VITE_LEGAL_POSTAL_CITY` | Registered office                    |
+| `VITE_LEGAL_REGISTERED_IN`                            | England and Wales                    |
+| `VITE_LEGAL_EMAIL`, `VITE_LEGAL_PHONE`                | Public contact details               |
+| `VITE_LEGAL_VAT_ID`                                   | HMRC (leave blank if not registered) |
+| `VITE_LEGAL_ICO_REGISTRATION`                         | ICO data-protection register entry   |
+| `LEGAL_ICO_FEE_STATUS_CONFIRMED`                      | `true` once the fee is paid          |
 
 Then have UK counsel review `/legal/privacy`, `/legal/cookies`, `/legal/terms` and `/company-details`. Record their reference and date in `LEGAL_COUNSEL_APPROVAL_REFERENCE` and `LEGAL_COUNSEL_APPROVED_AT`, and only then set `VITE_LEGAL_CONTENT_APPROVED=true`.
 
