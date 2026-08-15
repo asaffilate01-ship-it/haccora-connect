@@ -9,7 +9,15 @@ export const Route = createFileRoute("/app/inspection")({
 });
 
 type EvidenceKey =
-  "plan" | "temp" | "clean" | "pest" | "allerg" | "fitness" | "training" | "trace" | "audit";
+  | "plan"
+  | "temp"
+  | "clean"
+  | "pest"
+  | "allerg"
+  | "fitness"
+  | "training"
+  | "trace"
+  | "audit";
 
 type Row = { key: EvidenceKey; count: number; status: "ok" | "warn" | "empty" };
 
