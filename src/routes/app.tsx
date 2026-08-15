@@ -938,20 +938,30 @@ function MobileBottomNav({
         <div
           className="md:hidden fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm"
           onClick={() => setMoreOpen(false)}
+          role="presentation"
         >
           <div
-            className="absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-2xl bg-card border-t border-border pb-safe"
+            className="absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto overscroll-contain rounded-t-3xl bg-card border-t border-border pb-safe touch-native shadow-2xl"
             onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label={t("nav.more")}
           >
-            <div className="flex items-center justify-between px-5 py-4 border-b border-border sticky top-0 bg-card">
-              <div className="font-display text-lg">{t("nav.more")}</div>
-              <button
-                onClick={() => setMoreOpen(false)}
-                className="text-xs font-bold uppercase tracking-widest text-muted-foreground"
-              >
-                ESC
-              </button>
+            <div className="sticky top-0 bg-card border-b border-border">
+              <div className="flex justify-center pt-2.5">
+                <span className="h-1.5 w-10 rounded-full bg-border" />
+              </div>
+              <div className="flex items-center justify-between px-5 pb-3 pt-2">
+                <div className="font-display text-lg">{t("nav.more")}</div>
+                <button
+                  onClick={() => setMoreOpen(false)}
+                  className="rounded-full border border-border px-3 py-1.5 text-xs font-bold uppercase tracking-widest text-muted-foreground active:scale-95 transition"
+                >
+                  Close
+                </button>
+              </div>
             </div>
+
             <div className="p-4 space-y-5">
               {visibleGroups.map((g) => (
                 <div key={g.labelKey}>
