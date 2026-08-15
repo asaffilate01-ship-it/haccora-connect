@@ -734,7 +734,6 @@ function IndustriesStrip() {
             );
           })}
         </div>
-
       </div>
     </section>
   );

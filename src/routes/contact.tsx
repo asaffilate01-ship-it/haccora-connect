@@ -34,9 +34,7 @@ function ContactPage() {
         <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-14 md:py-20 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,520px)] items-start">
           <div>
             <div className="eyebrow">Contact</div>
-            <h1 className="mt-4 display-black text-3xl md:text-5xl">
-              Talk to the Haccora team.
-            </h1>
+            <h1 className="mt-4 display-black text-3xl md:text-5xl">Talk to the Haccora team.</h1>
             <p className="mt-5 max-w-xl text-black/65">
               Tell us about your sites and how you record food safety today. We will show you how
               Haccora replaces the paperwork and what your inspection pack will look like.

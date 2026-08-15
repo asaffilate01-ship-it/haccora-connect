@@ -50,7 +50,6 @@ export function MarketingShell({ children }: MarketingShellProps) {
         </div>
       </header>
 
-
       <main id="main-content" tabIndex={-1} className="flex-1">
         {children}
       </main>
