@@ -780,11 +780,7 @@ function AppShell() {
             </div>
           </header>
 
-          <main
-            id="main-content"
-            tabIndex={-1}
-            className="flex-1 min-w-0 pb-tabbar md:pb-0"
-          >
+          <main id="main-content" tabIndex={-1} className="flex-1 min-w-0 pb-tabbar md:pb-0">
             <Outlet />
           </main>
 
@@ -794,7 +790,6 @@ function AppShell() {
             pathname={pathname}
             t={t}
           />
-
         </div>
       </div>
 
@@ -933,7 +928,6 @@ function MobileBottomNav({
         </button>
       </nav>
 
-
       {moreOpen && (
         <div
           className="md:hidden fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm"
@@ -976,7 +970,7 @@ function MobileBottomNav({
                           key={to}
                           to={to as never}
                           onClick={() => setMoreOpen(false)}
-                          className={`flex items-center gap-2.5 rounded-xl border px-3 py-2.5 text-sm transition ${
+                          className={`flex min-h-12 items-center gap-2.5 rounded-xl border px-3 py-2.5 text-sm font-semibold transition active:scale-[0.97] touch-native ${
                             active
                               ? "bg-primary text-primary-foreground border-primary"
                               : "border-border bg-secondary/40 text-foreground hover:bg-secondary"
