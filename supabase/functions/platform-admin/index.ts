@@ -53,6 +53,20 @@ Deno.serve(async (request) => {
       return json(request, { error: "mfa_step_up_required" }, 403);
     }
 
+    if (input.action === "update_contact_request") {
+      const { error: updateError } = await client.rpc(
+        "platform_update_contact_request",
+        {
+          p_request_id: input.requestId,
+          p_status: input.status,
+        },
+      );
+      if (updateError) throw updateError;
+      return json(request, { ok: true });
+    }
+
+
+
     const service = serviceClient();
     const redirectTo = `${env("PUBLIC_APP_URL").replace(/\/$/, "")}/login`;
 
