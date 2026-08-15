@@ -59,6 +59,7 @@ import {
   Lightbulb,
   Building2,
   PlusCircle,
+  LifeBuoy,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app")({
@@ -176,6 +177,7 @@ const GROUPS: NavGroup[] = [
       { to: "/app/audits", icon: ClipboardList, key: "menu.audits", nav: "audits" },
       { to: "/app/inspection", icon: Gavel, key: "menu.audit", nav: "audit" },
       { to: "/app/security", icon: LockKeyhole, key: "menu.security", nav: "security" },
+      { to: "/app/support", icon: LifeBuoy, key: "Support centre", nav: "preferences" },
       { to: "/app/preferences", icon: Accessibility, key: "menu.preferences", nav: "preferences" },
       { to: "/app/integrations", icon: PlugZap, key: "menu.integrations", nav: "integrations" },
       { to: "/app/billing", icon: CreditCard, key: "menu.billing", nav: "billing" },
@@ -275,6 +277,7 @@ function AppShell() {
       { prefix: "/app/complaints", nav: "complaints" },
       { prefix: "/app/chemicals", nav: "chemicals" },
       { prefix: "/app/security", nav: "security" },
+      { prefix: "/app/support", nav: "preferences" },
       { prefix: "/app/control-centre", nav: "control" },
       { prefix: "/app/workflows", nav: "workflows" },
       { prefix: "/app/billing", nav: "billing" },

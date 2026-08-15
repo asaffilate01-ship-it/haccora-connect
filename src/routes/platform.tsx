@@ -11,6 +11,7 @@ import {
   Snowflake,
   Gauge,
   KeyRound,
+  LifeBuoy,
   Loader2,
   LockKeyhole,
   LogOut,
@@ -503,6 +504,12 @@ function PlatformOperations() {
               className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/20 px-4 text-sm font-bold"
             >
               <Target size={15} /> Prospects
+            </Link>
+            <Link
+              to="/platform-support"
+              className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/20 px-4 text-sm font-bold"
+            >
+              <LifeBuoy size={15} /> Support
             </Link>
             <button
               onClick={() => void signOut().then(() => navigate({ to: "/login" }))}
