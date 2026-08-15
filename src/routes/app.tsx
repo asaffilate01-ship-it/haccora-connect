@@ -631,7 +631,16 @@ function AppShell() {
             </button>
 
             <div className="flex items-center gap-2 md:gap-3 shrink-0">
+              {/* Mobile search */}
+              <button
+                onClick={() => setPaletteOpen(true)}
+                className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card active:scale-95 transition"
+                aria-label={t("nav.search")}
+              >
+                <Search size={16} />
+              </button>
               {/* Notifications */}
+
               <div className="relative">
                 <button
                   onClick={() => {
@@ -771,7 +780,7 @@ function AppShell() {
             </div>
           </header>
 
-          <main id="main-content" tabIndex={-1} className="flex-1 min-w-0">
+          <main id="main-content" tabIndex={-1} className="flex-1 min-w-0 pb-tabbar md:pb-0">
             <Outlet />
           </main>
 
@@ -865,45 +874,57 @@ function MobileBottomNav({
   return (
     <>
       <nav
-        className="md:hidden sticky bottom-0 z-30 grid border-t border-border bg-card pb-safe"
+        aria-label="Primary"
+        className="md:hidden fixed inset-x-0 bottom-0 z-40 grid touch-native border-t border-border bg-card/95 backdrop-blur-md pb-safe shadow-[0_-6px_24px_-12px_rgba(0,0,0,0.25)]"
         style={{ gridTemplateColumns: `repeat(${pinned.length + 1}, minmax(0, 1fr))` }}
       >
         {pinned.map(({ to, icon: Icon, key, exact }) => {
           const active = exact ? pathname === to : pathname.startsWith(to);
+          const primary = to === "/app/quick-log";
           return (
             <Link
               key={to}
               to={to as never}
-              className={`py-2.5 flex flex-col items-center gap-0.5 text-[9px] font-semibold transition ${
-                to === "/app/quick-log"
+              aria-current={active ? "page" : undefined}
+              className={`relative min-h-14 px-1 pt-2 pb-1.5 flex flex-col items-center justify-center gap-1 text-[10px] font-bold leading-none transition active:scale-[0.94] ${
+                primary
                   ? "text-[color:var(--color-alert-red)]"
                   : active
                     ? "text-primary"
                     : "text-muted-foreground"
               }`}
             >
+              {active && !primary && (
+                <span className="absolute top-0 h-0.5 w-8 rounded-full bg-primary" />
+              )}
               <span
                 className={
-                  to === "/app/quick-log"
-                    ? "-mt-4 grid h-10 w-12 place-items-center rounded-full bg-[color:var(--color-alert-red)] text-white shadow-lg"
-                    : "grid h-6 place-items-center"
+                  primary
+                    ? "-mt-6 grid h-12 w-14 place-items-center rounded-2xl bg-[color:var(--color-alert-red)] text-white shadow-lg ring-4 ring-card"
+                    : `grid h-7 w-11 place-items-center rounded-full transition-colors ${active ? "bg-primary/10" : ""}`
                 }
               >
-                <Icon size={to === "/app/quick-log" ? 21 : 18} />
+                <Icon size={primary ? 22 : 19} strokeWidth={active || primary ? 2.5 : 2} />
               </span>
-              <span className="truncate max-w-[68px]">{t(key)}</span>
+              <span className="w-full truncate text-center">{t(key)}</span>
             </Link>
           );
         })}
         <button
+          type="button"
           onClick={() => setMoreOpen(true)}
-          className={`py-2.5 flex flex-col items-center gap-0.5 text-[10px] font-semibold transition ${
+          aria-expanded={moreOpen}
+          className={`min-h-14 px-1 pt-2 pb-1.5 flex flex-col items-center justify-center gap-1 text-[10px] font-bold leading-none transition active:scale-[0.94] ${
             moreOpen ? "text-primary" : "text-muted-foreground"
           }`}
           aria-label={t("nav.more")}
         >
-          <ChevronDown size={18} className="rotate-180" />
-          <span>{t("nav.more")}</span>
+          <span
+            className={`grid h-7 w-11 place-items-center rounded-full transition-colors ${moreOpen ? "bg-primary/10" : ""}`}
+          >
+            <ChevronDown size={19} strokeWidth={moreOpen ? 2.5 : 2} className="rotate-180" />
+          </span>
+          <span className="w-full truncate text-center">{t("nav.more")}</span>
         </button>
       </nav>
 
@@ -911,20 +932,30 @@ function MobileBottomNav({
         <div
           className="md:hidden fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm"
           onClick={() => setMoreOpen(false)}
+          role="presentation"
         >
           <div
-            className="absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-2xl bg-card border-t border-border pb-safe"
+            className="absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto overscroll-contain rounded-t-3xl bg-card border-t border-border pb-safe touch-native shadow-2xl"
             onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label={t("nav.more")}
           >
-            <div className="flex items-center justify-between px-5 py-4 border-b border-border sticky top-0 bg-card">
-              <div className="font-display text-lg">{t("nav.more")}</div>
-              <button
-                onClick={() => setMoreOpen(false)}
-                className="text-xs font-bold uppercase tracking-widest text-muted-foreground"
-              >
-                ESC
-              </button>
+            <div className="sticky top-0 bg-card border-b border-border">
+              <div className="flex justify-center pt-2.5">
+                <span className="h-1.5 w-10 rounded-full bg-border" />
+              </div>
+              <div className="flex items-center justify-between px-5 pb-3 pt-2">
+                <div className="font-display text-lg">{t("nav.more")}</div>
+                <button
+                  onClick={() => setMoreOpen(false)}
+                  className="rounded-full border border-border px-3 py-1.5 text-xs font-bold uppercase tracking-widest text-muted-foreground active:scale-95 transition"
+                >
+                  Close
+                </button>
+              </div>
             </div>
+
             <div className="p-4 space-y-5">
               {visibleGroups.map((g) => (
                 <div key={g.labelKey}>
@@ -939,7 +970,7 @@ function MobileBottomNav({
                           key={to}
                           to={to as never}
                           onClick={() => setMoreOpen(false)}
-                          className={`flex items-center gap-2.5 rounded-xl border px-3 py-2.5 text-sm transition ${
+                          className={`flex min-h-12 items-center gap-2.5 rounded-xl border px-3 py-2.5 text-sm font-semibold transition active:scale-[0.97] touch-native ${
                             active
                               ? "bg-primary text-primary-foreground border-primary"
                               : "border-border bg-secondary/40 text-foreground hover:bg-secondary"
