@@ -16,8 +16,28 @@ export function MarketingShell({ children }: MarketingShellProps) {
   return (
     <div className="min-h-screen bg-white text-foreground flex flex-col">
       <header className="bg-black text-white">
-        <div className="mx-auto max-w-[1400px] px-4 md:px-8 h-16 md:h-20 flex items-center justify-between gap-4">
+        <div className="mx-auto max-w-[1400px] px-4 md:px-8 min-h-16 md:h-20 flex flex-wrap items-center justify-between gap-3 py-3 md:py-0">
           <BrandLogo imgClassName="h-10 md:h-12 w-auto" />
+          <nav
+            aria-label="Primary"
+            className="order-3 w-full md:order-none md:w-auto flex items-center gap-4 md:gap-6 overflow-x-auto no-scrollbar text-[0.72rem] md:text-xs font-black uppercase tracking-widest text-white/70"
+          >
+            <Link to="/features" className="shrink-0 hover:text-white">
+              Features
+            </Link>
+            <Link to="/pricing" className="shrink-0 hover:text-white">
+              Pricing
+            </Link>
+            <Link to="/help" className="shrink-0 hover:text-white">
+              Help
+            </Link>
+            <Link to="/blog" className="shrink-0 hover:text-white">
+              Blog
+            </Link>
+            <Link to="/contact" className="shrink-0 hover:text-white">
+              Contact
+            </Link>
+          </nav>
           <div className="flex items-center gap-3">
             <FollowBar dark />
             <Link
@@ -29,6 +49,7 @@ export function MarketingShell({ children }: MarketingShellProps) {
           </div>
         </div>
       </header>
+
 
       <main id="main-content" tabIndex={-1} className="flex-1">
         {children}
