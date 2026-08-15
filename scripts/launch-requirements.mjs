@@ -98,6 +98,7 @@ const internalSecret = {
 export const launchRequirements = [
   requirement("VITE_SUPABASE_URL", "application", "https", variable),
   requirement("SUPABASE_URL", "application", "https", variable),
+  requirement("PUBLIC_MARKETING_URL", "application", "https", variable),
   requirement("PUBLIC_APP_URL", "application", "https", variable),
   requirement("OPERATIONS_HEALTH_URL", "application", "https", variable),
   requirement("ALLOWED_ORIGINS", "application", "https-list", variable),
@@ -195,6 +196,28 @@ function valueFailure(requirement, environment) {
 
   if (requirement.name === "MALWARE_SCAN_URL" && !current.endsWith("/api/public/malware-scan")) {
     return `${requirement.name} must point at the Haccora scanning endpoint /api/public/malware-scan`;
+  }
+
+  if (requirement.name === "ALLOWED_ORIGINS") {
+    const allowedOrigins = new Set(
+      current
+        .split(",")
+        .map((entry) => entry.trim())
+        .filter(Boolean)
+        .map((entry) => new URL(entry).origin),
+    );
+    for (const relatedName of ["PUBLIC_MARKETING_URL", "PUBLIC_APP_URL"]) {
+      const relatedValue = currentValue(environment, relatedName);
+      if (!relatedValue || placeholder.test(relatedValue)) continue;
+      try {
+        const relatedOrigin = new URL(relatedValue).origin;
+        if (!allowedOrigins.has(relatedOrigin)) {
+          return `${requirement.name} must include the ${relatedName} origin`;
+        }
+      } catch {
+        // The related control reports its own URL validation failure.
+      }
+    }
   }
 
   if (requirement.type === "secret" && current.length < requirement.minimumLength) {
