@@ -90,7 +90,7 @@ export function Pricing() {
               </ul>
               <div className="mt-auto pt-7">
                 <a
-                  href={p.k === "enterprise" ? "#contact" : "/login"}
+                  href={p.k === "enterprise" ? "/contact" : "/login"}
                   className={`inline-flex w-full items-center justify-center rounded-full py-3 text-sm font-black tracking-wider uppercase transition ${
                     p.featured
                       ? "bg-[color:var(--color-alert-green)] text-white hover:brightness-110"
