@@ -870,47 +870,60 @@ function MobileBottomNav({
   return (
     <>
       <nav
-        className="md:hidden sticky bottom-0 z-30 grid border-t border-border bg-card pb-safe"
+        aria-label="Primary"
+        className="md:hidden fixed inset-x-0 bottom-0 z-40 grid touch-native border-t border-border bg-card/95 backdrop-blur-md pb-safe shadow-[0_-6px_24px_-12px_rgba(0,0,0,0.25)]"
         style={{ gridTemplateColumns: `repeat(${pinned.length + 1}, minmax(0, 1fr))` }}
       >
         {pinned.map(({ to, icon: Icon, key, exact }) => {
           const active = exact ? pathname === to : pathname.startsWith(to);
+          const primary = to === "/app/quick-log";
           return (
             <Link
               key={to}
               to={to as never}
-              className={`py-2.5 flex flex-col items-center gap-0.5 text-[9px] font-semibold transition ${
-                to === "/app/quick-log"
+              aria-current={active ? "page" : undefined}
+              className={`relative min-h-14 px-1 pt-2 pb-1.5 flex flex-col items-center justify-center gap-1 text-[10px] font-bold leading-none transition active:scale-[0.94] ${
+                primary
                   ? "text-[color:var(--color-alert-red)]"
                   : active
                     ? "text-primary"
                     : "text-muted-foreground"
               }`}
             >
+              {active && !primary && (
+                <span className="absolute top-0 h-0.5 w-8 rounded-full bg-primary" />
+              )}
               <span
                 className={
-                  to === "/app/quick-log"
-                    ? "-mt-4 grid h-10 w-12 place-items-center rounded-full bg-[color:var(--color-alert-red)] text-white shadow-lg"
-                    : "grid h-6 place-items-center"
+                  primary
+                    ? "-mt-6 grid h-12 w-14 place-items-center rounded-2xl bg-[color:var(--color-alert-red)] text-white shadow-lg ring-4 ring-card"
+                    : `grid h-7 w-11 place-items-center rounded-full transition-colors ${active ? "bg-primary/10" : ""}`
                 }
               >
-                <Icon size={to === "/app/quick-log" ? 21 : 18} />
+                <Icon size={primary ? 22 : 19} strokeWidth={active || primary ? 2.5 : 2} />
               </span>
-              <span className="truncate max-w-[68px]">{t(key)}</span>
+              <span className="w-full truncate text-center">{t(key)}</span>
             </Link>
           );
         })}
         <button
+          type="button"
           onClick={() => setMoreOpen(true)}
-          className={`py-2.5 flex flex-col items-center gap-0.5 text-[10px] font-semibold transition ${
+          aria-expanded={moreOpen}
+          className={`min-h-14 px-1 pt-2 pb-1.5 flex flex-col items-center justify-center gap-1 text-[10px] font-bold leading-none transition active:scale-[0.94] ${
             moreOpen ? "text-primary" : "text-muted-foreground"
           }`}
           aria-label={t("nav.more")}
         >
-          <ChevronDown size={18} className="rotate-180" />
-          <span>{t("nav.more")}</span>
+          <span
+            className={`grid h-7 w-11 place-items-center rounded-full transition-colors ${moreOpen ? "bg-primary/10" : ""}`}
+          >
+            <ChevronDown size={19} strokeWidth={moreOpen ? 2.5 : 2} className="rotate-180" />
+          </span>
+          <span className="w-full truncate text-center">{t("nav.more")}</span>
         </button>
       </nav>
+
 
       {moreOpen && (
         <div
