@@ -14,7 +14,9 @@ import {
   Loader2,
   LockKeyhole,
   LogOut,
+  Mail,
   MapPin,
+  MessageSquareText,
   RefreshCw,
   Save,
   ShieldCheck,
@@ -104,6 +106,20 @@ type Operator = {
 
 type AuditEvent = { id: string; event_type: string; occurred_at: string };
 
+type ContactEnquiry = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string | null;
+  business_name: string | null;
+  enquiry_type: "demo" | "migration" | "sales" | "partnership" | "support" | "general";
+  site_count: number | null;
+  message: string | null;
+  status: "new" | "contacted" | "closed" | "spam";
+  created_at: string;
+};
+
 type ReadinessJob = {
   jobName: string;
   lastStatus: string;
@@ -146,6 +162,7 @@ function PlatformOperations() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [operators, setOperators] = useState<Operator[]>([]);
   const [auditEvents, setAuditEvents] = useState<AuditEvent[]>([]);
+  const [enquiries, setEnquiries] = useState<ContactEnquiry[]>([]);
   const [readiness, setReadiness] = useState<PlatformReadiness | null>(null);
   const [readinessError, setReadinessError] = useState("");
   const [mfaLevel, setMfaLevel] = useState("aal1");
@@ -185,6 +202,7 @@ function PlatformOperations() {
       plansResult,
       operatorsResult,
       auditResult,
+      enquiriesResult,
       readinessResult,
       assuranceResult,
       factorsResult,
@@ -202,6 +220,13 @@ function PlatformOperations() {
             .order("occurred_at", { ascending: false })
             .limit(20)
         : Promise.resolve({ data: [], error: null }),
+      (supabase as any)
+        .from("contact_requests")
+        .select(
+          "id,first_name,last_name,email,phone,business_name,enquiry_type,site_count,message,status,created_at",
+        )
+        .order("created_at", { ascending: false })
+        .limit(100),
       canAuditPlatform
         ? supabase.functions.invoke("platform-readiness", { body: {} })
         : Promise.resolve({ data: null, error: null }),
@@ -213,7 +238,8 @@ function PlatformOperations() {
       customersResult.error ||
       plansResult.error ||
       operatorsResult.error ||
-      auditResult.error;
+      auditResult.error ||
+      enquiriesResult.error;
     if (failure)
       setError(failure.message ?? "The audited platform control plane could not be loaded.");
     else {
@@ -222,6 +248,7 @@ function PlatformOperations() {
       setPlans((plansResult.data ?? []) as Plan[]);
       setOperators((operatorsResult.data ?? []) as Operator[]);
       setAuditEvents((auditResult.data ?? []) as AuditEvent[]);
+      setEnquiries((enquiriesResult.data ?? []) as ContactEnquiry[]);
     }
     if (readinessResult.error) {
       setReadiness(null);
@@ -326,7 +353,9 @@ function PlatformOperations() {
 
   const requireMfa = () => {
     if (mfaLevel === "aal2") return true;
-    setError("MFA step-up is required before changing tenants, subscriptions or SaaS staff.");
+    setError(
+      "MFA step-up is required before changing enquiries, tenants, subscriptions or SaaS staff.",
+    );
     return false;
   };
 
@@ -429,6 +458,25 @@ function PlatformOperations() {
     setBusy("");
     if (operatorError) setError(operatorError.message);
     else await load();
+  };
+
+  const manageEnquiry = async (enquiry: ContactEnquiry, status: ContactEnquiry["status"]) => {
+    if (!requireMfa()) return;
+    setBusy(`enquiry-${enquiry.id}`);
+    setError("");
+    const { error: updateError } = await supabase.functions.invoke("platform-admin", {
+      body: {
+        action: "update_contact_request",
+        requestId: enquiry.id,
+        status,
+      },
+    });
+    setBusy("");
+    if (updateError) setError(updateError.message);
+    else {
+      setNotice(`Enquiry from ${enquiry.first_name} ${enquiry.last_name} marked ${status}.`);
+      await load();
+    }
   };
 
   if (!hydrated || !user?.platformRole)
@@ -739,6 +787,92 @@ function PlatformOperations() {
             value={totalEvidence}
             detail="Last 30 days"
           />
+        </section>
+
+        <section className="surface overflow-hidden">
+          <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border p-5">
+            <div>
+              <div className="flex items-center gap-2">
+                <MessageSquareText size={19} />
+                <h2 className="font-display text-xl">Website enquiries</h2>
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Consent-backed requests submitted through the public website. Only SaaS operators
+                can read this queue; status changes require an owner at AAL2.
+              </p>
+            </div>
+            <span className="rounded-full bg-secondary px-3 py-1.5 text-xs font-black uppercase tracking-wider">
+              {enquiries.filter((enquiry) => enquiry.status === "new").length} new
+            </span>
+          </div>
+          {enquiries.length ? (
+            <div className="grid gap-3 p-5 lg:grid-cols-2">
+              {enquiries.map((enquiry) => (
+                <article key={enquiry.id} className="rounded-xl border border-border p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <h3 className="font-semibold">
+                        {enquiry.first_name} {enquiry.last_name}
+                      </h3>
+                      <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                        <a
+                          className="inline-flex items-center gap-1 hover:underline"
+                          href={`mailto:${enquiry.email}`}
+                        >
+                          <Mail size={12} /> {enquiry.email}
+                        </a>
+                        {enquiry.phone && (
+                          <a
+                            href={`tel:${enquiry.phone.replace(/\s/g, "")}`}
+                            className="hover:underline"
+                          >
+                            {enquiry.phone}
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                    <select
+                      aria-label={`Status for ${enquiry.first_name} ${enquiry.last_name}`}
+                      className="field h-9 w-auto min-w-32 py-1 text-xs capitalize"
+                      value={enquiry.status}
+                      disabled={!owner || busy === `enquiry-${enquiry.id}`}
+                      onChange={(event) =>
+                        void manageEnquiry(enquiry, event.target.value as ContactEnquiry["status"])
+                      }
+                    >
+                      <option value="new">New</option>
+                      <option value="contacted">Contacted</option>
+                      <option value="closed">Closed</option>
+                      <option value="spam">Spam</option>
+                    </select>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                    <span className="rounded-full bg-secondary px-2 py-1">
+                      {enquiry.enquiry_type.replaceAll("_", " ")}
+                    </span>
+                    {enquiry.business_name && (
+                      <span className="rounded-full bg-secondary px-2 py-1">
+                        {enquiry.business_name}
+                      </span>
+                    )}
+                    {enquiry.site_count && (
+                      <span className="rounded-full bg-secondary px-2 py-1">
+                        {enquiry.site_count} {enquiry.site_count === 1 ? "site" : "sites"}
+                      </span>
+                    )}
+                    <span className="rounded-full bg-secondary px-2 py-1">
+                      {new Date(enquiry.created_at).toLocaleString("en-GB")}
+                    </span>
+                  </div>
+                  <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-foreground/80">
+                    {enquiry.message ?? "No enquiry detail was recorded."}
+                  </p>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p className="p-5 text-sm text-muted-foreground">No website enquiries yet.</p>
+          )}
         </section>
 
         <div className="grid gap-5 xl:grid-cols-[1.25fr_0.75fr]">

@@ -1340,13 +1340,17 @@ export type Database = {
           consent_at: string
           created_at: string
           email: string
+          enquiry_type: string
           first_name: string
           id: string
           last_name: string
           locale: string
+          message: string | null
           phone: string | null
+          site_count: number | null
           source_ip_hash: string
           status: string
+          updated_at: string
           user_agent: string | null
         }
         Insert: {
@@ -1354,13 +1358,17 @@ export type Database = {
           consent_at: string
           created_at?: string
           email: string
+          enquiry_type?: string
           first_name: string
           id?: string
           last_name: string
           locale?: string
+          message?: string | null
           phone?: string | null
+          site_count?: number | null
           source_ip_hash: string
           status?: string
+          updated_at?: string
           user_agent?: string | null
         }
         Update: {
@@ -1368,13 +1376,17 @@ export type Database = {
           consent_at?: string
           created_at?: string
           email?: string
+          enquiry_type?: string
           first_name?: string
           id?: string
           last_name?: string
           locale?: string
+          message?: string | null
           phone?: string | null
+          site_count?: number | null
           source_ip_hash?: string
           status?: string
+          updated_at?: string
           user_agent?: string | null
         }
         Relationships: []
@@ -7024,6 +7036,10 @@ export type Database = {
           p_seats?: number
           p_subscription_status?: string
         }
+        Returns: undefined
+      }
+      platform_update_contact_request: {
+        Args: { p_request_id: string; p_status: string }
         Returns: undefined
       }
       record_asset_scan: {
