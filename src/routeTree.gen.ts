@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ReadinessDotjsonRouteImport } from './routes/readiness[.]json'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as PlatformSupportRouteImport } from './routes/platform-support'
 import { Route as PlatformProspectsRouteImport } from './routes/platform-prospects'
 import { Route as PlatformRouteImport } from './routes/platform'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -48,6 +49,7 @@ import { Route as AppUkComplianceRouteImport } from './routes/app.uk-compliance'
 import { Route as AppTrainingRouteImport } from './routes/app.training'
 import { Route as AppTodayRouteImport } from './routes/app.today'
 import { Route as AppTemperatureRouteImport } from './routes/app.temperature'
+import { Route as AppSupportRouteImport } from './routes/app.support'
 import { Route as AppSuppliersRouteImport } from './routes/app.suppliers'
 import { Route as AppStockRouteImport } from './routes/app.stock'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
@@ -108,6 +110,11 @@ const ReadinessDotjsonRoute = ReadinessDotjsonRouteImport.update({
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlatformSupportRoute = PlatformSupportRouteImport.update({
+  id: '/platform-support',
+  path: '/platform-support',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlatformProspectsRoute = PlatformProspectsRouteImport.update({
@@ -293,6 +300,11 @@ const AppTodayRoute = AppTodayRouteImport.update({
 const AppTemperatureRoute = AppTemperatureRouteImport.update({
   id: '/temperature',
   path: '/temperature',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSupportRoute = AppSupportRouteImport.update({
+  id: '/support',
+  path: '/support',
   getParentRoute: () => AppRoute,
 } as any)
 const AppSuppliersRoute = AppSuppliersRouteImport.update({
@@ -540,6 +552,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/platform': typeof PlatformRoute
   '/platform-prospects': typeof PlatformProspectsRoute
+  '/platform-support': typeof PlatformSupportRoute
   '/pricing': typeof PricingRoute
   '/readiness.json': typeof ReadinessDotjsonRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -586,6 +599,7 @@ export interface FileRoutesByFullPath {
   '/app/settings': typeof AppSettingsRoute
   '/app/stock': typeof AppStockRoute
   '/app/suppliers': typeof AppSuppliersRoute
+  '/app/support': typeof AppSupportRoute
   '/app/temperature': typeof AppTemperatureRoute
   '/app/today': typeof AppTodayRoute
   '/app/training': typeof AppTrainingRoute
@@ -625,6 +639,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/platform': typeof PlatformRoute
   '/platform-prospects': typeof PlatformProspectsRoute
+  '/platform-support': typeof PlatformSupportRoute
   '/pricing': typeof PricingRoute
   '/readiness.json': typeof ReadinessDotjsonRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -671,6 +686,7 @@ export interface FileRoutesByTo {
   '/app/settings': typeof AppSettingsRoute
   '/app/stock': typeof AppStockRoute
   '/app/suppliers': typeof AppSuppliersRoute
+  '/app/support': typeof AppSupportRoute
   '/app/temperature': typeof AppTemperatureRoute
   '/app/today': typeof AppTodayRoute
   '/app/training': typeof AppTrainingRoute
@@ -713,6 +729,7 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/platform': typeof PlatformRoute
   '/platform-prospects': typeof PlatformProspectsRoute
+  '/platform-support': typeof PlatformSupportRoute
   '/pricing': typeof PricingRoute
   '/readiness.json': typeof ReadinessDotjsonRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -759,6 +776,7 @@ export interface FileRoutesById {
   '/app/settings': typeof AppSettingsRoute
   '/app/stock': typeof AppStockRoute
   '/app/suppliers': typeof AppSuppliersRoute
+  '/app/support': typeof AppSupportRoute
   '/app/temperature': typeof AppTemperatureRoute
   '/app/today': typeof AppTodayRoute
   '/app/training': typeof AppTrainingRoute
@@ -802,6 +820,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/platform'
     | '/platform-prospects'
+    | '/platform-support'
     | '/pricing'
     | '/readiness.json'
     | '/sitemap.xml'
@@ -848,6 +867,7 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/app/stock'
     | '/app/suppliers'
+    | '/app/support'
     | '/app/temperature'
     | '/app/today'
     | '/app/training'
@@ -887,6 +907,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/platform'
     | '/platform-prospects'
+    | '/platform-support'
     | '/pricing'
     | '/readiness.json'
     | '/sitemap.xml'
@@ -933,6 +954,7 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/app/stock'
     | '/app/suppliers'
+    | '/app/support'
     | '/app/temperature'
     | '/app/today'
     | '/app/training'
@@ -974,6 +996,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/platform'
     | '/platform-prospects'
+    | '/platform-support'
     | '/pricing'
     | '/readiness.json'
     | '/sitemap.xml'
@@ -1020,6 +1043,7 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/app/stock'
     | '/app/suppliers'
+    | '/app/support'
     | '/app/temperature'
     | '/app/today'
     | '/app/training'
@@ -1062,6 +1086,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   PlatformRoute: typeof PlatformRoute
   PlatformProspectsRoute: typeof PlatformProspectsRoute
+  PlatformSupportRoute: typeof PlatformSupportRoute
   PricingRoute: typeof PricingRoute
   ReadinessDotjsonRoute: typeof ReadinessDotjsonRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -1096,6 +1121,13 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/pricing'
       preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/platform-support': {
+      id: '/platform-support'
+      path: '/platform-support'
+      fullPath: '/platform-support'
+      preLoaderRoute: typeof PlatformSupportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/platform-prospects': {
@@ -1348,6 +1380,13 @@ declare module '@tanstack/react-router' {
       path: '/temperature'
       fullPath: '/app/temperature'
       preLoaderRoute: typeof AppTemperatureRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/support': {
+      id: '/app/support'
+      path: '/support'
+      fullPath: '/app/support'
+      preLoaderRoute: typeof AppSupportRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/suppliers': {
@@ -1733,6 +1772,7 @@ interface AppRouteChildren {
   AppSettingsRoute: typeof AppSettingsRoute
   AppStockRoute: typeof AppStockRoute
   AppSuppliersRoute: typeof AppSuppliersRoute
+  AppSupportRoute: typeof AppSupportRoute
   AppTemperatureRoute: typeof AppTemperatureRoute
   AppTodayRoute: typeof AppTodayRoute
   AppTrainingRoute: typeof AppTrainingRoute
@@ -1786,6 +1826,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppSettingsRoute: AppSettingsRoute,
   AppStockRoute: AppStockRoute,
   AppSuppliersRoute: AppSuppliersRoute,
+  AppSupportRoute: AppSupportRoute,
   AppTemperatureRoute: AppTemperatureRoute,
   AppTodayRoute: AppTodayRoute,
   AppTrainingRoute: AppTrainingRoute,
@@ -1845,6 +1886,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   PlatformRoute: PlatformRoute,
   PlatformProspectsRoute: PlatformProspectsRoute,
+  PlatformSupportRoute: PlatformSupportRoute,
   PricingRoute: PricingRoute,
   ReadinessDotjsonRoute: ReadinessDotjsonRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
