@@ -697,12 +697,12 @@ function OutcomesBand() {
 function IndustriesStrip() {
   const { t } = useI18n();
   const items = [
-    { icon: Utensils, k: "restaurant" },
-    { icon: Hotel, k: "hotel" },
-    { icon: Coffee, k: "cafe" },
-    { icon: Beer, k: "pub" },
-    { icon: TruckIcon, k: "takeaway" },
-    { icon: ChefHat, k: "canteen" },
+    { icon: Utensils, k: "restaurant", to: "/industries/restaurants-and-cafes" as const },
+    { icon: Hotel, k: "hotel", to: null },
+    { icon: Coffee, k: "cafe", to: "/industries/restaurants-and-cafes" as const },
+    { icon: Beer, k: "pub", to: "/industries/pubs-and-bars" as const },
+    { icon: TruckIcon, k: "takeaway", to: "/industries/takeaways-and-fast-food" as const },
+    { icon: ChefHat, k: "canteen", to: "/industries/care-homes-and-schools" as const },
   ];
   return (
     <section className="bg-[color:var(--color-cream)]">
@@ -713,7 +713,7 @@ function IndustriesStrip() {
           <p className="mt-4 text-black/60 max-w-2xl">{t("industries.subtitle")}</p>
         </div>
         <div className="mt-10 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {items.map(({ icon: Icon, k }) => {
+          {items.map(({ icon: Icon, k, to }) => {
             const inner = (
               <>
                 <span className="icon-3d icon-3d-sm">
@@ -723,12 +723,8 @@ function IndustriesStrip() {
               </>
             );
             const className = "card-polished p-5 flex flex-col items-center text-center";
-            return k === "restaurant" || k === "cafe" ? (
-              <Link
-                key={k}
-                to="/industries/restaurants-and-cafes"
-                className={`${className} transition hover:-translate-y-0.5`}
-              >
+            return to ? (
+              <Link key={k} to={to} className={`${className} transition hover:-translate-y-0.5`}>
                 {inner}
               </Link>
             ) : (
@@ -738,6 +734,7 @@ function IndustriesStrip() {
             );
           })}
         </div>
+
       </div>
     </section>
   );
