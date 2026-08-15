@@ -21,6 +21,7 @@ export function ContactCard() {
       return;
     }
     const form = new FormData(formElement);
+    const siteCount = String(form.get("siteCount") ?? "").trim();
     try {
       const { error: invokeError } = await supabase.functions.invoke("contact", {
         body: {
@@ -29,6 +30,9 @@ export function ContactCard() {
           email: form.get("email"),
           phone: form.get("phone"),
           businessName: form.get("businessName"),
+          enquiryType: form.get("enquiryType"),
+          siteCount: siteCount ? Number(siteCount) : null,
+          message: form.get("message"),
           website: form.get("website"),
           locale: lang,
           consent: form.get("consent") === "on",
@@ -82,6 +86,45 @@ export function ContactCard() {
           maxLength={254}
           placeholder={t("contact.email") ?? "Email Address"}
           className="fld"
+        />
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <select
+            name="enquiryType"
+            aria-label="How can we help?"
+            required
+            defaultValue=""
+            className="fld"
+          >
+            <option value="" disabled>
+              How can we help?
+            </option>
+            <option value="demo">Book a product walkthrough</option>
+            <option value="migration">Move from paper or another system</option>
+            <option value="sales">Plans and pricing</option>
+            <option value="partnership">Partnership or integration</option>
+            <option value="support">Existing-customer support</option>
+            <option value="general">Something else</option>
+          </select>
+          <input
+            name="siteCount"
+            aria-label="Number of premises"
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={10000}
+            placeholder="Number of premises"
+            className="fld"
+          />
+        </div>
+        <textarea
+          name="message"
+          aria-label="Tell us what you need"
+          required
+          minLength={10}
+          maxLength={2000}
+          rows={5}
+          placeholder="Tell us what you need, how you record food safety today and any timescale."
+          className="fld min-h-32 resize-y"
         />
         <input
           name="phone"
