@@ -9,14 +9,14 @@ This phase restores a deterministic clean install after the Lovable build packag
 
 ## Changes
 
-- Regenerated `package-lock.json` so the declared and resolved `@lovable.dev/vite-tanstack-config` versions are both `2.13.1`.
+- Regenerated `package-lock.json` with the npm 10 major used by GitHub so the declared and resolved `@lovable.dev/vite-tanstack-config` versions are both `2.13.1` and Nitro's optional peer layout remains reproducible.
 - Added a regression test that inspects the actual resolved lock entry, closing the gap left by the earlier root-only assertion.
 - Added `PUBLIC_MARKETING_URL` to the fail-closed production configuration registry and protected release workflow.
 - Requires `ALLOWED_ORIGINS` to contain both the marketing and authenticated application origins.
 - Added `marketingOrigin` and `applicationOrigin` to `/readiness.json`; the deployment check therefore blocks a release with missing, non-HTTPS or path-bearing origins.
 - Updated the environment example and configuration handbook to the current 44-control gate.
 - Repaired two formatting regressions that blocked the main-branch lint gate and migrated the FSA prospect server action from TanStack's deprecated `inputValidator()` API to `validator()`.
-- Replaced a brittle lockfile test tied to Nitro's former nested `lru-cache` layout with npm lockfile-version, root-package and declared-dependency integrity checks.
+- Extended the lockfile test to cover npm lockfile-version, root-package and declared dependency integrity while retaining Nitro's npm-10 optional-peer assertion.
 
 ## Still outside source control
 

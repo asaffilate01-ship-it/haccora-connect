@@ -54,6 +54,7 @@ test("the root lockfile is reproducible with the npm major used by GitHub", asyn
     lock.packages?.[""]?.devDependencies?.["@lovable.dev/vite-tanstack-config"],
     packageJson.devDependencies["@lovable.dev/vite-tanstack-config"],
   );
+  assert.equal(lock.packages?.["node_modules/nitro/node_modules/lru-cache"]?.version, "11.5.2");
 });
 
 test("Supabase Auth health fails closed before making unsafe requests", async () => {
