@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 
 import { BrandLogo } from "@/components/BrandLogo";
-import { FollowBar } from "@/components/SocialIcons";
 import { PUBLIC_CONFIG } from "@/lib/public-config";
 import heroKitchen from "@/assets/promo-hero-kitchen.jpg";
 import shotToday from "@/assets/screenshot-today.jpg";
@@ -206,7 +205,6 @@ function PromoHome() {
         <div className="mx-auto max-w-[1400px] px-4 md:px-8 h-16 md:h-20 flex items-center justify-between gap-3">
           <BrandLogo imgClassName="h-9 md:h-12 w-auto" />
           <div className="flex items-center gap-3">
-            <FollowBar dark />
             <Link
               to="/unlock"
               className="btn-red !px-4 !py-2 !text-xs sm:!text-sm shadow-lg shadow-black/40"
