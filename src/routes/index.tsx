@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import {
   ArrowRight,
   Bell,
@@ -17,6 +18,12 @@ import { BrandLogo } from "@/components/BrandLogo";
 import { FollowBar } from "@/components/SocialIcons";
 import { PUBLIC_CONFIG } from "@/lib/public-config";
 import heroKitchen from "@/assets/promo-hero-kitchen.jpg";
+import shotToday from "@/assets/screenshot-today.jpg";
+import shotTemperature from "@/assets/screenshot-temperature.jpg";
+import shotInspection from "@/assets/screenshot-inspection.jpg";
+import shotDiary from "@/assets/screenshot-diary.jpg";
+import shotHome from "@/assets/screenshot-home.jpg";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
