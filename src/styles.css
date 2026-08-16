@@ -154,6 +154,11 @@ html.haccora-compact .app-shell main .surface > :is(header, div, section) {
   --compact-spacing: 0.75rem;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
+html.haccora-reduced-motion,
 html.haccora-reduced-motion *,
 html.haccora-reduced-motion *::before,
 html.haccora-reduced-motion *::after {
