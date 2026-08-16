@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import {
   ArrowRight,
   Bell,
@@ -17,6 +18,11 @@ import { BrandLogo } from "@/components/BrandLogo";
 import { FollowBar } from "@/components/SocialIcons";
 import { PUBLIC_CONFIG } from "@/lib/public-config";
 import heroKitchen from "@/assets/promo-hero-kitchen.jpg";
+import shotToday from "@/assets/screenshot-today.jpg";
+import shotTemperature from "@/assets/screenshot-temperature.jpg";
+import shotInspection from "@/assets/screenshot-inspection.jpg";
+import shotDiary from "@/assets/screenshot-diary.jpg";
+import shotHome from "@/assets/screenshot-home.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -104,6 +110,94 @@ const HERO_CARDS: [string, string, typeof ClipboardCheck][] = [
   ["Mobile app", "Capture evidence and scan equipment QR codes", Smartphone],
   ["Platform console", "Multi-site oversight, support and audit trail", ShieldCheck],
 ];
+
+const SCREENS = [
+  {
+    id: "today",
+    label: "Today's shift",
+    src: shotToday,
+    caption: "Open, monitor and close — the day's work in one focused screen.",
+    alt: "Haccora Today's shift screen showing opening checks, monitoring and closing routines",
+  },
+  {
+    id: "temperature",
+    label: "Temperatures",
+    src: shotTemperature,
+    caption: "Fridge, freezer and probe readings with instant out-of-range flags.",
+    alt: "Haccora temperature monitoring screen with walk-in fridge and freezer readings",
+  },
+  {
+    id: "inspection",
+    label: "Inspector mode",
+    src: shotInspection,
+    caption: "Generate a read-only evidence pack for the food control authority.",
+    alt: "Haccora inspector mode screen generating a read-only evidence pack",
+  },
+  {
+    id: "diary",
+    label: "Daily diary",
+    src: shotDiary,
+    caption: "Timestamped opening, closing and cleaning records with sign-off.",
+    alt: "Haccora daily diary screen listing completed opening and closing records",
+  },
+  {
+    id: "site",
+    label: "Website",
+    src: shotHome,
+    caption: "The full marketing site, pricing and help centre behind the gate.",
+    alt: "Haccora marketing website homepage",
+  },
+] as const;
+
+function ScreenshotGallery() {
+  const [active, setActive] = useState(0);
+  const screen = SCREENS[active]!;
+
+  return (
+    <div>
+      <div className="flex flex-wrap gap-2">
+        {SCREENS.map((item, index) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => setActive(index)}
+            aria-pressed={index === active}
+            className={`rounded-full px-4 py-2 text-xs font-black uppercase tracking-widest transition-colors ${
+              index === active
+                ? "bg-[color:var(--color-alert-red)] text-white shadow-lg shadow-black/20"
+                : "border border-white/15 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+            }`}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+
+      <figure className="mt-6">
+        <div className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#0d0d0d] shadow-[0_50px_100px_-40px_rgba(0,0,0,0.95)]">
+          <div className="flex items-center gap-2 border-b border-white/10 px-4 py-3">
+            <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
+            <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
+            <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
+            <span className="ml-3 truncate rounded-md bg-white/5 px-3 py-1 text-[0.65rem] font-bold tracking-wide text-white/45">
+              haccora.co.uk
+            </span>
+          </div>
+          <img
+            key={screen.id}
+            src={screen.src}
+            width={1440}
+            height={759}
+            loading="lazy"
+            alt={screen.alt}
+            className="w-full animate-in fade-in duration-300"
+          />
+        </div>
+        <figcaption className="mt-4 text-sm text-white/60">{screen.caption}</figcaption>
+      </figure>
+    </div>
+  );
+}
 
 function PromoHome() {
   return (
@@ -248,6 +342,23 @@ function PromoHome() {
                 </span>
               </article>
             ))}
+          </div>
+        </section>
+
+        {/* Screenshots */}
+        <section className="bg-black text-white">
+          <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-24">
+            <p className="eyebrow text-[color:var(--color-alert-red)]">Inside Haccora</p>
+            <h2 className="mt-3 display-black uppercase tracking-tight">
+              Real screens from the live product
+            </h2>
+            <p className="mt-3 max-w-2xl text-white/65">
+              These are captured straight from the Haccora workspace — no mockups. Pick a screen to
+              see how the day-to-day evidence is recorded and produced for inspection.
+            </p>
+            <div className="mt-10">
+              <ScreenshotGallery />
+            </div>
           </div>
         </section>
 
