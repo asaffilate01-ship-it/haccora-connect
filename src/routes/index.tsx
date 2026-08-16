@@ -18,7 +18,6 @@ import { FollowBar } from "@/components/SocialIcons";
 import { PUBLIC_CONFIG } from "@/lib/public-config";
 import heroKitchen from "@/assets/promo-hero-kitchen.jpg";
 
-
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -229,7 +228,6 @@ function PromoHome() {
           </div>
         </section>
 
-
         {/* Modules */}
         <section className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-24">
           <p className="eyebrow">The platform</p>
@@ -319,7 +317,6 @@ function PromoHome() {
           </div>
         </section>
       </main>
-
 
       <footer className="bg-black text-white/60">
         <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-10 flex flex-col gap-3 md:flex-row md:items-center md:justify-between text-xs">
