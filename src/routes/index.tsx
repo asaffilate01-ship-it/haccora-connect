@@ -333,11 +333,15 @@ function PromoHome() {
             </Link>
           </div>
         </div>
+        <SectionNav />
       </header>
 
       <main id="main-content" tabIndex={-1}>
         {/* Hero */}
-        <section className="relative isolate overflow-hidden bg-black text-white">
+        <section
+          id="overview"
+          className="relative isolate overflow-hidden bg-black text-white scroll-mt-32"
+        >
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0 opacity-80"
@@ -441,7 +445,10 @@ function PromoHome() {
         </section>
 
         {/* Modules */}
-        <section className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-24">
+        <section
+          id="platform"
+          className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-24 scroll-mt-32"
+        >
           <p className="eyebrow">The platform</p>
           <h2 className="mt-3 display-black uppercase tracking-tight">
             Everything a UK food business has to prove
@@ -464,7 +471,7 @@ function PromoHome() {
         </section>
 
         {/* Screenshots */}
-        <section className="bg-black text-white">
+        <section id="screens" className="bg-black text-white scroll-mt-32">
           <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-24">
             <p className="eyebrow text-[color:var(--color-alert-red)]">Inside Haccora</p>
             <h2 className="mt-3 display-black uppercase tracking-tight">
@@ -481,7 +488,7 @@ function PromoHome() {
         </section>
 
         {/* Platform strip */}
-        <section className="bg-black text-white">
+        <section id="operations" className="bg-black text-white scroll-mt-32">
           <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-20 grid gap-5 md:grid-cols-3">
             {PLATFORM.map(({ icon: Icon, title, body }) => (
               <article key={title} className="card-polished-dark p-6 md:p-7">
@@ -496,7 +503,10 @@ function PromoHome() {
         </section>
 
         {/* Who it's for */}
-        <section className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-24">
+        <section
+          id="who-its-for"
+          className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-24 scroll-mt-32"
+        >
           <p className="eyebrow">Who it&apos;s for</p>
           <h2 className="mt-3 display-black uppercase tracking-tight">
             Built for UK food businesses
