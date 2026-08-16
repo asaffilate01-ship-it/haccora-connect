@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowRight,
   Bell,
@@ -260,6 +260,64 @@ function ScreenshotGallery() {
   );
 }
 
+const SECTIONS = [
+  { id: "overview", label: "Overview" },
+  { id: "platform", label: "Platform" },
+  { id: "screens", label: "Screens" },
+  { id: "operations", label: "Operations" },
+  { id: "who-its-for", label: "Who it's for" },
+] as const;
+
+function SectionNav() {
+  const [active, setActive] = useState<string>("overview");
+
+  useEffect(() => {
+    const targets = SECTIONS.map(({ id }) => document.getElementById(id)).filter(
+      (el): el is HTMLElement => Boolean(el),
+    );
+    if (targets.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (visible) setActive(visible.target.id);
+      },
+      { rootMargin: "-45% 0px -45% 0px", threshold: [0, 0.25, 0.5, 1] },
+    );
+    targets.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <nav aria-label="Page sections" className="border-t border-white/10 bg-black/80 backdrop-blur-md">
+      <div className="mx-auto max-w-[1400px] px-4 md:px-8">
+        <ul className="flex items-center gap-1.5 overflow-x-auto py-2.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {SECTIONS.map(({ id, label }) => {
+            const isActive = active === id;
+            return (
+              <li key={id} className="shrink-0">
+                <a
+                  href={`#${id}`}
+                  aria-current={isActive ? "true" : undefined}
+                  className={`inline-flex items-center rounded-full border px-3.5 py-1.5 text-xs font-black uppercase tracking-[0.14em] transition-colors ${
+                    isActive
+                      ? "border-[color:var(--color-alert-red)] bg-[color:var(--color-alert-red)] text-white"
+                      : "border-white/15 bg-white/5 text-white/65 hover:border-white/35 hover:text-white"
+                  }`}
+                >
+                  {label}
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </nav>
+  );
+}
+
 function PromoHome() {
   return (
     <div className="marketing-shell min-h-screen bg-white text-foreground">
@@ -275,11 +333,15 @@ function PromoHome() {
             </Link>
           </div>
         </div>
+        <SectionNav />
       </header>
 
       <main id="main-content" tabIndex={-1}>
         {/* Hero */}
-        <section className="relative isolate overflow-hidden bg-black text-white">
+        <section
+          id="overview"
+          className="relative isolate overflow-hidden bg-black text-white scroll-mt-32"
+        >
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0 opacity-80"
@@ -383,7 +445,10 @@ function PromoHome() {
         </section>
 
         {/* Modules */}
-        <section className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-24">
+        <section
+          id="platform"
+          className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-24 scroll-mt-32"
+        >
           <p className="eyebrow">The platform</p>
           <h2 className="mt-3 display-black uppercase tracking-tight">
             Everything a UK food business has to prove
@@ -406,7 +471,7 @@ function PromoHome() {
         </section>
 
         {/* Screenshots */}
-        <section className="bg-black text-white">
+        <section id="screens" className="bg-black text-white scroll-mt-32">
           <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-24">
             <p className="eyebrow text-[color:var(--color-alert-red)]">Inside Haccora</p>
             <h2 className="mt-3 display-black uppercase tracking-tight">
@@ -423,7 +488,7 @@ function PromoHome() {
         </section>
 
         {/* Platform strip */}
-        <section className="bg-black text-white">
+        <section id="operations" className="bg-black text-white scroll-mt-32">
           <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-20 grid gap-5 md:grid-cols-3">
             {PLATFORM.map(({ icon: Icon, title, body }) => (
               <article key={title} className="card-polished-dark p-6 md:p-7">
@@ -438,7 +503,10 @@ function PromoHome() {
         </section>
 
         {/* Who it's for */}
-        <section className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-24">
+        <section
+          id="who-its-for"
+          className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-24 scroll-mt-32"
+        >
           <p className="eyebrow">Who it&apos;s for</p>
           <h2 className="mt-3 display-black uppercase tracking-tight">
             Built for UK food businesses
