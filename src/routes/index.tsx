@@ -112,6 +112,96 @@ const HERO_CARDS: [string, string, typeof ClipboardCheck][] = [
   ["Platform console", "Multi-site oversight, support and audit trail", ShieldCheck],
 ];
 
+const SCREENS = [
+  {
+    id: "today",
+    label: "Today's shift",
+    src: shotToday,
+    caption: "Open, monitor and close — the day's work in one focused screen.",
+    alt: "Haccora Today's shift screen showing opening checks, monitoring and closing routines",
+  },
+  {
+    id: "temperature",
+    label: "Temperatures",
+    src: shotTemperature,
+    caption: "Fridge, freezer and probe readings with instant out-of-range flags.",
+    alt: "Haccora temperature monitoring screen with walk-in fridge and freezer readings",
+  },
+  {
+    id: "inspection",
+    label: "Inspector mode",
+    src: shotInspection,
+    caption: "Generate a read-only evidence pack for the food control authority.",
+    alt: "Haccora inspector mode screen generating a read-only evidence pack",
+  },
+  {
+    id: "diary",
+    label: "Daily diary",
+    src: shotDiary,
+    caption: "Timestamped opening, closing and cleaning records with sign-off.",
+    alt: "Haccora daily diary screen listing completed opening and closing records",
+  },
+  {
+    id: "site",
+    label: "Website",
+    src: shotHome,
+    caption: "The full marketing site, pricing and help centre behind the gate.",
+    alt: "Haccora marketing website homepage",
+  },
+] as const;
+
+function ScreenshotGallery() {
+  const [active, setActive] = useState(0);
+  const screen = SCREENS[active]!;
+
+  return (
+    <div>
+      <div className="flex flex-wrap gap-2">
+        {SCREENS.map((item, index) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => setActive(index)}
+            aria-pressed={index === active}
+            className={`rounded-full px-4 py-2 text-xs font-black uppercase tracking-widest transition-colors ${
+              index === active
+                ? "bg-[color:var(--color-alert-red)] text-white shadow-lg shadow-black/20"
+                : "border border-white/15 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+            }`}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+
+      <figure className="mt-6">
+        <div className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#0d0d0d] shadow-[0_50px_100px_-40px_rgba(0,0,0,0.95)]">
+          <div className="flex items-center gap-2 border-b border-white/10 px-4 py-3">
+            <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
+            <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
+            <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
+            <span className="ml-3 truncate rounded-md bg-white/5 px-3 py-1 text-[0.65rem] font-bold tracking-wide text-white/45">
+              haccora.co.uk
+            </span>
+          </div>
+          <img
+            key={screen.id}
+            src={screen.src}
+            width={1440}
+            height={759}
+            loading="lazy"
+            alt={screen.alt}
+            className="w-full animate-in fade-in duration-300"
+          />
+        </div>
+        <figcaption className="mt-4 text-sm text-white/60">{screen.caption}</figcaption>
+      </figure>
+    </div>
+  );
+}
+
+
+
 function PromoHome() {
   return (
     <div className="marketing-shell min-h-screen bg-white text-foreground">
