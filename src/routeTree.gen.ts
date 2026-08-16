@@ -26,6 +26,7 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as AccountStatusRouteImport } from './routes/account-status'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
@@ -180,6 +181,11 @@ const AppRoute = AppRouteImport.update({
 const AccountStatusRoute = AccountStatusRouteImport.update({
   id: '/account-status',
   path: '/account-status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BlogIndexRoute = BlogIndexRouteImport.update({
@@ -539,6 +545,7 @@ const ApiPublicMalwareScanRoute = ApiPublicMalwareScanRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
   '/account-status': typeof AccountStatusRoute
   '/app': typeof AppRouteWithChildren
   '/blog': typeof BlogRouteWithChildren
@@ -628,6 +635,7 @@ export interface FileRoutesByFullPath {
   '/app/assets/scan': typeof AppAssetsScanRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/account-status': typeof AccountStatusRoute
   '/contact': typeof ContactRoute
   '/features': typeof FeaturesRoute
@@ -716,6 +724,7 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/account-status': typeof AccountStatusRoute
   '/app': typeof AppRouteWithChildren
   '/blog': typeof BlogRouteWithChildren
@@ -807,6 +816,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | '/account-status'
     | '/app'
     | '/blog'
@@ -896,6 +906,7 @@ export interface FileRouteTypes {
     | '/app/assets/scan'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/account-status'
     | '/contact'
     | '/features'
@@ -983,6 +994,7 @@ export interface FileRouteTypes {
     | '/app/assets/scan'
   id:
     | '__root__'
+    | '/'
     | '/account-status'
     | '/app'
     | '/blog'
@@ -1073,6 +1085,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   AccountStatusRoute: typeof AccountStatusRoute
   AppRoute: typeof AppRouteWithChildren
   BlogRoute: typeof BlogRouteWithChildren
@@ -1219,6 +1232,13 @@ declare module '@tanstack/react-router' {
       path: '/account-status'
       fullPath: '/account-status'
       preLoaderRoute: typeof AccountStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/blog/': {
@@ -1873,6 +1893,7 @@ const LegalRouteChildren: LegalRouteChildren = {
 const LegalRouteWithChildren = LegalRoute._addFileChildren(LegalRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   AccountStatusRoute: AccountStatusRoute,
   AppRoute: AppRouteWithChildren,
   BlogRoute: BlogRouteWithChildren,
