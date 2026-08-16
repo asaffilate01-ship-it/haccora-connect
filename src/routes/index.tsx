@@ -260,6 +260,64 @@ function ScreenshotGallery() {
   );
 }
 
+const SECTIONS = [
+  { id: "overview", label: "Overview" },
+  { id: "platform", label: "Platform" },
+  { id: "screens", label: "Screens" },
+  { id: "operations", label: "Operations" },
+  { id: "who-its-for", label: "Who it's for" },
+] as const;
+
+function SectionNav() {
+  const [active, setActive] = useState<string>("overview");
+
+  useEffect(() => {
+    const targets = SECTIONS.map(({ id }) => document.getElementById(id)).filter(
+      (el): el is HTMLElement => Boolean(el),
+    );
+    if (targets.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (visible) setActive(visible.target.id);
+      },
+      { rootMargin: "-45% 0px -45% 0px", threshold: [0, 0.25, 0.5, 1] },
+    );
+    targets.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <nav aria-label="Page sections" className="border-t border-white/10 bg-black/80 backdrop-blur-md">
+      <div className="mx-auto max-w-[1400px] px-4 md:px-8">
+        <ul className="flex items-center gap-1.5 overflow-x-auto py-2.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {SECTIONS.map(({ id, label }) => {
+            const isActive = active === id;
+            return (
+              <li key={id} className="shrink-0">
+                <a
+                  href={`#${id}`}
+                  aria-current={isActive ? "true" : undefined}
+                  className={`inline-flex items-center rounded-full border px-3.5 py-1.5 text-xs font-black uppercase tracking-[0.14em] transition-colors ${
+                    isActive
+                      ? "border-[color:var(--color-alert-red)] bg-[color:var(--color-alert-red)] text-white"
+                      : "border-white/15 bg-white/5 text-white/65 hover:border-white/35 hover:text-white"
+                  }`}
+                >
+                  {label}
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </nav>
+  );
+}
+
 function PromoHome() {
   return (
     <div className="marketing-shell min-h-screen bg-white text-foreground">
