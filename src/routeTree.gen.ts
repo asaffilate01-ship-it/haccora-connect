@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UnlockRouteImport } from './routes/unlock'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ReadinessDotjsonRouteImport } from './routes/readiness[.]json'
 import { Route as PricingRouteImport } from './routes/pricing'
@@ -98,6 +99,11 @@ import { Route as AppAssetsScanRouteImport } from './routes/app.assets.scan'
 import { Route as AppAssetsAssetIdRouteImport } from './routes/app.assets.$assetId'
 import { Route as ApiPublicMalwareScanRouteImport } from './routes/api/public/malware-scan'
 
+const UnlockRoute = UnlockRouteImport.update({
+  id: '/unlock',
+  path: '/unlock',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -563,6 +569,7 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/readiness.json': typeof ReadinessDotjsonRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/unlock': typeof UnlockRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/assets': typeof AppAssetsRouteWithChildren
   '/app/audits': typeof AppAuditsRoute
@@ -651,6 +658,7 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/readiness.json': typeof ReadinessDotjsonRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/unlock': typeof UnlockRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/assets': typeof AppAssetsRouteWithChildren
   '/app/audits': typeof AppAuditsRoute
@@ -742,6 +750,7 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/readiness.json': typeof ReadinessDotjsonRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/unlock': typeof UnlockRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/assets': typeof AppAssetsRouteWithChildren
   '/app/audits': typeof AppAuditsRoute
@@ -834,6 +843,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/readiness.json'
     | '/sitemap.xml'
+    | '/unlock'
     | '/app/alerts'
     | '/app/assets'
     | '/app/audits'
@@ -922,6 +932,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/readiness.json'
     | '/sitemap.xml'
+    | '/unlock'
     | '/app/alerts'
     | '/app/assets'
     | '/app/audits'
@@ -1012,6 +1023,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/readiness.json'
     | '/sitemap.xml'
+    | '/unlock'
     | '/app/alerts'
     | '/app/assets'
     | '/app/audits'
@@ -1103,6 +1115,7 @@ export interface RootRouteChildren {
   PricingRoute: typeof PricingRoute
   ReadinessDotjsonRoute: typeof ReadinessDotjsonRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  UnlockRoute: typeof UnlockRoute
   CompareHaccoraVsFooddocsRoute: typeof CompareHaccoraVsFooddocsRoute
   CompareHaccoraVsLogitRoute: typeof CompareHaccoraVsLogitRoute
   FreeToolsHaccpPlanTemplateRoute: typeof FreeToolsHaccpPlanTemplateRoute
@@ -1115,6 +1128,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/unlock': {
+      id: '/unlock'
+      path: '/unlock'
+      fullPath: '/unlock'
+      preLoaderRoute: typeof UnlockRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -1911,6 +1931,7 @@ const rootRouteChildren: RootRouteChildren = {
   PricingRoute: PricingRoute,
   ReadinessDotjsonRoute: ReadinessDotjsonRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  UnlockRoute: UnlockRoute,
   CompareHaccoraVsFooddocsRoute: CompareHaccoraVsFooddocsRoute,
   CompareHaccoraVsLogitRoute: CompareHaccoraVsLogitRoute,
   FreeToolsHaccpPlanTemplateRoute: FreeToolsHaccpPlanTemplateRoute,

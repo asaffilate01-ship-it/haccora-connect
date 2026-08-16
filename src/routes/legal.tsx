@@ -24,7 +24,7 @@ function LegalLayout() {
       <div className="bg-black text-white">
         <div className="mx-auto max-w-[1400px] px-4 md:px-8 h-16 flex items-center justify-between">
           <Link
-            to="/"
+            to="/home"
             className="inline-flex items-center gap-2 text-white/80 hover:text-white text-sm font-bold"
           >
             <ArrowLeft size={16} /> {t("legal.back")}

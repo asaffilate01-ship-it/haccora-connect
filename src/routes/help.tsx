@@ -49,7 +49,7 @@ function HelpCentrePage() {
       <header className="border-b border-black/10 bg-white">
         <div className="mx-auto flex min-h-16 max-w-[1180px] items-center justify-between gap-4 px-4 py-3 md:px-8">
           <Link
-            to="/"
+            to="/home"
             className="inline-flex items-center gap-2 text-sm font-bold text-black/70 hover:text-black"
           >
             <ArrowLeft size={16} aria-hidden="true" /> Home

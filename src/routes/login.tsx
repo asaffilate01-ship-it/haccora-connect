@@ -147,7 +147,7 @@ function LoginPage() {
 
           <div className="flex items-center gap-3">
             <Link
-              to="/"
+              to="/home"
               className="hidden sm:inline-flex items-center gap-1.5 text-sm text-white/80 hover:text-white"
             >
               <ArrowLeft size={14} /> {t("auth.back")}
