@@ -16,6 +16,8 @@ import {
 import { BrandLogo } from "@/components/BrandLogo";
 import { FollowBar } from "@/components/SocialIcons";
 import { PUBLIC_CONFIG } from "@/lib/public-config";
+import heroKitchen from "@/assets/promo-hero-kitchen.jpg";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
