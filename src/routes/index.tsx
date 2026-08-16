@@ -22,6 +22,9 @@ import shotTemperature from "@/assets/screenshot-temperature.jpg";
 import shotInspection from "@/assets/screenshot-inspection.jpg";
 import shotDiary from "@/assets/screenshot-diary.jpg";
 import shotHome from "@/assets/screenshot-home.jpg";
+import mobileToday from "@/assets/mobile-today.jpg";
+import mobileTemperature from "@/assets/mobile-temperature.jpg";
+import mobileDiary from "@/assets/mobile-diary.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
