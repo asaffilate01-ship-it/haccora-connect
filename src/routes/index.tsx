@@ -44,31 +44,37 @@ export const Route = createFileRoute("/")({
 const MODULES = [
   {
     icon: ClipboardCheck,
+    tone: "icon-3d",
     title: "Digital HACCP & safe methods",
     body: "SFBB-style safe methods, hazard analysis, critical limits and corrective actions kept current and signed off.",
   },
   {
     icon: Thermometer,
+    tone: "icon-3d-green",
     title: "Temperature & monitoring",
     body: "Fridge, freezer, probe, cooking and cooling logs with out-of-range alerts and sensor integration.",
   },
   {
     icon: FileText,
+    tone: "icon-3d-dark",
     title: "Daily diary & opening checks",
     body: "Opening, closing and cleaning routines completed on any device, timestamped with photo evidence.",
   },
   {
     icon: Wheat,
+    tone: "icon-3d-green",
     title: "Allergens & PPDS labelling",
     body: "Recipe-level allergen matrix, Natasha's Law compliant PPDS labels and menu change control.",
   },
   {
     icon: Users,
+    tone: "icon-3d-dark",
     title: "Staff compliance & training",
     body: "Inductions, training records, fitness to work and expiry reminders across every site.",
   },
   {
     icon: ShieldCheck,
+    tone: "icon-3d",
     title: "Inspection evidence packs",
     body: "One tap produces a structured evidence pack for your EHO — no folders, no last-minute panic.",
   },
@@ -92,15 +98,24 @@ const PLATFORM = [
   },
 ];
 
+const HERO_CARDS: [string, string, typeof ClipboardCheck][] = [
+  ["Compliance workspace", "Diary, checks, HACCP, allergens, training", ClipboardCheck],
+  ["Mobile app", "Capture evidence and scan equipment QR codes", Smartphone],
+  ["Platform console", "Multi-site oversight, support and audit trail", ShieldCheck],
+];
+
 function PromoHome() {
   return (
     <div className="marketing-shell min-h-screen bg-white text-foreground">
-      <header className="bg-black text-white">
+      <header className="sticky top-0 z-40 bg-black/90 text-white backdrop-blur-md border-b border-white/10">
         <div className="mx-auto max-w-[1400px] px-4 md:px-8 h-16 md:h-20 flex items-center justify-between gap-3">
           <BrandLogo imgClassName="h-9 md:h-12 w-auto" />
           <div className="flex items-center gap-3">
             <FollowBar dark />
-            <Link to="/unlock" className="btn-red !px-4 !py-2 !text-xs sm:!text-sm">
+            <Link
+              to="/unlock"
+              className="btn-red !px-4 !py-2 !text-xs sm:!text-sm shadow-lg shadow-black/40"
+            >
               Enter site <ArrowRight size={14} />
             </Link>
           </div>
@@ -109,16 +124,25 @@ function PromoHome() {
 
       <main id="main-content" tabIndex={-1}>
         {/* Hero */}
-        <section className="bg-black text-white">
-          <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-24 grid gap-10 md:grid-cols-[1.15fr_0.85fr] items-center">
+        <section className="relative isolate overflow-hidden bg-black text-white">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 opacity-80"
+            style={{
+              background:
+                "radial-gradient(70% 55% at 12% 0%, color-mix(in oklab, var(--color-alert-red) 42%, transparent) 0%, transparent 62%), radial-gradient(55% 45% at 92% 18%, color-mix(in oklab, var(--color-alert-orange) 28%, transparent) 0%, transparent 65%)",
+            }}
+          />
+          <div className="relative mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-24 grid gap-10 md:grid-cols-[1.15fr_0.85fr] items-center">
             <div>
-              <p className="text-[0.7rem] font-black uppercase tracking-[0.22em] text-[color:var(--color-alert-red)]">
+              <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[0.68rem] font-black uppercase tracking-[0.2em] text-white/80 backdrop-blur">
+                <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--color-alert-red)]" />
                 Preview access · UK food safety software
               </p>
-              <h1 className="hero-title mt-4 display-black uppercase tracking-tight">
+              <h1 className="hero-title mt-5 display-black uppercase tracking-tight">
                 Every food safety record, in one place
               </h1>
-              <p className="mt-5 max-w-xl text-white/70 text-base md:text-lg leading-relaxed">
+              <p className="mt-5 max-w-xl text-white/75 text-base md:text-lg leading-relaxed">
                 Haccora replaces paper diaries, temperature sheets and folders of printouts with one
                 simple system your whole team can use — kitchen, office and inspector.
               </p>
@@ -130,7 +154,7 @@ function PromoHome() {
                   Request access
                 </a>
               </div>
-              <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-white/60">
+              <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-white/65">
                 {[
                   "Built for UK regulation",
                   "Works offline in the kitchen",
@@ -148,15 +172,19 @@ function PromoHome() {
               <p className="text-xs font-black uppercase tracking-widest text-white/50">
                 What you get
               </p>
-              <div className="mt-5 grid gap-4">
-                {[
-                  ["Compliance workspace", "Diary, checks, HACCP, allergens, training"],
-                  ["Mobile app", "Capture evidence and scan equipment QR codes"],
-                  ["Platform console", "Multi-site oversight, support and audit trail"],
-                ].map(([title, body]) => (
-                  <div key={title} className="rounded-2xl bg-white/5 border border-white/10 p-4">
-                    <p className="font-black">{title}</p>
-                    <p className="mt-1 text-sm text-white/60">{body}</p>
+              <div className="mt-5 grid gap-3">
+                {HERO_CARDS.map(([title, body, Icon]) => (
+                  <div
+                    key={title}
+                    className="group flex items-start gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 transition-colors hover:border-white/20 hover:bg-white/10"
+                  >
+                    <span className="icon-3d icon-3d-sm shrink-0">
+                      <Icon size={18} />
+                    </span>
+                    <div>
+                      <p className="font-black leading-tight">{title}</p>
+                      <p className="mt-1 text-sm text-white/60 leading-snug">{body}</p>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -166,20 +194,22 @@ function PromoHome() {
 
         {/* Modules */}
         <section className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-24">
-          <p className="text-[0.7rem] font-black uppercase tracking-[0.22em] text-[color:var(--color-alert-red)]">
-            The platform
-          </p>
+          <p className="eyebrow">The platform</p>
           <h2 className="mt-3 display-black uppercase tracking-tight">
             Everything a UK food business has to prove
           </h2>
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {MODULES.map(({ icon: Icon, title, body }) => (
-              <article key={title} className="card-polished rounded-3xl p-6">
-                <span className="icon-3d inline-flex h-12 w-12 items-center justify-center rounded-2xl">
-                  <Icon size={22} />
+            {MODULES.map(({ icon: Icon, tone, title, body }) => (
+              <article key={title} className="card-polished group p-6 md:p-7">
+                <span className={`${tone} icon-3d-sm`}>
+                  <Icon size={20} strokeWidth={2.2} />
                 </span>
-                <h3 className="mt-4 text-lg font-black">{title}</h3>
+                <h3 className="mt-5 text-lg font-black leading-tight">{title}</h3>
                 <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{body}</p>
+                <span className="mt-5 inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-[color:var(--color-alert-red)] opacity-0 transition-opacity group-hover:opacity-100">
+                  Included
+                  <ArrowRight size={13} />
+                </span>
               </article>
             ))}
           </div>
@@ -187,13 +217,13 @@ function PromoHome() {
 
         {/* Platform strip */}
         <section className="bg-black text-white">
-          <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-20 grid gap-6 md:grid-cols-3">
+          <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-20 grid gap-5 md:grid-cols-3">
             {PLATFORM.map(({ icon: Icon, title, body }) => (
-              <article key={title} className="rounded-3xl border border-white/10 bg-white/5 p-6">
-                <span className="icon-3d-dark inline-flex h-12 w-12 items-center justify-center rounded-2xl">
-                  <Icon size={22} />
+              <article key={title} className="card-polished-dark p-6 md:p-7">
+                <span className="icon-3d-dark icon-3d-sm">
+                  <Icon size={20} strokeWidth={2.2} />
                 </span>
-                <h3 className="mt-4 text-lg font-black">{title}</h3>
+                <h3 className="mt-5 text-lg font-black leading-tight">{title}</h3>
                 <p className="mt-2 text-sm text-white/60 leading-relaxed">{body}</p>
               </article>
             ))}
@@ -202,25 +232,56 @@ function PromoHome() {
 
         {/* Who it's for */}
         <section className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-24">
-          <h2 className="display-black uppercase tracking-tight">Built for UK food businesses</h2>
+          <p className="eyebrow">Who it&apos;s for</p>
+          <h2 className="mt-3 display-black uppercase tracking-tight">
+            Built for UK food businesses
+          </h2>
           <p className="mt-3 max-w-2xl text-muted-foreground">
             Restaurants and cafés, takeaways and fast food, pubs and bars, care homes and schools,
             bakeries, dark kitchens and multi-site groups.
           </p>
-          <div className="mt-10 rounded-3xl bg-black text-white p-8 md:p-12 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-            <div>
+          <div className="mt-6 flex flex-wrap gap-2">
+            {[
+              "Restaurants & cafés",
+              "Takeaways",
+              "Pubs & bars",
+              "Care homes",
+              "Schools",
+              "Bakeries",
+              "Dark kitchens",
+              "Multi-site groups",
+            ].map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full border border-border bg-secondary px-3.5 py-1.5 text-xs font-bold text-secondary-foreground"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+          <div className="relative mt-12 overflow-hidden rounded-[1.75rem] bg-black text-white p-8 md:p-12 flex flex-col md:flex-row md:items-center md:justify-between gap-6 shadow-[0_40px_80px_-40px_rgba(0,0,0,0.6)]">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0"
+              style={{
+                background:
+                  "radial-gradient(60% 120% at 90% 20%, color-mix(in oklab, var(--color-alert-red) 40%, transparent) 0%, transparent 60%)",
+              }}
+            />
+            <div className="relative">
               <h3 className="text-2xl md:text-3xl font-black">This is a private preview</h3>
-              <p className="mt-2 text-white/60 max-w-xl">
+              <p className="mt-2 text-white/70 max-w-xl">
                 The full website, pricing, help centre and product workspace are behind a password
                 while we finish our launch. Enter the promo password to continue.
               </p>
             </div>
-            <Link to="/unlock" className="btn-red shrink-0">
+            <Link to="/unlock" className="btn-red relative shrink-0">
               Enter site <ArrowRight size={16} />
             </Link>
           </div>
         </section>
       </main>
+
 
       <footer className="bg-black text-white/60">
         <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-10 flex flex-col gap-3 md:flex-row md:items-center md:justify-between text-xs">
