@@ -69,6 +69,7 @@ jobs:
           node-version: 22
       - run: node scripts/check-deployment-health.mjs
       - run: node scripts/check-deployment-smoke.mjs
+      - run: node scripts/check-deployment-client-auth.mjs
 
   authentication:
     if: ${{ vars.SUPABASE_URL != '' && vars.SUPABASE_PUBLISHABLE_KEY != '' }}

@@ -13,25 +13,19 @@ const publicKey = (value: unknown): string | null => {
 };
 
 /**
- * Resolve the public Supabase connection without touching the client singleton.
- * VITE_* values are embedded for browsers; the aliases support SSR runtimes.
+ * Resolve the connection that is embedded in the browser bundle. Public app
+ * availability must never be inferred from server-only aliases: doing that can
+ * render an enabled login during SSR and then disable it during hydration.
  */
-export function getPublicSupabaseConfig(): PublicSupabaseConfig {
+export function getBrowserSupabaseConfig(): PublicSupabaseConfig {
   const browserEnvironment = import.meta.env as Record<string, unknown>;
-  const runtimeEnvironment =
-    typeof process !== "undefined" ? (process.env as Record<string, unknown>) : {};
-
-  const url =
-    nonEmpty(browserEnvironment.VITE_SUPABASE_URL) ??
-    nonEmpty(runtimeEnvironment.SUPABASE_URL) ??
-    nonEmpty(runtimeEnvironment.VITE_SUPABASE_URL);
-  const publishableKey =
-    publicKey(browserEnvironment.VITE_SUPABASE_PUBLISHABLE_KEY) ??
-    publicKey(runtimeEnvironment.SUPABASE_PUBLISHABLE_KEY) ??
-    publicKey(runtimeEnvironment.VITE_SUPABASE_PUBLISHABLE_KEY);
+  const url = nonEmpty(browserEnvironment.VITE_SUPABASE_URL);
+  const publishableKey = publicKey(browserEnvironment.VITE_SUPABASE_PUBLISHABLE_KEY);
 
   return { url, publishableKey, configured: Boolean(url && publishableKey) };
 }
+
+export const getPublicSupabaseConfig = getBrowserSupabaseConfig;
 
 export const isSupabaseConfigured = () => getPublicSupabaseConfig().configured;
 

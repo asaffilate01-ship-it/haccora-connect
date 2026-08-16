@@ -3,13 +3,7 @@ import type { Language } from "@/lib/i18n";
 import { PUBLIC_CONFIG, legalIdentityComplete } from "@/lib/public-config";
 
 export type LegalKey =
-  | "company"
-  | "privacy"
-  | "terms"
-  | "cookies"
-  | "dataProcessing"
-  | "accessibility"
-  | "complaints";
+  "company" | "privacy" | "terms" | "cookies" | "dataProcessing" | "accessibility" | "complaints";
 
 export interface LegalDoc {
   title: string;

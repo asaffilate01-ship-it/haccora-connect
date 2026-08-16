@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
-import { getPublicSupabaseConfig } from "@/integrations/supabase/config";
+import { getBrowserSupabaseConfig } from "@/integrations/supabase/config";
 import { PUBLIC_LAUNCH_READINESS } from "@/lib/public-config";
 import { RELEASE_SHA } from "@/lib/release";
 
@@ -25,7 +25,8 @@ export const Route = createFileRoute("/readiness.json")({
     handlers: {
       GET: async () => {
         const checks = {
-          authentication: getPublicSupabaseConfig().configured,
+          // This must describe the browser bundle, not server-only aliases.
+          authentication: getBrowserSupabaseConfig().configured,
           marketingOrigin: hasValidHttpsOrigin(process.env.PUBLIC_MARKETING_URL),
           applicationOrigin: hasValidHttpsOrigin(process.env.PUBLIC_APP_URL),
           legalIdentity: PUBLIC_LAUNCH_READINESS.legalIdentityComplete,
