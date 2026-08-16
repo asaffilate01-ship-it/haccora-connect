@@ -54,7 +54,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/home")({
   head: () => ({
     meta: [
       { title: "Haccora — Food safety software for UK businesses" },
