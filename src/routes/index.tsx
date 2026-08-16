@@ -16,6 +16,7 @@ import {
 import { BrandLogo } from "@/components/BrandLogo";
 import { FollowBar } from "@/components/SocialIcons";
 import { PUBLIC_CONFIG } from "@/lib/public-config";
+import heroKitchen from "@/assets/promo-hero-kitchen.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -168,26 +169,61 @@ function PromoHome() {
               </ul>
             </div>
 
-            <div className="card-polished-dark rounded-3xl p-6 md:p-8">
-              <p className="text-xs font-black uppercase tracking-widest text-white/50">
-                What you get
-              </p>
-              <div className="mt-5 grid gap-3">
-                {HERO_CARDS.map(([title, body, Icon]) => (
-                  <div
-                    key={title}
-                    className="group flex items-start gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 transition-colors hover:border-white/20 hover:bg-white/10"
-                  >
-                    <span className="icon-3d icon-3d-sm shrink-0">
-                      <Icon size={18} />
-                    </span>
-                    <div>
-                      <p className="font-black leading-tight">{title}</p>
-                      <p className="mt-1 text-sm text-white/60 leading-snug">{body}</p>
+            <div className="relative">
+              <div className="relative overflow-hidden rounded-[1.75rem] border border-white/10 shadow-[0_50px_100px_-40px_rgba(0,0,0,0.9)]">
+                <img
+                  src={heroKitchen}
+                  width={1600}
+                  height={1200}
+                  alt="Chef reviewing digital food safety checks on a tablet in a busy commercial kitchen"
+                  className="h-[320px] w-full object-cover md:h-[460px]"
+                />
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0"
+                  style={{
+                    background:
+                      "linear-gradient(180deg, color-mix(in oklab, black 10%, transparent) 0%, color-mix(in oklab, black 78%, transparent) 100%)",
+                  }}
+                />
+                <div className="absolute inset-x-4 bottom-4 md:inset-x-6 md:bottom-6">
+                  <div className="rounded-2xl border border-white/15 bg-black/45 p-4 backdrop-blur-md">
+                    <p className="text-[0.65rem] font-black uppercase tracking-[0.2em] text-white/50">
+                      What you get
+                    </p>
+                    <div className="mt-3 grid gap-2">
+                      {HERO_CARDS.map(([title, body, Icon]) => (
+                        <div key={title} className="flex items-start gap-3">
+                          <span className="icon-3d icon-3d-sm shrink-0">
+                            <Icon size={16} />
+                          </span>
+                          <div className="min-w-0">
+                            <p className="text-sm font-black leading-tight">{title}</p>
+                            <p className="truncate text-xs text-white/60">{body}</p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                ))}
+                </div>
               </div>
+            </div>
+          </div>
+
+          {/* Proof strip */}
+          <div className="relative border-t border-white/10">
+            <div className="mx-auto grid max-w-[1400px] grid-cols-2 gap-px px-4 md:grid-cols-4 md:px-8">
+              {[
+                ["6", "compliance modules"],
+                ["1 tap", "inspection evidence pack"],
+                ["Offline", "capture in the kitchen"],
+                ["Multi-site", "oversight and audit trail"],
+              ].map(([stat, label]) => (
+                <div key={label} className="py-8 md:py-10">
+                  <p className="text-2xl md:text-3xl font-black text-white">{stat}</p>
+                  <p className="mt-1 text-xs md:text-sm text-white/55 leading-snug">{label}</p>
+                </div>
+              ))}
             </div>
           </div>
         </section>
@@ -281,7 +317,6 @@ function PromoHome() {
           </div>
         </section>
       </main>
-
 
       <footer className="bg-black text-white/60">
         <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-10 flex flex-col gap-3 md:flex-row md:items-center md:justify-between text-xs">
