@@ -151,6 +151,30 @@ const SCREENS = [
   },
 ] as const;
 
+const MOBILE_SCREENS = [
+  {
+    id: "m-today",
+    label: "Today's shift",
+    src: mobileToday,
+    caption: "Next required action, progress and one-tap start.",
+    alt: "Haccora mobile app showing today's shift screen with next required action",
+  },
+  {
+    id: "m-temperature",
+    label: "Temperatures",
+    src: mobileTemperature,
+    caption: "Log fridge, freezer and probe readings in seconds.",
+    alt: "Haccora mobile app temperature logging screen",
+  },
+  {
+    id: "m-diary",
+    label: "Daily diary",
+    src: mobileDiary,
+    caption: "Timestamped records with photo evidence and sign-off.",
+    alt: "Haccora mobile app daily diary screen",
+  },
+] as const;
+
 function ScreenshotGallery() {
   const [active, setActive] = useState(0);
   const screen = SCREENS[active]!;
