@@ -61,7 +61,7 @@ export function MarketingShell({ children }: MarketingShellProps) {
             UK food businesses.
           </p>
           <nav className="flex flex-wrap gap-4 text-xs uppercase tracking-widest font-black">
-            <Link to="/" className="hover:text-white">
+            <Link to="/home" className="hover:text-white">
               Home
             </Link>
             <Link to="/blog" className="hover:text-white">

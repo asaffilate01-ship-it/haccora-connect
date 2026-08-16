@@ -70,7 +70,7 @@ function BlogPostPage() {
       {/* black top bar */}
       <div className="bg-black text-white">
         <div className="mx-auto max-w-[1400px] px-4 md:px-8 h-16 md:h-20 flex items-center justify-between gap-4">
-          <Link to="/" className="font-display text-2xl md:text-3xl tracking-tight text-white">
+          <Link to="/home" className="font-display text-2xl md:text-3xl tracking-tight text-white">
             Hacc<span className="text-[color:var(--color-alert-red)]">ora</span>
           </Link>
           <div className="flex items-center gap-3">

@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UnlockRouteImport } from './routes/unlock'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ReadinessDotjsonRouteImport } from './routes/readiness[.]json'
 import { Route as PricingRouteImport } from './routes/pricing'
@@ -26,6 +27,7 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as AccountStatusRouteImport } from './routes/account-status'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
@@ -97,6 +99,11 @@ import { Route as AppAssetsScanRouteImport } from './routes/app.assets.scan'
 import { Route as AppAssetsAssetIdRouteImport } from './routes/app.assets.$assetId'
 import { Route as ApiPublicMalwareScanRouteImport } from './routes/api/public/malware-scan'
 
+const UnlockRoute = UnlockRouteImport.update({
+  id: '/unlock',
+  path: '/unlock',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -180,6 +187,11 @@ const AppRoute = AppRouteImport.update({
 const AccountStatusRoute = AccountStatusRouteImport.update({
   id: '/account-status',
   path: '/account-status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BlogIndexRoute = BlogIndexRouteImport.update({
@@ -539,6 +551,7 @@ const ApiPublicMalwareScanRoute = ApiPublicMalwareScanRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
   '/account-status': typeof AccountStatusRoute
   '/app': typeof AppRouteWithChildren
   '/blog': typeof BlogRouteWithChildren
@@ -556,6 +569,7 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/readiness.json': typeof ReadinessDotjsonRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/unlock': typeof UnlockRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/assets': typeof AppAssetsRouteWithChildren
   '/app/audits': typeof AppAuditsRoute
@@ -628,6 +642,7 @@ export interface FileRoutesByFullPath {
   '/app/assets/scan': typeof AppAssetsScanRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/account-status': typeof AccountStatusRoute
   '/contact': typeof ContactRoute
   '/features': typeof FeaturesRoute
@@ -643,6 +658,7 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/readiness.json': typeof ReadinessDotjsonRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/unlock': typeof UnlockRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/assets': typeof AppAssetsRouteWithChildren
   '/app/audits': typeof AppAuditsRoute
@@ -716,6 +732,7 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/account-status': typeof AccountStatusRoute
   '/app': typeof AppRouteWithChildren
   '/blog': typeof BlogRouteWithChildren
@@ -733,6 +750,7 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/readiness.json': typeof ReadinessDotjsonRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/unlock': typeof UnlockRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/assets': typeof AppAssetsRouteWithChildren
   '/app/audits': typeof AppAuditsRoute
@@ -807,6 +825,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | '/account-status'
     | '/app'
     | '/blog'
@@ -824,6 +843,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/readiness.json'
     | '/sitemap.xml'
+    | '/unlock'
     | '/app/alerts'
     | '/app/assets'
     | '/app/audits'
@@ -896,6 +916,7 @@ export interface FileRouteTypes {
     | '/app/assets/scan'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/account-status'
     | '/contact'
     | '/features'
@@ -911,6 +932,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/readiness.json'
     | '/sitemap.xml'
+    | '/unlock'
     | '/app/alerts'
     | '/app/assets'
     | '/app/audits'
@@ -983,6 +1005,7 @@ export interface FileRouteTypes {
     | '/app/assets/scan'
   id:
     | '__root__'
+    | '/'
     | '/account-status'
     | '/app'
     | '/blog'
@@ -1000,6 +1023,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/readiness.json'
     | '/sitemap.xml'
+    | '/unlock'
     | '/app/alerts'
     | '/app/assets'
     | '/app/audits'
@@ -1073,6 +1097,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   AccountStatusRoute: typeof AccountStatusRoute
   AppRoute: typeof AppRouteWithChildren
   BlogRoute: typeof BlogRouteWithChildren
@@ -1090,6 +1115,7 @@ export interface RootRouteChildren {
   PricingRoute: typeof PricingRoute
   ReadinessDotjsonRoute: typeof ReadinessDotjsonRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  UnlockRoute: typeof UnlockRoute
   CompareHaccoraVsFooddocsRoute: typeof CompareHaccoraVsFooddocsRoute
   CompareHaccoraVsLogitRoute: typeof CompareHaccoraVsLogitRoute
   FreeToolsHaccpPlanTemplateRoute: typeof FreeToolsHaccpPlanTemplateRoute
@@ -1102,6 +1128,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/unlock': {
+      id: '/unlock'
+      path: '/unlock'
+      fullPath: '/unlock'
+      preLoaderRoute: typeof UnlockRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -1219,6 +1252,13 @@ declare module '@tanstack/react-router' {
       path: '/account-status'
       fullPath: '/account-status'
       preLoaderRoute: typeof AccountStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/blog/': {
@@ -1873,6 +1913,7 @@ const LegalRouteChildren: LegalRouteChildren = {
 const LegalRouteWithChildren = LegalRoute._addFileChildren(LegalRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   AccountStatusRoute: AccountStatusRoute,
   AppRoute: AppRouteWithChildren,
   BlogRoute: BlogRouteWithChildren,
@@ -1890,6 +1931,7 @@ const rootRouteChildren: RootRouteChildren = {
   PricingRoute: PricingRoute,
   ReadinessDotjsonRoute: ReadinessDotjsonRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  UnlockRoute: UnlockRoute,
   CompareHaccoraVsFooddocsRoute: CompareHaccoraVsFooddocsRoute,
   CompareHaccoraVsLogitRoute: CompareHaccoraVsLogitRoute,
   FreeToolsHaccpPlanTemplateRoute: FreeToolsHaccpPlanTemplateRoute,
