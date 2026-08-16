@@ -348,6 +348,25 @@ function PromoHome() {
           </div>
         </section>
 
+        {/* Screenshots */}
+        <section className="bg-black text-white">
+          <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-24">
+            <p className="eyebrow text-[color:var(--color-alert-red)]">Inside Haccora</p>
+            <h2 className="mt-3 display-black uppercase tracking-tight">
+              Real screens from the live product
+            </h2>
+            <p className="mt-3 max-w-2xl text-white/65">
+              These are captured straight from the Haccora workspace — no mockups. Pick a screen to
+              see how the day-to-day evidence is recorded and produced for inspection.
+            </p>
+            <div className="mt-10">
+              <ScreenshotGallery />
+            </div>
+          </div>
+        </section>
+
+
+
         {/* Platform strip */}
         <section className="bg-black text-white">
           <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-20 grid gap-5 md:grid-cols-3">
