@@ -24,7 +24,6 @@ import shotInspection from "@/assets/screenshot-inspection.jpg";
 import shotDiary from "@/assets/screenshot-diary.jpg";
 import shotHome from "@/assets/screenshot-home.jpg";
 
-
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -200,8 +199,6 @@ function ScreenshotGallery() {
   );
 }
 
-
-
 function PromoHome() {
   return (
     <div className="marketing-shell min-h-screen bg-white text-foreground">
@@ -364,8 +361,6 @@ function PromoHome() {
             </div>
           </div>
         </section>
-
-
 
         {/* Platform strip */}
         <section className="bg-black text-white">
