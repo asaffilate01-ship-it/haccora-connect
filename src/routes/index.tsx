@@ -22,6 +22,9 @@ import shotTemperature from "@/assets/screenshot-temperature.jpg";
 import shotInspection from "@/assets/screenshot-inspection.jpg";
 import shotDiary from "@/assets/screenshot-diary.jpg";
 import shotHome from "@/assets/screenshot-home.jpg";
+import mobileToday from "@/assets/mobile-today.jpg";
+import mobileTemperature from "@/assets/mobile-temperature.jpg";
+import mobileDiary from "@/assets/mobile-diary.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -148,6 +151,30 @@ const SCREENS = [
   },
 ] as const;
 
+const MOBILE_SCREENS = [
+  {
+    id: "m-today",
+    label: "Today's shift",
+    src: mobileToday,
+    caption: "Next required action, progress and one-tap start.",
+    alt: "Haccora mobile app showing today's shift screen with next required action",
+  },
+  {
+    id: "m-temperature",
+    label: "Temperatures",
+    src: mobileTemperature,
+    caption: "Log fridge, freezer and probe readings in seconds.",
+    alt: "Haccora mobile app temperature logging screen",
+  },
+  {
+    id: "m-diary",
+    label: "Daily diary",
+    src: mobileDiary,
+    caption: "Timestamped records with photo evidence and sign-off.",
+    alt: "Haccora mobile app daily diary screen",
+  },
+] as const;
+
 function ScreenshotGallery() {
   const [active, setActive] = useState(0);
   const screen = SCREENS[active]!;
@@ -194,6 +221,41 @@ function ScreenshotGallery() {
         </div>
         <figcaption className="mt-4 text-sm text-white/60">{screen.caption}</figcaption>
       </figure>
+
+      <div className="mt-14">
+        <p className="eyebrow text-[color:var(--color-alert-red)]">On the floor</p>
+        <h3 className="mt-2 text-2xl font-black uppercase tracking-tight text-white">
+          Built mobile-first for kitchen teams
+        </h3>
+        <p className="mt-2 max-w-2xl text-sm text-white/60">
+          The same workspace as an installable app — thumb-friendly navigation, quick capture and
+          offline-safe records on any phone.
+        </p>
+
+        <div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          {MOBILE_SCREENS.map((item) => (
+            <figure key={item.id} className="flex flex-col items-center">
+              <div className="relative w-full max-w-[240px] rounded-[2.25rem] border border-white/15 bg-[#0d0d0d] p-2 shadow-[0_40px_80px_-40px_rgba(0,0,0,0.95)]">
+                <span className="absolute left-1/2 top-3.5 z-10 h-1.5 w-16 -translate-x-1/2 rounded-full bg-white/25" />
+                <img
+                  src={item.src}
+                  width={780}
+                  height={1688}
+                  loading="lazy"
+                  alt={item.alt}
+                  className="w-full rounded-[1.75rem]"
+                />
+              </div>
+              <figcaption className="mt-4 text-center">
+                <span className="block text-sm font-black uppercase tracking-widest text-white">
+                  {item.label}
+                </span>
+                <span className="mt-1 block text-sm text-white/55">{item.caption}</span>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
