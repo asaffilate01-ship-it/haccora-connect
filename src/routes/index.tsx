@@ -181,14 +181,14 @@ function ScreenshotGallery() {
 
   return (
     <div>
-      <div className="flex flex-wrap gap-2">
+      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] md:mx-0 md:flex-wrap md:px-0 [&::-webkit-scrollbar]:hidden">
         {SCREENS.map((item, index) => (
           <button
             key={item.id}
             type="button"
             onClick={() => setActive(index)}
             aria-pressed={index === active}
-            className={`rounded-full px-4 py-2 text-xs font-black uppercase tracking-widest transition-colors ${
+            className={`shrink-0 rounded-full px-3.5 py-2 text-[0.68rem] font-black uppercase tracking-widest transition-colors sm:px-4 sm:text-xs ${
               index === active
                 ? "bg-[color:var(--color-alert-red)] text-white shadow-lg shadow-black/20"
                 : "border border-white/15 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
@@ -200,12 +200,12 @@ function ScreenshotGallery() {
       </div>
 
       <figure className="mt-6">
-        <div className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#0d0d0d] shadow-[0_50px_100px_-40px_rgba(0,0,0,0.95)]">
-          <div className="flex items-center gap-2 border-b border-white/10 px-4 py-3">
-            <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
-            <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
-            <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
-            <span className="ml-3 truncate rounded-md bg-white/5 px-3 py-1 text-[0.65rem] font-bold tracking-wide text-white/45">
+        <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#0d0d0d] shadow-[0_50px_100px_-40px_rgba(0,0,0,0.95)] sm:rounded-[1.5rem]">
+          <div className="flex items-center gap-2 border-b border-white/10 px-3 py-2.5 sm:px-4 sm:py-3">
+            <span className="h-2 w-2 rounded-full bg-white/20 sm:h-2.5 sm:w-2.5" />
+            <span className="h-2 w-2 rounded-full bg-white/20 sm:h-2.5 sm:w-2.5" />
+            <span className="h-2 w-2 rounded-full bg-white/20 sm:h-2.5 sm:w-2.5" />
+            <span className="ml-2 truncate rounded-md bg-white/5 px-2.5 py-1 text-[0.6rem] font-bold tracking-wide text-white/45 sm:ml-3 sm:px-3 sm:text-[0.65rem]">
               haccora.co.uk
             </span>
           </div>
@@ -221,6 +221,7 @@ function ScreenshotGallery() {
         </div>
         <figcaption className="mt-4 text-sm text-white/60">{screen.caption}</figcaption>
       </figure>
+
 
       <div className="mt-14">
         <p className="eyebrow text-[color:var(--color-alert-red)]">On the floor</p>
