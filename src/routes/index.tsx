@@ -12,9 +12,12 @@ import {
   Users,
   Wheat,
   CheckCircle2,
+  Plus,
+  Minus,
 } from "lucide-react";
 
 import { BrandLogo } from "@/components/BrandLogo";
+import { MARKETING_FAQS } from "@/lib/marketing-faqs";
 import { PUBLIC_CONFIG } from "@/lib/public-config";
 import heroKitchen from "@/assets/promo-hero-kitchen.jpg";
 import shotToday from "@/assets/screenshot-today.jpg";
