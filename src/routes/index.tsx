@@ -274,6 +274,7 @@ const SECTIONS = [
   { id: "screens", label: "Screens" },
   { id: "operations", label: "Operations" },
   { id: "who-its-for", label: "Who it's for" },
+  { id: "faqs", label: "FAQs" },
 ] as const;
 
 function SectionNav() {
