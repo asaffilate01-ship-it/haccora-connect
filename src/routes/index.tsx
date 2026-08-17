@@ -521,16 +521,17 @@ function PromoHome() {
         {/* Who it's for */}
         <section
           id="who-its-for"
-          className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-24 scroll-mt-32"
+          className="mx-auto max-w-[1400px] scroll-mt-32 px-4 py-12 sm:py-16 md:px-8 md:py-24"
         >
           <p className="eyebrow">Who it&apos;s for</p>
           <h2 className="mt-3 display-black uppercase tracking-tight">
             Built for UK food businesses
           </h2>
-          <p className="mt-3 max-w-2xl text-muted-foreground">
+          <p className="mt-3 max-w-2xl text-sm text-muted-foreground sm:text-base">
             Restaurants and cafés, takeaways and fast food, pubs and bars, care homes and schools,
             bakeries, dark kitchens and multi-site groups.
           </p>
+
           <div className="mt-6 flex flex-wrap gap-2">
             {[
               "Restaurants & cafés",
