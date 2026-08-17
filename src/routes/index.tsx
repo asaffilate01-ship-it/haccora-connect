@@ -551,7 +551,7 @@ function PromoHome() {
               </span>
             ))}
           </div>
-          <div className="relative mt-12 overflow-hidden rounded-[1.75rem] bg-black text-white p-8 md:p-12 flex flex-col md:flex-row md:items-center md:justify-between gap-6 shadow-[0_40px_80px_-40px_rgba(0,0,0,0.6)]">
+          <div className="relative mt-10 flex flex-col gap-5 overflow-hidden rounded-2xl bg-black p-6 text-white shadow-[0_40px_80px_-40px_rgba(0,0,0,0.6)] sm:rounded-[1.75rem] sm:p-8 md:mt-12 md:flex-row md:items-center md:justify-between md:gap-6 md:p-12">
             <div
               aria-hidden
               className="pointer-events-none absolute inset-0"
@@ -561,16 +561,19 @@ function PromoHome() {
               }}
             />
             <div className="relative">
-              <h3 className="text-2xl md:text-3xl font-black">This is a private preview</h3>
-              <p className="mt-2 text-white/70 max-w-xl">
+              <h3 className="text-xl font-black sm:text-2xl md:text-3xl">
+                This is a private preview
+              </h3>
+              <p className="mt-2 max-w-xl text-sm text-white/70 sm:text-base">
                 The full website, pricing, help centre and product workspace are behind a password
                 while we finish our launch. Enter the promo password to continue.
               </p>
             </div>
-            <Link to="/unlock" className="btn-red relative shrink-0">
+            <Link to="/unlock" className="btn-red relative w-full shrink-0 md:w-auto">
               Enter site <ArrowRight size={16} />
             </Link>
           </div>
+
         </section>
       </main>
 
