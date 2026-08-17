@@ -731,6 +731,8 @@ function PromoHome() {
           </a>
         </div>
       </footer>
+
+      <MobileTabBar />
     </div>
   );
 }
