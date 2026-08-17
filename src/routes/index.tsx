@@ -181,14 +181,14 @@ function ScreenshotGallery() {
 
   return (
     <div>
-      <div className="flex flex-wrap gap-2">
+      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] md:mx-0 md:flex-wrap md:px-0 [&::-webkit-scrollbar]:hidden">
         {SCREENS.map((item, index) => (
           <button
             key={item.id}
             type="button"
             onClick={() => setActive(index)}
             aria-pressed={index === active}
-            className={`rounded-full px-4 py-2 text-xs font-black uppercase tracking-widest transition-colors ${
+            className={`shrink-0 rounded-full px-3.5 py-2 text-[0.68rem] font-black uppercase tracking-widest transition-colors sm:px-4 sm:text-xs ${
               index === active
                 ? "bg-[color:var(--color-alert-red)] text-white shadow-lg shadow-black/20"
                 : "border border-white/15 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
@@ -200,12 +200,12 @@ function ScreenshotGallery() {
       </div>
 
       <figure className="mt-6">
-        <div className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#0d0d0d] shadow-[0_50px_100px_-40px_rgba(0,0,0,0.95)]">
-          <div className="flex items-center gap-2 border-b border-white/10 px-4 py-3">
-            <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
-            <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
-            <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
-            <span className="ml-3 truncate rounded-md bg-white/5 px-3 py-1 text-[0.65rem] font-bold tracking-wide text-white/45">
+        <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#0d0d0d] shadow-[0_50px_100px_-40px_rgba(0,0,0,0.95)] sm:rounded-[1.5rem]">
+          <div className="flex items-center gap-2 border-b border-white/10 px-3 py-2.5 sm:px-4 sm:py-3">
+            <span className="h-2 w-2 rounded-full bg-white/20 sm:h-2.5 sm:w-2.5" />
+            <span className="h-2 w-2 rounded-full bg-white/20 sm:h-2.5 sm:w-2.5" />
+            <span className="h-2 w-2 rounded-full bg-white/20 sm:h-2.5 sm:w-2.5" />
+            <span className="ml-2 truncate rounded-md bg-white/5 px-2.5 py-1 text-[0.6rem] font-bold tracking-wide text-white/45 sm:ml-3 sm:px-3 sm:text-[0.65rem]">
               haccora.co.uk
             </span>
           </div>
@@ -222,9 +222,10 @@ function ScreenshotGallery() {
         <figcaption className="mt-4 text-sm text-white/60">{screen.caption}</figcaption>
       </figure>
 
-      <div className="mt-14">
+
+      <div className="mt-12 md:mt-14">
         <p className="eyebrow text-[color:var(--color-alert-red)]">On the floor</p>
-        <h3 className="mt-2 text-2xl font-black uppercase tracking-tight text-white">
+        <h3 className="mt-2 text-xl font-black uppercase tracking-tight text-white sm:text-2xl">
           Built mobile-first for kitchen teams
         </h3>
         <p className="mt-2 max-w-2xl text-sm text-white/60">
@@ -232,9 +233,12 @@ function ScreenshotGallery() {
           offline-safe records on any phone.
         </p>
 
-        <div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="-mx-4 mt-8 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-8 sm:overflow-visible sm:px-0 lg:grid-cols-3 [&::-webkit-scrollbar]:hidden">
           {MOBILE_SCREENS.map((item) => (
-            <figure key={item.id} className="flex flex-col items-center">
+            <figure
+              key={item.id}
+              className="flex w-[62vw] max-w-[240px] shrink-0 snap-center flex-col items-center sm:w-full sm:max-w-none"
+            >
               <div className="relative w-full max-w-[240px] rounded-[2.25rem] border border-white/15 bg-[#0d0d0d] p-2 shadow-[0_40px_80px_-40px_rgba(0,0,0,0.95)]">
                 <span className="absolute left-1/2 top-3.5 z-10 h-1.5 w-16 -translate-x-1/2 rounded-full bg-white/25" />
                 <img
@@ -247,7 +251,7 @@ function ScreenshotGallery() {
                 />
               </div>
               <figcaption className="mt-4 text-center">
-                <span className="block text-sm font-black uppercase tracking-widest text-white">
+                <span className="block text-xs font-black uppercase tracking-widest text-white sm:text-sm">
                   {item.label}
                 </span>
                 <span className="mt-1 block text-sm text-white/55">{item.caption}</span>
@@ -256,6 +260,7 @@ function ScreenshotGallery() {
           ))}
         </div>
       </div>
+
     </div>
   );
 }
@@ -350,35 +355,41 @@ function PromoHome() {
                 "radial-gradient(70% 55% at 12% 0%, color-mix(in oklab, var(--color-alert-red) 42%, transparent) 0%, transparent 62%), radial-gradient(55% 45% at 92% 18%, color-mix(in oklab, var(--color-alert-orange) 28%, transparent) 0%, transparent 65%)",
             }}
           />
-          <div className="relative mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-24 grid gap-10 md:grid-cols-[1.15fr_0.85fr] items-center">
+          <div className="relative mx-auto grid max-w-[1400px] items-center gap-8 px-4 py-12 sm:py-16 md:grid-cols-[1.15fr_0.85fr] md:gap-10 md:px-8 md:py-24">
             <div>
-              <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[0.68rem] font-black uppercase tracking-[0.2em] text-white/80 backdrop-blur">
-                <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--color-alert-red)]" />
+              <p className="inline-flex max-w-full items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[0.6rem] font-black uppercase tracking-[0.16em] text-white/80 backdrop-blur sm:text-[0.68rem] sm:tracking-[0.2em]">
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[color:var(--color-alert-red)]" />
                 Preview access · UK food safety software
               </p>
-              <h1 className="hero-title mt-5 display-black uppercase tracking-tight">
+              <h1 className="hero-title mt-4 display-black uppercase tracking-tight sm:mt-5">
                 Every food safety record, in one place
               </h1>
-              <p className="mt-5 max-w-xl text-white/75 text-base md:text-lg leading-relaxed">
+              <p className="mt-4 max-w-xl text-sm leading-relaxed text-white/75 sm:mt-5 sm:text-base md:text-lg">
                 Haccora replaces paper diaries, temperature sheets and folders of printouts with one
                 simple system your whole team can use — kitchen, office and inspector.
               </p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Link to="/unlock" className="btn-red">
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <Link to="/unlock" className="btn-red w-full sm:w-auto">
                   Enter with promo password <ArrowRight size={16} />
                 </Link>
-                <a href={`mailto:${PUBLIC_CONFIG.legal.email}`} className="btn-red-outline">
+                <a
+                  href={`mailto:${PUBLIC_CONFIG.legal.email}`}
+                  className="btn-red-outline w-full sm:w-auto"
+                >
                   Request access
                 </a>
               </div>
-              <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-white/65">
+              <ul className="mt-7 grid gap-2 text-sm text-white/65 sm:flex sm:flex-wrap sm:gap-x-6 sm:gap-y-2">
                 {[
                   "Built for UK regulation",
                   "Works offline in the kitchen",
                   "Inspector-ready evidence",
                 ].map((item) => (
                   <li key={item} className="flex items-center gap-2">
-                    <CheckCircle2 size={16} className="text-[color:var(--color-alert-red)]" />
+                    <CheckCircle2
+                      size={16}
+                      className="shrink-0 text-[color:var(--color-alert-red)]"
+                    />
                     {item}
                   </li>
                 ))}
@@ -386,13 +397,13 @@ function PromoHome() {
             </div>
 
             <div className="relative">
-              <div className="relative overflow-hidden rounded-[1.75rem] border border-white/10 shadow-[0_50px_100px_-40px_rgba(0,0,0,0.9)]">
+              <div className="relative overflow-hidden rounded-2xl border border-white/10 shadow-[0_50px_100px_-40px_rgba(0,0,0,0.9)] sm:rounded-[1.75rem]">
                 <img
                   src={heroKitchen}
                   width={1600}
                   height={1200}
                   alt="Chef reviewing digital food safety checks on a tablet in a busy commercial kitchen"
-                  className="h-[320px] w-full object-cover md:h-[460px]"
+                  className="h-[380px] w-full object-cover sm:h-[420px] md:h-[460px]"
                 />
                 <div
                   aria-hidden
@@ -402,20 +413,22 @@ function PromoHome() {
                       "linear-gradient(180deg, color-mix(in oklab, black 10%, transparent) 0%, color-mix(in oklab, black 78%, transparent) 100%)",
                   }}
                 />
-                <div className="absolute inset-x-4 bottom-4 md:inset-x-6 md:bottom-6">
-                  <div className="rounded-2xl border border-white/15 bg-black/45 p-4 backdrop-blur-md">
-                    <p className="text-[0.65rem] font-black uppercase tracking-[0.2em] text-white/50">
+                <div className="absolute inset-x-3 bottom-3 sm:inset-x-4 sm:bottom-4 md:inset-x-6 md:bottom-6">
+                  <div className="rounded-2xl border border-white/15 bg-black/50 p-3.5 backdrop-blur-md sm:p-4">
+                    <p className="text-[0.6rem] font-black uppercase tracking-[0.2em] text-white/50 sm:text-[0.65rem]">
                       What you get
                     </p>
-                    <div className="mt-3 grid gap-2">
+                    <div className="mt-3 grid gap-2.5">
                       {HERO_CARDS.map(([title, body, Icon]) => (
                         <div key={title} className="flex items-start gap-3">
                           <span className="icon-3d icon-3d-sm shrink-0">
                             <Icon size={16} />
                           </span>
                           <div className="min-w-0">
-                            <p className="text-sm font-black leading-tight">{title}</p>
-                            <p className="truncate text-xs text-white/60">{body}</p>
+                            <p className="text-[0.82rem] font-black leading-tight sm:text-sm">
+                              {title}
+                            </p>
+                            <p className="truncate text-[0.7rem] text-white/60 sm:text-xs">{body}</p>
                           </div>
                         </div>
                       ))}
@@ -428,32 +441,34 @@ function PromoHome() {
 
           {/* Proof strip */}
           <div className="relative border-t border-white/10">
-            <div className="mx-auto grid max-w-[1400px] grid-cols-2 gap-px px-4 md:grid-cols-4 md:px-8">
+            <div className="mx-auto grid max-w-[1400px] grid-cols-2 gap-x-4 px-4 md:grid-cols-4 md:gap-px md:px-8">
               {[
                 ["6", "compliance modules"],
                 ["1 tap", "inspection evidence pack"],
                 ["Offline", "capture in the kitchen"],
                 ["Multi-site", "oversight and audit trail"],
               ].map(([stat, label]) => (
-                <div key={label} className="py-8 md:py-10">
-                  <p className="text-2xl md:text-3xl font-black text-white">{stat}</p>
-                  <p className="mt-1 text-xs md:text-sm text-white/55 leading-snug">{label}</p>
+                <div key={label} className="py-6 md:py-10">
+                  <p className="text-xl font-black text-white sm:text-2xl md:text-3xl">{stat}</p>
+                  <p className="mt-1 text-xs leading-snug text-white/55 md:text-sm">{label}</p>
                 </div>
               ))}
             </div>
           </div>
+
         </section>
 
         {/* Modules */}
         <section
           id="platform"
-          className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-24 scroll-mt-32"
+          className="mx-auto max-w-[1400px] scroll-mt-32 px-4 py-12 sm:py-16 md:px-8 md:py-24"
         >
           <p className="eyebrow">The platform</p>
           <h2 className="mt-3 display-black uppercase tracking-tight">
             Everything a UK food business has to prove
           </h2>
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-8 grid gap-4 sm:mt-10 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
+
             {MODULES.map(({ icon: Icon, tone, title, body }) => (
               <article key={title} className="card-polished group p-6 md:p-7">
                 <span className={`${tone} icon-3d-sm`}>
@@ -472,16 +487,17 @@ function PromoHome() {
 
         {/* Screenshots */}
         <section id="screens" className="bg-black text-white scroll-mt-32">
-          <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-24">
+          <div className="mx-auto max-w-[1400px] px-4 py-12 sm:py-16 md:px-8 md:py-24">
             <p className="eyebrow text-[color:var(--color-alert-red)]">Inside Haccora</p>
             <h2 className="mt-3 display-black uppercase tracking-tight">
               Real screens from the live product
             </h2>
-            <p className="mt-3 max-w-2xl text-white/65">
+            <p className="mt-3 max-w-2xl text-sm text-white/65 sm:text-base">
               These are captured straight from the Haccora workspace — no mockups. Pick a screen to
               see how the day-to-day evidence is recorded and produced for inspection.
             </p>
-            <div className="mt-10">
+            <div className="mt-8 sm:mt-10">
+
               <ScreenshotGallery />
             </div>
           </div>
@@ -489,7 +505,7 @@ function PromoHome() {
 
         {/* Platform strip */}
         <section id="operations" className="bg-black text-white scroll-mt-32">
-          <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-20 grid gap-5 md:grid-cols-3">
+          <div className="mx-auto grid max-w-[1400px] gap-4 px-4 py-12 sm:gap-5 sm:py-16 md:grid-cols-3 md:px-8 md:py-20">
             {PLATFORM.map(({ icon: Icon, title, body }) => (
               <article key={title} className="card-polished-dark p-6 md:p-7">
                 <span className="icon-3d-dark icon-3d-sm">
@@ -505,16 +521,17 @@ function PromoHome() {
         {/* Who it's for */}
         <section
           id="who-its-for"
-          className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-24 scroll-mt-32"
+          className="mx-auto max-w-[1400px] scroll-mt-32 px-4 py-12 sm:py-16 md:px-8 md:py-24"
         >
           <p className="eyebrow">Who it&apos;s for</p>
           <h2 className="mt-3 display-black uppercase tracking-tight">
             Built for UK food businesses
           </h2>
-          <p className="mt-3 max-w-2xl text-muted-foreground">
+          <p className="mt-3 max-w-2xl text-sm text-muted-foreground sm:text-base">
             Restaurants and cafés, takeaways and fast food, pubs and bars, care homes and schools,
             bakeries, dark kitchens and multi-site groups.
           </p>
+
           <div className="mt-6 flex flex-wrap gap-2">
             {[
               "Restaurants & cafés",
@@ -534,7 +551,7 @@ function PromoHome() {
               </span>
             ))}
           </div>
-          <div className="relative mt-12 overflow-hidden rounded-[1.75rem] bg-black text-white p-8 md:p-12 flex flex-col md:flex-row md:items-center md:justify-between gap-6 shadow-[0_40px_80px_-40px_rgba(0,0,0,0.6)]">
+          <div className="relative mt-10 flex flex-col gap-5 overflow-hidden rounded-2xl bg-black p-6 text-white shadow-[0_40px_80px_-40px_rgba(0,0,0,0.6)] sm:rounded-[1.75rem] sm:p-8 md:mt-12 md:flex-row md:items-center md:justify-between md:gap-6 md:p-12">
             <div
               aria-hidden
               className="pointer-events-none absolute inset-0"
@@ -544,16 +561,19 @@ function PromoHome() {
               }}
             />
             <div className="relative">
-              <h3 className="text-2xl md:text-3xl font-black">This is a private preview</h3>
-              <p className="mt-2 text-white/70 max-w-xl">
+              <h3 className="text-xl font-black sm:text-2xl md:text-3xl">
+                This is a private preview
+              </h3>
+              <p className="mt-2 max-w-xl text-sm text-white/70 sm:text-base">
                 The full website, pricing, help centre and product workspace are behind a password
                 while we finish our launch. Enter the promo password to continue.
               </p>
             </div>
-            <Link to="/unlock" className="btn-red relative shrink-0">
+            <Link to="/unlock" className="btn-red relative w-full shrink-0 md:w-auto">
               Enter site <ArrowRight size={16} />
             </Link>
           </div>
+
         </section>
       </main>
 
