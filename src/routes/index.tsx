@@ -575,7 +575,47 @@ function PromoHome() {
           </div>
 
         </section>
+
+        {/* FAQs */}
+        <section
+          id="faqs"
+          className="border-t border-border bg-secondary/40 scroll-mt-32"
+          aria-labelledby="promo-faq-heading"
+        >
+          <div className="mx-auto max-w-[900px] px-4 py-12 sm:py-16 md:px-8 md:py-24">
+            <p className="eyebrow">FAQs</p>
+            <h2 id="promo-faq-heading" className="mt-3 display-black uppercase tracking-tight">
+              Questions, answered
+            </h2>
+            <p className="mt-3 max-w-2xl text-sm text-muted-foreground sm:text-base">
+              Clear answers about UK compliance, inspections, devices, security and subscriptions.
+            </p>
+
+            <div className="mt-8 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card shadow-[0_30px_60px_-45px_rgba(0,0,0,0.5)] sm:mt-10">
+              {MARKETING_FAQS.map(({ question, answer }) => (
+                <details key={question} className="group px-4 py-4 sm:px-6 sm:py-5">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[color:var(--color-alert-red)]">
+                    <span className="text-[0.95rem] font-black leading-snug sm:text-base">
+                      {question}
+                    </span>
+                    <span
+                      aria-hidden
+                      className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-foreground text-background transition-colors group-open:bg-[color:var(--color-alert-red)] group-open:text-white"
+                    >
+                      <Plus size={15} className="group-open:hidden" />
+                      <Minus size={15} className="hidden group-open:block" />
+                    </span>
+                  </summary>
+                  <p className="mt-3 pr-10 text-sm leading-relaxed text-muted-foreground">
+                    {answer}
+                  </p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
       </main>
+
 
       <footer className="bg-black text-white/60">
         <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-10 flex flex-col gap-3 md:flex-row md:items-center md:justify-between text-xs">
