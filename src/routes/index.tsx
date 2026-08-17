@@ -461,13 +461,14 @@ function PromoHome() {
         {/* Modules */}
         <section
           id="platform"
-          className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-24 scroll-mt-32"
+          className="mx-auto max-w-[1400px] scroll-mt-32 px-4 py-12 sm:py-16 md:px-8 md:py-24"
         >
           <p className="eyebrow">The platform</p>
           <h2 className="mt-3 display-black uppercase tracking-tight">
             Everything a UK food business has to prove
           </h2>
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-8 grid gap-4 sm:mt-10 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
+
             {MODULES.map(({ icon: Icon, tone, title, body }) => (
               <article key={title} className="card-polished group p-6 md:p-7">
                 <span className={`${tone} icon-3d-sm`}>
