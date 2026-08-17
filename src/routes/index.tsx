@@ -294,7 +294,7 @@ const SECTIONS = [
   { id: "faqs", label: "FAQs" },
 ] as const;
 
-function SectionNav() {
+function useActiveSection() {
   const [active, setActive] = useState<string>("overview");
 
   useEffect(() => {
@@ -316,8 +316,17 @@ function SectionNav() {
     return () => observer.disconnect();
   }, []);
 
+  return active;
+}
+
+function SectionNav() {
+  const active = useActiveSection();
+
   return (
-    <nav aria-label="Page sections" className="border-t border-white/10 bg-black/80 backdrop-blur-md">
+    <nav
+      aria-label="Page sections"
+      className="hidden border-t border-white/10 bg-black/80 backdrop-blur-md md:block"
+    >
       <div className="mx-auto max-w-[1400px] px-4 md:px-8">
         <ul className="flex items-center gap-1.5 overflow-x-auto py-2.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {SECTIONS.map(({ id, label }) => {
@@ -341,6 +350,79 @@ function SectionNav() {
         </ul>
       </div>
     </nav>
+  );
+}
+
+const MOBILE_TABS = [
+  { id: "overview", label: "Home", icon: LayoutGrid },
+  { id: "platform", label: "Platform", icon: Layers },
+  { id: "screens", label: "Screens", icon: Smartphone },
+  { id: "faqs", label: "FAQs", icon: HelpCircle },
+] as const;
+
+function MobileTabBar() {
+  const active = useActiveSection();
+
+  return (
+    <nav
+      aria-label="Sections"
+      className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-black/85 backdrop-blur-xl md:hidden"
+      style={{ paddingBottom: "max(env(safe-area-inset-bottom), 0.35rem)" }}
+    >
+      <ul className="mx-auto flex max-w-[520px] items-end justify-between px-2 pt-1.5">
+        {MOBILE_TABS.slice(0, 2).map(({ id, label, icon: Icon }) => (
+          <MobileTab key={id} id={id} label={label} Icon={Icon} active={active === id} />
+        ))}
+        <li className="flex-1">
+          <Link
+            to="/unlock"
+            aria-label="Enter site"
+            className="mx-auto -mt-6 flex h-14 w-14 flex-col items-center justify-center rounded-full bg-[color:var(--color-alert-red)] text-white shadow-[0_12px_28px_-8px_rgba(0,0,0,0.9)] ring-4 ring-black/85 active:scale-95 transition-transform"
+          >
+            <Lock size={18} />
+            <span className="mt-0.5 text-[0.5rem] font-black uppercase tracking-[0.12em]">
+              Enter
+            </span>
+          </Link>
+        </li>
+        {MOBILE_TABS.slice(2).map(({ id, label, icon: Icon }) => (
+          <MobileTab key={id} id={id} label={label} Icon={Icon} active={active === id} />
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
+function MobileTab({
+  id,
+  label,
+  Icon,
+  active,
+}: {
+  id: string;
+  label: string;
+  Icon: typeof LayoutGrid;
+  active: boolean;
+}) {
+  return (
+    <li className="flex-1">
+      <a
+        href={`#${id}`}
+        aria-current={active ? "true" : undefined}
+        className={`flex min-h-[3rem] flex-col items-center justify-center gap-1 rounded-xl px-1 py-1.5 transition-colors active:bg-white/10 ${
+          active ? "text-white" : "text-white/55"
+        }`}
+      >
+        <span
+          className={`flex h-7 w-9 items-center justify-center rounded-full transition-colors ${
+            active ? "bg-[color:var(--color-alert-red)]/20" : ""
+          }`}
+        >
+          <Icon size={18} strokeWidth={active ? 2.6 : 2} />
+        </span>
+        <span className="text-[0.55rem] font-black uppercase tracking-[0.12em]">{label}</span>
+      </a>
+    </li>
   );
 }
 
