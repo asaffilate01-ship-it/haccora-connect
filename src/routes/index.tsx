@@ -505,7 +505,7 @@ function PromoHome() {
 
         {/* Platform strip */}
         <section id="operations" className="bg-black text-white scroll-mt-32">
-          <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-16 md:py-20 grid gap-5 md:grid-cols-3">
+          <div className="mx-auto grid max-w-[1400px] gap-4 px-4 py-12 sm:gap-5 sm:py-16 md:grid-cols-3 md:px-8 md:py-20">
             {PLATFORM.map(({ icon: Icon, title, body }) => (
               <article key={title} className="card-polished-dark p-6 md:p-7">
                 <span className="icon-3d-dark icon-3d-sm">
