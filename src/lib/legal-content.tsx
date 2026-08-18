@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { Language } from "@/lib/i18n";
-import { PUBLIC_CONFIG, legalIdentityComplete } from "@/lib/public-config";
+import { PUBLIC_CONFIG, TRADING_STATEMENT, legalIdentityComplete } from "@/lib/public-config";
 
 export type LegalKey =
   | "company"
