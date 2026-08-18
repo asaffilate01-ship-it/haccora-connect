@@ -55,6 +55,8 @@ const CompanyAddress = () => (
     )}
     <strong>{PUBLIC_CONFIG.legal.companyName ?? "Legal company name not configured"}</strong>
     <br />
+    {TRADING_STATEMENT}
+    <br />
     {PUBLIC_CONFIG.legal.addressLine1 ?? "Registered office not configured"}
     <br />
     {PUBLIC_CONFIG.legal.postalCity ?? "Postcode and town/city not configured"}
