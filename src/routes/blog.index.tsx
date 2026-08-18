@@ -41,7 +41,7 @@ function BlogIndex() {
       {/* black top bar */}
       <div className="bg-black text-white">
         <div className="mx-auto max-w-[1400px] px-4 md:px-8 h-16 md:h-20 flex items-center justify-between gap-4">
-          <BrandLogo imgClassName="h-10 md:h-12 w-auto" />
+          <BrandLogo light imgClassName="h-10 md:h-12 w-auto" />
 
           <div className="flex items-center gap-3">
             <FollowBar dark />

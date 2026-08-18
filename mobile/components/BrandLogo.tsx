@@ -2,7 +2,7 @@ import { Image, type ImageStyle, StyleSheet, useWindowDimensions } from "react-n
 
 const darkLogo = require("@/assets/haccora-wordmark.png");
 const lightLogo = require("@/assets/haccora-wordmark-light.png");
-const ASPECT_RATIO = 720 / 168;
+const ASPECT_RATIO = 720 / 371;
 
 type BrandLogoProps = {
   maxWidth?: number;
@@ -23,7 +23,7 @@ export function BrandLogo({
 
   return (
     <Image
-      accessibilityLabel="Haccora — Safe. Clean. Traceable."
+      accessibilityLabel="Haccora — Safe. Clean. Compliant."
       resizeMode="contain"
       source={light ? lightLogo : darkLogo}
       style={[styles.image, { width: logoWidth, height: logoWidth / ASPECT_RATIO }, style]}
