@@ -236,10 +236,12 @@ function ScreenshotGallery() {
             height={759}
             loading="lazy"
             alt={screen.alt}
-            className="w-full animate-in fade-in duration-300"
+            className="aspect-[4/3] w-full animate-in object-cover object-top fade-in duration-300 sm:aspect-[1440/759]"
           />
         </div>
-        <figcaption className="mt-4 text-sm text-white/60">{screen.caption}</figcaption>
+        <figcaption className="mt-4 min-h-[2.5rem] text-sm leading-relaxed text-white/60">
+          {screen.caption}
+        </figcaption>
       </figure>
 
 
@@ -253,13 +255,13 @@ function ScreenshotGallery() {
           offline-safe records on any phone.
         </p>
 
-        <div className="-mx-4 mt-8 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-8 sm:overflow-visible sm:px-0 lg:grid-cols-3 [&::-webkit-scrollbar]:hidden">
+        <div className="-mx-4 mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 [scroll-padding-inline:1rem] [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-8 sm:overflow-visible sm:px-0 lg:grid-cols-3 [&::-webkit-scrollbar]:hidden">
           {MOBILE_SCREENS.map((item) => (
             <figure
               key={item.id}
-              className="flex w-[62vw] max-w-[240px] shrink-0 snap-center flex-col items-center sm:w-full sm:max-w-none"
+              className="flex w-[64vw] max-w-[230px] shrink-0 snap-start flex-col items-center sm:w-full sm:max-w-none"
             >
-              <div className="relative w-full max-w-[240px] rounded-[2.25rem] border border-white/15 bg-[#0d0d0d] p-2 shadow-[0_40px_80px_-40px_rgba(0,0,0,0.95)]">
+              <div className="relative mx-auto w-full max-w-[230px] rounded-[2.25rem] border border-white/15 bg-[#0d0d0d] p-2 shadow-[0_40px_80px_-40px_rgba(0,0,0,0.95)]">
                 <span className="absolute left-1/2 top-3.5 z-10 h-1.5 w-16 -translate-x-1/2 rounded-full bg-white/25" />
                 <img
                   src={item.src}
@@ -267,19 +269,25 @@ function ScreenshotGallery() {
                   height={1688}
                   loading="lazy"
                   alt={item.alt}
-                  className="w-full rounded-[1.75rem]"
+                  className="aspect-[780/1688] w-full rounded-[1.75rem] object-cover object-top"
                 />
               </div>
-              <figcaption className="mt-4 text-center">
+              <figcaption className="mt-4 flex flex-1 flex-col text-center">
                 <span className="block text-xs font-black uppercase tracking-widest text-white sm:text-sm">
                   {item.label}
                 </span>
-                <span className="mt-1 block text-sm text-white/55">{item.caption}</span>
+                <span className="mt-1 block text-[0.8rem] leading-relaxed text-white/55 sm:text-sm">
+                  {item.caption}
+                </span>
               </figcaption>
             </figure>
           ))}
         </div>
+        <p className="mt-3 text-center text-[0.65rem] font-bold uppercase tracking-widest text-white/35 sm:hidden">
+          Swipe for more screens
+        </p>
       </div>
+
 
     </div>
   );
