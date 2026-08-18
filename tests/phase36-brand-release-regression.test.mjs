@@ -42,7 +42,7 @@ test("web, PWA and native surfaces use the canonical Haccora identity", async ()
     text("mobile/components/bottom-nav.tsx"),
   ]);
 
-  assert.match(webLogo, /SAFE · CLEAN · TRACEABLE/);
+  assert.match(webLogo, /Safe\. Clean\. Compliant\./);
   assert.match(onboarding, /<BrandLogo/);
   assert.match(nativeLogo, /useWindowDimensions/);
   assert.match(nativeLogo, /haccora-wordmark/);

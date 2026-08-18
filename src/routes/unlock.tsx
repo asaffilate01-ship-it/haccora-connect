@@ -56,7 +56,7 @@ function UnlockPage() {
   return (
     <div className="marketing-shell min-h-screen bg-black text-white flex flex-col">
       <header className="mx-auto w-full max-w-[1400px] px-4 md:px-8 h-16 md:h-20 flex items-center justify-between">
-        <BrandLogo imgClassName="h-9 md:h-12 w-auto" />
+        <BrandLogo light imgClassName="h-9 md:h-12 w-auto" />
         <Link to="/" className="text-xs font-black uppercase tracking-widest text-white/60">
           Back
         </Link>

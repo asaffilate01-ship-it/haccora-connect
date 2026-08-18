@@ -30,10 +30,10 @@ const en: Dict = {
   "nav.demo": "Get started",
   "nav.tryFree": "Get started",
   "brand.tag": "Digital food safety, built for UK food businesses",
-  "brand.slogan": "Safe. Clean. Traceable.",
+  "brand.slogan": "Safe. Clean. Compliant.",
   "brand.tagline": "Structured for inspection preparation.",
   "marquee.phrase":
-    "Built for UK food businesses · Safe. Clean. Traceable. · Inspection evidence, organised.",
+    "Built for UK food businesses · Safe. Clean. Compliant. · Inspection evidence, organised.",
   "nav.more": "More",
 
   "hero.eyebrow": "HACCP · Food-handler health · food hygiene · Digital evidence",

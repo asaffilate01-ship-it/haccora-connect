@@ -29,7 +29,7 @@ function LegalLayout() {
           >
             <ArrowLeft size={16} /> {t("legal.back")}
           </Link>
-          <BrandLogo imgClassName="h-8 w-auto" />
+          <BrandLogo light imgClassName="h-8 w-auto" />
           <span className="text-[10px] font-bold uppercase tracking-widest text-white/65">
             UK legal
           </span>

@@ -17,7 +17,7 @@ export function MarketingShell({ children }: MarketingShellProps) {
     <div className="min-h-screen bg-white text-foreground flex flex-col">
       <header className="bg-black text-white">
         <div className="mx-auto max-w-[1400px] px-4 md:px-8 min-h-16 md:h-20 flex flex-wrap items-center justify-between gap-3 py-3 md:py-0">
-          <BrandLogo imgClassName="h-10 md:h-12 w-auto" />
+          <BrandLogo light imgClassName="h-10 md:h-12 w-auto" />
           <nav
             aria-label="Primary"
             className="order-3 w-full md:order-none md:w-auto flex items-center gap-4 md:gap-6 overflow-x-auto no-scrollbar text-[0.72rem] md:text-xs font-black uppercase tracking-widest text-white/70"

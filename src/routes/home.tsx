@@ -222,7 +222,7 @@ function TopBar() {
   return (
     <div className="bg-black text-white">
       <div className="mx-auto max-w-[1400px] px-3 md:px-8 h-14 md:h-20 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 md:gap-4">
-        <BrandLogo imgClassName="h-8 md:h-14 w-auto" />
+        <BrandLogo light imgClassName="h-8 md:h-14 w-auto" />
 
         <div className="flex items-center gap-1.5 md:gap-3 shrink-0">
           <Link
@@ -1029,7 +1029,7 @@ function SiteFooter() {
     <footer className="bg-black text-white/70">
       <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-12 grid md:grid-cols-4 gap-8 text-sm">
         <div>
-          <BrandLogo to="" imgClassName="h-12 w-auto" />
+          <BrandLogo light to="" imgClassName="h-12 w-auto" />
 
           <p className="mt-2 text-white/50 text-xs leading-relaxed max-w-xs">{t("brand.tag")}</p>
           <div className="mt-5">
