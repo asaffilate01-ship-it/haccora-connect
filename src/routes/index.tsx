@@ -21,7 +21,7 @@ import {
 
 import { BrandLogo } from "@/components/BrandLogo";
 import { MARKETING_FAQS } from "@/lib/marketing-faqs";
-import { PUBLIC_CONFIG } from "@/lib/public-config";
+import { PUBLIC_CONFIG, TRADING_STATEMENT } from "@/lib/public-config";
 import heroKitchen from "@/assets/promo-hero-kitchen.jpg";
 import shotToday from "@/assets/screenshot-today.jpg";
 import shotTemperature from "@/assets/screenshot-temperature.jpg";
@@ -723,7 +723,7 @@ function PromoHome() {
       <footer className="bg-black text-white/60">
         <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-10 flex flex-col gap-3 md:flex-row md:items-center md:justify-between text-xs">
           <p>
-            © {new Date().getFullYear()} {PUBLIC_CONFIG.legal.companyName}. Food safety software for
+            © {new Date().getFullYear()} {PUBLIC_CONFIG.legal.companyName}. {TRADING_STATEMENT} Food safety software for
             UK food businesses.
           </p>
           <a href={`mailto:${PUBLIC_CONFIG.legal.email}`} className="hover:text-white">

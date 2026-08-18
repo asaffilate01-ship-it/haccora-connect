@@ -22,7 +22,8 @@ const withDefault = (name: string, fallback: string) => value(name) ?? fallback;
 
 export const PUBLIC_CONFIG = {
   legal: {
-    companyName: withDefault("VITE_LEGAL_COMPANY_NAME", "Haccora Ltd"),
+    companyName: withDefault("VITE_LEGAL_COMPANY_NAME", "iTechLounge Ltd"),
+    tradingName: withDefault("VITE_LEGAL_TRADING_NAME", "Haccora"),
     addressLine1: value("VITE_LEGAL_ADDRESS_LINE_1"),
     postalCity: value("VITE_LEGAL_POSTAL_CITY"),
     registeredIn: withDefault("VITE_LEGAL_REGISTERED_IN", "England and Wales"),
@@ -38,6 +39,8 @@ export const PUBLIC_CONFIG = {
   supportUrl: httpsUrl("VITE_SUPPORT_URL"),
   statusUrl: httpsUrl("VITE_STATUS_URL"),
 };
+
+export const TRADING_STATEMENT = `${PUBLIC_CONFIG.legal.tradingName} is a trading name of ${PUBLIC_CONFIG.legal.companyName}.`;
 
 const requiredLegalIdentity = [
   PUBLIC_CONFIG.legal.companyName,

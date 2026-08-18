@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { Language } from "@/lib/i18n";
-import { PUBLIC_CONFIG, legalIdentityComplete } from "@/lib/public-config";
+import { PUBLIC_CONFIG, TRADING_STATEMENT, legalIdentityComplete } from "@/lib/public-config";
 
 export type LegalKey =
   | "company"
@@ -54,6 +54,8 @@ const CompanyAddress = () => (
       </strong>
     )}
     <strong>{PUBLIC_CONFIG.legal.companyName ?? "Legal company name not configured"}</strong>
+    <br />
+    {TRADING_STATEMENT}
     <br />
     {PUBLIC_CONFIG.legal.addressLine1 ?? "Registered office not configured"}
     <br />

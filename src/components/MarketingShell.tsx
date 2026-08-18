@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { BrandLogo } from "@/components/BrandLogo";
 import { FollowBar } from "@/components/SocialIcons";
-import { PUBLIC_CONFIG } from "@/lib/public-config";
+import { PUBLIC_CONFIG, TRADING_STATEMENT } from "@/lib/public-config";
 
 interface MarketingShellProps {
   children: ReactNode;
@@ -59,6 +59,8 @@ export function MarketingShell({ children }: MarketingShellProps) {
           <p className="text-white/50 text-xs">
             © {new Date().getFullYear()} {PUBLIC_CONFIG.legal.companyName}. Food safety software for
             UK food businesses.
+            <br />
+            {TRADING_STATEMENT}
           </p>
           <nav className="flex flex-wrap gap-4 text-xs uppercase tracking-widest font-black">
             <Link to="/home" className="hover:text-white">

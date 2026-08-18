@@ -107,7 +107,7 @@ export const HELP_CENTRE_SECTIONS: HelpCentreSection[] = [
       {
         question: "Who is responsible for staff privacy information?",
         answer:
-          "The customer normally decides why and how its workforce data is used and must provide clear privacy information. Haccora Ltd processes customer data under the signed terms and data-processing agreement. Customers should document their lawful basis and complete a data-protection impact assessment where the processing is likely to create high risk.",
+          "The customer normally decides why and how its workforce data is used and must provide clear privacy information. Haccora (a trading name of iTechLounge Ltd) processes customer data under the signed terms and data-processing agreement. Customers should document their lawful basis and complete a data-protection impact assessment where the processing is likely to create high risk.",
       },
       {
         question: "Can support staff browse tenant records?",
