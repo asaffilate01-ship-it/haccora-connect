@@ -516,7 +516,7 @@ function PromoHome() {
     <div className="marketing-shell min-h-screen bg-white text-foreground pb-[calc(4.75rem+env(safe-area-inset-bottom))] md:pb-0">
       <header className="sticky top-0 z-40 bg-black/90 text-white backdrop-blur-md border-b border-white/10">
         <div className="mx-auto max-w-[1400px] px-4 md:px-8 h-16 md:h-20 flex items-center justify-between gap-3">
-          <BrandLogo light imgClassName="h-9 md:h-12 w-auto" />
+          <BrandLogo light imgClassName="h-28 w-auto" />
           <div className="flex items-center gap-3">
             <Link
               to="/unlock"
