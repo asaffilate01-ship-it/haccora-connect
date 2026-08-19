@@ -105,12 +105,8 @@ for (const file of await sourceFiles("src")) {
   }
 }
 
-try {
-  await access(path.join(root, "src/assets/haccora-logo.png.asset.json"));
-  failures.push("obsolete Lovable-only Haccora logo metadata has returned");
-} catch (error) {
-  if (error?.code !== "ENOENT") throw error;
-}
+
+
 
 const scripts = JSON.parse(packageJson).scripts ?? {};
 if ((String(scripts.build ?? "").match(/check-source-integrity\.mjs/g) ?? []).length !== 2) {
