@@ -22,6 +22,7 @@ import {
 import { BrandLogo } from "@/components/BrandLogo";
 import { MARKETING_FAQS } from "@/lib/marketing-faqs";
 import { PUBLIC_CONFIG, TRADING_STATEMENT } from "@/lib/public-config";
+import { openCookieSettings } from "@/lib/cookie-consent";
 import heroKitchen from "@/assets/promo-hero-kitchen.jpg";
 import shotToday from "@/assets/screenshot-today.jpg";
 import shotTemperature from "@/assets/screenshot-temperature.jpg";
