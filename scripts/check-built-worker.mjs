@@ -69,11 +69,15 @@ for (const [pathname, expectedContentType, privateCache] of routes) {
   );
   const body = await response.text();
   const contentType = response.headers.get("content-type") ?? "";
+  // The promo site password gate redirects every non-public route to /unlock.
+  const gatedRedirect =
+    (response.status === 302 || response.status === 307) &&
+    (response.headers.get("location") ?? "").startsWith("/unlock");
 
-  if (response.status !== 200) {
+  if (response.status !== 200 && !gatedRedirect) {
     failures.push(`${pathname}: expected 200, received ${response.status}`);
   }
-  if (!contentType.startsWith(expectedContentType)) {
+  if (!gatedRedirect && !contentType.startsWith(expectedContentType)) {
     failures.push(
       `${pathname}: expected ${expectedContentType}, received ${contentType || "none"}`,
     );
