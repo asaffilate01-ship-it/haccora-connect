@@ -22,6 +22,7 @@ import {
 import { BrandLogo } from "@/components/BrandLogo";
 import { MARKETING_FAQS } from "@/lib/marketing-faqs";
 import { PUBLIC_CONFIG, TRADING_STATEMENT } from "@/lib/public-config";
+import { openCookieSettings } from "@/lib/cookie-consent";
 import heroKitchen from "@/assets/promo-hero-kitchen.jpg";
 import shotToday from "@/assets/screenshot-today.jpg";
 import shotTemperature from "@/assets/screenshot-temperature.jpg";
@@ -729,14 +730,49 @@ function PromoHome() {
 
 
       <footer className="bg-black text-white/60">
-        <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-10 flex flex-col gap-3 md:flex-row md:items-center md:justify-between text-xs">
-          <p>
-            © {new Date().getFullYear()} {PUBLIC_CONFIG.legal.companyName}. {TRADING_STATEMENT} Food safety software for
-            UK food businesses.
-          </p>
-          <a href={`mailto:${PUBLIC_CONFIG.legal.email}`} className="hover:text-white">
-            {PUBLIC_CONFIG.legal.email}
-          </a>
+        <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-10 flex flex-col gap-5 text-xs">
+          <nav
+            aria-label="Legal"
+            className="flex flex-wrap items-center gap-x-5 gap-y-2 font-black uppercase tracking-widest"
+          >
+            <Link to="/legal/privacy" className="hover:text-white">
+              Privacy
+            </Link>
+            <Link to="/legal/cookies" className="hover:text-white">
+              Cookies
+            </Link>
+            <Link to="/legal/terms" className="hover:text-white">
+              Terms
+            </Link>
+            <Link to="/legal/data-processing" className="hover:text-white">
+              Data processing
+            </Link>
+            <Link to="/legal/accessibility" className="hover:text-white">
+              Accessibility
+            </Link>
+            <Link to="/legal/complaints" className="hover:text-white">
+              Complaints
+            </Link>
+            <Link to="/legal/company-details" className="hover:text-white">
+              Company details
+            </Link>
+            <button
+              type="button"
+              onClick={openCookieSettings}
+              className="uppercase tracking-widest hover:text-white"
+            >
+              Cookie settings
+            </button>
+          </nav>
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <p>
+              © {new Date().getFullYear()} {PUBLIC_CONFIG.legal.companyName}. {TRADING_STATEMENT}{" "}
+              Food safety software for UK food businesses.
+            </p>
+            <a href={`mailto:${PUBLIC_CONFIG.legal.email}`} className="hover:text-white">
+              {PUBLIC_CONFIG.legal.email}
+            </a>
+          </div>
         </div>
       </footer>
 

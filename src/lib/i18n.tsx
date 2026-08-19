@@ -133,12 +133,15 @@ const en: Dict = {
   "legal.back": "Back to homepage",
 
   // Cookie banner
-  "cookie.title": "Necessary storage at Haccora",
+  "cookie.title": "Cookies and device storage",
   "cookie.body":
-    "We currently use only technically necessary local-storage and authentication mechanisms.",
+    "We use strictly necessary storage to run sign-in and security. Optional preference and analytics storage is only used if you allow it.",
   "cookie.continue": "Continue",
-  "cookie.details": "What is stored",
+  "cookie.details": "Manage choices",
   "cookie.save": "Save selection",
+  "cookie.accept": "Accept all",
+  "cookie.reject": "Reject optional",
+  "cookie.settings": "Cookie settings",
   "cookie.cat.necessary": "Necessary",
   "cookie.cat.necessary.desc": "Required for sign-in, language and security.",
   "cookie.cat.prefs": "Preferences",
