@@ -300,8 +300,84 @@ const SECTIONS = [
   { id: "screens", label: "Screens" },
   { id: "operations", label: "Operations" },
   { id: "who-its-for", label: "Who it's for" },
+  { id: "pricing", label: "Pricing" },
   { id: "faqs", label: "FAQs" },
 ] as const;
+
+const PROMO_PLANS = [
+  {
+    name: "Solo",
+    price: "£9.99",
+    per: "per site / month",
+    blurb: "One small site getting daily records off paper.",
+    features: [
+      "Daily routines and temperature logs",
+      "Document and training expiry alerts",
+      "Inspection-ready evidence export",
+    ],
+    featured: false,
+  },
+  {
+    name: "Complete",
+    price: "£24.99",
+    per: "per site / month",
+    blurb: "Everything a busy kitchen needs, unlimited staff.",
+    features: [
+      "All Solo features",
+      "Unlimited staff and all modules",
+      "Allergens, PPDS and QR equipment history",
+    ],
+    featured: true,
+  },
+  {
+    name: "Group",
+    price: "£59.99",
+    per: "per month",
+    blurb: "Up to three locations with group oversight.",
+    features: [
+      "Up to three locations",
+      "Group dashboards and alerts",
+      "Scoped inspector access",
+    ],
+    featured: false,
+  },
+  {
+    name: "Enterprise",
+    price: "Custom",
+    per: "four or more sites",
+    blurb: "Groups, contract caterers and consultants.",
+    features: ["Unlimited locations", "SLA and implementation support", "Integrations and governance"],
+    featured: false,
+  },
+] as const;
+
+const PROMO_ADVANTAGES = [
+  {
+    title: "Priced for independents",
+    body: "From £9.99 per site a month with a 7-day trial and no card up front — most UK competitors start higher or quote only on request.",
+  },
+  {
+    title: "Evidence that stands up",
+    body: "Append-only history links the record to the user, premises, asset and device time, so corrective actions can't be quietly rewritten.",
+  },
+  {
+    title: "Four-nation UK context",
+    body: "England, Wales, Scotland and Northern Ireland profiles, SFBB-style safe methods, PPDS and allergen controls built in.",
+  },
+  {
+    title: "Inspector Mode, scoped",
+    body: "Time-limited, read-only access for an EHO or head office — not an anonymous public link to your whole account.",
+  },
+  {
+    title: "Works offline, on any phone",
+    body: "PWA plus native iOS and Android with an offline write queue, so a weak signal in the walk-in never loses a log.",
+  },
+  {
+    title: "QR scan-to-work equipment",
+    body: "Label a fridge or probe once and staff scan straight into the right check, with full service and calibration history.",
+  },
+] as const;
+
 
 function useActiveSection() {
   const [active, setActive] = useState<string>("overview");
