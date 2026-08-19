@@ -300,8 +300,84 @@ const SECTIONS = [
   { id: "screens", label: "Screens" },
   { id: "operations", label: "Operations" },
   { id: "who-its-for", label: "Who it's for" },
+  { id: "pricing", label: "Pricing" },
   { id: "faqs", label: "FAQs" },
 ] as const;
+
+const PROMO_PLANS = [
+  {
+    name: "Solo",
+    price: "£9.99",
+    per: "per site / month",
+    blurb: "One small site getting daily records off paper.",
+    features: [
+      "Daily routines and temperature logs",
+      "Document and training expiry alerts",
+      "Inspection-ready evidence export",
+    ],
+    featured: false,
+  },
+  {
+    name: "Complete",
+    price: "£24.99",
+    per: "per site / month",
+    blurb: "Everything a busy kitchen needs, unlimited staff.",
+    features: [
+      "All Solo features",
+      "Unlimited staff and all modules",
+      "Allergens, PPDS and QR equipment history",
+    ],
+    featured: true,
+  },
+  {
+    name: "Group",
+    price: "£59.99",
+    per: "per month",
+    blurb: "Up to three locations with group oversight.",
+    features: [
+      "Up to three locations",
+      "Group dashboards and alerts",
+      "Scoped inspector access",
+    ],
+    featured: false,
+  },
+  {
+    name: "Enterprise",
+    price: "Custom",
+    per: "four or more sites",
+    blurb: "Groups, contract caterers and consultants.",
+    features: ["Unlimited locations", "SLA and implementation support", "Integrations and governance"],
+    featured: false,
+  },
+] as const;
+
+const PROMO_ADVANTAGES = [
+  {
+    title: "Priced for independents",
+    body: "From £9.99 per site a month with a 7-day trial and no card up front — most UK competitors start higher or quote only on request.",
+  },
+  {
+    title: "Evidence that stands up",
+    body: "Append-only history links the record to the user, premises, asset and device time, so corrective actions can't be quietly rewritten.",
+  },
+  {
+    title: "Four-nation UK context",
+    body: "England, Wales, Scotland and Northern Ireland profiles, SFBB-style safe methods, PPDS and allergen controls built in.",
+  },
+  {
+    title: "Inspector Mode, scoped",
+    body: "Time-limited, read-only access for an EHO or head office — not an anonymous public link to your whole account.",
+  },
+  {
+    title: "Works offline, on any phone",
+    body: "PWA plus native iOS and Android with an offline write queue, so a weak signal in the walk-in never loses a log.",
+  },
+  {
+    title: "QR scan-to-work equipment",
+    body: "Label a fridge or probe once and staff scan straight into the right check, with full service and calibration history.",
+  },
+] as const;
+
 
 function useActiveSection() {
   const [active, setActive] = useState<string>("overview");
@@ -687,6 +763,107 @@ function PromoHome() {
           </div>
 
         </section>
+
+        {/* Pricing */}
+        <section
+          id="pricing"
+          className="border-t border-border bg-white scroll-mt-32"
+          aria-labelledby="promo-pricing-heading"
+        >
+          <div className="mx-auto max-w-[1400px] px-4 py-12 sm:py-16 md:px-8 md:py-24">
+            <p className="eyebrow">Pricing</p>
+            <h2 id="promo-pricing-heading" className="mt-3 display-black uppercase tracking-tight">
+              Simple per-site pricing
+            </h2>
+            <p className="mt-3 max-w-2xl text-sm text-muted-foreground sm:text-base">
+              Start with a 7-day free trial, no card required. Prices exclude VAT where applicable
+              and are billed in GBP. Cancel before renewal at any time.
+            </p>
+
+            <div className="-mx-4 mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 xl:grid-cols-4 [&::-webkit-scrollbar]:hidden">
+              {PROMO_PLANS.map((plan) => (
+                <div
+                  key={plan.name}
+                  className={`relative flex w-[78vw] max-w-[320px] shrink-0 snap-start flex-col p-7 sm:w-full sm:max-w-none ${
+                    plan.featured
+                      ? "card-polished-dark text-white ring-4 ring-[color:var(--color-alert-red)]/60"
+                      : "card-polished text-black"
+                  }`}
+                >
+                  <div className="mb-3 flex min-h-[1.75rem] items-start">
+                    {plan.featured && (
+                      <span className="inline-flex items-center rounded-full bg-[color:var(--color-alert-red)] px-3 py-1 text-[10px] font-black uppercase leading-tight tracking-[0.14em] text-white shadow-lg">
+                        Most popular
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="display-black text-2xl">{plan.name}</h3>
+                  <p
+                    className={`mt-2 min-h-[2.5rem] text-sm leading-snug ${plan.featured ? "text-white/70" : "text-black/60"}`}
+                  >
+                    {plan.blurb}
+                  </p>
+                  <div className="mt-5 flex flex-wrap items-baseline gap-x-2">
+                    <span className="display-black text-4xl">{plan.price}</span>
+                    <span className={`text-xs ${plan.featured ? "text-white/70" : "text-black/60"}`}>
+                      {plan.per}
+                    </span>
+                  </div>
+                  <ul className="mt-5 space-y-2 text-sm">
+                    {plan.features.map((feature) => (
+                      <li
+                        key={feature}
+                        className={plan.featured ? "text-white/80" : "text-black/65"}
+                      >
+                        ✓ {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-auto pt-6">
+                    <Link
+                      to="/unlock"
+                      className={`inline-flex w-full items-center justify-center rounded-full py-3 text-sm font-black uppercase tracking-wider transition ${
+                        plan.featured
+                          ? "bg-[color:var(--color-alert-green)] text-white hover:brightness-110"
+                          : "bg-black text-white hover:bg-[color:var(--color-alert-red)]"
+                      }`}
+                    >
+                      {plan.name === "Enterprise" ? "Talk to us" : "Start free trial"}
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="mt-3 text-center text-[0.65rem] font-bold uppercase tracking-widest text-black/35 sm:hidden">
+              Swipe for more plans
+            </p>
+
+            <div className="mt-14">
+              <p className="eyebrow">How we compare</p>
+              <h3 className="mt-3 display-black text-2xl uppercase tracking-tight sm:text-3xl">
+                Where Haccora wins
+              </h3>
+              <p className="mt-3 max-w-2xl text-sm text-muted-foreground sm:text-base">
+                UK food-safety apps mostly cover the same daily logs. These are the differences we
+                compete on — not hygiene-rating promises, which no software can make.
+              </p>
+              <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {PROMO_ADVANTAGES.map((item) => (
+                  <div key={item.title} className="card-polished flex flex-col p-6">
+                    <h4 className="text-base font-black text-black">{item.title}</h4>
+                    <p className="mt-2 text-sm leading-relaxed text-black/65">{item.body}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-6 max-w-3xl text-xs leading-relaxed text-muted-foreground">
+                Haccora helps you build and evidence a HACCP-based food-safety management system. It
+                is not FSA, FSS or local-authority approved, does not replace an EHO inspection or
+                competent management, and cannot guarantee a Food Hygiene Rating.
+              </p>
+            </div>
+          </div>
+        </section>
+
 
         {/* FAQs */}
         <section
