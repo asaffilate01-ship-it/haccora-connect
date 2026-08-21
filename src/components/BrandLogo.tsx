@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import darkLogo from "@/assets/haccora-logo.png.asset.json";
-import lightLogo from "@/assets/haccora-logo-light.png.asset.json";
+import { BrandLogoArtwork } from "@/components/BrandLogoArtwork";
 
 /** Canonical Haccora wordmark: shield, "Haccora" and the Safe. Clean. Compliant. slogan. */
 export const BRAND_SLOGAN = "Safe. Clean. Compliant.";
