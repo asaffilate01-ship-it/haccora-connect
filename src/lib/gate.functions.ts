@@ -24,8 +24,13 @@ export const getGateState = createServerFn({ method: "GET" }).handler(async () =
   const expected = process.env["SITE_PASSWORD"];
   const secret = process.env["SITE_GATE_SESSION_SECRET"];
   if (!expected || !secret) return { enabled: false as const, unlocked: true };
-  const session = await useSession<GateSession>(sessionConfig());
-  return { enabled: true as const, unlocked: session.data.unlocked === true };
+  try {
+    const session = await useSession<GateSession>(sessionConfig());
+    return { enabled: true as const, unlocked: session.data.unlocked === true };
+  } catch {
+    // An unreadable/invalid session must gate the site, not crash the render.
+    return { enabled: true as const, unlocked: false };
+  }
 });
 
 export const unlockSite = createServerFn({ method: "POST" })
