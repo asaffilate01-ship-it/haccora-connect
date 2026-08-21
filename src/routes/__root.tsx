@@ -82,7 +82,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     const path = location.pathname;
     if (path === "/" || path === "/unlock" || path.startsWith("/api") || path.startsWith("/legal"))
       return;
-    const gate = await getGateState();
+    // A gate failure must never turn a page into a 500; treat it as "not gated".
+    const gate = await getGateState().catch(() => ({ enabled: false, unlocked: true }) as const);
     if (gate.enabled && !gate.unlocked) {
       throw redirect({ to: "/unlock" });
     }
