@@ -25,13 +25,11 @@ function LogoArtwork({
   decorative?: boolean;
 }) {
   return (
-    <img
-      src={light ? lightLogo.url : darkLogo.url}
+    <BrandLogoArtwork
       className={className}
-      alt={decorative ? "" : `${label} — ${BRAND_SLOGAN}`}
-      aria-hidden={decorative ? true : undefined}
-      loading="eager"
-      decoding="async"
+      title={`${label} — ${BRAND_SLOGAN}`}
+      decorative={decorative}
+      light={light}
     />
   );
 }
