@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import darkLogo from "@/assets/haccora-logo.png.asset.json";
-import lightLogo from "@/assets/haccora-logo-light.png.asset.json";
+import { BrandLogoArtwork } from "@/components/BrandLogoArtwork";
 
 /** Canonical Haccora wordmark: shield, "Haccora" and the Safe. Clean. Compliant. slogan. */
 export const BRAND_SLOGAN = "Safe. Clean. Compliant.";
@@ -26,13 +25,11 @@ function LogoArtwork({
   decorative?: boolean;
 }) {
   return (
-    <img
-      src={light ? lightLogo.url : darkLogo.url}
+    <BrandLogoArtwork
       className={className}
-      alt={decorative ? "" : `${label} — ${BRAND_SLOGAN}`}
-      aria-hidden={decorative ? true : undefined}
-      loading="eager"
-      decoding="async"
+      title={`${label} — ${BRAND_SLOGAN}`}
+      decorative={decorative}
+      light={light}
     />
   );
 }
