@@ -20,7 +20,7 @@ export function BrandLogoArtwork({
 
   return (
     <svg
-      viewBox="0 0 800 200"
+      viewBox="0 0 706 200"
       className={className}
       role={decorative ? undefined : "img"}
       aria-hidden={decorative ? true : undefined}
