@@ -547,11 +547,7 @@ function PromoHome() {
           />
           <div className="relative mx-auto grid max-w-[1400px] items-center gap-8 px-4 py-12 sm:py-16 md:grid-cols-[1.15fr_0.85fr] md:gap-10 md:px-8 md:py-24">
             <div>
-              <p className="inline-flex max-w-full items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[0.6rem] font-black uppercase tracking-[0.16em] text-white/80 backdrop-blur sm:text-[0.68rem] sm:tracking-[0.2em]">
-                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[color:var(--color-alert-red)]" />
-                Preview access · UK food safety software
-              </p>
-              <h1 className="hero-title mt-4 display-black uppercase tracking-tight sm:mt-5">
+              <h1 className="hero-title display-black uppercase tracking-tight">
                 Every food safety record, in one place
               </h1>
               <p className="mt-4 max-w-xl text-sm leading-relaxed text-white/75 sm:mt-5 sm:text-base md:text-lg">
