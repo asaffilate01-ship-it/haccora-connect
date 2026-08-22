@@ -36,23 +36,25 @@ import mobileDiary from "@/assets/mobile-diary.jpg";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Haccora — Digital food safety for UK food businesses" },
+      { title: "Haccora — Safe. Clean. Compliant." },
       {
         name: "description",
         content:
           "Haccora is one platform for HACCP, temperature logs, cleaning, allergens, training and EHO inspection evidence — web, mobile app and platform console for UK food businesses.",
       },
-      { property: "og:title", content: "Haccora — Digital food safety for UK food businesses" },
+      { property: "og:title", content: "Haccora — Safe. Clean. Compliant." },
       {
         property: "og:description",
         content:
           "HACCP, daily diary, temperature monitoring, allergens and PPDS, staff compliance and one-tap inspection packs — built for UK kitchens.",
       },
       { property: "og:type", content: "website" },
-      { property: "og:image", content: "https://haccora.co.uk/og-haccora.jpg" },
+      { property: "og:url", content: "https://haccora.co.uk/" },
+      { property: "og:image", content: "https://haccora.co.uk/images/promo-hero.jpg" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:image", content: "https://haccora.co.uk/og-haccora.jpg" },
+      { name: "twitter:image", content: "https://haccora.co.uk/images/promo-hero.jpg" },
     ],
+    links: [{ rel: "canonical", href: "https://haccora.co.uk/" }],
     scripts: [
       {
         type: "application/ld+json",
