@@ -46,6 +46,10 @@ export default defineConfig({
       name: "mobile-chromium",
       use: { ...devices["Pixel 7"] },
     },
+    {
+      name: "tablet-chromium",
+      use: { ...devices["Galaxy Tab S9"] },
+    },
   ],
   webServer: hostedURL
     ? undefined
