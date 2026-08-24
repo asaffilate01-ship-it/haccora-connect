@@ -52,9 +52,10 @@ test("inspection readiness counts the correct private and training evidence", as
 });
 
 test("platform roles receive focused sections and cannot enter mismatched prospect tooling", async () => {
-  const [platform, prospects] = await Promise.all([
+  const [platform, prospects, browserConfig] = await Promise.all([
     read("src/routes/platform.tsx"),
     read("src/routes/platform-prospects.tsx"),
+    read("playwright.config.ts"),
   ]);
 
   for (const label of [
@@ -73,6 +74,10 @@ test("platform roles receive focused sections and cannot enter mismatched prospe
   assert.match(platform, /activeSection === "operations"/);
   assert.match(platform, /canManageProspects &&/);
   assert.match(platform, /if \(typeof pence !== "number"\) return "—"/);
+  assert.match(platform, /aria-label="Prospects"/);
+  assert.match(platform, /hidden sm:inline">Sign out/);
+  assert.match(platform, /overflow-x-auto/);
+  assert.match(browserConfig, /Galaxy Tab S9/);
   assert.match(prospects, /else if \(!canEdit\) void navigate\(\{ to: "\/platform" \}\)/);
   assert.match(prospects, /loading \|\| !platformRole \|\| !canEdit/);
 });

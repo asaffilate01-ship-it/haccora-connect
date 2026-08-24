@@ -522,9 +522,9 @@ function PlatformOperations() {
   return (
     <div className="min-h-screen bg-secondary/35 text-foreground">
       <header className="border-b border-white/10 bg-black text-white">
-        <div className="mx-auto flex min-h-16 max-w-[1500px] items-center justify-between gap-4 px-4 py-3 md:px-8">
+        <div className="mx-auto flex min-h-16 max-w-[1500px] items-center justify-between gap-2 px-4 py-3 sm:gap-4 md:px-8">
           <BrandLogo light imgClassName="h-10 w-auto" />
-          <div className="flex items-center gap-3">
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <div className="hidden text-right sm:block">
               <div className="text-sm font-semibold">{user.name}</div>
               <div className="text-[10px] font-bold uppercase tracking-wider text-white/60">
@@ -534,22 +534,28 @@ function PlatformOperations() {
             {canManageProspects && (
               <Link
                 to="/platform-prospects"
-                className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/20 px-4 text-sm font-bold"
+                aria-label="Prospects"
+                title="Prospects"
+                className="inline-flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-white/20 text-sm font-bold sm:w-auto sm:px-4"
               >
-                <Target size={15} /> Prospects
+                <Target size={15} /> <span className="hidden sm:inline">Prospects</span>
               </Link>
             )}
             <Link
               to="/platform-support"
-              className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/20 px-4 text-sm font-bold"
+              aria-label="Support"
+              title="Support"
+              className="inline-flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-white/20 text-sm font-bold sm:w-auto sm:px-4"
             >
-              <LifeBuoy size={15} /> Support
+              <LifeBuoy size={15} /> <span className="hidden sm:inline">Support</span>
             </Link>
             <button
               onClick={() => void signOut().then(() => navigate({ to: "/login" }))}
-              className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/20 px-4 text-sm font-bold"
+              aria-label="Sign out"
+              title="Sign out"
+              className="inline-flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-white/20 text-sm font-bold sm:w-auto sm:px-4"
             >
-              <LogOut size={15} /> Sign out
+              <LogOut size={15} /> <span className="hidden sm:inline">Sign out</span>
             </button>
           </div>
         </div>
