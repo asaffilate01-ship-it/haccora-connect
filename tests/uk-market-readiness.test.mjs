@@ -40,13 +40,27 @@ test("dependency manifest and lock use compatible Zod major", () => {
 test("all deployable Edge Functions are declared in Supabase config", () => {
   const config = read("supabase/config.toml");
   for (const fn of [
-    "file-scan",
-    "operations-dispatch",
     "billing",
+    "contact",
+    "file-scan",
+    "inspection-export",
+    "inspector-invite",
     "integration-admin",
     "integration-dispatch",
+    "notification-dispatch",
+    "operations-dispatch",
+    "operations-health",
+    "platform-admin",
+    "platform-readiness",
+    "privacy-requests",
+    "security-center",
+    "sensor-ingest",
+    "sensor-provision",
+    "team-invite",
   ])
     assert.match(config, new RegExp(`\\[functions\\.${fn}\\]`));
+  for (const fn of ["contact", "sensor-ingest"])
+    assert.match(config, new RegExp(`\\[functions\\.${fn}\\]\\s+verify_jwt = false`));
 });
 test("UK compliance and PPDS workflows are reachable product routes", () => {
   const nav = read("src/routes/app.tsx");

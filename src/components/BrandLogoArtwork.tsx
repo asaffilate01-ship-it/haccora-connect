@@ -1,8 +1,6 @@
-import brandLogo from "@/assets/haccora-brand.png.asset.json";
-
 /**
  * Official Haccora lockup — shield mark, "Haccora" wordmark and the
- * Safe. Clean. Compliant. slogan, served from the CDN.
+ * Safe. Clean. Compliant. slogan, served from canonical first-party assets.
  */
 export function BrandLogoArtwork({
   className = "h-10 w-auto",
@@ -17,10 +15,10 @@ export function BrandLogoArtwork({
 }) {
   return (
     <img
-      src={brandLogo.url}
+      src={light ? "/brand/haccora-logo-light.svg" : "/brand/haccora-logo.svg"}
       alt={decorative ? "" : title}
       aria-hidden={decorative ? true : undefined}
-      className={`${className} object-contain ${light ? "brightness-0 invert" : ""}`}
+      className={`${className} object-contain`}
       loading="eager"
       decoding="async"
     />
