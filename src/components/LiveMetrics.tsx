@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/haccora-client";
-import { useI18n } from "@/lib/i18n";
 import { AlertOctagon, Thermometer, Bell, ClipboardCheck, Loader2 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
@@ -14,8 +13,8 @@ type Counts = {
 };
 
 export function LiveMetrics() {
-  const { lang } = useI18n();
   const [c, setC] = useState<Counts | null>(null);
+  const [error, setError] = useState("");
   const t = (_legacy: string, english: string) => english;
 
   useEffect(() => {
@@ -48,6 +47,13 @@ export function LiveMetrics() {
           .gte("completed_at", new Date(new Date().setHours(0, 0, 0, 0)).toISOString()),
       ]);
       if (!mounted) return;
+      if ([inc, incH, temp, tempA, alerts, checks].some((result) => result.error)) {
+        setError(
+          "Live metrics are unavailable. No incident, temperature, alert or check has been assumed clear.",
+        );
+        return;
+      }
+      setError("");
       setC({
         incidents: inc.count ?? 0,
         incidentsHigh: incH.count ?? 0,
@@ -72,6 +78,13 @@ export function LiveMetrics() {
       supabase.removeChannel(ch);
     };
   }, []);
+
+  if (error)
+    return (
+      <div role="alert" className="surface flex items-start gap-2 p-5 text-sm text-destructive">
+        <AlertOctagon size={16} className="mt-0.5 shrink-0" /> {error}
+      </div>
+    );
 
   if (!c)
     return (

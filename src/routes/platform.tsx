@@ -153,6 +153,7 @@ type PlatformReadiness = {
 };
 
 type MfaFactor = { id: string; status: string };
+type PlatformSection = "overview" | "customers" | "sales" | "operations" | "administration";
 
 function PlatformOperations() {
   const { user, hydrated, signOut } = useAuth();
@@ -185,6 +186,7 @@ function PlatformOperations() {
   const [operatorName, setOperatorName] = useState("");
   const [operatorEmail, setOperatorEmail] = useState("");
   const [operatorRole, setOperatorRole] = useState<Operator["role"]>("platform_support");
+  const [activeSection, setActiveSection] = useState<PlatformSection>("overview");
 
   useEffect(() => {
     if (!hydrated) return;
@@ -241,14 +243,25 @@ function PlatformOperations() {
       operatorsResult.error ||
       auditResult.error ||
       enquiriesResult.error;
-    if (failure)
+    if (failure) {
       setError(failure.message ?? "The audited platform control plane could not be loaded.");
-    else {
+    }
+    if (!dashboardResult.error) {
       setDashboard(dashboardResult.data as Dashboard);
+    }
+    if (!customersResult.error) {
       setCustomers((customersResult.data ?? []) as Customer[]);
+    }
+    if (!plansResult.error) {
       setPlans((plansResult.data ?? []) as Plan[]);
+    }
+    if (!operatorsResult.error) {
       setOperators((operatorsResult.data ?? []) as Operator[]);
+    }
+    if (!auditResult.error) {
       setAuditEvents((auditResult.data ?? []) as AuditEvent[]);
+    }
+    if (!enquiriesResult.error) {
       setEnquiries((enquiriesResult.data ?? []) as ContactEnquiry[]);
     }
     if (readinessResult.error) {
@@ -270,12 +283,31 @@ function PlatformOperations() {
   }, [load]);
 
   const owner = user?.platformRole === "platform_owner";
+  const support = user?.platformRole === "platform_support";
   const financialAccess = dashboard?.financial_access === true;
+  const canManageProspects = owner || support;
+  const platformTitle = owner
+    ? "Platform owner dashboard"
+    : support
+      ? "Support operations dashboard"
+      : "Platform assurance dashboard";
+  const platformDescription = owner
+    ? "Commercial performance, customer lifecycle and service health across Haccora."
+    : support
+      ? "Customer activity, enquiries and support operations without financial or operator controls."
+      : "Read-only financial, operational and audit assurance for the Haccora platform.";
+  const platformSections: Array<{ key: PlatformSection; label: string }> = [
+    { key: "overview", label: "Overview" },
+    { key: "customers", label: "Customers" },
+    ...(canManageProspects ? [{ key: "sales" as const, label: "Sales & enquiries" }] : []),
+    ...(canAuditPlatform ? [{ key: "operations" as const, label: "Service health" }] : []),
+    ...(canAuditPlatform ? [{ key: "administration" as const, label: "Team & audit" }] : []),
+  ];
   const totalEvidence = useMemo(
     () =>
-      (dashboard?.asset_events_30d ?? 0) +
-      (dashboard?.temperature_logs_30d ?? 0) +
-      (dashboard?.checks_30d ?? 0),
+      dashboard
+        ? dashboard.asset_events_30d + dashboard.temperature_logs_30d + dashboard.checks_30d
+        : undefined,
     [dashboard],
   );
   const publicSignals = useMemo(
@@ -499,12 +531,14 @@ function PlatformOperations() {
                 {user.platformRole.replace("platform_", "SaaS ")}
               </div>
             </div>
-            <Link
-              to="/platform-prospects"
-              className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/20 px-4 text-sm font-bold"
-            >
-              <Target size={15} /> Prospects
-            </Link>
+            {canManageProspects && (
+              <Link
+                to="/platform-prospects"
+                className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/20 px-4 text-sm font-bold"
+              >
+                <Target size={15} /> Prospects
+              </Link>
+            )}
             <Link
               to="/platform-support"
               className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/20 px-4 text-sm font-bold"
@@ -525,11 +559,8 @@ function PlatformOperations() {
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <div className="eyebrow">Haccora service operations</div>
-            <h1 className="mt-1 text-2xl md:text-3xl">SaaS owner control plane</h1>
-            <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-              Financial, subscription, tenant lifecycle and usage oversight. Tenant food-safety
-              evidence remains isolated behind tenant RLS.
-            </p>
+            <h1 className="mt-1 text-2xl md:text-3xl">{platformTitle}</h1>
+            <p className="mt-2 max-w-3xl text-sm text-muted-foreground">{platformDescription}</p>
           </div>
           <button
             onClick={() => void load()}
@@ -539,6 +570,27 @@ function PlatformOperations() {
             <RefreshCw size={15} className={loading ? "animate-spin" : ""} /> Refresh
           </button>
         </header>
+
+        <nav
+          aria-label="Platform dashboard sections"
+          className="flex gap-2 overflow-x-auto rounded-2xl border border-border bg-card p-2"
+        >
+          {platformSections.map((section) => (
+            <button
+              key={section.key}
+              type="button"
+              aria-current={activeSection === section.key ? "page" : undefined}
+              onClick={() => setActiveSection(section.key)}
+              className={`min-h-10 shrink-0 rounded-xl px-4 text-sm font-bold transition ${
+                activeSection === section.key
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+              }`}
+            >
+              {section.label}
+            </button>
+          ))}
+        </nav>
 
         {error && (
           <div role="alert" className="rounded-xl bg-destructive/10 p-4 text-sm text-destructive">
@@ -554,7 +606,7 @@ function PlatformOperations() {
           </div>
         )}
 
-        {canAuditPlatform && (
+        {activeSection === "operations" && canAuditPlatform && (
           <section className="surface overflow-hidden">
             <div className="flex flex-wrap items-start justify-between gap-4 border-b border-border p-5 md:p-6">
               <div>
@@ -745,188 +797,199 @@ function PlatformOperations() {
           </section>
         )}
 
-        <section
-          aria-label="Commercial metrics"
-          className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6"
-        >
-          {financialAccess ? (
+        {activeSection === "overview" && (
+          <section
+            aria-label="Commercial metrics"
+            className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6"
+          >
+            {financialAccess ? (
+              <Metric
+                icon={Banknote}
+                label="MRR"
+                value={money(dashboard?.mrr_pence)}
+                detail={`${money(dashboard?.arr_pence)} ARR`}
+              />
+            ) : (
+              <Metric
+                icon={Building2}
+                label="All tenants"
+                value={dashboard?.tenants_total}
+                detail="Support view"
+              />
+            )}
             <Metric
-              icon={Banknote}
-              label="MRR"
-              value={money(dashboard?.mrr_pence)}
-              detail={`${money(dashboard?.arr_pence)} ARR`}
+              icon={CreditCard}
+              label="Paid subscriptions"
+              value={dashboard?.subscriptions_active}
+              detail={`${dashboard?.trials_active ?? 0} trials`}
             />
-          ) : (
             <Metric
               icon={Building2}
-              label="All tenants"
-              value={dashboard?.tenants_total}
-              detail="Support view"
+              label="Active tenants"
+              value={dashboard?.tenants_active}
+              detail={`${dashboard?.tenants_frozen ?? 0} frozen`}
             />
-          )}
-          <Metric
-            icon={CreditCard}
-            label="Paid subscriptions"
-            value={dashboard?.subscriptions_active}
-            detail={`${dashboard?.trials_active ?? 0} trials`}
-          />
-          <Metric
-            icon={Building2}
-            label="Active tenants"
-            value={dashboard?.tenants_active}
-            detail={`${dashboard?.tenants_frozen ?? 0} frozen`}
-          />
-          <Metric
-            icon={MapPin}
-            label="Premises"
-            value={dashboard?.locations_active}
-            detail="Active UK sites"
-          />
-          <Metric
-            icon={Users}
-            label="Tenant users"
-            value={dashboard?.members_active}
-            detail="Active memberships"
-          />
-          <Metric
-            icon={Activity}
-            label="Evidence volume"
-            value={totalEvidence}
-            detail="Last 30 days"
-          />
-        </section>
-
-        <section className="surface overflow-hidden">
-          <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border p-5">
-            <div>
-              <div className="flex items-center gap-2">
-                <MessageSquareText size={19} />
-                <h2 className="font-display text-xl">Website enquiries</h2>
-              </div>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Consent-backed requests submitted through the public website. Only SaaS operators
-                can read this queue; status changes require an owner at AAL2.
-              </p>
-            </div>
-            <span className="rounded-full bg-secondary px-3 py-1.5 text-xs font-black uppercase tracking-wider">
-              {enquiries.filter((enquiry) => enquiry.status === "new").length} new
-            </span>
-          </div>
-          {enquiries.length ? (
-            <div className="grid gap-3 p-5 lg:grid-cols-2">
-              {enquiries.map((enquiry) => (
-                <article key={enquiry.id} className="rounded-xl border border-border p-4">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <h3 className="font-semibold">
-                        {enquiry.first_name} {enquiry.last_name}
-                      </h3>
-                      <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                        <a
-                          className="inline-flex items-center gap-1 hover:underline"
-                          href={`mailto:${enquiry.email}`}
-                        >
-                          <Mail size={12} /> {enquiry.email}
-                        </a>
-                        {enquiry.phone && (
-                          <a
-                            href={`tel:${enquiry.phone.replace(/\s/g, "")}`}
-                            className="hover:underline"
-                          >
-                            {enquiry.phone}
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                    <select
-                      aria-label={`Status for ${enquiry.first_name} ${enquiry.last_name}`}
-                      className="field h-9 w-auto min-w-32 py-1 text-xs capitalize"
-                      value={enquiry.status}
-                      disabled={!owner || busy === `enquiry-${enquiry.id}`}
-                      onChange={(event) =>
-                        void manageEnquiry(enquiry, event.target.value as ContactEnquiry["status"])
-                      }
-                    >
-                      <option value="new">New</option>
-                      <option value="contacted">Contacted</option>
-                      <option value="closed">Closed</option>
-                      <option value="spam">Spam</option>
-                    </select>
-                  </div>
-                  <div className="mt-3 flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
-                    <span className="rounded-full bg-secondary px-2 py-1">
-                      {enquiry.enquiry_type.replaceAll("_", " ")}
-                    </span>
-                    {enquiry.business_name && (
-                      <span className="rounded-full bg-secondary px-2 py-1">
-                        {enquiry.business_name}
-                      </span>
-                    )}
-                    {enquiry.site_count && (
-                      <span className="rounded-full bg-secondary px-2 py-1">
-                        {enquiry.site_count} {enquiry.site_count === 1 ? "site" : "sites"}
-                      </span>
-                    )}
-                    <span className="rounded-full bg-secondary px-2 py-1">
-                      {new Date(enquiry.created_at).toLocaleString("en-GB")}
-                    </span>
-                  </div>
-                  <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-foreground/80">
-                    {enquiry.message ?? "No enquiry detail was recorded."}
-                  </p>
-                </article>
-              ))}
-            </div>
-          ) : (
-            <p className="p-5 text-sm text-muted-foreground">No website enquiries yet.</p>
-          )}
-        </section>
-
-        <div className="grid gap-5 xl:grid-cols-[1.25fr_0.75fr]">
-          <section className="surface p-5">
-            <div className="flex items-center gap-2">
-              <Gauge size={20} />
-              <h2 className="font-display text-xl">Product volume</h2>
-            </div>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <SmallMetric label="Active assets" value={dashboard?.assets_active} />
-              <SmallMetric label="QR scans · 30d" value={dashboard?.asset_scans_30d} />
-              <SmallMetric label="Asset records · 30d" value={dashboard?.asset_events_30d} />
-              <SmallMetric
-                label="Compliance logs · 30d"
-                value={(dashboard?.temperature_logs_30d ?? 0) + (dashboard?.checks_30d ?? 0)}
-              />
-            </div>
+            <Metric
+              icon={MapPin}
+              label="Premises"
+              value={dashboard?.locations_active}
+              detail="Active UK sites"
+            />
+            <Metric
+              icon={Users}
+              label="Tenant users"
+              value={dashboard?.members_active}
+              detail="Active memberships"
+            />
+            <Metric
+              icon={Activity}
+              label="Evidence volume"
+              value={totalEvidence}
+              detail="Last 30 days"
+            />
           </section>
-          <section className="surface p-5">
-            <div className="flex items-center gap-2">
-              <LockKeyhole size={20} />
-              <h2 className="font-display text-xl">
-                {financialAccess ? "Revenue risk" : "Support access"}
-              </h2>
+        )}
+
+        {activeSection === "sales" && canManageProspects && (
+          <section className="surface overflow-hidden">
+            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border p-5">
+              <div>
+                <div className="flex items-center gap-2">
+                  <MessageSquareText size={19} />
+                  <h2 className="font-display text-xl">Website enquiries</h2>
+                </div>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Consent-backed requests submitted through the public website. Only SaaS operators
+                  can read this queue; status changes require an owner at AAL2.
+                </p>
+              </div>
+              <span className="rounded-full bg-secondary px-3 py-1.5 text-xs font-black uppercase tracking-wider">
+                {enquiries.filter((enquiry) => enquiry.status === "new").length} new
+              </span>
             </div>
-            {financialAccess ? (
-              <div className="mt-4 flex items-end justify-between">
-                <div>
-                  <div className="text-2xl font-black">{money(dashboard?.past_due_mrr_pence)}</div>
-                  <div className="text-xs text-muted-foreground">Past-due monthly value</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-black">
-                    {dashboard?.subscriptions_past_due ?? 0}
-                  </div>
-                  <div className="text-xs text-muted-foreground">Past-due accounts</div>
-                </div>
+            {enquiries.length ? (
+              <div className="grid gap-3 p-5 lg:grid-cols-2">
+                {enquiries.map((enquiry) => (
+                  <article key={enquiry.id} className="rounded-xl border border-border p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <h3 className="font-semibold">
+                          {enquiry.first_name} {enquiry.last_name}
+                        </h3>
+                        <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                          <a
+                            className="inline-flex items-center gap-1 hover:underline"
+                            href={`mailto:${enquiry.email}`}
+                          >
+                            <Mail size={12} /> {enquiry.email}
+                          </a>
+                          {enquiry.phone && (
+                            <a
+                              href={`tel:${enquiry.phone.replace(/\s/g, "")}`}
+                              className="hover:underline"
+                            >
+                              {enquiry.phone}
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                      <select
+                        aria-label={`Status for ${enquiry.first_name} ${enquiry.last_name}`}
+                        className="field h-9 w-auto min-w-32 py-1 text-xs capitalize"
+                        value={enquiry.status}
+                        disabled={!owner || busy === `enquiry-${enquiry.id}`}
+                        onChange={(event) =>
+                          void manageEnquiry(
+                            enquiry,
+                            event.target.value as ContactEnquiry["status"],
+                          )
+                        }
+                      >
+                        <option value="new">New</option>
+                        <option value="contacted">Contacted</option>
+                        <option value="closed">Closed</option>
+                        <option value="spam">Spam</option>
+                      </select>
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                      <span className="rounded-full bg-secondary px-2 py-1">
+                        {enquiry.enquiry_type.replaceAll("_", " ")}
+                      </span>
+                      {enquiry.business_name && (
+                        <span className="rounded-full bg-secondary px-2 py-1">
+                          {enquiry.business_name}
+                        </span>
+                      )}
+                      {enquiry.site_count && (
+                        <span className="rounded-full bg-secondary px-2 py-1">
+                          {enquiry.site_count} {enquiry.site_count === 1 ? "site" : "sites"}
+                        </span>
+                      )}
+                      <span className="rounded-full bg-secondary px-2 py-1">
+                        {new Date(enquiry.created_at).toLocaleString("en-GB")}
+                      </span>
+                    </div>
+                    <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-foreground/80">
+                      {enquiry.message ?? "No enquiry detail was recorded."}
+                    </p>
+                  </article>
+                ))}
               </div>
             ) : (
-              <p className="mt-4 text-sm text-muted-foreground">
-                Revenue and operator audit data are restricted to SaaS owners and auditors.
-              </p>
+              <p className="p-5 text-sm text-muted-foreground">No website enquiries yet.</p>
             )}
           </section>
-        </div>
+        )}
 
-        {owner && (
+        {activeSection === "overview" && (
+          <div className="grid gap-5 xl:grid-cols-[1.25fr_0.75fr]">
+            <section className="surface p-5">
+              <div className="flex items-center gap-2">
+                <Gauge size={20} />
+                <h2 className="font-display text-xl">Product volume</h2>
+              </div>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <SmallMetric label="Active assets" value={dashboard?.assets_active} />
+                <SmallMetric label="QR scans · 30d" value={dashboard?.asset_scans_30d} />
+                <SmallMetric label="Asset records · 30d" value={dashboard?.asset_events_30d} />
+                <SmallMetric
+                  label="Compliance logs · 30d"
+                  value={(dashboard?.temperature_logs_30d ?? 0) + (dashboard?.checks_30d ?? 0)}
+                />
+              </div>
+            </section>
+            <section className="surface p-5">
+              <div className="flex items-center gap-2">
+                <LockKeyhole size={20} />
+                <h2 className="font-display text-xl">
+                  {financialAccess ? "Revenue risk" : "Support access"}
+                </h2>
+              </div>
+              {financialAccess ? (
+                <div className="mt-4 flex items-end justify-between">
+                  <div>
+                    <div className="text-2xl font-black">
+                      {money(dashboard?.past_due_mrr_pence)}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Past-due monthly value</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-black">
+                      {dashboard?.subscriptions_past_due ?? 0}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Past-due accounts</div>
+                  </div>
+                </div>
+              ) : (
+                <p className="mt-4 text-sm text-muted-foreground">
+                  Revenue and operator audit data are restricted to SaaS owners and auditors.
+                </p>
+              )}
+            </section>
+          </div>
+        )}
+
+        {activeSection === "customers" && owner && (
           <section className="surface p-5">
             <div className="flex items-center gap-2">
               <UserPlus size={19} />
@@ -992,45 +1055,58 @@ function PlatformOperations() {
           </section>
         )}
 
-        <section className="surface overflow-hidden">
-          <div className="border-b border-border p-5">
-            <h2 className="font-display text-xl">Tenants & subscriptions</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Freeze is immediate and fail-closed. Close is a retained soft closure, not destructive
-              deletion.
-            </p>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[1150px] text-left text-xs">
-              <thead className="bg-secondary/60 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
-                <tr>
-                  <th className="px-5 py-3">Tenant</th>
-                  <th className="px-3 py-3">Lifecycle</th>
-                  <th className="px-3 py-3">Subscription</th>
-                  <th className="px-3 py-3">MRR</th>
-                  <th className="px-3 py-3">Volume</th>
-                  <th className="px-3 py-3">Limits</th>
-                  <th className="px-5 py-3">Governed actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {customers.map((customer) => (
-                  <CustomerRow
-                    key={customer.organization_id}
-                    customer={customer}
-                    plans={plans}
-                    owner={owner}
-                    financialAccess={financialAccess}
-                    busy={busy === customer.organization_id}
-                    onAction={manageTenant}
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
+        {activeSection === "customers" && (
+          <section className="surface overflow-hidden">
+            <div className="border-b border-border p-5">
+              <h2 className="font-display text-xl">Tenants & subscriptions</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Freeze is immediate and fail-closed. Close is a retained soft closure, not
+                destructive deletion.
+              </p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[980px] text-left text-xs">
+                <thead className="bg-secondary/60 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                  <tr>
+                    <th className="px-5 py-3">Tenant</th>
+                    <th className="px-3 py-3">Lifecycle</th>
+                    <th className="px-3 py-3">Subscription</th>
+                    <th className="px-3 py-3">MRR</th>
+                    <th className="px-3 py-3">Volume</th>
+                    <th className="px-3 py-3">Limits</th>
+                    <th className="px-5 py-3">Governed actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {customers.length ? (
+                    customers.map((customer) => (
+                      <CustomerRow
+                        key={customer.organization_id}
+                        customer={customer}
+                        plans={plans}
+                        owner={owner}
+                        financialAccess={financialAccess}
+                        busy={busy === customer.organization_id}
+                        onAction={manageTenant}
+                      />
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan={7}
+                        className="px-5 py-10 text-center text-sm text-muted-foreground"
+                      >
+                        No customer workspaces are available in this view.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
 
-        {canAuditPlatform && (
+        {activeSection === "administration" && canAuditPlatform && (
           <div className="grid gap-6 xl:grid-cols-[1fr_0.8fr]">
             <section className="surface p-5">
               <div className="flex items-center gap-2">
@@ -1162,6 +1238,16 @@ function CustomerRow({
     financialAccess ? ((customer.mrr_pence ?? 0) / 100).toFixed(2) : "",
   );
   const [status, setStatus] = useState(customer.subscription_status);
+  const seatsNumber = Number(seats);
+  const locationsNumber = Number(locations);
+  const mrrNumber = Number(mrr);
+  const subscriptionValid =
+    Number.isInteger(seatsNumber) &&
+    seatsNumber > 0 &&
+    Number.isInteger(locationsNumber) &&
+    locationsNumber > 0 &&
+    Number.isFinite(mrrNumber) &&
+    mrrNumber >= 0;
   return (
     <tr>
       <td className="px-5 py-4">
@@ -1181,52 +1267,60 @@ function CustomerRow({
         )}
       </td>
       <td className="px-3 py-4">
-        <div className="grid gap-1">
-          <select
-            disabled={!owner}
-            className="rounded border border-border bg-card px-2 py-1.5"
-            value={plan}
-            onChange={(event) => {
-              const next = event.target.value;
-              setPlan(next);
-              const selected = plans.find((item) => item.code === next);
-              if (selected) {
-                setSeats(String(selected.included_seats));
-                setLocations(String(selected.max_locations));
-                setMrr(((selected.monthly_price_pence ?? 0) / 100).toFixed(2));
-              }
-            }}
-          >
-            {plans.map((item) => (
-              <option value={item.code} key={item.code}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-          <select
-            disabled={!owner}
-            className="rounded border border-border bg-card px-2 py-1.5"
-            value={status}
-            onChange={(event) => setStatus(event.target.value)}
-          >
-            {["trialing", "active", "past_due", "canceled", "unpaid", "paused"].map((item) => (
-              <option key={item}>{item}</option>
-            ))}
-          </select>
-        </div>
+        {owner ? (
+          <div className="grid gap-1">
+            <select
+              className="rounded border border-border bg-card px-2 py-1.5"
+              value={plan}
+              onChange={(event) => {
+                const next = event.target.value;
+                setPlan(next);
+                const selected = plans.find((item) => item.code === next);
+                if (selected) {
+                  setSeats(String(selected.included_seats));
+                  setLocations(String(selected.max_locations));
+                  setMrr(((selected.monthly_price_pence ?? 0) / 100).toFixed(2));
+                }
+              }}
+            >
+              {plans.map((item) => (
+                <option value={item.code} key={item.code}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+            <select
+              className="rounded border border-border bg-card px-2 py-1.5"
+              value={status}
+              onChange={(event) => setStatus(event.target.value)}
+            >
+              {["trialing", "active", "past_due", "canceled", "unpaid", "paused"].map((item) => (
+                <option key={item}>{item}</option>
+              ))}
+            </select>
+          </div>
+        ) : (
+          <div className="grid gap-1">
+            <span className="font-semibold capitalize">{customer.plan}</span>
+            <span className="text-muted-foreground capitalize">
+              {customer.subscription_status.replaceAll("_", " ")}
+            </span>
+          </div>
+        )}
       </td>
       <td className="px-3 py-4">
-        {financialAccess ? (
+        {financialAccess && owner ? (
           <div className="flex items-center">
             <span>£</span>
             <input
-              disabled={!owner}
               className="w-20 rounded border border-border bg-card px-2 py-1.5"
               inputMode="decimal"
               value={mrr}
               onChange={(event) => setMrr(event.target.value)}
             />
           </div>
+        ) : financialAccess ? (
+          <span className="font-semibold">{money(customer.mrr_pence)}</span>
         ) : (
           <span className="text-muted-foreground">Restricted</span>
         )}
@@ -1238,40 +1332,48 @@ function CustomerRow({
         <div>{customer.events_30d} records · 30d</div>
       </td>
       <td className="px-3 py-4">
-        <div className="space-y-1">
-          <label className="flex items-center gap-1">
-            Seats{" "}
-            <input
-              disabled={!owner}
-              className="w-16 rounded border border-border bg-card px-2 py-1"
-              value={seats}
-              onChange={(event) => setSeats(event.target.value)}
-              inputMode="numeric"
-            />
-          </label>
-          <label className="flex items-center gap-1">
-            Sites{" "}
-            <input
-              disabled={!owner}
-              className="w-16 rounded border border-border bg-card px-2 py-1"
-              value={locations}
-              onChange={(event) => setLocations(event.target.value)}
-              inputMode="numeric"
-            />
-          </label>
-        </div>
+        {owner ? (
+          <div className="space-y-1">
+            <label className="flex items-center gap-1">
+              Seats{" "}
+              <input
+                className="w-16 rounded border border-border bg-card px-2 py-1"
+                value={seats}
+                onChange={(event) => setSeats(event.target.value)}
+                inputMode="numeric"
+              />
+            </label>
+            <label className="flex items-center gap-1">
+              Sites{" "}
+              <input
+                className="w-16 rounded border border-border bg-card px-2 py-1"
+                value={locations}
+                onChange={(event) => setLocations(event.target.value)}
+                inputMode="numeric"
+              />
+            </label>
+          </div>
+        ) : (
+          <div className="space-y-1">
+            <div>{customer.seats} seats</div>
+            <div>{customer.location_limit} sites</div>
+          </div>
+        )}
       </td>
       <td className="px-5 py-4">
         {owner ? (
           <div className="flex flex-wrap gap-1.5">
             <button
-              disabled={busy}
+              disabled={busy || !subscriptionValid}
+              title={
+                subscriptionValid ? "Save subscription" : "Enter valid positive limits and MRR"
+              }
               onClick={() =>
                 void onAction(customer, "subscription", {
                   plan,
-                  seats: Number(seats),
-                  locations: Number(locations),
-                  mrr: Math.round(Number(mrr) * 100),
+                  seats: seatsNumber,
+                  locations: locationsNumber,
+                  mrr: Math.round(mrrNumber * 100),
                   status,
                 })
               }
@@ -1406,10 +1508,11 @@ function EmptySignal() {
   );
 }
 
-function money(pence?: number) {
+function money(pence?: number | null) {
+  if (typeof pence !== "number") return "—";
   return new Intl.NumberFormat("en-GB", {
     style: "currency",
     currency: "GBP",
     maximumFractionDigits: 2,
-  }).format((pence ?? 0) / 100);
+  }).format(pence / 100);
 }

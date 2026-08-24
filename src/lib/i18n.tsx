@@ -372,8 +372,8 @@ const en: Dict = {
 
   // Role-specific dashboard hero
   "dash.owner.hero.eye": "Executive · portfolio",
-  "dash.owner.hero.t": "Every location at a glance",
-  "dash.owner.hero.b": "Revenue, compliance and alerts across your network.",
+  "dash.owner.hero.t": "Your operation at a glance",
+  "dash.owner.hero.b": "Compliance, team readiness and alerts across your active premises.",
   "dash.manager.hero.eye": "Operations board · live",
   "dash.manager.hero.t": "Today on the floor",
   "dash.manager.hero.b": "Shift, tasks and open items in real time.",

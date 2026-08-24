@@ -105,9 +105,18 @@ for (const file of await sourceFiles("src")) {
   }
 }
 
-
-
-
+for (const legacyAsset of [
+  "src/assets/haccora-logo.png.asset.json",
+  "src/assets/haccora-logo-light.png.asset.json",
+  "src/assets/haccora-brand.png.asset.json",
+]) {
+  try {
+    await access(path.join(root, legacyAsset));
+    failures.push(`${legacyAsset} is obsolete hosting-generated brand metadata`);
+  } catch {
+    // Expected: canonical Haccora identity assets live under public/brand and mobile/assets.
+  }
+}
 const scripts = JSON.parse(packageJson).scripts ?? {};
 if ((String(scripts.build ?? "").match(/check-source-integrity\.mjs/g) ?? []).length !== 2) {
   failures.push("the production build no longer checks source integrity before and after bundling");

@@ -54,7 +54,32 @@ interface DashCounts {
   expiring: number;
   suppliers: number;
   poOpen: number;
-  poSpend: number;
+  locations: number;
+  shiftsToday: number;
+  shiftStart: string | null;
+  shiftEnd: string | null;
+}
+
+function evidenceScore(counts: DashCounts, tasks: Task[]): number | null {
+  const scores: number[] = [];
+  if (counts.tempTotal > 0) scores.push((counts.tempOk / counts.tempTotal) * 100);
+  if (tasks.length > 0) {
+    scores.push((tasks.filter((task) => task.status === "done").length / tasks.length) * 100);
+  }
+  return scores.length
+    ? Math.round(scores.reduce((total, score) => total + score, 0) / scores.length)
+    : null;
+}
+
+function londonDateISO(date = new Date()): string {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/London",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const value = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${value.year}-${value.month}-${value.day}`;
 }
 
 function Dashboard() {
@@ -62,6 +87,7 @@ function Dashboard() {
   const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [counts, setCounts] = useState<DashCounts>({
     alerts: 0,
     incidentsHigh: 0,
@@ -74,12 +100,16 @@ function Dashboard() {
     expiring: 0,
     suppliers: 0,
     poOpen: 0,
-    poSpend: 0,
+    locations: 0,
+    shiftsToday: 0,
+    shiftStart: null,
+    shiftEnd: null,
   });
 
   const load = useCallback(async () => {
     if (!user) return;
     setLoading(true);
+    setLoadError("");
     const since = new Date();
     since.setHours(0, 0, 0, 0);
     const in7 = new Date(Date.now() + 7 * 86400000).toISOString();
@@ -90,7 +120,7 @@ function Dashboard() {
       .order("created_at", { ascending: true })
       .limit(20);
     if (user.role === "staff") q = q.eq("user_id", user.id);
-    const { data } = await q;
+    const { data, error: taskError } = await q;
     const now = Date.now();
     const userIds = Array.from(new Set((data ?? []).map((r: any) => r.user_id).filter(Boolean)));
     const { data: profs } = userIds.length
@@ -131,7 +161,8 @@ function Dashboard() {
       supQ,
       poOpenQ,
       trainingDueQ,
-      poRecent,
+      locationsQ,
+      shiftsQ,
     ] = await Promise.all([
       supabase.from("alerts").select("id", { count: "exact", head: true }).is("read_at", null),
       supabase
@@ -169,15 +200,33 @@ function Dashboard() {
         .from("training_records")
         .select("id", { count: "exact", head: true })
         .is("completed_at", null),
+      supabase.from("locations").select("id", { count: "exact", head: true }).eq("is_active", true),
       supabase
-        .from("purchase_orders")
-        .select("total_eur")
-        .gte("created_at", new Date(Date.now() - 30 * 86400000).toISOString()),
+        .from("shifts")
+        .select("start_time,end_time")
+        .eq("shift_date", londonDateISO())
+        .order("start_time", { ascending: true }),
     ]);
-    const spend = ((poRecent.data ?? []) as Array<{ total_eur: number | null }>).reduce(
-      (s, r) => s + Number(r.total_eur ?? 0),
-      0,
-    );
+    const aggregateResults = [
+      alertsQ,
+      incHighQ,
+      tempOutQ,
+      tempOkQ,
+      recipesQ,
+      brigadeQ,
+      expiringQ,
+      supQ,
+      poOpenQ,
+      trainingDueQ,
+      locationsQ,
+      shiftsQ,
+    ];
+    if (taskError || aggregateResults.some((result) => result.error)) {
+      setLoadError(
+        "Some dashboard data could not be loaded. Zero values are not confirmation that everything is clear.",
+      );
+    }
+    const shifts = (shiftsQ.data ?? []) as Array<{ start_time: string; end_time: string }>;
     const tempOk = tempOkQ.count ?? 0;
     const tempOut = tempOutQ.count ?? 0;
     setCounts({
@@ -192,7 +241,10 @@ function Dashboard() {
       expiring: expiringQ.count ?? 0,
       suppliers: supQ.count ?? 0,
       poOpen: poOpenQ.count ?? 0,
-      poSpend: Math.round(spend),
+      locations: locationsQ.count ?? 0,
+      shiftsToday: shifts.length,
+      shiftStart: shifts[0]?.start_time?.slice(0, 5) ?? null,
+      shiftEnd: shifts.at(-1)?.end_time?.slice(0, 5) ?? null,
     });
     setLoading(false);
   }, [user]);
@@ -212,10 +264,14 @@ function Dashboard() {
   }, [load]);
 
   const done = async (id: string) => {
-    await supabase
+    const { error } = await supabase
       .from("checks")
       .update({ status: "completed", completed_at: new Date().toISOString() })
       .eq("id", id);
+    if (error) {
+      setLoadError(`The check could not be completed: ${error.message}`);
+      return;
+    }
     load();
   };
 
@@ -250,6 +306,12 @@ function Dashboard() {
         </div>
       )}
 
+      {loadError && (
+        <div role="alert" className="rounded-xl bg-destructive/10 p-4 text-sm text-destructive">
+          {loadError}
+        </div>
+      )}
+
       {user.role === "owner" && (
         <OwnerView
           pending={pending}
@@ -257,6 +319,7 @@ function Dashboard() {
           tasks={visibleTasks}
           done={done}
           counts={counts}
+          dataAvailable={!loadError}
         />
       )}
       {user.role === "manager" && (
@@ -266,6 +329,7 @@ function Dashboard() {
           tasks={visibleTasks}
           done={done}
           counts={counts}
+          dataAvailable={!loadError}
         />
       )}
       {user.role === "chef" && (
@@ -275,9 +339,12 @@ function Dashboard() {
           tasks={visibleTasks}
           done={done}
           counts={counts}
+          dataAvailable={!loadError}
         />
       )}
-      {user.role === "staff" && <StaffView tasks={visibleTasks} done={done} />}
+      {user.role === "staff" && (
+        <StaffView tasks={visibleTasks} done={done} dataAvailable={!loadError} />
+      )}
       {user.role === "inspector" && <InspectorView />}
     </div>
   );
@@ -373,48 +440,49 @@ function OwnerView({
   tasks,
   done,
   counts,
+  dataAvailable,
 }: {
   pending: number;
   overdue: number;
   tasks: Task[];
   done: (id: string) => void;
   counts: DashCounts;
+  dataAvailable: boolean;
 }) {
   const { t } = useI18n();
-  const tempScore =
-    counts.tempTotal > 0 ? Math.round((counts.tempOk / counts.tempTotal) * 100) : 100;
-  const checksScore =
-    tasks.length > 0
-      ? Math.round((tasks.filter((x) => x.status === "done").length / tasks.length) * 100)
-      : 100;
-  const complianceScore = Math.round(tempScore * 0.5 + checksScore * 0.5);
-  const spendFmt = new Intl.NumberFormat("en-GB", {
-    style: "currency",
-    currency: "GBP",
-    maximumFractionDigits: 0,
-  }).format(counts.poSpend || 0);
-
+  const complianceScore = dataAvailable ? evidenceScore(counts, tasks) : null;
   return (
     <>
       <MetricRow
         items={[
           {
             l: t("dash.metric.score"),
-            v: `${complianceScore}%`,
-            hint: t("time.trend"),
+            v: complianceScore === null ? "—" : `${complianceScore}%`,
             icon: ShieldCheck,
           },
-          { l: t("owner.locations"), v: 1, icon: MapPin },
-          { l: t("dash.metric.actions"), v: counts.alerts, icon: AlertTriangle },
-          { l: t("owner.revenue"), v: spendFmt, hint: t("owner.revenue.hint"), icon: DollarSign },
-          { l: t("dash.metric.training"), v: counts.trainingDue, icon: Users },
+          { l: t("owner.locations"), v: dataAvailable ? counts.locations : "—", icon: MapPin },
+          {
+            l: t("dash.metric.actions"),
+            v: dataAvailable ? counts.alerts : "—",
+            icon: AlertTriangle,
+          },
+          {
+            l: "Open purchase orders",
+            v: dataAvailable ? counts.poOpen : "—",
+            icon: DollarSign,
+          },
+          {
+            l: t("dash.metric.training"),
+            v: dataAvailable ? counts.trainingDue : "—",
+            icon: Users,
+          },
         ]}
       />
 
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 surface p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-display text-xl">{t("owner.byLocation")}</h2>
+            <h2 className="font-display text-xl">Workspace overview</h2>
             <span className="text-xs text-muted-foreground">{t("owner.last30")}</span>
           </div>
           <div className="divide-y divide-border">
@@ -423,22 +491,29 @@ function OwnerView({
                 <MapPin size={16} />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold truncate">
-                  {t("dash.thisLocation") || "This location"}
-                </div>
+                <div className="text-sm font-semibold truncate">All active premises</div>
                 <div className="text-xs text-muted-foreground">
-                  {counts.suppliers} {t("suppliers.title") || "Suppliers"} · {counts.recipes}{" "}
-                  {t("recipes.title") || "Recipes"}
+                  {dataAvailable
+                    ? `${counts.locations} active premises · ${counts.suppliers} suppliers · ${counts.recipes} recipes`
+                    : "Dashboard counts unavailable"}
                 </div>
               </div>
               <div className="text-right">
                 <div
-                  className={`font-display text-2xl ${complianceScore >= 95 ? "text-success" : complianceScore >= 90 ? "text-foreground" : "text-warning-foreground"}`}
+                  className={`font-display text-2xl ${
+                    complianceScore === null
+                      ? "text-muted-foreground"
+                      : complianceScore >= 95
+                        ? "text-success"
+                        : complianceScore >= 90
+                          ? "text-foreground"
+                          : "text-warning-foreground"
+                  }`}
                 >
-                  {complianceScore}%
+                  {complianceScore === null ? "Not enough data" : `${complianceScore}%`}
                 </div>
                 <div className="text-[10px] text-muted-foreground uppercase tracking-widest">
-                  {counts.alerts} {t("owner.alerts")}
+                  {dataAvailable ? counts.alerts : "—"} {t("owner.alerts")}
                 </div>
               </div>
             </div>
@@ -460,21 +535,22 @@ function ManagerView({
   tasks,
   done,
   counts,
+  dataAvailable,
 }: {
   pending: number;
   overdue: number;
   tasks: Task[];
   done: (id: string) => void;
   counts: DashCounts;
+  dataAvailable: boolean;
 }) {
   const { t } = useI18n();
-  const tempScore =
-    counts.tempTotal > 0 ? Math.round((counts.tempOk / counts.tempTotal) * 100) : 100;
-  const checksScore =
-    tasks.length > 0
-      ? Math.round((tasks.filter((x) => x.status === "done").length / tasks.length) * 100)
-      : 100;
-  const score = Math.round(tempScore * 0.5 + checksScore * 0.5);
+  const score = dataAvailable ? evidenceScore(counts, tasks) : null;
+  const shiftSummary = !dataAvailable
+    ? "Today's rota is temporarily unavailable."
+    : counts.shiftsToday
+      ? `${counts.shiftsToday} scheduled · ${counts.shiftStart ?? "—"}–${counts.shiftEnd ?? "—"}`
+      : "No shifts are scheduled today.";
   return (
     <>
       {/* Live shift strip — unique to manager */}
@@ -487,17 +563,37 @@ function ManagerView({
           <div className="text-[10px] font-black uppercase tracking-widest text-[color:var(--color-alert-red)]">
             {t("dash.manager.shift")}
           </div>
-          <div className="text-sm font-semibold truncate">{t("dash.manager.shiftBody")}</div>
+          <div className="text-sm font-semibold truncate">{shiftSummary}</div>
         </div>
       </div>
       <MetricRow
         items={[
-          { l: t("dash.metric.score"), v: `${score}%`, hint: t("time.trend"), icon: ShieldCheck },
-          { l: t("dash.metric.pending"), v: pending, icon: Clock },
-          { l: t("dash.metric.overdue"), v: overdue, icon: AlertTriangle },
-          { l: t("dash.metric.actions"), v: counts.alerts, icon: AlertTriangle },
-          { l: t("dash.metric.failed"), v: counts.tempOut, icon: Thermometer },
-          { l: t("dash.metric.training"), v: counts.trainingDue, icon: Users },
+          {
+            l: t("dash.metric.score"),
+            v: score === null ? "—" : `${score}%`,
+            icon: ShieldCheck,
+          },
+          { l: t("dash.metric.pending"), v: dataAvailable ? pending : "—", icon: Clock },
+          {
+            l: t("dash.metric.overdue"),
+            v: dataAvailable ? overdue : "—",
+            icon: AlertTriangle,
+          },
+          {
+            l: t("dash.metric.actions"),
+            v: dataAvailable ? counts.alerts : "—",
+            icon: AlertTriangle,
+          },
+          {
+            l: t("dash.metric.failed"),
+            v: dataAvailable ? counts.tempOut : "—",
+            icon: Thermometer,
+          },
+          {
+            l: t("dash.metric.training"),
+            v: dataAvailable ? counts.trainingDue : "—",
+            icon: Users,
+          },
         ]}
       />
       <div className="grid lg:grid-cols-3 gap-6">
@@ -518,30 +614,49 @@ function ChefView({
   tasks,
   done,
   counts,
+  dataAvailable,
 }: {
   pending: number;
   overdue: number;
   tasks: Task[];
   done: (id: string) => void;
   counts: DashCounts;
+  dataAvailable: boolean;
 }) {
   const { t } = useI18n();
   const kitchen = [
     {
       l: t("chef.temps"),
-      v: `${counts.tempOk}/${counts.tempTotal || 0}`,
+      v: dataAvailable ? `${counts.tempOk}/${counts.tempTotal || 0}` : "—",
       to: "/app/temperature",
       icon: Thermometer,
     },
     {
       l: t("chef.haccp"),
-      v: counts.tempOut === 0 ? t("chef.approved") : `${counts.tempOut} ⚠`,
+      v: dataAvailable ? (counts.tempOut === 0 ? t("chef.approved") : `${counts.tempOut} ⚠`) : "—",
       to: "/app/haccp",
       icon: ShieldCheck,
     },
-    { l: t("chef.recipes"), v: String(counts.recipes), to: "/app/recipes", icon: Wheat },
-    { l: t("chef.brigade"), v: String(counts.brigade), to: "/app/training", icon: ChefHat },
+    {
+      l: t("chef.recipes"),
+      v: dataAvailable ? String(counts.recipes) : "—",
+      to: "/app/recipes",
+      icon: Wheat,
+    },
+    {
+      l: t("chef.brigade"),
+      v: dataAvailable ? String(counts.brigade) : "—",
+      to: "/app/training",
+      icon: ChefHat,
+    },
   ];
+  const lineSummary = !dataAvailable
+    ? "Kitchen status is temporarily unavailable."
+    : counts.tempTotal === 0
+      ? "No temperature readings have been recorded today."
+      : counts.tempOut > 0
+        ? `${counts.tempOut} temperature reading${counts.tempOut === 1 ? " needs" : "s need"} attention.`
+        : `All ${counts.tempTotal} temperature readings are in range.`;
   return (
     <>
       {/* Kitchen line status */}
@@ -554,7 +669,7 @@ function ChefView({
             {t("dash.chef.line")}
           </div>
           <div className="text-sm font-semibold text-emerald-900 dark:text-emerald-100">
-            {t("dash.chef.lineBody")}
+            {lineSummary}
           </div>
         </div>
       </div>
@@ -590,7 +705,15 @@ function ChefView({
 }
 
 /* ---------------- Staff (focus view) ---------------- */
-function StaffView({ tasks, done }: { tasks: Task[]; done: (id: string) => void }) {
+function StaffView({
+  tasks,
+  done,
+  dataAvailable,
+}: {
+  tasks: Task[];
+  done: (id: string) => void;
+  dataAvailable: boolean;
+}) {
   const { t } = useI18n();
   const total = tasks.length;
   const completed = tasks.filter((x) => x.status === "done").length;
@@ -629,7 +752,23 @@ function StaffView({ tasks, done }: { tasks: Task[]; done: (id: string) => void 
           )}
         </div>
       </div>
-      {total === completed ? (
+      {!dataAvailable ? (
+        <div className="surface p-6 md:p-8 text-center">
+          <AlertTriangle size={36} className="mx-auto text-destructive" />
+          <div className="mt-3 font-display text-xl">Tasks are temporarily unavailable</div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Do not assume the shift is complete. Refresh when the connection is restored.
+          </p>
+        </div>
+      ) : total === 0 ? (
+        <div className="surface p-6 md:p-8 text-center">
+          <Clock size={36} className="mx-auto text-muted-foreground" />
+          <div className="mt-3 font-display text-xl">No tasks assigned yet</div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Check the daily routines or ask the shift manager before treating the shift as complete.
+          </p>
+        </div>
+      ) : total === completed ? (
         <div className="surface p-6 md:p-8 text-center">
           <CheckCircle2 size={40} className="mx-auto text-success" />
           <div className="mt-3 font-display text-xl">{t("dash.staff.allDone")}</div>

@@ -93,7 +93,12 @@ test("native mutation screens respect subscription-defined effective actions", (
 });
 
 test("Haccora identity and optional QR location transparency are consistent", () => {
-  assert.match(publicConfig, /"Haccora Ltd"/);
+  assert.match(publicConfig, /"iTechLounge Ltd"/);
+  assert.match(publicConfig, /tradingName: withDefault\("VITE_LEGAL_TRADING_NAME", "Haccora"\)/);
+  assert.match(
+    publicConfig,
+    /TRADING_STATEMENT = `\$\{PUBLIC_CONFIG\.legal\.tradingName\} is a trading name of \$\{PUBLIC_CONFIG\.legal\.companyName\}\.\`/,
+  );
   assert.match(publicConfig, /haccora\.co\.uk/);
   assert.equal(JSON.parse(manifest).theme_color, "#c8102e");
   assert.equal(JSON.parse(mobileConfig).expo.name, "Haccora");

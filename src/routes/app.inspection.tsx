@@ -3,6 +3,7 @@ import { useI18n } from "@/lib/i18n";
 import { Gavel, Download, FileCheck2, Lock, Loader2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/haccora-client";
+import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/app/inspection")({
   component: InspectionPage,
@@ -21,37 +22,51 @@ type EvidenceKey =
 
 type Row = { key: EvidenceKey; count: number; status: "ok" | "warn" | "empty" };
 
-function todayISO() {
-  return new Date().toISOString().slice(0, 10);
+function todayISO(date = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/London",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const value = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${value.year}-${value.month}-${value.day}`;
 }
 function isoDaysAgo(n: number) {
   const d = new Date();
   d.setDate(d.getDate() - n);
-  return d.toISOString().slice(0, 10);
+  return todayISO(d);
 }
 
 function InspectionPage() {
   const { t } = useI18n();
+  const { user } = useAuth();
   const [from, setFrom] = useState(isoDaysAgo(180));
   const [to, setTo] = useState(todayISO());
   const [ready, setReady] = useState(false);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [rows, setRows] = useState<Row[]>([]);
   const [totals, setTotals] = useState({ evidence: 0, incidents: 0, incidentsOpen: 0 });
 
   const load = useCallback(async () => {
     setLoading(true);
-    const fromIso = new Date(from).toISOString();
-    const toIso = new Date(new Date(to).getTime() + 86400000).toISOString();
-    const headEq = (table: string, col: string, val: string) =>
-      supabase
-        .from(table as any)
-        .select("id", { count: "exact", head: true })
-        .eq(col, val)
-        .gte("created_at", fromIso)
-        .lte("created_at", toIso);
+    setLoadError(null);
+    const fromDate = new Date(from);
+    const toDate = new Date(to);
+    if (
+      !Number.isFinite(fromDate.getTime()) ||
+      !Number.isFinite(toDate.getTime()) ||
+      toDate < fromDate
+    ) {
+      setLoadError("Choose a valid date range before generating inspection evidence.");
+      setLoading(false);
+      return;
+    }
+    const fromIso = fromDate.toISOString();
+    const toIso = new Date(toDate.getTime() + 86400000).toISOString();
     const headRange = (table: string, col: string) =>
       supabase
         .from(table as any)
@@ -59,7 +74,7 @@ function InspectionPage() {
         .gte(col, fromIso)
         .lte(col, toIso);
 
-    const [temp, clean, pest, allerg, fitness, trace, audit, haccp, trainingDocs, incAll, incOpen] =
+    const [temp, clean, pest, allerg, fitness, training, trace, audit, haccp, incAll, incOpen] =
       await Promise.all([
         headRange("temperature_logs", "logged_at"),
         supabase
@@ -76,6 +91,11 @@ function InspectionPage() {
           .lte("observed_at", toIso),
         supabase.from("recipes").select("id", { count: "exact", head: true }),
         supabase
+          .from("health_register")
+          .select("id", { count: "exact", head: true })
+          .gte("created_at", fromIso)
+          .lte("created_at", toIso),
+        supabase
           .from("training_records")
           .select("id", { count: "exact", head: true })
           .not("verified_at", "is", null)
@@ -88,13 +108,6 @@ function InspectionPage() {
           .lte("received_at", toIso),
         headRange("audits", "created_at"),
         headRange("haccp_hazards", "created_at"),
-        supabase
-          .from("documents")
-          .select("id", { count: "exact", head: true })
-          .in("category", ["training", "inspection"])
-          .is("archived_at", null)
-          .gte("created_at", fromIso)
-          .lte("created_at", toIso),
         headRange("incidents", "created_at"),
         supabase
           .from("incidents")
@@ -103,6 +116,25 @@ function InspectionPage() {
           .gte("created_at", fromIso)
           .lte("created_at", toIso),
       ]);
+
+    const results = [
+      temp,
+      clean,
+      pest,
+      allerg,
+      fitness,
+      training,
+      trace,
+      audit,
+      haccp,
+      incAll,
+      incOpen,
+    ];
+    if (results.some((result) => result.error)) {
+      setLoadError(
+        "Some inspection evidence could not be loaded. Missing values are not being treated as compliant.",
+      );
+    }
 
     const c = (r: any) => r.count ?? 0;
     const build: Row[] = [
@@ -114,20 +146,37 @@ function InspectionPage() {
       { key: "fitness", count: c(fitness), status: c(fitness) > 0 ? "ok" : "warn" },
       {
         key: "training",
-        count: c(trainingDocs),
-        status: c(trainingDocs) > 0 ? "ok" : "empty",
+        count: c(training),
+        status: c(training) > 0 ? "ok" : "empty",
       },
       { key: "trace", count: c(trace), status: c(trace) > 0 ? "ok" : "empty" },
       { key: "audit", count: c(audit), status: c(audit) > 0 ? "ok" : "empty" },
     ];
-    setRows(build);
+    const scopeByEvidence: Partial<Record<EvidenceKey, string>> = {
+      plan: "haccp",
+      temp: "temperature",
+      clean: "cleaning",
+      pest: "pest",
+      allerg: "allergens",
+      training: "training",
+      trace: "traceability",
+      audit: "audits",
+    };
+    const visibleBuild =
+      user?.role === "inspector"
+        ? build.filter((row) => {
+            const requiredScope = scopeByEvidence[row.key];
+            return !!requiredScope && user.inspectorScopes.includes(requiredScope);
+          })
+        : build;
+    setRows(visibleBuild);
     setTotals({
-      evidence: build.reduce((n, r) => n + r.count, 0),
+      evidence: visibleBuild.reduce((n, r) => n + r.count, 0),
       incidents: c(incAll),
       incidentsOpen: c(incOpen),
     });
     setLoading(false);
-  }, [from, to]);
+  }, [from, to, user?.inspectorScopes, user?.role]);
 
   useEffect(() => {
     load();
@@ -165,23 +214,42 @@ function InspectionPage() {
         </span>
       </div>
 
+      {loadError && (
+        <div role="alert" className="rounded-xl bg-destructive/10 p-4 text-sm text-destructive">
+          {loadError}
+        </div>
+      )}
+
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 surface p-6">
           <div className="flex items-center justify-between">
             <h2 className="font-display text-xl">{t("inspection.contents")}</h2>
             {loading && <Loader2 size={14} className="animate-spin text-muted-foreground" />}
           </div>
-          <div className="mt-2 grid grid-cols-3 gap-3">
+          <div
+            className={`mt-2 grid gap-3 ${
+              user?.role === "inspector" && !user.inspectorScopes.includes("incidents")
+                ? "grid-cols-1"
+                : "grid-cols-3"
+            }`}
+          >
             <Stat
               label={t("inspection.stat.evidence") || "Evidence records"}
               value={totals.evidence}
             />
-            <Stat label={t("inspection.stat.incidents") || "Incidents"} value={totals.incidents} />
-            <Stat
-              label={t("inspection.stat.open") || "Still open"}
-              value={totals.incidentsOpen}
-              accent={totals.incidentsOpen > 0 ? "warn" : "ok"}
-            />
+            {(user?.role !== "inspector" || user.inspectorScopes.includes("incidents")) && (
+              <>
+                <Stat
+                  label={t("inspection.stat.incidents") || "Incidents"}
+                  value={totals.incidents}
+                />
+                <Stat
+                  label={t("inspection.stat.open") || "Still open"}
+                  value={totals.incidentsOpen}
+                  accent={totals.incidentsOpen > 0 ? "warn" : "ok"}
+                />
+              </>
+            )}
           </div>
           <div className="mt-4 divide-y divide-border">
             {rows.map((r) => (
@@ -240,7 +308,7 @@ function InspectionPage() {
           <button
             onClick={() => setReady(true)}
             className="btn-primary w-full mt-5"
-            disabled={loading}
+            disabled={loading || !!loadError}
           >
             <Gavel size={16} /> {t("common.generate")}
           </button>

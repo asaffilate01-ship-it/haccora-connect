@@ -31,6 +31,7 @@ Deno.serve(async (request) => {
       audits,
       recalls,
       training,
+      fitness,
       equipment,
     ] = await Promise.all([
       client.rpc("get_my_context"),
@@ -78,6 +79,11 @@ Deno.serve(async (request) => {
         .lte("created_at", to.toISOString())
         .limit(1000),
       client
+        .from("health_register")
+        .select("id", { count: "exact", head: true })
+        .gte("created_at", from.toISOString())
+        .lte("created_at", to.toISOString()),
+      client
         .from("asset_events")
         .select("event_type,outcome,title,notes,recorded_by_name,recorded_at", {
           count: "exact",
@@ -94,6 +100,7 @@ Deno.serve(async (request) => {
         audits,
         recalls,
         training,
+        fitness,
         equipment,
       ]
     ) {
@@ -129,6 +136,7 @@ Deno.serve(async (request) => {
       `Audits: ${audits.count ?? 0}`,
       `Open recalls: ${recalls.count ?? 0}`,
       `Verified training records: ${training.count ?? 0}`,
+      `Fitness-to-work records visible to this user: ${fitness.count ?? 0}`,
       `Equipment history records: ${equipment.count ?? 0}`,
       "Detailed sections include bounded record samples; totals above are exact for the selected period.",
       "",
