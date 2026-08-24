@@ -9,7 +9,8 @@ function sessionConfig() {
     password: process.env["SITE_GATE_SESSION_SECRET"] ?? "",
     name: "haccora-site-gate",
     maxAge: 60 * 60 * 24 * 7,
-    cookie: { httpOnly: true, secure: true, sameSite: "lax" as const, path: "/" },
+    // SameSite=None so the gate cookie survives embedded/preview iframes.
+    cookie: { httpOnly: true, secure: true, sameSite: "none" as const, path: "/" },
   };
 }
 
