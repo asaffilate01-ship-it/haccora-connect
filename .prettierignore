@@ -15,3 +15,4 @@ supabase/functions
 AGENTS.md
 
 public/downloads/
+src/integrations/supabase/previewAuthStorage.ts
