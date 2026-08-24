@@ -78,8 +78,10 @@ function ProspectPipeline() {
   const canEdit = platformRole === "platform_owner" || platformRole === "platform_support";
 
   useEffect(() => {
-    if (!loading && !platformRole) void navigate({ to: "/login" });
-  }, [loading, platformRole, navigate]);
+    if (loading) return;
+    if (!platformRole) void navigate({ to: "/login" });
+    else if (!canEdit) void navigate({ to: "/platform" });
+  }, [canEdit, loading, platformRole, navigate]);
 
   const refresh = useCallback(async () => {
     const { data, error: readError } = await supabase
@@ -189,7 +191,7 @@ function ProspectPipeline() {
     URL.revokeObjectURL(url);
   };
 
-  if (loading || !platformRole) return null;
+  if (loading || !platformRole || !canEdit) return null;
 
   return (
     <main className="min-h-screen bg-background px-4 py-8 md:px-8">

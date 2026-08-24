@@ -17,10 +17,12 @@ import {
   CheckCircle2,
   Plus,
   Minus,
+  Play,
 } from "lucide-react";
 
 import { BrandLogo } from "@/components/BrandLogo";
 import { MARKETING_FAQS } from "@/lib/marketing-faqs";
+import { useI18n } from "@/lib/i18n";
 import { PUBLIC_CONFIG, TRADING_STATEMENT } from "@/lib/public-config";
 import { openCookieSettings } from "@/lib/cookie-consent";
 import heroKitchen from "@/assets/promo-hero-kitchen.jpg";
@@ -247,7 +249,6 @@ function ScreenshotGallery() {
         </figcaption>
       </figure>
 
-
       <div className="mt-12 md:mt-14">
         <p className="eyebrow text-[color:var(--color-alert-red)]">On the floor</p>
         <h3 className="mt-2 text-xl font-black uppercase tracking-tight text-white sm:text-2xl">
@@ -290,8 +291,81 @@ function ScreenshotGallery() {
           Swipe for more screens
         </p>
       </div>
+    </div>
+  );
+}
 
+function ProductTourDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { t } = useI18n();
 
+  useEffect(() => {
+    if (!open) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [onClose, open]);
+
+  if (!open) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="product-tour-title"
+      onMouseDown={(event) => {
+        if (event.currentTarget === event.target) onClose();
+      }}
+    >
+      <div className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-2xl border border-white/15 bg-black p-4 text-white shadow-2xl sm:p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-[color:var(--color-alert-red)]">
+              Product tour
+            </p>
+            <h2 id="product-tour-title" className="mt-2 text-2xl font-black sm:text-3xl">
+              {t("hero.video.modalTitle")}
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/65">
+              {t("hero.video.description")}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full border border-white/20 px-3 py-2 text-xs font-black uppercase tracking-wider hover:bg-white/10"
+          >
+            Close
+          </button>
+        </div>
+
+        <video
+          className="mt-6 aspect-video w-full rounded-xl bg-[#111]"
+          controls
+          playsInline
+          preload="metadata"
+          poster="/media/haccora-product-tour-poster.svg"
+        >
+          <source src="/media/haccora-product-tour.mp4" type="video/mp4" />
+          <track
+            src="/media/haccora-product-tour.en.vtt"
+            kind="captions"
+            srcLang="en"
+            label="English"
+            default
+          />
+          {t("hero.video.unsupported")}
+        </video>
+
+        <details className="mt-5 rounded-xl border border-white/15 bg-white/5 p-4">
+          <summary className="cursor-pointer text-sm font-black">
+            {t("hero.video.transcriptTitle")}
+          </summary>
+          <p className="mt-3 text-sm leading-relaxed text-white/70">{t("hero.video.transcript")}</p>
+        </details>
+      </div>
     </div>
   );
 }
@@ -336,11 +410,7 @@ const PROMO_PLANS = [
     price: "£59.99",
     per: "per month",
     blurb: "Up to three locations with group oversight.",
-    features: [
-      "Up to three locations",
-      "Group dashboards and alerts",
-      "Scoped inspector access",
-    ],
+    features: ["Up to three locations", "Group dashboards and alerts", "Scoped inspector access"],
     featured: false,
   },
   {
@@ -348,7 +418,11 @@ const PROMO_PLANS = [
     price: "Custom",
     per: "four or more sites",
     blurb: "Groups, contract caterers and consultants.",
-    features: ["Unlimited locations", "SLA and implementation support", "Integrations and governance"],
+    features: [
+      "Unlimited locations",
+      "SLA and implementation support",
+      "Integrations and governance",
+    ],
     featured: false,
   },
 ] as const;
@@ -379,7 +453,6 @@ const PROMO_ADVANTAGES = [
     body: "Label a fridge or probe once and staff scan straight into the right check, with full service and calibration history.",
   },
 ] as const;
-
 
 function useActiveSection() {
   const [active, setActive] = useState<string>("overview");
@@ -514,11 +587,18 @@ function MobileTab({
 }
 
 function PromoHome() {
+  const { t } = useI18n();
+  const [tourOpen, setTourOpen] = useState(false);
+
   return (
     <div className="marketing-shell min-h-screen bg-white text-foreground pb-[calc(4.75rem+env(safe-area-inset-bottom))] md:pb-0">
       <header className="sticky top-0 z-40 bg-black/90 text-white backdrop-blur-md border-b border-white/10">
         <div className="mx-auto max-w-[1400px] px-4 md:px-8 h-16 md:h-20 flex items-center justify-between gap-3">
-          <BrandLogo className="shrink-0" light imgClassName="h-11 md:h-16 w-auto max-w-[240px] md:max-w-[320px]" />
+          <BrandLogo
+            className="shrink-0"
+            light
+            imgClassName="h-11 md:h-16 w-auto max-w-[240px] md:max-w-[320px]"
+          />
           <div className="flex items-center gap-3">
             <Link
               to="/unlock"
@@ -547,6 +627,9 @@ function PromoHome() {
           />
           <div className="relative mx-auto grid max-w-[1400px] items-center gap-8 px-4 py-12 sm:py-16 md:grid-cols-[1.15fr_0.85fr] md:gap-10 md:px-8 md:py-24">
             <div>
+              <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-white/70">
+                <span>UK</span> food safety platform
+              </p>
               <h1 className="hero-title display-black uppercase tracking-tight">
                 Every food safety record, in one place
               </h1>
@@ -564,6 +647,13 @@ function PromoHome() {
                 >
                   Request access
                 </a>
+                <button
+                  type="button"
+                  onClick={() => setTourOpen(true)}
+                  className="btn-red-outline w-full sm:w-auto"
+                >
+                  <Play size={15} aria-hidden="true" /> {t("hero.video.title")}
+                </button>
               </div>
               <ul className="mt-7 grid gap-2 text-sm text-white/65 sm:flex sm:flex-wrap sm:gap-x-6 sm:gap-y-2">
                 {[
@@ -614,7 +704,9 @@ function PromoHome() {
                             <p className="text-[0.82rem] font-black leading-tight sm:text-sm">
                               {title}
                             </p>
-                            <p className="truncate text-[0.7rem] text-white/60 sm:text-xs">{body}</p>
+                            <p className="truncate text-[0.7rem] text-white/60 sm:text-xs">
+                              {body}
+                            </p>
                           </div>
                         </div>
                       ))}
@@ -641,7 +733,6 @@ function PromoHome() {
               ))}
             </div>
           </div>
-
         </section>
 
         {/* Modules */}
@@ -650,11 +741,10 @@ function PromoHome() {
           className="mx-auto max-w-[1400px] scroll-mt-32 px-4 py-12 sm:py-16 md:px-8 md:py-24"
         >
           <p className="eyebrow">The platform</p>
-          <h2 className="mt-3 display-black uppercase tracking-tight">
+          <h2 className="mt-3 text-2xl sm:text-3xl md:text-4xl display-black uppercase tracking-tight">
             Everything a UK food business has to prove
           </h2>
           <div className="mt-8 grid gap-4 sm:mt-10 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
-
             {MODULES.map(({ icon: Icon, tone, title, body }) => (
               <article key={title} className="card-polished group p-6 md:p-7">
                 <span className={`${tone} icon-3d-sm`}>
@@ -683,7 +773,6 @@ function PromoHome() {
               see how the day-to-day evidence is recorded and produced for inspection.
             </p>
             <div className="mt-8 sm:mt-10">
-
               <ScreenshotGallery />
             </div>
           </div>
@@ -759,7 +848,6 @@ function PromoHome() {
               Enter site <ArrowRight size={16} />
             </Link>
           </div>
-
         </section>
 
         {/* Pricing */}
@@ -803,7 +891,9 @@ function PromoHome() {
                   </p>
                   <div className="mt-5 flex flex-wrap items-baseline gap-x-2">
                     <span className="display-black text-4xl">{plan.price}</span>
-                    <span className={`text-xs ${plan.featured ? "text-white/70" : "text-black/60"}`}>
+                    <span
+                      className={`text-xs ${plan.featured ? "text-white/70" : "text-black/60"}`}
+                    >
                       {plan.per}
                     </span>
                   </div>
@@ -862,7 +952,6 @@ function PromoHome() {
           </div>
         </section>
 
-
         {/* FAQs */}
         <section
           id="faqs"
@@ -877,6 +966,9 @@ function PromoHome() {
             <p className="mt-3 max-w-2xl text-sm text-muted-foreground sm:text-base">
               Clear answers about UK compliance, inspections, devices, security and subscriptions.
             </p>
+            <Link to="/help" className="btn-red mt-9">
+              Search the Haccora Help Centre <ArrowRight size={15} />
+            </Link>
 
             <div className="mt-8 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card shadow-[0_30px_60px_-45px_rgba(0,0,0,0.5)] sm:mt-10">
               {MARKETING_FAQS.map(({ question, answer }) => (
@@ -902,7 +994,6 @@ function PromoHome() {
           </div>
         </section>
       </main>
-
 
       <footer className="bg-black text-white/60">
         <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-10 flex flex-col gap-5 text-xs">
@@ -952,6 +1043,7 @@ function PromoHome() {
       </footer>
 
       <MobileTabBar />
+      <ProductTourDialog open={tourOpen} onClose={() => setTourOpen(false)} />
     </div>
   );
 }

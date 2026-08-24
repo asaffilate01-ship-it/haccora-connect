@@ -1,6 +1,7 @@
 import { Redirect, router } from "expo-router";
 import { useNetInfo } from "@react-native-community/netinfo";
 import {
+  AlertTriangle,
   BellRing,
   CheckCircle2,
   ChevronRight,
@@ -86,6 +87,7 @@ export default function Dashboard() {
   } = useSession();
   const network = useNetInfo();
   const [pending, setPending] = useState(0);
+  const [dataState, setDataState] = useState<"loading" | "ready" | "error">("loading");
   const [today, setToday] = useState<Today>({
     done: 0,
     open: 0,
@@ -99,6 +101,8 @@ export default function Dashboard() {
   }, [network.isConnected]);
 
   useEffect(() => {
+    if (!session || !workspaceReady) return;
+    setDataState("loading");
     const start = new Date();
     start.setHours(0, 0, 0, 0);
     const inSevenDays = new Date(Date.now() + 7 * 86_400_000).toISOString().slice(0, 10);
@@ -123,20 +127,25 @@ export default function Dashboard() {
         .select("id", { count: "exact", head: true })
         .eq("status", "active")
         .lte("expires_on", inSevenDays),
-    ]).then(([done, open, actions, alerts, expiring]) =>
+    ]).then(([done, open, actions, alerts, expiring]) => {
+      if ([done, open, actions, alerts, expiring].some((result) => result.error)) {
+        setDataState("error");
+        return;
+      }
       setToday({
         done: done.count ?? 0,
         open: open.count ?? 0,
         actions: actions.count ?? 0,
         alerts: alerts.count ?? 0,
         expiring: expiring.count ?? 0,
-      }),
-    );
-  }, []);
+      });
+      setDataState("ready");
+    });
+  }, [session, workspaceReady]);
 
   const progress = useMemo(() => {
     const total = today.done + today.open;
-    return total ? Math.round((today.done / total) * 100) : 100;
+    return total ? Math.round((today.done / total) * 100) : 0;
   }, [today.done, today.open]);
 
   if (loading) return null;
@@ -168,6 +177,51 @@ export default function Dashboard() {
           body: "Your scheduled checks are clear. Keep the next reading quick and traceable.",
           route: "/temperature",
         };
+  const focus = {
+    owner: {
+      label: "BUSINESS OVERVIEW",
+      body: "Active-premises routines, team completion and exceptions requiring attention.",
+      progress: "WORKSPACE ROUTINES",
+    },
+    manager: {
+      label: "SHIFT CONTROL",
+      body: "Today's due checks, corrective actions and operational alerts.",
+      progress: "SHIFT ROUTINES",
+    },
+    chef: {
+      label: "KITCHEN CONTROL",
+      body: "Temperature, cleaning, delivery and allergen records for service.",
+      progress: "KITCHEN ROUTINES",
+    },
+    staff: {
+      label: "MY SHIFT",
+      body: "Your due routines and fastest logging tools for today's work.",
+      progress: "MY ROUTINES",
+    },
+  }[role ?? "staff"] ?? {
+    label: "TODAY",
+    body: "Due routines and operational alerts for your workspace.",
+    progress: "TODAY'S ROUTINES",
+  };
+  const quickTools = QUICK_TOOLS.filter(
+    (tool) => !tool.permission || actionPermissions.includes(tool.permission),
+  ).sort((left, right) => {
+    const preferred: Record<string, string[]> = {
+      owner: ["Daily checks", "Temperature", "Scan equipment", "Delivery", "Cleaning", "Allergens"],
+      manager: [
+        "Daily checks",
+        "Temperature",
+        "Cleaning",
+        "Delivery",
+        "Scan equipment",
+        "Allergens",
+      ],
+      chef: ["Temperature", "Delivery", "Allergens", "Cleaning", "Daily checks", "Scan equipment"],
+      staff: ["Daily checks", "Temperature", "Cleaning", "Allergens", "Scan equipment", "Delivery"],
+    };
+    const order = preferred[role ?? "staff"] ?? preferred.staff;
+    return order.indexOf(left.title) - order.indexOf(right.title);
+  });
 
   return (
     <ScrollView
@@ -189,6 +243,11 @@ export default function Dashboard() {
         <Text numberOfLines={1} style={styles.location}>
           {[organizationName, locationName].filter(Boolean).join(" · ") || "Your Haccora workspace"}
         </Text>
+      </View>
+
+      <View style={styles.roleFocus}>
+        <Text style={styles.roleFocusLabel}>{focus.label}</Text>
+        <Text style={styles.roleFocusBody}>{focus.body}</Text>
       </View>
 
       <View style={[styles.sync, network.isConnected === false && styles.syncOffline]}>
@@ -215,40 +274,65 @@ export default function Dashboard() {
         </View>
       </View>
 
-      <View style={styles.progressCard}>
-        <View style={styles.progressHeader}>
-          <View>
-            <Text style={styles.cardEyebrow}>TODAY'S ROUTINES</Text>
-            <Text style={styles.progressTitle}>{progress}% complete</Text>
-          </View>
-          <View style={styles.doneBadge}>
-            <CheckCircle2 color={colours.success} size={16} />
-            <Text style={styles.doneText}>{today.done} done</Text>
+      {dataState === "error" && (
+        <View accessibilityRole="alert" style={styles.dataError}>
+          <AlertTriangle color={colours.danger} size={19} />
+          <View style={styles.flex}>
+            <Text style={styles.dataErrorTitle}>Dashboard data is unavailable</Text>
+            <Text style={styles.dataErrorBody}>
+              No routine, alert or corrective action has been assumed clear. Check the source
+              records when the connection is restored.
+            </Text>
           </View>
         </View>
-        <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: `${progress}%` }]} />
-        </View>
-        <Text style={styles.progressMeta}>
-          {today.open ? `${today.open} still due` : "No due routine is waiting"} · {today.actions}{" "}
-          open action
-          {today.actions === 1 ? "" : "s"}
-        </Text>
-      </View>
+      )}
 
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={`Next required action: ${priority.title}`}
-        style={({ pressed }) => [styles.priority, pressed && styles.pressed]}
-        onPress={() => router.push(priority.route)}
-      >
-        <View style={styles.priorityTop}>
-          <Text style={styles.priorityLabel}>NEXT REQUIRED ACTION</Text>
-          <ChevronRight color="#ffffff" size={20} />
+      {dataState === "loading" && (
+        <View style={styles.loadingCard}>
+          <Text style={styles.syncBody}>Loading current workspace records…</Text>
         </View>
-        <Text style={styles.priorityTitle}>{priority.title}</Text>
-        <Text style={styles.priorityBody}>{priority.body}</Text>
-      </Pressable>
+      )}
+
+      {dataState === "ready" && (
+        <View style={styles.progressCard}>
+          <View style={styles.progressHeader}>
+            <View>
+              <Text style={styles.cardEyebrow}>{focus.progress}</Text>
+              <Text style={styles.progressTitle}>
+                {today.done + today.open === 0 ? "No routines recorded" : `${progress}% complete`}
+              </Text>
+            </View>
+            <View style={styles.doneBadge}>
+              <CheckCircle2 color={colours.success} size={16} />
+              <Text style={styles.doneText}>{today.done} done</Text>
+            </View>
+          </View>
+          <View style={styles.progressTrack}>
+            <View style={[styles.progressFill, { width: `${progress}%` }]} />
+          </View>
+          <Text style={styles.progressMeta}>
+            {today.open ? `${today.open} still due` : "No due routine is waiting"} · {today.actions}{" "}
+            open action
+            {today.actions === 1 ? "" : "s"}
+          </Text>
+        </View>
+      )}
+
+      {dataState === "ready" && (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Next required action: ${priority.title}`}
+          style={({ pressed }) => [styles.priority, pressed && styles.pressed]}
+          onPress={() => router.push(priority.route)}
+        >
+          <View style={styles.priorityTop}>
+            <Text style={styles.priorityLabel}>NEXT REQUIRED ACTION</Text>
+            <ChevronRight color="#ffffff" size={20} />
+          </View>
+          <Text style={styles.priorityTitle}>{priority.title}</Text>
+          <Text style={styles.priorityBody}>{priority.body}</Text>
+        </Pressable>
+      )}
 
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Quick log</Text>
@@ -257,39 +341,41 @@ export default function Dashboard() {
         </Pressable>
       </View>
       <View style={styles.grid}>
-        {QUICK_TOOLS.filter(
-          (tool) => !tool.permission || actionPermissions.includes(tool.permission),
-        ).map((tool) => (
+        {quickTools.map((tool) => (
           <QuickCard key={tool.route} tool={tool} />
         ))}
       </View>
 
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Needs attention</Text>
-        <Pressable accessibilityRole="button" onPress={() => router.push("/alerts")}>
-          <Text style={styles.sectionLink}>Open inbox</Text>
-        </Pressable>
-      </View>
-      <View style={styles.metrics}>
-        <Metric
-          icon={BellRing}
-          label="Unread alerts"
-          value={today.alerts}
-          tone={today.alerts ? "danger" : "quiet"}
-        />
-        <Metric
-          icon={ClipboardCheck}
-          label="Corrective actions"
-          value={today.actions}
-          tone={today.actions ? "danger" : "quiet"}
-        />
-        <Metric
-          icon={LayoutGrid}
-          label="Expiring in 7 days"
-          value={today.expiring}
-          tone={today.expiring ? "warning" : "quiet"}
-        />
-      </View>
+      {dataState === "ready" && (
+        <>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Needs attention</Text>
+            <Pressable accessibilityRole="button" onPress={() => router.push("/alerts")}>
+              <Text style={styles.sectionLink}>Open inbox</Text>
+            </Pressable>
+          </View>
+          <View style={styles.metrics}>
+            <Metric
+              icon={BellRing}
+              label="Unread alerts"
+              value={today.alerts}
+              tone={today.alerts ? "danger" : "quiet"}
+            />
+            <Metric
+              icon={ClipboardCheck}
+              label="Corrective actions"
+              value={today.actions}
+              tone={today.actions ? "danger" : "quiet"}
+            />
+            <Metric
+              icon={LayoutGrid}
+              label="Expiring in 7 days"
+              value={today.expiring}
+              tone={today.expiring ? "warning" : "quiet"}
+            />
+          </View>
+        </>
+      )}
     </ScrollView>
   );
 }
@@ -362,6 +448,21 @@ const styles = StyleSheet.create({
   },
   locationRow: { alignItems: "center", flexDirection: "row", gap: 5, marginTop: -5 },
   location: { color: colours.muted, flex: 1, fontSize: 11.5, fontWeight: "600" },
+  roleFocus: {
+    backgroundColor: colours.brandSoft,
+    borderColor: `${colours.brand}24`,
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 3,
+    padding: 12,
+  },
+  roleFocusLabel: {
+    color: colours.brand,
+    fontSize: 9,
+    fontWeight: "900",
+    letterSpacing: 1.2,
+  },
+  roleFocusBody: { color: colours.ink, fontSize: 11, fontWeight: "700", lineHeight: 16 },
   sync: {
     alignItems: "center",
     backgroundColor: colours.successSoft,
@@ -373,6 +474,26 @@ const styles = StyleSheet.create({
   syncOffline: { backgroundColor: colours.warningSoft },
   syncTitle: { color: colours.ink, fontSize: 11.5, fontWeight: "800" },
   syncBody: { color: colours.muted, fontSize: 9.5, lineHeight: 14, marginTop: 1 },
+  dataError: {
+    alignItems: "flex-start",
+    backgroundColor: "#fff1f0",
+    borderColor: "#f3b7b0",
+    borderRadius: 13,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 10,
+    padding: 13,
+  },
+  dataErrorTitle: { color: colours.danger, fontSize: 12, fontWeight: "900" },
+  dataErrorBody: { color: colours.muted, fontSize: 10.5, lineHeight: 15, marginTop: 2 },
+  loadingCard: {
+    ...cardShadow,
+    backgroundColor: colours.card,
+    borderColor: colours.line,
+    borderRadius: 13,
+    borderWidth: 1,
+    padding: 16,
+  },
   progressCard: {
     ...cardShadow,
     backgroundColor: colours.card,

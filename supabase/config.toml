@@ -1,5 +1,14 @@
 project_id = "dbjbhemmtdkzulsxfvmi"
 
+[functions.contact]
+verify_jwt = false
+
+[functions.inspection-export]
+verify_jwt = true
+
+[functions.inspector-invite]
+verify_jwt = true
+
 [functions.file-scan]
 verify_jwt = false
 
@@ -26,3 +35,18 @@ verify_jwt = false
 
 [functions.platform-readiness]
 verify_jwt = false
+
+[functions.privacy-requests]
+verify_jwt = true
+
+[functions.security-center]
+verify_jwt = true
+
+[functions.sensor-ingest]
+verify_jwt = false
+
+[functions.sensor-provision]
+verify_jwt = true
+
+[functions.team-invite]
+verify_jwt = true
