@@ -61,9 +61,13 @@ if (/import\.meta\.env|process\.env|SUPABASE_SERVICE_ROLE_KEY/.test(haccoraClien
 if (
   !config.includes("VITE_SUPABASE_URL") ||
   !config.includes("SUPABASE_PUBLISHABLE_KEY") ||
-  !config.includes('!key.startsWith("sb_secret_")')
+  !config.includes('!key.startsWith("sb_secret_")') ||
+  !config.includes("getBrowserSupabaseConfig")
 ) {
   failures.push("the shared Supabase configuration does not reject secret-key exposure");
+}
+if (/process\.env|runtimeEnvironment/.test(config)) {
+  failures.push("browser authentication availability can be falsely enabled by server-only values");
 }
 if (!middleware.includes("supabase.auth.getClaims(token)") || !middleware.includes("claims.sub")) {
   failures.push("the Supabase auth middleware no longer verifies the bearer token and subject");

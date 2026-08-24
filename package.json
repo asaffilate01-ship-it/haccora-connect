@@ -26,6 +26,7 @@
     "deployment:smoke": "node scripts/check-deployment-smoke.mjs",
     "readiness:check": "node scripts/check-deployment-readiness.mjs",
     "auth:health": "node scripts/check-supabase-auth-health.mjs",
+    "auth:client:health": "node scripts/check-deployment-client-auth.mjs",
     "source:integrity": "node scripts/check-source-integrity.mjs",
     "release:evidence": "node scripts/generate-release-evidence.mjs",
     "release:sbom": "node scripts/generate-sboms.mjs",

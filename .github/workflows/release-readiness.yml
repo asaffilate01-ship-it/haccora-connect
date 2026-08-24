@@ -113,6 +113,8 @@ jobs:
         run: npm run health:check
       - name: Verify the configured authentication service is reachable
         run: npm run auth:health
+      - name: Verify browser authentication is embedded in the deployed release
+        run: npm run auth:client:health
       - name: Verify deployed public runtime readiness
         run: npm run readiness:check
       - name: Smoke-test the deployed release candidate
@@ -142,6 +144,7 @@ jobs:
           EDGE_FUNCTIONS_PASSED: "true"
           DEPLOYMENT_HEALTH_PASSED: "true"
           AUTH_HEALTH_PASSED: "true"
+          CLIENT_AUTH_HEALTH_PASSED: "true"
           DEPLOYMENT_READINESS_PASSED: "true"
           DEPLOYMENT_SMOKE_PASSED: "true"
           HOSTED_BROWSER_E2E_PASSED: "true"
