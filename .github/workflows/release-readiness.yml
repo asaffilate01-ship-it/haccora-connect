@@ -100,7 +100,7 @@ jobs:
           npm ci
           deno fmt --check .
           deno lint .
-          deno test --no-lock _shared/provider-readiness.test.ts
+          deno test --node-modules-dir=manual --no-lock _shared/provider-readiness.test.ts
           deno check --node-modules-dir=manual --no-lock \
             contact/index.ts inspector-invite/index.ts inspection-export/index.ts \
             notification-dispatch/index.ts sensor-ingest/index.ts sensor-provision/index.ts \

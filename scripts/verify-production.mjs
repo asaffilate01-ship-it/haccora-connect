@@ -481,6 +481,7 @@ const nativeWorkflow = await readFile(
 for (const marker of [
   "deployment_url:",
   "EAS_PROJECT_ID",
+  "EXPO_TOKEN: ${{ secrets.EXPO_ACCESS_TOKEN }}",
   "EXPO_PUBLIC_SUPABASE_URL",
   "eas-internal-build.raw.json",
   "npm run release:verify-build",
