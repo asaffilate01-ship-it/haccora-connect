@@ -112,6 +112,8 @@ test("Phase 25 native candidate is pinned, committed and internal", async () => 
   assert.match(preflight, /EXPO_TOKEN/);
   assert.match(preflight, /nativeReleaseEnvironmentFailures/);
   assert.match(workflow, /EAS_PROJECT_ID/);
+  assert.match(workflow, /EXPO_TOKEN: \$\{\{ secrets\.EXPO_ACCESS_TOKEN \}\}/);
+  assert.doesNotMatch(workflow, /secrets\.EXPO_TOKEN/);
 });
 
 test("Phase 25 hosted RLS rehearsal checks sensitive evidence and inspector writes", async () => {

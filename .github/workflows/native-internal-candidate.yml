@@ -31,7 +31,9 @@ jobs:
     timeout-minutes: 90
     env:
       HACCORA_ENV: staging
-      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      # EAS CLI consumes EXPO_TOKEN; keep one canonical protected secret name
+      # across launch validation and native candidate builds.
+      EXPO_TOKEN: ${{ secrets.EXPO_ACCESS_TOKEN }}
       EAS_CLI_VERSION: ${{ vars.EAS_CLI_VERSION }}
       EAS_PROJECT_ID: ${{ vars.EAS_PROJECT_ID }}
       EXPO_PUBLIC_SUPABASE_URL: ${{ vars.STAGING_SUPABASE_URL }}

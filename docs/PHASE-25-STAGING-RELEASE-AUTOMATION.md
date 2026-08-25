@@ -32,7 +32,7 @@ Environment secrets:
 - `STAGING_SUPABASE_DB_PASSWORD`
 - `STAGING_SUPABASE_SERVICE_ROLE_KEY`
 - `DEMO_PASSWORD`
-- `EXPO_TOKEN`
+- `EXPO_ACCESS_TOKEN` (the workflow maps this canonical secret to the `EXPO_TOKEN` variable consumed by EAS CLI)
 
 Use required reviewers on the Environment. Do not place any of these secrets in repository variables, workflow inputs, source files or action logs.
 

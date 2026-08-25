@@ -41,6 +41,9 @@ test("release convergence uses the current TanStack input validator API", () => 
 
 test("CI and release readiness execute the provider shape tests", () => {
   for (const workflow of [ci, release]) {
-    assert.match(workflow, /deno test --no-lock _shared\/provider-readiness\.test\.ts/);
+    assert.match(
+      workflow,
+      /deno test --node-modules-dir=manual --no-lock _shared\/provider-readiness\.test\.ts/,
+    );
   }
 });
