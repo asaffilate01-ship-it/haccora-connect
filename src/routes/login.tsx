@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate, useRouterState } from "@tanstack/re
 import { useEffect, useId, useState, type InputHTMLAttributes } from "react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth, ROLES, homeFor, type Role } from "@/lib/auth";
-import { Crown, ClipboardList, ChefHat, User, Gavel, ArrowLeft, Loader2 } from "lucide-react";
+import { Crown, ClipboardList, ChefHat, User, Gavel, ArrowLeft, Loader2, Eye, EyeOff } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { supabase } from "@/integrations/supabase/haccora-client";
 import { SUPABASE_UNAVAILABLE_MESSAGE } from "@/integrations/supabase/config";

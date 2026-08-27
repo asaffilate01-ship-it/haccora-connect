@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, type FormEvent } from "react";
-import { ArrowRight, Lock } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Lock } from "lucide-react";
 
 import { BrandLogo } from "@/components/BrandLogo";
 import { unlockSite } from "@/lib/gate.functions";
