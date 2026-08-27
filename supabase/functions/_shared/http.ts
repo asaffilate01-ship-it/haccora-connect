@@ -3,9 +3,26 @@ const configuredOrigins = (Deno.env.get("ALLOWED_ORIGINS") ?? "")
   .map((origin) => origin.trim())
   .filter(Boolean);
 
+function isTrustedOrigin(origin: string): boolean {
+  if (!origin) return false;
+  if (configuredOrigins.includes(origin)) return true;
+  try {
+    const { protocol, hostname } = new URL(origin);
+    if (protocol !== "https:") return false;
+    return (
+      hostname === "haccora.co.uk" ||
+      hostname.endsWith(".haccora.co.uk") ||
+      hostname.endsWith(".lovable.app") ||
+      hostname.endsWith(".lovableproject.com")
+    );
+  } catch {
+    return false;
+  }
+}
+
 export function corsHeaders(request: Request): HeadersInit {
   const origin = request.headers.get("origin") ?? "";
-  const allowedOrigin = configuredOrigins.includes(origin)
+  const allowedOrigin = isTrustedOrigin(origin)
     ? origin
     : (configuredOrigins[0] ?? "");
   return {
