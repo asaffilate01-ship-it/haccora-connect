@@ -1,3 +1,5 @@
+import { readRuntimeSupabaseEnv } from "@/lib/runtime-supabase-env";
+
 type PublicSupabaseConfig = {
   url: string | null;
   publishableKey: string | null;
