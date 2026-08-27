@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, type FormEvent } from "react";
-import { ArrowRight, Lock } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Lock } from "lucide-react";
 
 import { BrandLogo } from "@/components/BrandLogo";
 import { unlockSite } from "@/lib/gate.functions";
@@ -31,6 +31,7 @@ function UnlockPage() {
   const router = useRouter();
   const unlock = useServerFn(unlockSite);
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(false);
   const [busy, setBusy] = useState(false);
 
@@ -80,16 +81,26 @@ function UnlockPage() {
             <label htmlFor="site-password" className="sr-only">
               Promo password
             </label>
-            <input
-              id="site-password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder="Promo password"
-              className="w-full rounded-2xl border border-white/15 bg-black/40 px-4 py-3 text-base text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-[color:var(--color-alert-red)]"
-            />
+            <div className="relative">
+              <input
+                id="site-password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="Promo password"
+                className="w-full rounded-2xl border border-white/15 bg-black/40 px-4 py-3 pr-12 text-base text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-[color:var(--color-alert-red)]"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((s) => !s)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-2 text-white/50 hover:bg-white/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-[color:var(--color-alert-red)]"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
             {error && (
               <p role="alert" className="text-sm text-[color:var(--color-alert-red)]">
                 Incorrect password. Please try again.

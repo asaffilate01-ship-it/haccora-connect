@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate, useRouterState } from "@tanstack/re
 import { useEffect, useId, useState, type InputHTMLAttributes } from "react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth, ROLES, homeFor, type Role } from "@/lib/auth";
-import { Crown, ClipboardList, ChefHat, User, Gavel, ArrowLeft, Loader2 } from "lucide-react";
+import { Crown, ClipboardList, ChefHat, User, Gavel, ArrowLeft, Loader2, Eye, EyeOff } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { supabase } from "@/integrations/supabase/haccora-client";
 import { SUPABASE_UNAVAILABLE_MESSAGE } from "@/integrations/supabase/config";
@@ -334,6 +334,9 @@ function Field({
   autoComplete?: InputHTMLAttributes<HTMLInputElement>["autoComplete"];
 }) {
   const inputId = useId();
+  const [showPassword, setShowPassword] = useState(false);
+  const isPassword = type === "password";
+  const inputType = isPassword ? (showPassword ? "text" : "password") : type;
 
   return (
     <div>
@@ -343,16 +346,30 @@ function Field({
       >
         {label}
       </label>
-      <input
-        id={inputId}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        type={type}
-        placeholder={placeholder}
-        autoComplete={autoComplete}
-        name={autoComplete || undefined}
-        className="mt-1 w-full rounded-lg border border-black/15 bg-white px-3 py-2.5 text-sm outline-none focus:border-[color:var(--color-alert-red)] focus:ring-2 focus:ring-[color:var(--color-alert-red)]/20"
-      />
+      <div className="relative">
+        <input
+          id={inputId}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          type={inputType}
+          placeholder={placeholder}
+          autoComplete={autoComplete}
+          name={autoComplete || undefined}
+          className={`mt-1 w-full rounded-lg border border-black/15 bg-white px-3 py-2.5 text-sm outline-none focus:border-[color:var(--color-alert-red)] focus:ring-2 focus:ring-[color:var(--color-alert-red)]/20 ${
+            isPassword ? "pr-10" : ""
+          }`}
+        />
+        {isPassword && (
+          <button
+            type="button"
+            onClick={() => setShowPassword((s) => !s)}
+            aria-label={showPassword ? "Hide password" : "Show password"}
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-foreground/50 hover:bg-black/5 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[color:var(--color-alert-red)]/30"
+          >
+            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+          </button>
+        )}
+      </div>
     </div>
   );
 }
