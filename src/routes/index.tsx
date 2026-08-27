@@ -639,7 +639,7 @@ function PromoHome() {
               </p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <Link to="/unlock" className="btn-red w-full sm:w-auto">
-                  Enter with promo password <ArrowRight size={16} />
+                  Enter with password <ArrowRight size={16} />
                 </Link>
                 <a
                   href={`mailto:${PUBLIC_CONFIG.legal.email}`}
@@ -837,11 +837,11 @@ function PromoHome() {
             />
             <div className="relative">
               <h3 className="text-xl font-black sm:text-2xl md:text-3xl">
-                This is a private preview
+                Live site preview
               </h3>
               <p className="mt-2 max-w-xl text-sm text-white/70 sm:text-base">
                 The full website, pricing, help centre and product workspace are behind a password
-                while we finish our launch. Enter the promo password to continue.
+                while we finish our launch. Enter the password to continue.
               </p>
             </div>
             <Link to="/unlock" className="btn-red relative w-full shrink-0 md:w-auto">
