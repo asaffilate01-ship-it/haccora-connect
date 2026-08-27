@@ -14,7 +14,7 @@ The reviewed Lovable deployment presents Haccora, `Safe. Clean. Traceable.` and 
 - the browser console reported a TanStack runtime error on public route transitions;
 - no GitHub status checks or pull-request workflow runs were attached to the reviewed `main` SHA.
 
-Production must use `haccora.co.uk` for the public site, `app.haccora.co.uk` for authenticated web access and the legal entity `Haccora Ltd`. The source includes these non-secret identity defaults but intentionally does not invent statutory details.
+Production must use `haccora.co.uk` for the public site, `app.haccora.co.uk` for authenticated web access and the statement “Haccora is a trading name of iTechLounge.” The source includes these non-secret identity defaults but intentionally does not invent statutory details.
 
 ## Delivered in Phase 29
 
@@ -26,7 +26,7 @@ Production must use `haccora.co.uk` for the public site, `app.haccora.co.uk` for
 - Cached organisation, premises, display name, custom role name, effective action permissions and tenant service status for safe offline context.
 - Made native frozen/closed tenants fail closed and provided a support/sign-out status screen.
 - Applied effective action permissions to native delivery, incident and QR/equipment mutation flows. RLS remains the authoritative backend boundary.
-- Standardised Haccora/Haccora Ltd identity, the `haccora` native scheme, `haccora.co.uk` canonical marketing URL and the accessible brand red.
+- Standardised Haccora/iTechLounge identity, the `haccora` native scheme, `haccora.co.uk` canonical marketing URL and the accessible brand red.
 - Expanded the privacy draft to explain optional foreground equipment-scan GPS, accuracy, lack of background tracking, worker transparency and DPIA expectations.
 
 ## Competitor-informed decisions
@@ -39,7 +39,7 @@ Public competitor pages are marketing claims and are not assurance evidence. Do 
 
 ## External gates that source code cannot complete
 
-1. Supply and verify Haccora Ltd's Companies House number, registered office, phone, ICO status and any VAT number, then obtain UK counsel approval.
+1. Supply and verify iTechLounge's applicable legal identity, business address, phone, ICO status and any VAT number, then obtain UK counsel approval.
 2. Point and verify production DNS/TLS for `haccora.co.uk`, `app.haccora.co.uk`, support and status services; remove Lovable preview/editor presentation.
 3. Apply every migration to isolated staging, run pgTAP/RLS/storage/realtime/export tests, regenerate schema types and complete a measured restore drill.
 4. Configure live Stripe, email, push, malware scanning, schedules, monitoring and on-call routes; test duplicate, delayed and failed-provider paths.

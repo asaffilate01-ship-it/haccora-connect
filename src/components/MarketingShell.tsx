@@ -63,7 +63,7 @@ export function MarketingShell({ children }: MarketingShellProps) {
             {TRADING_STATEMENT}
           </p>
           <nav className="flex flex-wrap gap-4 text-xs uppercase tracking-widest font-black">
-            <Link to="/home" className="hover:text-white">
+            <Link to="/" className="hover:text-white">
               Home
             </Link>
             <Link to="/blog" className="hover:text-white">

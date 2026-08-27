@@ -63,7 +63,7 @@ function BlogIndex() {
             </p>
           </div>
           <nav className="text-sm">
-            <Link to="/home" className="text-black/60 hover:text-black">
+            <Link to="/" className="text-black/60 hover:text-black">
               ← {t("blog.backHome") ?? "Back to home"}
             </Link>
           </nav>

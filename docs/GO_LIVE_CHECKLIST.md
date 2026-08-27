@@ -45,7 +45,7 @@ Production release is approved only when every P0 item is complete and linked ev
 ## P0 — legal, privacy and food safety
 
 - [ ] Real company identity, support and status details replace placeholders.
-- [ ] The public company-details route contains no draft warning and matches the verified Haccora Ltd Companies House record.
+- [ ] The public company-details route contains no draft warning and matches the verified iTechLounge legal identity.
 - [ ] UK English privacy, cookies, terms and company information receive documented UK counsel approval.
 - [ ] GDPR/DPA, retention, deletion and legal-hold handling receive approval.
 - [ ] A qualified food-safety specialist approves HACCP templates, limits and claims.

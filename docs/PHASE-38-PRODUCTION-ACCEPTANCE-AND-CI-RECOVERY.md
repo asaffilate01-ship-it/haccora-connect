@@ -3,7 +3,7 @@
 Audited: 10 August 2026  
 GitHub main: `e9fd79d90e825060a58cfb0ec50f82d7184aba05`  
 Live deployment: `e9fd79d90e825060a58cfb0ec50f82d7184aba05`  
-Target: Haccora · Haccora Ltd · `haccora.co.uk` · UK only
+Target: Haccora · a trading name of iTechLounge · `haccora.co.uk` · UK only
 
 ## Outcome
 
@@ -54,7 +54,7 @@ The Phase 38 source candidate is approximately **96/100 implemented**. The curre
 ## Remaining P0 release blockers
 
 1. Publish Phase 38 and obtain green Production checks, CodeQL and Fresh database/RLS checks. Inspect and fix the exact fresh-database replay error if it remains red.
-2. Supply and verify Haccora Ltd's Companies House number, registered office, postal town/city and business phone.
+2. Supply and verify iTechLounge's applicable legal identity, business address and phone.
 3. Obtain recorded UK legal/privacy and competent food-safety approval for the exact release.
 4. Configure verified support and independent status URLs, web push, transactional email, Stripe, malware scanning, scheduler monitoring and alert routing.
 5. Run the protected staging `apply-and-test` rehearsal, every seeded role journey, cross-tenant/storage denials and inspector scope tests.

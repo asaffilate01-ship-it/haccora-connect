@@ -3,7 +3,6 @@ import {
   Outlet,
   Link,
   createRootRouteWithContext,
-  redirect,
   useRouter,
   HeadContent,
   Scripts,
@@ -15,7 +14,6 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { LanguageProvider } from "@/lib/i18n";
 import { AuthProvider } from "@/lib/auth";
 import { CookieBanner } from "@/components/CookieBanner";
-import { getGateState } from "@/lib/gate.functions";
 
 function NotFoundComponent() {
   return (
@@ -78,16 +76,6 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  beforeLoad: async ({ location }) => {
-    const path = location.pathname;
-    if (path === "/" || path === "/unlock" || path.startsWith("/api") || path.startsWith("/legal"))
-      return;
-    // A gate failure must never turn a page into a 500; treat it as "not gated".
-    const gate = await getGateState().catch(() => ({ enabled: false, unlocked: true }) as const);
-    if (gate.enabled && !gate.unlocked) {
-      throw redirect({ to: "/unlock" });
-    }
-  },
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -103,7 +91,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "Haccora unifies HACCP, daily checks, temperature, allergens, training and inspection preparation for food businesses in the United Kingdom.",
       },
-      { name: "author", content: "iTechLounge Ltd" },
+      { name: "author", content: "iTechLounge" },
       { property: "og:site_name", content: "Haccora" },
       { property: "og:title", content: "Haccora — Digital food safety for UK food businesses" },
       {

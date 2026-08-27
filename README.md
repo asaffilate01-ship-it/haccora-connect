@@ -1,6 +1,6 @@
 # Haccora
 
-Haccora is a commercial UK food-safety compliance SaaS from Haccora Ltd for cafés, restaurants, takeaways, caterers, food retailers, care settings, hotels, mobile traders and multi-site operators. The production public domain is `haccora.co.uk`; authenticated web access is designed for `app.haccora.co.uk`.
+Haccora is a trading name of iTechLounge and provides commercial UK food-safety compliance software for cafés, restaurants, takeaways, caterers, food retailers, care settings, hotels, mobile traders and multi-site operators. The production public domain is `haccora.co.uk`; authenticated web access is designed for `app.haccora.co.uk`.
 
 This production-candidate repository combines:
 

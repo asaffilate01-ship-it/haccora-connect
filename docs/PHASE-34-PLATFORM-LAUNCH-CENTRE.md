@@ -41,5 +41,5 @@ that Haccora is approved, certified or production-ready merely because configura
 `Configured` means only that required values are present. A production decision still requires the
 protected release workflow and evidence for live billing/email/push/scanning, a clean hosted
 migration rehearsal, cross-tenant isolation, restore and incident drills, independent security and
-accessibility testing, Haccora Ltd statutory details, UK legal/privacy and qualified food-safety
+accessibility testing, iTechLounge legal details, UK legal/privacy and qualified food-safety
 review, signed TestFlight/Play candidates, representative device tests and a controlled UK pilot.

@@ -53,7 +53,7 @@ FAQ and legal wording remains draft product content until qualified UK food-safe
 1. Configure the real Supabase URL and publishable key in the Lovable/production browser environment and the server aliases in the runtime.
 2. Apply and reconcile the Phase 32 migration in isolated staging, then run hosted RLS, storage, demo-role and restore tests.
 3. Complete production Stripe, email, push, malware scanning, schedules, monitoring, support and status configuration.
-4. Supply Haccora Ltd statutory details and complete UK counsel, ICO/DPIA/DPA, retention and subprocessor review.
+4. Supply iTechLounge's applicable legal details and complete UK counsel, ICO/DPIA/DPA, retention and subprocessor review.
 5. Obtain qualified food-safety review for the four-nation workflows, limits, templates and public claims.
 6. Complete independent penetration testing and tenant-isolation acceptance.
 7. Replace the EAS placeholder, configure Apple/Google signing and run physical-device TestFlight/Play internal testing before store submission.

@@ -14,6 +14,6 @@ Phase 41 turns the flat production environment error list into a safe operationa
 
 ## Deliberately external
 
-The following cannot be completed honestly in source code: Haccora Ltd's registered address and company number, counsel approval, ICO fee/exemption evidence, Stripe live resources, Resend domain verification, scanner service, push gateway, Supabase production project, EAS project and Expo access token. Phase 41 assigns those items and tells the release owner where they belong; it does not substitute test values for production evidence.
+The following cannot be completed honestly in source code: iTechLounge's applicable legal identity and business address, counsel approval, ICO fee/exemption evidence, Stripe live resources, Resend domain verification, scanner service, push gateway, Supabase production project, EAS project and Expo access token. Phase 41 assigns those items and tells the release owner where they belong; it does not substitute test values for production evidence.
 
 See `LAUNCH-CONFIGURATION.md` for the one-command bootstrap and provider hand-off.

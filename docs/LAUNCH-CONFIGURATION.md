@@ -36,8 +36,8 @@ npm run launch:preflight
 | Group                       | Controls | Accountable owner                         | Production source                                                                                             |
 | --------------------------- | -------: | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | Application and Supabase    |        8 | Engineering / Supabase owner              | GitHub production variables, hosting values and Supabase project                                              |
-| Haccora legal identity      |        7 | Haccora Ltd director                      | Verified Companies House and public contact details in GitHub variables                                       |
-| Legal and ICO approval      |        4 | Haccora Ltd director / UK counsel         | Approval record, review date and ICO evidence; GitHub production variables contain only the references/status |
+| Haccora legal identity      |        7 | iTechLounge owner                         | Verified legal identity and public contact details in GitHub variables                                        |
+| Legal and ICO approval      |        4 | iTechLounge owner / UK counsel            | Approval record, review date and ICO evidence; GitHub production variables contain only the references/status |
 | Stripe live billing         |        6 | Finance / Stripe administrator            | Stripe live dashboard; secret values in GitHub and Supabase secrets, price IDs in variables                   |
 | Transactional email         |        2 | Operations / Resend administrator         | Resend production account plus verified haccora.co.uk DNS                                                     |
 | Document malware scanning   |        2 | Security / scanner administrator          | Scanner provider; endpoint variable and protected token                                                       |

@@ -12,7 +12,7 @@ Collect from Companies House and your ICO registration, then set as protected en
 
 | Variable                                              | Where it comes from                  |
 | ----------------------------------------------------- | ------------------------------------ |
-| `VITE_LEGAL_COMPANY_NAME`                             | Haccora Ltd                          |
+| `VITE_LEGAL_COMPANY_NAME`                             | iTechLounge                          |
 | `VITE_LEGAL_COMPANY_NUMBER`                           | Companies House record               |
 | `VITE_LEGAL_ADDRESS_LINE_1`, `VITE_LEGAL_POSTAL_CITY` | Registered office                    |
 | `VITE_LEGAL_REGISTERED_IN`                            | England and Wales                    |
@@ -40,7 +40,7 @@ Then have UK counsel review `/legal/privacy`, `/legal/cookies`, `/legal/terms` a
 
 ## Step 3 — Payments (Stripe live mode)
 
-1. Complete Stripe account activation for Haccora Ltd.
+1. Complete Stripe account activation for iTechLounge.
 2. Create live prices for Solo, Complete and Group; copy the IDs into `STRIPE_PRICE_SOLO`, `STRIPE_PRICE_COMPLETE`, `STRIPE_PRICE_GROUP`.
 3. Set `STRIPE_SECRET_KEY` (live), create the webhook endpoint pointing at the billing function and store `STRIPE_WEBHOOK_SECRET`.
 4. Set `STRIPE_LIVE_MODE=true` only once live credentials are in place.

@@ -9,7 +9,7 @@ export const Route = createFileRoute("/legal/company-details")({
       {
         name: "description",
         content:
-          "Company and contact details for Haccora, a trading name of iTechLounge Ltd: registered address, company number, email, phone and VAT/ICO registration.",
+          "Company and contact details for Haccora, a trading name of iTechLounge: registered address, company number, email, phone and VAT/ICO registration.",
       },
       {
         name: "robots",
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/legal/company-details")({
       {
         property: "og:description",
         content:
-          "Official company and contact details for Haccora (iTechLounge Ltd): address, registration number, email, phone and VAT/ICO information.",
+          "Official company and contact details for Haccora (iTechLounge): address, registration number, email, phone and VAT/ICO information.",
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://haccora.co.uk/legal/company-details" },

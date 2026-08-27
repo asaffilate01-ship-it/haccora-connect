@@ -32,7 +32,7 @@ Passing source and bundle gates means this phase is buildable; it is not a subst
 
 ## Remaining external acceptance
 
-- Haccora Ltd statutory identity and qualified UK legal/privacy approval.
+- iTechLounge legal identity and qualified UK legal/privacy approval.
 - Production payment, email, push, malware-scanning, support, status and operational-monitoring providers.
 - Protected staging role, tenant-isolation, inspector, document and billing journeys.
 - Penetration test, DPIA, backup restoration and incident rehearsal.

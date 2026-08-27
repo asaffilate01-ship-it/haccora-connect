@@ -15,13 +15,13 @@ export const launchRequirementGroups = [
   {
     id: "legal-identity",
     label: "Haccora legal identity",
-    owner: "Haccora Ltd director",
+    owner: "iTechLounge owner",
     action: "Supply the exact Companies House identity and public contact details.",
   },
   {
     id: "legal-approval",
     label: "Legal and ICO approval",
-    owner: "Haccora Ltd director / UK counsel",
+    owner: "iTechLounge owner / UK counsel",
     action: "Record genuine legal review and ICO registration, fee payment or exemption evidence.",
   },
   {

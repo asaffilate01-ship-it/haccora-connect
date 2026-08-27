@@ -604,7 +604,7 @@ function AppShell() {
             {/* Breadcrumbs */}
             <div className="flex items-center gap-2 min-w-0">
               <Link
-                to="/home"
+                to="/"
                 className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground shrink-0"
               >
                 <ArrowLeft size={14} />

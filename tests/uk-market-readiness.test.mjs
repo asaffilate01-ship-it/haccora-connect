@@ -253,7 +253,7 @@ test("Phase 7 replaces German regional concepts with four-nation UK authority co
   for (const scheme of ["FHRS", "FHIS", "Food Standards Scotland", "district council"])
     assert.match(authorities, new RegExp(scheme, "i"));
   assert.doesNotMatch(landing, /\["berlin", "nrw"/i);
-  assert.match(landing, />UK<\/span>/);
+  assert.match(landing, />\s*UK\s*<\/span>/);
 });
 
 test("Phase 7 persists each site's local-authority and registration context", () => {

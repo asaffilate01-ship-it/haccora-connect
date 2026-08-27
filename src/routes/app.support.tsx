@@ -26,12 +26,7 @@ export const Route = createFileRoute("/app/support")({
 type SupportStatus = "open" | "in_progress" | "pending_customer" | "resolved" | "closed";
 type SupportPriority = "normal" | "high" | "urgent";
 type SupportCategory =
-  | "technical"
-  | "billing"
-  | "account"
-  | "data_privacy"
-  | "food_safety_workflow"
-  | "feedback";
+  "technical" | "billing" | "account" | "data_privacy" | "food_safety_workflow" | "feedback";
 
 type SupportCase = {
   id: string;

@@ -22,7 +22,7 @@ const withDefault = (name: string, fallback: string) => value(name) ?? fallback;
 
 export const PUBLIC_CONFIG = {
   legal: {
-    companyName: withDefault("VITE_LEGAL_COMPANY_NAME", "iTechLounge Ltd"),
+    companyName: withDefault("VITE_LEGAL_COMPANY_NAME", "iTechLounge"),
     tradingName: withDefault("VITE_LEGAL_TRADING_NAME", "Haccora"),
     addressLine1: value("VITE_LEGAL_ADDRESS_LINE_1"),
     postalCity: value("VITE_LEGAL_POSTAL_CITY"),
