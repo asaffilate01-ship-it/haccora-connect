@@ -37,10 +37,14 @@ function UnlockPage() {
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    // Read from the form, not state: on mobile a value typed before hydration
+    // never reaches React state and the submit would send an empty password.
+    const typed = String(new FormData(event.currentTarget).get("password") ?? "") || password;
+    if (!typed) return;
     setBusy(true);
     setError(false);
     try {
-      const result = await unlock({ data: { password } });
+      const result = await unlock({ data: { password: typed } });
       if (result.ok) {
         await router.navigate({ to: "/home" });
         router.invalidate();
