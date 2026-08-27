@@ -25,6 +25,8 @@ Deno.serve(async (request) => {
 
     const [
       { data: context },
+      organizations,
+      locations,
       temperatures,
       outOfRangeTemperatures,
       checks,
