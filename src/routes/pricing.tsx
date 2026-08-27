@@ -4,7 +4,7 @@ import { Pricing } from "@/components/marketing/PricingPlans";
 
 const TITLE = "Pricing — Haccora food safety software from £9.99 a month";
 const DESCRIPTION =
-  "Simple UK pricing for digital HACCP, temperature logs, cleaning, allergens and inspection evidence. Solo, Complete, Group and Enterprise plans with a 7-day free trial.";
+  "Simple UK pricing for digital HACCP, temperature logs, cleaning, allergens and inspection evidence. Food Cart, Complete, Group and Enterprise plans with a 7-day free trial.";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({

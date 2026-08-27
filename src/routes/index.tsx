@@ -307,7 +307,7 @@ const SECTIONS = [
 
 const PROMO_PLANS = [
   {
-    name: "Solo",
+    name: "Food Cart",
     price: "£9.99",
     per: "per site / month",
     blurb: "One small site getting daily records off paper.",
@@ -324,7 +324,7 @@ const PROMO_PLANS = [
     per: "per site / month",
     blurb: "Everything a busy kitchen needs, unlimited staff.",
     features: [
-      "All Solo features",
+      "All Food Cart features",
       "Unlimited staff and all modules",
       "Allergens, PPDS and QR equipment history",
     ],

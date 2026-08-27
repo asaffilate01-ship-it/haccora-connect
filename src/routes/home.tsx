@@ -100,7 +100,7 @@ export const Route = createFileRoute("/home")({
               areaServed: "GB",
               inLanguage: "en-GB",
               offers: [
-                { "@type": "Offer", name: "Solo", price: "9.99", priceCurrency: "GBP" },
+                { "@type": "Offer", name: "Food Cart", price: "9.99", priceCurrency: "GBP" },
                 { "@type": "Offer", name: "Complete", price: "24.99", priceCurrency: "GBP" },
                 { "@type": "Offer", name: "Group", price: "59.99", priceCurrency: "GBP" },
               ],
