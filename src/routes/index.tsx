@@ -840,8 +840,8 @@ function PromoHome() {
                 Live site preview
               </h3>
               <p className="mt-2 max-w-xl text-sm text-white/70 sm:text-base">
-                The full website, pricing, help centre and product workspace are behind a password
-                while we finish our launch. Enter the password to continue.
+                The full website, pricing, help centre and product workspace are behind a password.
+                Enter the password to continue.
               </p>
             </div>
             <Link to="/unlock" className="btn-red relative w-full shrink-0 md:w-auto">
