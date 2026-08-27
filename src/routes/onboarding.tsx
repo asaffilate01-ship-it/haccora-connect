@@ -20,8 +20,21 @@ export const Route = createFileRoute("/onboarding")({
   head: () => ({
     meta: [
       { title: "Haccora — Onboarding" },
-      { name: "description", content: "Set up your restaurant on Haccora in 5 steps." },
+      {
+        name: "description",
+        content:
+          "Create your Haccora workspace in five steps: choose your food business type, set your UK nation, team size, locations and the modules you need.",
+      },
+      { property: "og:title", content: "Haccora — Onboarding" },
+      {
+        property: "og:description",
+        content:
+          "Set up your UK food business workspace on Haccora: vertical, nation, team, locations and compliance modules.",
+      },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://haccora.co.uk/onboarding" },
     ],
+    links: [{ rel: "canonical", href: "https://haccora.co.uk/onboarding" }],
   }),
   component: OnboardingPage,
 });
