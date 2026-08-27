@@ -19,7 +19,7 @@ export function Pricing() {
       price: "£24.99",
       featured: true,
       features: [
-        "All Solo features",
+        "All Food Cart features",
         "Unlimited staff and all modules",
         "Printable QR equipment history",
       ],

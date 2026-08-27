@@ -82,7 +82,7 @@ export const TAKEAWAYS: IndustryContent = {
     {
       question: "Does Haccora suit a small takeaway with two or three staff?",
       answer:
-        "Yes. The Solo plan covers a single premises with up to five staff, and the daily checks are designed to take under five minutes per shift.",
+        "Yes. The Food Cart plan covers a single premises with up to seven staff, and the daily checks are designed to take under five minutes per shift.",
     },
     {
       question: "Can we record cooking oil checks?",

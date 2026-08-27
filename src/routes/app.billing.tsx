@@ -100,7 +100,7 @@ function BillingPage() {
         <h2 className="font-display text-2xl">Available plans</h2>
         <div className="mt-4 grid gap-4 md:grid-cols-3">
           {[
-            { code: "solo", name: "Solo", price: "£9.99", seats: "5 staff", sites: "1 premises" },
+            { code: "solo", name: "Food Cart", price: "£9.99", seats: "7 staff", sites: "1 premises" },
             {
               code: "complete",
               name: "Complete",
