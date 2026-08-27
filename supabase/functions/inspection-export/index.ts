@@ -238,16 +238,50 @@ Deno.serve(async (request) => {
     const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
     let page = pdf.addPage([595.28, 841.89]);
     let pageNumber = 1;
-    let y = 755;
+    let y = 742;
     const drawHeader = () => {
-      page.drawText("Haccora inspection evidence pack", {
-        x: 48,
-        y: 790,
-        size: 18,
-        font: bold,
-        color: rgb(0.08, 0.08, 0.08),
+      page.drawRectangle({
+        x: 0,
+        y: 782,
+        width: 595.28,
+        height: 60,
+        color: rgb(0.05, 0.24, 0.19),
       });
-      page.drawText(`Page ${pageNumber}`, { x: 500, y: 794, size: 8, font });
+      page.drawText(ascii(tenantName).slice(0, 46), {
+        x: 48,
+        y: 812,
+        size: 16,
+        font: bold,
+        color: rgb(1, 1, 1),
+      });
+      page.drawText("Inspection evidence pack", {
+        x: 48,
+        y: 795,
+        size: 9,
+        font,
+        color: rgb(0.85, 0.93, 0.9),
+      });
+      page.drawText(`Page ${pageNumber}`, {
+        x: 505,
+        y: 795,
+        size: 8,
+        font,
+        color: rgb(0.85, 0.93, 0.9),
+      });
+      page.drawText("Prepared with Haccora - Safe. Clean. Compliant.", {
+        x: 48,
+        y: 26,
+        size: 7,
+        font,
+        color: rgb(0.45, 0.45, 0.45),
+      });
+      page.drawText(ascii(siteSummary).slice(0, 60), {
+        x: 48,
+        y: 764,
+        size: 9,
+        font: bold,
+        color: rgb(0.2, 0.2, 0.2),
+      });
     };
     drawHeader();
     for (const line of lines) {
