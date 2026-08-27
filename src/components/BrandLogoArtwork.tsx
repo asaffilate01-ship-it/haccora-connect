@@ -15,7 +15,7 @@ export function BrandLogoArtwork({
 }) {
   return (
     <img
-      src={light ? "/brand/haccora-logo-light.svg" : "/brand/haccora-logo.svg"}
+      src={light ? "/brand/haccora-logo-light.png" : "/brand/haccora-logo.png"}
       alt={decorative ? "" : title}
       aria-hidden={decorative ? true : undefined}
       className={`${className} object-contain`}
@@ -24,3 +24,4 @@ export function BrandLogoArtwork({
     />
   );
 }
+
