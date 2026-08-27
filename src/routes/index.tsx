@@ -858,9 +858,9 @@ function PromoHome() {
                 ))}
               </div>
               <p className="mt-6 max-w-3xl text-xs leading-relaxed text-muted-foreground">
-                Haccora helps you build and evidence a HACCP-based food-safety management system. It
-                is not FSA, FSS or local-authority approved, does not replace an EHO inspection or
-                competent management, and cannot guarantee a Food Hygiene Rating.
+                Haccora helps you build and evidence a HACCP-based food-safety management system.
+                Although it cannot guarantee a Food Hygiene Rating, it goes a long way towards it and
+                towards compliance with statutory food-safety requirements.
               </p>
             </div>
           </div>
