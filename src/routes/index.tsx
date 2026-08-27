@@ -17,7 +17,6 @@ import {
   CheckCircle2,
   Plus,
   Minus,
-  Play,
 } from "lucide-react";
 
 import { BrandLogo } from "@/components/BrandLogo";
@@ -295,80 +294,6 @@ function ScreenshotGallery() {
   );
 }
 
-function ProductTourDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { t } = useI18n();
-
-  useEffect(() => {
-    if (!open) return;
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", closeOnEscape);
-    return () => document.removeEventListener("keydown", closeOnEscape);
-  }, [onClose, open]);
-
-  if (!open) return null;
-
-  return (
-    <div
-      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="product-tour-title"
-      onMouseDown={(event) => {
-        if (event.currentTarget === event.target) onClose();
-      }}
-    >
-      <div className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-2xl border border-white/15 bg-black p-4 text-white shadow-2xl sm:p-6">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-[color:var(--color-alert-red)]">
-              Product tour
-            </p>
-            <h2 id="product-tour-title" className="mt-2 text-2xl font-black sm:text-3xl">
-              {t("hero.video.modalTitle")}
-            </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/65">
-              {t("hero.video.description")}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full border border-white/20 px-3 py-2 text-xs font-black uppercase tracking-wider hover:bg-white/10"
-          >
-            Close
-          </button>
-        </div>
-
-        <video
-          className="mt-6 aspect-video w-full rounded-xl bg-[#111]"
-          controls
-          playsInline
-          preload="metadata"
-          poster="/media/haccora-product-tour-poster.svg"
-        >
-          <source src="/media/haccora-product-tour.mp4" type="video/mp4" />
-          <track
-            src="/media/haccora-product-tour.en.vtt"
-            kind="captions"
-            srcLang="en"
-            label="English"
-            default
-          />
-          {t("hero.video.unsupported")}
-        </video>
-
-        <details className="mt-5 rounded-xl border border-white/15 bg-white/5 p-4">
-          <summary className="cursor-pointer text-sm font-black">
-            {t("hero.video.transcriptTitle")}
-          </summary>
-          <p className="mt-3 text-sm leading-relaxed text-white/70">{t("hero.video.transcript")}</p>
-        </details>
-      </div>
-    </div>
-  );
-}
 
 const SECTIONS = [
   { id: "overview", label: "Overview" },
@@ -588,7 +513,6 @@ function MobileTab({
 
 function PromoHome() {
   const { t } = useI18n();
-  const [tourOpen, setTourOpen] = useState(false);
 
   return (
     <div className="marketing-shell min-h-screen bg-white text-foreground pb-[calc(4.75rem+env(safe-area-inset-bottom))] md:pb-0">
@@ -627,9 +551,6 @@ function PromoHome() {
           />
           <div className="relative mx-auto grid max-w-[1400px] items-center gap-8 px-4 py-12 sm:py-16 md:grid-cols-[1.15fr_0.85fr] md:gap-10 md:px-8 md:py-24">
             <div>
-              <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-white/70">
-                <span>UK</span> food safety platform
-              </p>
               <h1 className="hero-title display-black uppercase tracking-tight">
                 Every food safety record, in one place
               </h1>
@@ -647,13 +568,6 @@ function PromoHome() {
                 >
                   Request access
                 </a>
-                <button
-                  type="button"
-                  onClick={() => setTourOpen(true)}
-                  className="btn-red-outline w-full sm:w-auto"
-                >
-                  <Play size={15} aria-hidden="true" /> {t("hero.video.title")}
-                </button>
               </div>
               <ul className="mt-7 grid gap-2 text-sm text-white/65 sm:flex sm:flex-wrap sm:gap-x-6 sm:gap-y-2">
                 {[
@@ -1043,7 +957,6 @@ function PromoHome() {
       </footer>
 
       <MobileTabBar />
-      <ProductTourDialog open={tourOpen} onClose={() => setTourOpen(false)} />
     </div>
   );
 }
