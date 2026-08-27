@@ -3,7 +3,7 @@
 Audited: 10 August 2026  
 GitHub baseline: `2fad1c39290efe8898f9e7e6a6e2d3c60f599345`  
 Live deployment: `a9f7f472fc1e25115ee50cd8c202cb091f146dd7`  
-Target: Haccora · Haccora Ltd · `haccora.co.uk` · UK only
+Target: Haccora · a trading name of iTechLounge · `haccora.co.uk` · UK only
 
 ## Outcome
 
@@ -29,7 +29,7 @@ The Phase 37 source candidate is approximately **95/100 implemented**. The curre
 - Added `source:integrity`, enforced both before and after every production build.
 - Added `/readiness.json` with non-secret checks for:
   - authentication connection;
-  - complete Haccora Ltd public identity;
+  - complete iTechLounge public identity;
   - recorded legal publication approval;
   - verified support URL;
   - verified status URL;
@@ -46,7 +46,7 @@ The Phase 37 source candidate is approximately **95/100 implemented**. The curre
 1. Merge Phase 37 through a reviewable PR and obtain green Production checks, CodeQL and fresh-database/RLS checks.
 2. Deploy the exact merge SHA to an isolated staging environment and run the protected `apply-and-test` rehearsal.
 3. Configure Supabase Auth and execute all nine seeded role journeys plus cross-tenant, storage and inspector denials.
-4. Supply Haccora Ltd’s real registered office, postal town/city, Companies House number and phone. Record VAT and ICO registration/exemption decisions.
+4. Supply iTechLounge's applicable legal identity, business address and phone. Record VAT and ICO registration/exemption decisions.
 5. Obtain documented UK legal/privacy and competent food-safety approval tied to the exact release.
 6. Configure and prove Stripe, transactional email, APNs/FCM, web push, scheduler jobs, malware scanning, monitoring and support/status channels.
 7. Complete independent penetration testing, DPIA/legitimate-interest work, backup restore timing and incident rehearsal.

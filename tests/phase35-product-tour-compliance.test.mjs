@@ -5,21 +5,23 @@ import test from "node:test";
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("hero product tour is playable, captioned, transcribed and first-party", async () => {
-  const [landing, captions, translations, video, videoStat] = await Promise.all([
+  const [landing, productTour, captions, translations, video, videoStat] = await Promise.all([
     read("src/routes/index.tsx"),
+    read("src/components/marketing/ProductTourDialog.tsx"),
     read("public/media/haccora-product-tour.en.vtt"),
     read("src/lib/i18n.tsx"),
     readFile(new URL("../public/media/haccora-product-tour.mp4", import.meta.url)),
     stat(new URL("../public/media/haccora-product-tour.mp4", import.meta.url)),
   ]);
 
-  assert.match(landing, /function ProductTourDialog/);
-  assert.match(landing, /<button[\s\S]*hero\.video\.title/);
-  assert.match(landing, /<video[\s\S]*controls[\s\S]*playsInline[\s\S]*preload="metadata"/);
-  assert.match(landing, /haccora-product-tour\.en\.vtt/);
-  assert.match(landing, /kind="captions"/);
-  assert.match(landing, /hero\.video\.transcript/);
-  assert.doesNotMatch(landing, /youtube|vimeo/i);
+  assert.match(landing, /ProductTourDialog/);
+  assert.match(productTour, /export function ProductTourDialog/);
+  assert.match(productTour, /<button[\s\S]*hero\.video\.title/);
+  assert.match(productTour, /<video[\s\S]*controls[\s\S]*playsInline[\s\S]*preload="metadata"/);
+  assert.match(productTour, /haccora-product-tour\.en\.vtt/);
+  assert.match(productTour, /kind="captions"/);
+  assert.match(productTour, /hero\.video\.transcript/);
+  assert.doesNotMatch(productTour, /youtube|vimeo/i);
   assert.match(captions, /^WEBVTT/);
   assert.match(
     captions,
@@ -28,6 +30,19 @@ test("hero product tour is playable, captioned, transcribed and first-party", as
   assert.match(translations, /does not guarantee an inspection outcome/i);
   assert.ok(videoStat.size > 100_000, "product tour video is unexpectedly small");
   assert.equal(video.subarray(4, 8).toString("ascii"), "ftyp");
+});
+
+test("public routes do not depend on a shared site-password gate", async () => {
+  const [root, landing, routeTree] = await Promise.all([
+    read("src/routes/__root.tsx"),
+    read("src/routes/index.tsx"),
+    read("src/routeTree.gen.ts"),
+  ]);
+
+  assert.doesNotMatch(root, /getGateState|SITE_PASSWORD|to: "\/unlock"/);
+  assert.doesNotMatch(landing, /\/unlock|Enter with password|Live site preview/);
+  assert.doesNotMatch(routeTree, /\/unlock/);
+  assert.match(landing, /to="\/login"/);
 });
 
 test("public wording avoids absolute inspection promises and keeps the evidence route public", async () => {

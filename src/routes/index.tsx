@@ -24,6 +24,7 @@ import { MARKETING_FAQS } from "@/lib/marketing-faqs";
 import { useI18n } from "@/lib/i18n";
 import { PUBLIC_CONFIG, TRADING_STATEMENT } from "@/lib/public-config";
 import { openCookieSettings } from "@/lib/cookie-consent";
+import { ProductTourDialog } from "@/components/marketing/ProductTourDialog";
 import heroKitchen from "@/assets/promo-hero-kitchen.jpg";
 import shotToday from "@/assets/screenshot-today.jpg";
 import shotTemperature from "@/assets/screenshot-temperature.jpg";
@@ -170,7 +171,7 @@ const SCREENS = [
     id: "site",
     label: "Website",
     src: shotHome,
-    caption: "The full marketing site, pricing and help centre behind the gate.",
+    caption: "The public Haccora website, pricing, help centre and product tour.",
     alt: "Haccora marketing website homepage",
   },
 ] as const;
@@ -293,7 +294,6 @@ function ScreenshotGallery() {
     </div>
   );
 }
-
 
 const SECTIONS = [
   { id: "overview", label: "Overview" },
@@ -460,13 +460,13 @@ function MobileTabBar() {
         ))}
         <li className="flex-1">
           <Link
-            to="/unlock"
-            aria-label="Enter site"
+            to="/login"
+            aria-label="Sign in"
             className="mx-auto -mt-6 flex h-14 w-14 flex-col items-center justify-center rounded-full bg-[color:var(--color-alert-red)] text-white shadow-[0_12px_28px_-8px_rgba(0,0,0,0.9)] ring-4 ring-black/85 active:scale-95 transition-transform"
           >
             <Lock size={18} />
             <span className="mt-0.5 text-[0.5rem] font-black uppercase tracking-[0.12em]">
-              Enter
+              Sign in
             </span>
           </Link>
         </li>
@@ -524,11 +524,20 @@ function PromoHome() {
             imgClassName="h-11 md:h-16 w-auto max-w-[240px] md:max-w-[320px]"
           />
           <div className="flex items-center gap-3">
+            <span className="hidden rounded-full border border-white/20 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-white/75 sm:inline-flex">
+              UK
+            </span>
             <Link
-              to="/unlock"
+              to="/home"
+              className="hidden text-xs font-black uppercase tracking-widest text-white/70 hover:text-white sm:inline-flex"
+            >
+              Product tour
+            </Link>
+            <Link
+              to="/login"
               className="btn-red !px-4 !py-2 !text-xs sm:!text-sm shadow-lg shadow-black/40"
             >
-              Enter site <ArrowRight size={14} />
+              Sign in <ArrowRight size={14} />
             </Link>
           </div>
         </div>
@@ -559,15 +568,10 @@ function PromoHome() {
                 simple system your whole team can use — kitchen, office and inspector.
               </p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                <Link to="/unlock" className="btn-red w-full sm:w-auto">
-                  Enter with password <ArrowRight size={16} />
+                <Link to="/login" className="btn-red w-full sm:w-auto">
+                  Start free trial <ArrowRight size={16} />
                 </Link>
-                <a
-                  href={`mailto:${PUBLIC_CONFIG.legal.email}`}
-                  className="btn-red-outline w-full sm:w-auto"
-                >
-                  Request access
-                </a>
+                <ProductTourDialog />
               </div>
               <ul className="mt-7 grid gap-2 text-sm text-white/65 sm:flex sm:flex-wrap sm:gap-x-6 sm:gap-y-2">
                 {[
@@ -750,16 +754,14 @@ function PromoHome() {
               }}
             />
             <div className="relative">
-              <h3 className="text-xl font-black sm:text-2xl md:text-3xl">
-                Live site preview
-              </h3>
+              <h3 className="text-xl font-black sm:text-2xl md:text-3xl">Explore Haccora</h3>
               <p className="mt-2 max-w-xl text-sm text-white/70 sm:text-base">
-                The full website, pricing, help centre and product workspace are behind a password.
-                Enter the password to continue.
+                See the complete product journey, detailed workflows, UK food-safety context and
+                platform experience on the full product-tour page.
               </p>
             </div>
-            <Link to="/unlock" className="btn-red relative w-full shrink-0 md:w-auto">
-              Enter site <ArrowRight size={16} />
+            <Link to="/home" className="btn-red relative w-full shrink-0 md:w-auto">
+              View product tour <ArrowRight size={16} />
             </Link>
           </div>
         </section>
@@ -823,7 +825,7 @@ function PromoHome() {
                   </ul>
                   <div className="mt-auto pt-6">
                     <Link
-                      to="/unlock"
+                      to={plan.name === "Enterprise" ? "/contact" : "/login"}
                       className={`inline-flex w-full items-center justify-center rounded-full py-3 text-sm font-black uppercase tracking-wider transition ${
                         plan.featured
                           ? "bg-[color:var(--color-alert-green)] text-white hover:brightness-110"
@@ -859,8 +861,8 @@ function PromoHome() {
               </div>
               <p className="mt-6 max-w-3xl text-xs leading-relaxed text-muted-foreground">
                 Haccora helps you build and evidence a HACCP-based food-safety management system.
-                Although it cannot guarantee a Food Hygiene Rating, it goes a long way towards it and
-                towards compliance with statutory food-safety requirements.
+                Although it cannot guarantee a Food Hygiene Rating, it goes a long way towards it
+                and towards compliance with statutory food-safety requirements.
               </p>
             </div>
           </div>

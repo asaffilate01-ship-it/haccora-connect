@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { Cookie, ShieldCheck, Sliders, BarChart3 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import {
@@ -12,7 +12,6 @@ import {
 
 export function CookieBanner() {
   const { t } = useI18n();
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [open, setOpen] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [choice, setChoice] = useState<ConsentCategories>(DEFAULT_CONSENT);
@@ -51,9 +50,7 @@ export function CookieBanner() {
     setShowDetails(false);
   };
 
-  // The unlock screen is a single short form; a bottom banner covers its
-  // submit button on small screens and blocks entry entirely.
-  if (!open || pathname === "/unlock") return null;
+  if (!open) return null;
 
   const rows = [
     {

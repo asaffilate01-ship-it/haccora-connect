@@ -3,7 +3,7 @@
 Audited: 9 August 2026  
 Repository baseline: `asaffilate01-ship-it/haccora-connect` at `a9f7f472fc1e25115ee50cd8c202cb091f146dd7`  
 Live candidate: `https://hacccora-chums.lovable.app`  
-Target identity: Haccora · Haccora Ltd · `haccora.co.uk`
+Target identity: Haccora · a trading name of iTechLounge · `haccora.co.uk`
 
 ## Executive verdict
 

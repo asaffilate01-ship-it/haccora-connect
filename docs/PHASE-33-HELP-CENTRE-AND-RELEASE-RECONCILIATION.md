@@ -50,7 +50,7 @@ Source is not the remaining constraint. Production still requires:
 1. an isolated hosted staging migration-ledger and fresh-database rehearsal;
 2. seeded sign-in for SaaS owner, tenant owner, manager, chef, staff and inspector, including cross-tenant denial evidence;
 3. live Stripe, email, push, malware scanning, scheduler, monitoring, support and status providers;
-4. Haccora Ltd statutory details plus UK legal, privacy, retention, DPA/DPIA and subprocessor approval;
+4. iTechLounge's applicable legal details plus UK legal, privacy, retention, DPA/DPIA and subprocessor approval;
 5. qualified food-safety review of the four-nation templates, limits and public claims;
 6. independent penetration, tenant-isolation and restore testing;
 7. a real EAS project, Apple/Google signing, physical-device and offline testing, TestFlight/Play internal approval; and

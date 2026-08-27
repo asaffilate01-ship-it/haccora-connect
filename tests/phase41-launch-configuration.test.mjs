@@ -29,7 +29,7 @@ function completeEnvironment() {
     ALLOWED_ORIGINS: "https://app.haccora.co.uk,https://haccora.co.uk",
     VITE_SUPABASE_PUBLISHABLE_KEY: publishable,
     SUPABASE_PUBLISHABLE_KEY: publishable,
-    VITE_LEGAL_COMPANY_NAME: "Haccora Ltd",
+    VITE_LEGAL_COMPANY_NAME: "iTechLounge",
     VITE_LEGAL_ADDRESS_LINE_1: "1 Validation Way",
     VITE_LEGAL_POSTAL_CITY: "London",
     VITE_LEGAL_REGISTERED_IN: "England and Wales",
