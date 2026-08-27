@@ -37,10 +37,14 @@ function UnlockPage() {
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    // Read from the form, not state: on mobile a value typed before hydration
+    // never reaches React state and the submit would send an empty password.
+    const typed = String(new FormData(event.currentTarget).get("password") ?? "") || password;
+    if (!typed) return;
     setBusy(true);
     setError(false);
     try {
-      const result = await unlock({ data: { password } });
+      const result = await unlock({ data: { password: typed } });
       if (result.ok) {
         await router.navigate({ to: "/home" });
         router.invalidate();
@@ -87,7 +91,7 @@ function UnlockPage() {
                 name="password"
                 type={showPassword ? "text" : "password"}
                 autoComplete="current-password"
-                value={password}
+                defaultValue={password}
                 onChange={(event) => setPassword(event.target.value)}
                 placeholder="Promo password"
                 className="w-full rounded-2xl border border-white/15 bg-black/40 px-4 py-3 pr-12 text-base text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-[color:var(--color-alert-red)]"
@@ -106,7 +110,7 @@ function UnlockPage() {
                 Incorrect password. Please try again.
               </p>
             )}
-            <button type="submit" disabled={busy || !password} className="btn-red w-full">
+            <button type="submit" disabled={busy} className="btn-red w-full">
               {busy ? "Checking…" : "Enter site"} <ArrowRight size={16} />
             </button>
           </form>
