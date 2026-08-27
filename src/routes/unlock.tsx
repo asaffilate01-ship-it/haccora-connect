@@ -9,15 +9,15 @@ import { unlockSite } from "@/lib/gate.functions";
 export const Route = createFileRoute("/unlock")({
   head: () => ({
     meta: [
-      { title: "Enter promo password — Haccora" },
+      { title: "Enter site password — Haccora" },
       {
         name: "description",
-        content: "Private preview of Haccora. Enter the promo password to view the full site.",
+        content: "Live site preview of Haccora. Enter the password to view the full site.",
       },
-      { property: "og:title", content: "Enter promo password — Haccora" },
+      { property: "og:title", content: "Enter site password — Haccora" },
       {
         property: "og:description",
-        content: "Private preview of Haccora food safety software for UK food businesses.",
+        content: "Live site preview of Haccora food safety software for UK food businesses.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -71,9 +71,9 @@ function UnlockPage() {
           <span className="icon-3d-dark inline-flex h-12 w-12 items-center justify-center rounded-2xl">
             <Lock size={20} />
           </span>
-          <h1 className="mt-5 text-3xl font-black uppercase tracking-tight">Private preview</h1>
+          <h1 className="mt-5 text-3xl font-black uppercase tracking-tight">Live site</h1>
           <p className="mt-2 text-sm text-white/60">
-            Enter the promo password to unlock the full Haccora site and product workspace.
+            Enter the password to unlock the full Haccora site and product workspace.
           </p>
 
           <form onSubmit={onSubmit} className="mt-6 space-y-3">
