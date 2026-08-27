@@ -116,10 +116,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
+  const publicEnvScript = runtimeEnvScriptContent();
   return (
     <html lang="en-GB">
       <head>
         <HeadContent />
+        <script
+          id={RUNTIME_ENV_SCRIPT_ID}
+          dangerouslySetInnerHTML={{ __html: publicEnvScript }}
+        />
       </head>
       <body>
         <a
