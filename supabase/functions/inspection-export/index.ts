@@ -37,6 +37,8 @@ Deno.serve(async (request) => {
       equipment,
     ] = await Promise.all([
       client.rpc("get_my_context"),
+      client.from("organizations").select("name,country_code,timezone").limit(1),
+      client.from("locations").select("name,address,is_active").order("name").limit(25),
       client
         .from("temperature_logs")
         .select("location,reading,status,logged_at", { count: "exact" })
