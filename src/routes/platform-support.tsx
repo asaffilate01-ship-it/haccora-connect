@@ -209,7 +209,7 @@ function PlatformSupport() {
       <div className="mx-auto flex max-w-[1500px] flex-col gap-6">
         <header className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <BrandLogo className="h-8 w-auto" />
+            <BrandLogo className="h-10 w-auto" />
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                 Platform operations

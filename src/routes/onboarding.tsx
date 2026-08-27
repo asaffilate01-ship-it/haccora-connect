@@ -132,7 +132,7 @@ function OnboardingPage() {
   return (
     <div className="min-h-screen bg-secondary/40 flex flex-col">
       <header className="h-14 px-6 flex items-center justify-between border-b border-border bg-card">
-        <BrandLogo imgClassName="h-9 sm:h-10 w-auto" />
+        <BrandLogo imgClassName="h-12 sm:h-14 w-auto" />
       </header>
 
       <div className="max-w-3xl mx-auto w-full px-4 md:px-6 py-10">

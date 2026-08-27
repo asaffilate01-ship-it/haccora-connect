@@ -54,7 +54,7 @@ function HelpCentrePage() {
           >
             <ArrowLeft size={16} aria-hidden="true" /> Home
           </Link>
-          <BrandLogo imgClassName="h-8 sm:h-9 w-auto" />
+          <BrandLogo imgClassName="h-11 sm:h-12 w-auto" />
           <Link
             to="/login"
             className="text-sm font-bold text-[color:var(--color-alert-red)] hover:underline"
