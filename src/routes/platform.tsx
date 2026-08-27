@@ -523,7 +523,7 @@ function PlatformOperations() {
     <div className="min-h-screen bg-secondary/35 text-foreground">
       <header className="border-b border-white/10 bg-black text-white">
         <div className="mx-auto flex min-h-16 max-w-[1500px] items-center justify-between gap-2 px-4 py-3 sm:gap-4 md:px-8">
-          <BrandLogo light imgClassName="h-10 w-auto" />
+          <BrandLogo light imgClassName="h-12 md:h-14 w-auto" />
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <div className="hidden text-right sm:block">
               <div className="text-sm font-semibold">{user.name}</div>

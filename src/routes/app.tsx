@@ -477,7 +477,7 @@ function AppShell() {
       <div className="flex-1 flex min-h-0">
         <aside className="hidden md:flex w-64 shrink-0 flex-col border-r border-border bg-card">
           <div className="px-5 h-[4.5rem] flex items-center gap-3 border-b border-border">
-            <BrandLogoImage className="h-9 w-auto" />
+            <BrandLogoImage className="h-11 w-auto" />
             <div className="leading-tight min-w-0">
               <div className="text-[9px] uppercase tracking-widest text-muted-foreground truncate">
                 {t(`role.${user.role}`)}

@@ -17,7 +17,7 @@ function AccountStatus() {
   return (
     <main className="grid min-h-screen place-items-center bg-secondary/50 p-4">
       <section className="surface w-full max-w-lg p-7 text-center">
-        <BrandLogo imgClassName="mx-auto h-11 w-auto" />
+        <BrandLogo imgClassName="mx-auto h-14 w-auto" />
         <LockKeyhole className="mx-auto mt-8 text-primary" size={34} />
         <div className="eyebrow mt-5">Workspace access</div>
         <h1 className="mt-2 text-2xl">This organisation is {user.serviceStatus}</h1>
