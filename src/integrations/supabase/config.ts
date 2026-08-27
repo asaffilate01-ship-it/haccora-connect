@@ -1,3 +1,5 @@
+import { readRuntimeSupabaseEnv } from "@/lib/runtime-supabase-env";
+
 type PublicSupabaseConfig = {
   url: string | null;
   publishableKey: string | null;
@@ -23,18 +25,24 @@ export function getPublicSupabaseConfig(): PublicSupabaseConfig {
   const buildTimeKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
   const runtimeEnvironment =
     typeof process !== "undefined" ? (process.env as Record<string, unknown>) : {};
+  // Deployments that do not inline VITE_* at build time still receive the
+  // connection from the SSR runtime through the injected shell script.
+  const injected = readRuntimeSupabaseEnv();
 
   const url =
     nonEmpty(buildTimeUrl) ??
+    nonEmpty(injected.url) ??
     nonEmpty(runtimeEnvironment.SUPABASE_URL) ??
     nonEmpty(runtimeEnvironment.VITE_SUPABASE_URL);
   const publishableKey =
     publicKey(buildTimeKey) ??
+    publicKey(injected.publishableKey) ??
     publicKey(runtimeEnvironment.SUPABASE_PUBLISHABLE_KEY) ??
     publicKey(runtimeEnvironment.VITE_SUPABASE_PUBLISHABLE_KEY);
 
   return { url, publishableKey, configured: Boolean(url && publishableKey) };
 }
+
 
 export const isSupabaseConfigured = () => getPublicSupabaseConfig().configured;
 

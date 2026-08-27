@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { LanguageProvider } from "@/lib/i18n";
 import { AuthProvider } from "@/lib/auth";
 import { CookieBanner } from "@/components/CookieBanner";
+import { RUNTIME_ENV_SCRIPT_ID, runtimeEnvScriptContent } from "@/lib/runtime-supabase-env";
 
 function NotFoundComponent() {
   return (
@@ -116,10 +117,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
+  const publicEnvScript = runtimeEnvScriptContent();
   return (
     <html lang="en-GB">
       <head>
         <HeadContent />
+        <script
+          id={RUNTIME_ENV_SCRIPT_ID}
+          dangerouslySetInnerHTML={{ __html: publicEnvScript }}
+        />
       </head>
       <body>
         <a
