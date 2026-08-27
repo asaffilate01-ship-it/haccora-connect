@@ -17,16 +17,19 @@ const publicKey = (value: unknown): string | null => {
  * VITE_* values are embedded for browsers; the aliases support SSR runtimes.
  */
 export function getPublicSupabaseConfig(): PublicSupabaseConfig {
-  const browserEnvironment = import.meta.env as Record<string, unknown>;
+  // These must be direct `import.meta.env.X` references so the bundler
+  // inlines the values into the production browser build.
+  const buildTimeUrl = import.meta.env.VITE_SUPABASE_URL;
+  const buildTimeKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
   const runtimeEnvironment =
     typeof process !== "undefined" ? (process.env as Record<string, unknown>) : {};
 
   const url =
-    nonEmpty(browserEnvironment.VITE_SUPABASE_URL) ??
+    nonEmpty(buildTimeUrl) ??
     nonEmpty(runtimeEnvironment.SUPABASE_URL) ??
     nonEmpty(runtimeEnvironment.VITE_SUPABASE_URL);
   const publishableKey =
-    publicKey(browserEnvironment.VITE_SUPABASE_PUBLISHABLE_KEY) ??
+    publicKey(buildTimeKey) ??
     publicKey(runtimeEnvironment.SUPABASE_PUBLISHABLE_KEY) ??
     publicKey(runtimeEnvironment.VITE_SUPABASE_PUBLISHABLE_KEY);
 
