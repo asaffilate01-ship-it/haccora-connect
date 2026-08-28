@@ -151,6 +151,8 @@ Deno.serve(async (request) => {
       return json(request, { error: "tenant_owner_invite_failed" }, 409);
     }
     const ownerId = invited.data.user.id;
+    const trialEndsAt = new Date();
+    trialEndsAt.setUTCMonth(trialEndsAt.getUTCMonth() + 2);
     let organizationId: string | null = null;
     try {
       const { data: organization, error: organizationError } = await service
@@ -163,9 +165,31 @@ Deno.serve(async (request) => {
           enabled_modules: plan.enabled_modules,
           created_by: ownerId,
           service_status: "active",
+          access_approved_at: new Date().toISOString(),
+          access_approved_by: actor.id,
+          access_approval_type: plan.code === "trial" ? "trial" : "paid",
         }).select("id").single();
       if (organizationError || !organization) throw organizationError;
       organizationId = organization.id;
+
+      const { error: subscriptionError } = await service.from("subscriptions")
+        .upsert({
+          organization_id: organization.id,
+          plan: plan.code,
+          status: plan.code === "trial" ? "trialing" : "active",
+          seats: plan.included_seats,
+          location_limit: plan.max_locations,
+          contract_mrr_pence: plan.monthly_price_pence ?? 0,
+          currency: "gbp",
+          billing_email: input.ownerEmail,
+          trial_ends_at: plan.code === "trial"
+            ? trialEndsAt.toISOString()
+            : null,
+          payment_failed_at: null,
+          grace_ends_at: null,
+          access_restricted_at: null,
+        });
+      if (subscriptionError) throw subscriptionError;
 
       const { data: location, error: locationError } = await service.from(
         "locations",
@@ -188,22 +212,6 @@ Deno.serve(async (request) => {
       });
       if (membershipError) throw membershipError;
 
-      const { error: subscriptionError } = await service.from("subscriptions")
-        .upsert({
-          organization_id: organization.id,
-          plan: plan.code,
-          status: plan.code === "trial" ? "trialing" : "active",
-          seats: plan.included_seats,
-          location_limit: plan.max_locations,
-          contract_mrr_pence: plan.monthly_price_pence ?? 0,
-          currency: "gbp",
-          billing_email: input.ownerEmail,
-          trial_ends_at: plan.code === "trial"
-            ? new Date(Date.now() + 7 * 86400000).toISOString()
-            : null,
-        });
-      if (subscriptionError) throw subscriptionError;
-
       await service.from("profiles").update({
         current_organization_id: organization.id,
         current_location_id: location.id,
@@ -219,6 +227,8 @@ Deno.serve(async (request) => {
           organization_id: organization.id,
           owner_user_id: ownerId,
           plan: plan.code,
+          approval_type: plan.code === "trial" ? "trial" : "paid",
+          trial_days: plan.code === "trial" ? 60 : null,
         },
       });
       return json(request, {

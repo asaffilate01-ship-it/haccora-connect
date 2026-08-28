@@ -7,6 +7,11 @@ import {
   FileArchive,
   FileText,
   ExternalLink,
+  Camera,
+  Clock3,
+  MapPin,
+  Mic2,
+  Video,
   Plus,
   Search,
   Folder,
@@ -43,6 +48,27 @@ interface StaffProfile {
   full_name: string | null;
 }
 
+interface DokuveraEvidence {
+  id: string;
+  source_media_id: string;
+  media_type: "image" | "video" | "audio";
+  storage_path: string;
+  mime_type: string;
+  file_size: number;
+  sha256: string;
+  voice_storage_path: string | null;
+  captured_at: string;
+  received_at: string;
+  gps_lat: number | null;
+  gps_lng: number | null;
+  gps_accuracy_m: number | null;
+  location_label: string | null;
+  text_notes: string | null;
+  voice_transcript: string | null;
+  locations: { name: string } | null;
+  dokuvera_connections: { project_label: string } | null;
+}
+
 const ALLOWED_FILE_TYPES = new Set([
   "application/pdf",
   "image/jpeg",
@@ -66,6 +92,7 @@ function DocumentsPage() {
 
   const [rows, setRows] = useState<Row[]>([]);
   const [staff, setStaff] = useState<StaffProfile[]>([]);
+  const [dokuveraEvidence, setDokuveraEvidence] = useState<DokuveraEvidence[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<"all" | Category>("all");
@@ -85,16 +112,24 @@ function DocumentsPage() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [documents, profiles] = await Promise.all([
+    const [documents, profiles, evidence] = await Promise.all([
       supabase
         .from("documents")
         .select("*")
         .is("archived_at", null)
         .order("created_at", { ascending: false }),
       supabase.from("profiles").select("id,full_name").order("full_name"),
+      (supabase as any)
+        .from("dokuvera_evidence")
+        .select(
+          "id,source_media_id,media_type,storage_path,mime_type,file_size,sha256,voice_storage_path,captured_at,received_at,gps_lat,gps_lng,gps_accuracy_m,location_label,text_notes,voice_transcript,locations(name),dokuvera_connections(project_label)",
+        )
+        .order("captured_at", { ascending: false })
+        .limit(60),
     ]);
     setRows((documents.data ?? []) as Row[]);
     setStaff((profiles.data ?? []) as StaffProfile[]);
+    setDokuveraEvidence((evidence.data ?? []) as DokuveraEvidence[]);
     setLoading(false);
   }, []);
   useEffect(() => {
@@ -214,6 +249,20 @@ function DocumentsPage() {
     } else if (row.file_url) {
       window.open(row.file_url, "_blank", "noopener,noreferrer");
     }
+  };
+
+  const openDokuveraEvidence = async (row: DokuveraEvidence, voice = false) => {
+    setErr(null);
+    const storagePath = voice ? row.voice_storage_path : row.storage_path;
+    if (!storagePath) return;
+    const signed = await supabase.storage
+      .from("dokuvera-evidence")
+      .createSignedUrl(storagePath, 5 * 60);
+    if (signed.error || !signed.data?.signedUrl) {
+      setErr(signed.error?.message ?? "Could not open Dokuvera evidence.");
+      return;
+    }
+    window.open(signed.data.signedUrl, "_blank", "noopener,noreferrer");
   };
 
   const filtered = useMemo(() => {
@@ -336,6 +385,118 @@ function DocumentsPage() {
       {err && (
         <div className="rounded-lg bg-destructive/10 text-destructive text-sm px-3 py-2">{err}</div>
       )}
+
+      <section className="surface overflow-hidden">
+        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border bg-secondary/25 p-5">
+          <div>
+            <div className="eyebrow">Verified capture evidence</div>
+            <h2 className="mt-1 font-display text-2xl">Dokuvera records</h2>
+            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+              Private copies received through the signed Dokuvera bridge. Capture time and server
+              receipt time are retained separately for audit.
+            </p>
+          </div>
+          <span className="rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-black uppercase text-emerald-900">
+            SHA-256 checked
+          </span>
+        </div>
+        {dokuveraEvidence.length === 0 ? (
+          <div className="px-5 py-10 text-center text-sm text-muted-foreground">
+            <Camera size={25} className="mx-auto mb-2 opacity-40" />
+            No Dokuvera evidence has been received for your permitted premises yet.
+          </div>
+        ) : (
+          <div className="grid gap-4 p-4 md:grid-cols-2 2xl:grid-cols-3">
+            {dokuveraEvidence.map((evidence) => {
+              const MediaIcon =
+                evidence.media_type === "video"
+                  ? Video
+                  : evidence.media_type === "audio"
+                    ? Mic2
+                    : Camera;
+              return (
+                <article key={evidence.id} className="rounded-2xl border border-border bg-card p-4">
+                  <div className="flex items-start gap-3">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+                      <MediaIcon size={18} />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-bold">
+                        {evidence.dokuvera_connections?.project_label ?? "Dokuvera capture"}
+                      </div>
+                      <div className="truncate text-xs text-muted-foreground">
+                        {evidence.locations?.name ?? "Permitted premises"}
+                        {evidence.location_label ? ` · ${evidence.location_label}` : ""}
+                      </div>
+                    </div>
+                    <span className="rounded-full bg-secondary px-2 py-1 text-[10px] font-black uppercase">
+                      {evidence.media_type}
+                    </span>
+                  </div>
+                  <div className="mt-4 grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
+                    <div className="rounded-xl bg-secondary/35 p-3">
+                      <Clock3 size={13} className="mb-1 text-primary" />
+                      <span className="block font-bold text-foreground">Captured</span>
+                      {new Date(evidence.captured_at).toLocaleString("en-GB")}
+                    </div>
+                    <div className="rounded-xl bg-secondary/35 p-3">
+                      <Clock3 size={13} className="mb-1 text-primary" />
+                      <span className="block font-bold text-foreground">Received by Haccora</span>
+                      {new Date(evidence.received_at).toLocaleString("en-GB")}
+                    </div>
+                  </div>
+                  {evidence.gps_lat !== null && evidence.gps_lng !== null && (
+                    <div className="mt-3 flex items-start gap-2 text-xs text-muted-foreground">
+                      <MapPin size={14} className="mt-0.5 shrink-0 text-primary" />
+                      <span>
+                        {evidence.gps_lat.toFixed(6)}, {evidence.gps_lng.toFixed(6)}
+                        {evidence.gps_accuracy_m !== null
+                          ? ` · ±${Math.round(evidence.gps_accuracy_m)} m`
+                          : ""}
+                      </span>
+                    </div>
+                  )}
+                  {(evidence.text_notes || evidence.voice_transcript) && (
+                    <div className="mt-3 space-y-2 rounded-xl border border-border p-3 text-xs">
+                      {evidence.text_notes && (
+                        <p className="whitespace-pre-wrap">{evidence.text_notes}</p>
+                      )}
+                      {evidence.voice_transcript && (
+                        <p className="whitespace-pre-wrap text-muted-foreground">
+                          <Mic2 size={13} className="mr-1 inline text-primary" />
+                          {evidence.voice_transcript}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  <div className="mt-4 flex flex-wrap items-center gap-2">
+                    <button
+                      onClick={() => void openDokuveraEvidence(evidence)}
+                      className="min-h-10 rounded-xl bg-primary px-3 text-xs font-bold text-primary-foreground"
+                    >
+                      <ExternalLink size={13} className="mr-1 inline" /> Open evidence
+                    </button>
+                    {evidence.voice_storage_path && (
+                      <button
+                        onClick={() => void openDokuveraEvidence(evidence, true)}
+                        className="min-h-10 rounded-xl border border-border px-3 text-xs font-bold"
+                      >
+                        <Mic2 size={13} className="mr-1 inline" /> Voice note
+                      </button>
+                    )}
+                    <span
+                      className="ml-auto max-w-full truncate font-mono text-[9px] text-muted-foreground"
+                      title={evidence.sha256}
+                    >
+                      {evidence.sha256.slice(0, 12)}…
+                    </span>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
 
       <div className="grid md:grid-cols-[16rem_1fr] gap-6">
         <aside className="surface p-3 h-fit">

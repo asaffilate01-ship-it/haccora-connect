@@ -10,6 +10,7 @@ const Input = z.object({
     .transform((value) => value.toLowerCase()),
   role: z.enum(["manager", "chef", "staff"]),
   roleProfileId: z.string().uuid().nullable().optional(),
+  locationId: z.string().uuid(),
 });
 
 Deno.serve(async (request) => {
@@ -45,8 +46,19 @@ Deno.serve(async (request) => {
       );
     }
 
-    const token = crypto.randomUUID() + crypto.randomUUID();
     const supabase = serviceClient();
+    const { data: assignedLocation, error: locationError } = await supabase
+      .from("locations")
+      .select("id,name")
+      .eq("id", input.locationId)
+      .eq("organization_id", organizationId)
+      .eq("is_active", true)
+      .maybeSingle();
+    if (locationError || !assignedLocation) {
+      return json(request, { error: "invalid_location" }, 400);
+    }
+
+    const token = crypto.randomUUID() + crypto.randomUUID();
     const since = new Date(Date.now() - 60 * 60_000).toISOString();
     const { count } = await supabase
       .from("organization_invitations")
@@ -72,6 +84,7 @@ Deno.serve(async (request) => {
         email: input.email,
         role: input.role,
         role_profile_id: input.roleProfileId ?? null,
+        default_location_id: assignedLocation.id,
         token_hash: await sha256(token),
         invited_by: user.id,
         expires_at: new Date(Date.now() + 7 * 86400000).toISOString(),
@@ -98,7 +111,7 @@ Deno.serve(async (request) => {
         to: [input.email],
         subject: "You have been invited to Haccora",
         text:
-          `Open this secure invitation link to sign in or create your account. The link expires in seven days.\n\n${redirectTo}`,
+          `You have been assigned the ${input.role} role at ${assignedLocation.name}. Open this secure invitation link to sign in or create your account. The link expires in seven days.\n\n${redirectTo}`,
       }),
     });
     if (!invited.ok) {

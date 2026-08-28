@@ -122,6 +122,8 @@ jobs:
           billing/index.ts
           integration-admin/index.ts
           integration-dispatch/index.ts
+          dokuvera-admin/index.ts
+          dokuvera-webhook/index.ts
           operations-health/index.ts
 
   browser-e2e:

@@ -23,18 +23,33 @@ type DocumentRow = {
 };
 
 type Person = { id: string; full_name: string | null };
+type DokuveraEvidence = {
+  id: string;
+  media_type: "image" | "video" | "audio";
+  storage_path: string;
+  voice_storage_path: string | null;
+  captured_at: string;
+  received_at: string;
+  gps_lat: number | null;
+  gps_lng: number | null;
+  location_label: string | null;
+  text_notes: string | null;
+  voice_transcript: string | null;
+  dokuvera_connections: { project_label: string } | null;
+};
 
 export default function Documents() {
   const { session, organizationId, locationId, role, loading } = useSession();
   const [rows, setRows] = useState<DocumentRow[]>([]);
   const [people, setPeople] = useState<Person[]>([]);
+  const [dokuveraEvidence, setDokuveraEvidence] = useState<DokuveraEvidence[]>([]);
   const [title, setTitle] = useState("");
   const [expiresOn, setExpiresOn] = useState("");
   const [subjectUserId, setSubjectUserId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [openingId, setOpeningId] = useState<string | null>(null);
   const load = useCallback(async () => {
-    const [documents, profiles] = await Promise.all([
+    const [documents, profiles, evidence] = await Promise.all([
       supabase
         .from("documents")
         .select(
@@ -44,9 +59,17 @@ export default function Documents() {
         .order("created_at", { ascending: false })
         .limit(50),
       supabase.from("profiles").select("id,full_name").order("full_name"),
+      (supabase as any)
+        .from("dokuvera_evidence")
+        .select(
+          "id,media_type,storage_path,voice_storage_path,captured_at,received_at,gps_lat,gps_lng,location_label,text_notes,voice_transcript,dokuvera_connections(project_label)",
+        )
+        .order("captured_at", { ascending: false })
+        .limit(30),
     ]);
     setRows((documents.data ?? []) as DocumentRow[]);
     setPeople((profiles.data ?? []) as Person[]);
+    setDokuveraEvidence((evidence.data ?? []) as DokuveraEvidence[]);
   }, []);
   useEffect(() => {
     void load();
@@ -172,6 +195,27 @@ export default function Documents() {
       ],
     );
   };
+  const openDokuveraEvidence = async (row: DokuveraEvidence, voice = false) => {
+    setOpeningId(`${row.id}:${voice ? "voice" : "media"}`);
+    try {
+      const path = voice ? row.voice_storage_path : row.storage_path;
+      if (!path) throw new Error("This evidence file is not available");
+      const { data, error } = await supabase.storage
+        .from("dokuvera-evidence")
+        .createSignedUrl(path, 5 * 60);
+      if (error || !data?.signedUrl) throw error ?? new Error("Could not create a protected link");
+      if (!(await Linking.canOpenURL(data.signedUrl)))
+        throw new Error("This file cannot be opened");
+      await Linking.openURL(data.signedUrl);
+    } catch (error) {
+      Alert.alert(
+        "Could not open Dokuvera evidence",
+        error instanceof Error ? error.message : "Try again.",
+      );
+    } finally {
+      setOpeningId(null);
+    }
+  };
   return (
     <ScrollView contentContainerStyle={styles.page}>
       <Text style={styles.eyebrow}>PRIVATE EVIDENCE</Text>
@@ -231,6 +275,69 @@ export default function Documents() {
         <Pressable disabled={busy} style={styles.secondary} onPress={() => void pick()}>
           <Text style={styles.secondaryText}>Choose document</Text>
         </Pressable>
+      </View>
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Dokuvera records</Text>
+        <Text style={styles.sectionIntro}>
+          Verified captures copied into private Haccora storage for your permitted premises.
+        </Text>
+      </View>
+      {dokuveraEvidence.length === 0 ? (
+        <View style={styles.emptyCard}>
+          <Text style={styles.emptyText}>No Dokuvera evidence received yet.</Text>
+        </View>
+      ) : (
+        dokuveraEvidence.map((evidence) => (
+          <View key={evidence.id} style={styles.dokuveraCard}>
+            <View style={styles.dokuveraTitleRow}>
+              <Text style={styles.dokuveraType}>{evidence.media_type.toUpperCase()}</Text>
+              <Text numberOfLines={1} style={styles.dokuveraTitle}>
+                {evidence.dokuvera_connections?.project_label ?? "Dokuvera capture"}
+              </Text>
+            </View>
+            <Text style={styles.meta}>
+              Captured {new Date(evidence.captured_at).toLocaleString("en-GB")}
+            </Text>
+            <Text style={styles.fileMeta}>
+              Haccora received {new Date(evidence.received_at).toLocaleString("en-GB")}
+            </Text>
+            {evidence.gps_lat !== null && evidence.gps_lng !== null && (
+              <Text style={styles.locationMeta}>
+                {evidence.location_label ? `${evidence.location_label} · ` : ""}
+                {evidence.gps_lat.toFixed(6)}, {evidence.gps_lng.toFixed(6)}
+              </Text>
+            )}
+            {evidence.text_notes && <Text style={styles.evidenceNote}>{evidence.text_notes}</Text>}
+            {evidence.voice_transcript && (
+              <Text style={styles.transcript}>Voice: {evidence.voice_transcript}</Text>
+            )}
+            <View style={styles.cardActions}>
+              <Pressable
+                style={styles.openButton}
+                disabled={openingId === `${evidence.id}:media`}
+                onPress={() => void openDokuveraEvidence(evidence)}
+              >
+                <Text style={styles.openButtonText}>
+                  {openingId === `${evidence.id}:media` ? "Opening…" : "Open evidence"}
+                </Text>
+              </Pressable>
+              {evidence.voice_storage_path && (
+                <Pressable
+                  style={styles.archiveButton}
+                  disabled={openingId === `${evidence.id}:voice`}
+                  onPress={() => void openDokuveraEvidence(evidence, true)}
+                >
+                  <Text style={styles.archiveButtonText}>
+                    {openingId === `${evidence.id}:voice` ? "Opening…" : "Play voice note"}
+                  </Text>
+                </Pressable>
+              )}
+            </View>
+          </View>
+        ))
+      )}
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Uploaded documents</Text>
       </View>
       {rows.map((row) => (
         <View key={row.id} style={styles.card}>
@@ -317,6 +424,48 @@ const styles = StyleSheet.create({
   personText: { fontSize: 11, fontWeight: "700" },
   personSelectedText: { color: "white", fontSize: 11, fontWeight: "800" },
   buttons: { flexDirection: "row", gap: 10, flexWrap: "wrap", marginVertical: 5 },
+  sectionHeader: { gap: 3, marginTop: 9 },
+  sectionTitle: { fontSize: 18, fontWeight: "900" },
+  sectionIntro: { color: "#666", fontSize: 12, lineHeight: 18 },
+  emptyCard: {
+    backgroundColor: "#f5f5f5",
+    borderColor: "#ddd",
+    borderRadius: 14,
+    borderStyle: "dashed",
+    borderWidth: 1,
+    padding: 18,
+  },
+  emptyText: { color: "#666", fontSize: 12, textAlign: "center" },
+  dokuveraCard: {
+    backgroundColor: "#fff",
+    borderColor: "#d8d8d8",
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 16,
+  },
+  dokuveraTitleRow: { alignItems: "center", flexDirection: "row", gap: 8 },
+  dokuveraType: {
+    backgroundColor: "#f1ece8",
+    borderRadius: 999,
+    color: "#692817",
+    fontSize: 9,
+    fontWeight: "900",
+    overflow: "hidden",
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+  },
+  dokuveraTitle: { flex: 1, fontSize: 15, fontWeight: "900" },
+  locationMeta: { color: "#405b47", fontSize: 11, fontWeight: "700", marginTop: 7 },
+  evidenceNote: { color: "#333", fontSize: 12, lineHeight: 18, marginTop: 9 },
+  transcript: {
+    backgroundColor: "#f6f3ef",
+    borderRadius: 10,
+    color: "#555",
+    fontSize: 11,
+    lineHeight: 17,
+    marginTop: 8,
+    padding: 10,
+  },
   primary: {
     minHeight: 52,
     justifyContent: "center",

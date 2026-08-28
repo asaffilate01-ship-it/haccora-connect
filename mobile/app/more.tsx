@@ -2,6 +2,7 @@ import { router } from "expo-router";
 import {
   BellRing,
   BookOpenCheck,
+  CreditCard,
   ChevronRight,
   ClipboardCheck,
   FileArchive,
@@ -51,6 +52,7 @@ const groups: readonly Group[] = [
       ["Evidence library", "/documents", ALL_WORKSPACE_ROLES, FileArchive],
       ["Corrective actions", "/actions", ALL_TENANT_ROLES, BellRing],
       ["Compliance coach", "/coach", ["owner", "manager"], Lightbulb],
+      ["Billing & subscription", "/billing", ["owner"], CreditCard],
       ["Alerts & security", "/settings", ALL_WORKSPACE_ROLES, ShieldCheck],
     ],
   ],

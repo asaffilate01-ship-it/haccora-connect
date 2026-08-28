@@ -98,6 +98,7 @@ const ALLOWED_ROUTES = new Set([
   "/more",
   "/inspection-readiness",
   "/settings",
+  "/billing",
 ]);
 
 function openNotification(response: Notifications.NotificationResponse | null) {

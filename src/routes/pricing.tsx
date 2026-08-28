@@ -4,7 +4,7 @@ import { Pricing } from "@/components/marketing/PricingPlans";
 
 const TITLE = "Pricing — Haccora food safety software from £9.99 a month";
 const DESCRIPTION =
-  "Simple UK pricing for digital HACCP, temperature logs, cleaning, allergens and inspection evidence. Food Cart, Complete, Group and Enterprise plans with a 7-day free trial.";
+  "Simple UK pricing for digital HACCP, temperature logs, cleaning, allergens and inspection evidence. Food Cart, Complete, Group and Enterprise plans with an approval-only two-month trial.";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -46,8 +46,8 @@ function PricingPage() {
         <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-14 md:py-20 grid gap-6 md:grid-cols-3">
           {[
             {
-              title: "No card for the trial",
-              body: "Start a 7-day trial, invite your team and log real records before you pay.",
+              title: "Approval-only trial",
+              body: "Haccora approves the tenant owner and activates a two-month trial with plan-bound seats and premises.",
             },
             {
               title: "VAT and UK billing",

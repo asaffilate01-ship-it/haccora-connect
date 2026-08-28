@@ -134,11 +134,11 @@ function FeaturesPage() {
       <section className="alert-gradient text-white">
         <div className="mx-auto max-w-[1400px] px-4 md:px-8 py-14 md:py-20 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <h2 className="display-black text-2xl md:text-4xl max-w-2xl">
-            Start a 7-day free trial and log your first records today.
+            Request an approved two-month trial for your food business.
           </h2>
           <div className="flex flex-wrap gap-3">
-            <Link to="/login" className="btn-primary">
-              Start free trial
+            <Link to="/contact" className="btn-primary">
+              Request trial
             </Link>
             <Link to="/pricing" className="btn-red-outline">
               See pricing

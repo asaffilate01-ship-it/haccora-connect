@@ -42,13 +42,35 @@ Deno.serve(async (request) => {
     );
     return json(request, { error: "operations_dispatch_failed" }, 500);
   }
+  const { data: billingData, error: billingError } = await supabase.rpc(
+    "reconcile_billing_access",
+  );
+  if (billingError) {
+    console.error(billingError);
+    await recordJobHeartbeat(
+      supabase,
+      "operations-dispatch",
+      "failed",
+      startedAt,
+      { error: "billing_access_reconciliation_failed" },
+    );
+    return json(
+      request,
+      { error: "billing_access_reconciliation_failed" },
+      500,
+    );
+  }
   const result = data && typeof data === "object" ? data : {};
+  const billingResult = billingData && typeof billingData === "object"
+    ? billingData
+    : {};
+  const combinedResult = { ...result, ...billingResult };
   await recordJobHeartbeat(
     supabase,
     "operations-dispatch",
     "succeeded",
     startedAt,
-    result,
+    combinedResult,
   );
-  return json(request, { ok: true, ...result });
+  return json(request, { ok: true, ...combinedResult });
 });

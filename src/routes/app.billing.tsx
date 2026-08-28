@@ -13,6 +13,8 @@ type Subscription = {
   seats: number;
   current_period_end: string | null;
   cancel_at_period_end: boolean;
+  grace_ends_at: string | null;
+  payment_failed_at: string | null;
 };
 
 function BillingPage() {
@@ -23,7 +25,9 @@ function BillingPage() {
     if (!user?.organizationId) return;
     void (supabase as any)
       .from("subscriptions")
-      .select("plan,status,seats,current_period_end,cancel_at_period_end")
+      .select(
+        "plan,status,seats,current_period_end,cancel_at_period_end,grace_ends_at,payment_failed_at",
+      )
       .eq("organization_id", user.organizationId)
       .maybeSingle()
       .then(({ data }: { data: Subscription | null }) => setSubscription(data));
@@ -62,6 +66,13 @@ function BillingPage() {
               ? `${"Period ends"} ${new Date(subscription.current_period_end).toLocaleDateString("en-GB")}`
               : "No paid period yet."}
           </div>
+          {subscription?.status === "past_due" && subscription.grace_ends_at && (
+            <div className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950">
+              Payment is overdue. Existing access continues until{" "}
+              {new Date(subscription.grace_ends_at).toLocaleDateString("en-GB")}, but new users and
+              premises are blocked. Use Manage billing to restore the account.
+            </div>
+          )}
         </section>
         <section className="surface p-6">
           <ShieldCheck size={22} />
