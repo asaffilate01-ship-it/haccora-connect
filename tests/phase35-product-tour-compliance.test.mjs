@@ -5,20 +5,24 @@ import test from "node:test";
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("hero product tour is playable, captioned, transcribed and first-party", async () => {
-  const [landing, productTour, captions, translations, video, videoStat] = await Promise.all([
-    read("src/routes/index.tsx"),
-    read("src/components/marketing/ProductTourDialog.tsx"),
-    read("public/media/haccora-product-tour.en.vtt"),
-    read("src/lib/i18n.tsx"),
-    readFile(new URL("../public/media/haccora-product-tour.mp4", import.meta.url)),
-    stat(new URL("../public/media/haccora-product-tour.mp4", import.meta.url)),
-  ]);
+  const [landing, productTour, captions, translations, video, videoStat, posterStat, builder] =
+    await Promise.all([
+      read("src/routes/index.tsx"),
+      read("src/components/marketing/ProductTourDialog.tsx"),
+      read("public/media/haccora-product-tour.en.vtt"),
+      read("src/lib/i18n.tsx"),
+      readFile(new URL("../public/media/haccora-product-tour.mp4", import.meta.url)),
+      stat(new URL("../public/media/haccora-product-tour.mp4", import.meta.url)),
+      stat(new URL("../public/media/haccora-product-tour-poster.jpg", import.meta.url)),
+      read("scripts/build-product-tour.mjs"),
+    ]);
 
   assert.match(landing, /ProductTourDialog/);
   assert.match(productTour, /export function ProductTourDialog/);
   assert.match(productTour, /<button[\s\S]*hero\.video\.title/);
   assert.match(productTour, /<video[\s\S]*controls[\s\S]*playsInline[\s\S]*preload="metadata"/);
   assert.match(productTour, /haccora-product-tour\.en\.vtt/);
+  assert.match(productTour, /haccora-product-tour-poster\.jpg/);
   assert.match(productTour, /kind="captions"/);
   assert.match(productTour, /hero\.video\.transcript/);
   assert.doesNotMatch(productTour, /youtube|vimeo/i);
@@ -28,7 +32,11 @@ test("hero product tour is playable, captioned, transcribed and first-party", as
     /Official guidance and your business-specific procedures remain authoritative/i,
   );
   assert.match(translations, /does not guarantee an inspection outcome/i);
-  assert.ok(videoStat.size > 100_000, "product tour video is unexpectedly small");
+  assert.match(captions, /structured for food businesses in the United Kingdom/i);
+  assert.match(builder, /screenshot-temperature\.jpg/);
+  assert.match(builder, /mobile-temperature\.jpg/);
+  assert.ok(videoStat.size > 750_000, "product tour video is unexpectedly small");
+  assert.ok(posterStat.size > 50_000, "product tour poster is unexpectedly small");
   assert.equal(video.subarray(4, 8).toString("ascii"), "ftyp");
 });
 
