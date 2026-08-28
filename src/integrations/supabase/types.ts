@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.15"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -1791,6 +1791,248 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "locations"
             referencedColumns: ["id", "organization_id"]
+          },
+        ]
+      }
+      dokuvera_connections: {
+        Row: {
+          created_at: string
+          created_by: string
+          disabled_at: string | null
+          dokuvera_project_id: string
+          enabled: boolean
+          id: string
+          location_id: string
+          organization_id: string
+          project_label: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          disabled_at?: string | null
+          dokuvera_project_id: string
+          enabled?: boolean
+          id?: string
+          location_id: string
+          organization_id: string
+          project_label: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          disabled_at?: string | null
+          dokuvera_project_id?: string
+          enabled?: boolean
+          id?: string
+          location_id?: string
+          organization_id?: string
+          project_label?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dokuvera_connections_location_id_organization_id_fkey"
+            columns: ["location_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "dokuvera_connections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dokuvera_evidence: {
+        Row: {
+          captured_at: string
+          connection_id: string
+          created_at: string
+          file_size: number
+          gps_accuracy_m: number | null
+          gps_lat: number | null
+          gps_lng: number | null
+          id: string
+          location_id: string
+          location_label: string | null
+          media_type: string
+          mime_type: string
+          organization_id: string
+          received_at: string
+          sha256: string
+          source_event_id: string
+          source_media_id: string
+          source_metadata: Json
+          source_original_sha256: string | null
+          source_project_id: string
+          source_user_id: string | null
+          storage_path: string
+          text_notes: string | null
+          updated_at: string
+          voice_file_size: number | null
+          voice_mime_type: string | null
+          voice_sha256: string | null
+          voice_storage_path: string | null
+          voice_transcript: string | null
+        }
+        Insert: {
+          captured_at: string
+          connection_id: string
+          created_at?: string
+          file_size: number
+          gps_accuracy_m?: number | null
+          gps_lat?: number | null
+          gps_lng?: number | null
+          id?: string
+          location_id: string
+          location_label?: string | null
+          media_type: string
+          mime_type: string
+          organization_id: string
+          received_at?: string
+          sha256: string
+          source_event_id: string
+          source_media_id: string
+          source_metadata?: Json
+          source_original_sha256?: string | null
+          source_project_id: string
+          source_user_id?: string | null
+          storage_path: string
+          text_notes?: string | null
+          updated_at?: string
+          voice_file_size?: number | null
+          voice_mime_type?: string | null
+          voice_sha256?: string | null
+          voice_storage_path?: string | null
+          voice_transcript?: string | null
+        }
+        Update: {
+          captured_at?: string
+          connection_id?: string
+          created_at?: string
+          file_size?: number
+          gps_accuracy_m?: number | null
+          gps_lat?: number | null
+          gps_lng?: number | null
+          id?: string
+          location_id?: string
+          location_label?: string | null
+          media_type?: string
+          mime_type?: string
+          organization_id?: string
+          received_at?: string
+          sha256?: string
+          source_event_id?: string
+          source_media_id?: string
+          source_metadata?: Json
+          source_original_sha256?: string | null
+          source_project_id?: string
+          source_user_id?: string | null
+          storage_path?: string
+          text_notes?: string | null
+          updated_at?: string
+          voice_file_size?: number | null
+          voice_mime_type?: string | null
+          voice_sha256?: string | null
+          voice_storage_path?: string | null
+          voice_transcript?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dokuvera_evidence_connection_id_organization_id_fkey"
+            columns: ["connection_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "dokuvera_connections"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "dokuvera_evidence_location_id_organization_id_fkey"
+            columns: ["location_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "dokuvera_evidence_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dokuvera_evidence_source_event_id_fkey"
+            columns: ["source_event_id"]
+            isOneToOne: false
+            referencedRelation: "dokuvera_webhook_events"
+            referencedColumns: ["event_id"]
+          },
+        ]
+      }
+      dokuvera_webhook_events: {
+        Row: {
+          attempts: number
+          connection_id: string | null
+          created_at: string
+          event_id: string
+          event_type: string
+          failure_reason: string | null
+          id: string
+          organization_id: string | null
+          payload_sha256: string
+          processed_at: string | null
+          source_timestamp: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          connection_id?: string | null
+          created_at?: string
+          event_id: string
+          event_type: string
+          failure_reason?: string | null
+          id?: string
+          organization_id?: string | null
+          payload_sha256: string
+          processed_at?: string | null
+          source_timestamp: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          connection_id?: string | null
+          created_at?: string
+          event_id?: string
+          event_type?: string
+          failure_reason?: string | null
+          id?: string
+          organization_id?: string | null
+          payload_sha256?: string
+          processed_at?: string | null
+          source_timestamp?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dokuvera_webhook_events_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "dokuvera_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dokuvera_webhook_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
         ]
       }
