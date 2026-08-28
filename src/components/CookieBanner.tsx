@@ -83,16 +83,16 @@ export function CookieBanner() {
       aria-label={t("cookie.title")}
       className="fixed inset-x-0 bottom-0 z-[70] px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:px-6 md:pb-6"
     >
-      <div className="mx-auto max-w-[1100px] rounded-2xl border border-border bg-card/95 p-5 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.6)] backdrop-blur-xl md:p-6">
-        <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
+      <div className="mx-auto max-w-3xl rounded-2xl border border-border bg-card/95 p-3.5 shadow-[0_24px_60px_-28px_rgba(0,0,0,0.58)] backdrop-blur-xl sm:p-4">
+        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
           <div>
             <div className="flex items-center gap-2">
-              <span className="grid h-9 w-9 place-items-center rounded-full bg-[color:var(--color-alert-red)]/10 text-[color:var(--color-alert-red)]">
+              <span className="grid h-8 w-8 place-items-center rounded-full bg-[color:var(--color-alert-red)]/10 text-[color:var(--color-alert-red)]">
                 <Cookie size={18} />
               </span>
-              <h2 className="font-display text-lg md:text-xl">{t("cookie.title")}</h2>
+              <h2 className="font-display text-base sm:text-lg">{t("cookie.title")}</h2>
             </div>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground sm:text-sm">
               {t("cookie.body")}{" "}
               <Link to="/legal/cookies" className="underline">
                 {t("footer.cookies")}
@@ -108,7 +108,7 @@ export function CookieBanner() {
             </p>
 
             {showDetails && (
-              <div className="mt-4 grid gap-2">
+              <div className="mt-3 grid max-h-[42vh] gap-2 overflow-y-auto pr-1">
                 {rows.map(({ key, icon: Icon, title, body, locked }) => (
                   <label
                     key={key}
@@ -138,30 +138,30 @@ export function CookieBanner() {
             )}
           </div>
 
-          <div className="flex flex-wrap gap-2 md:justify-end">
+          <div className="flex flex-wrap gap-1.5 md:max-w-48 md:justify-end">
             <button
               onClick={() => setShowDetails((s) => !s)}
-              className="rounded-full border border-border px-4 py-2 text-xs font-bold hover:bg-muted"
+              className="rounded-full border border-border px-3 py-2 text-xs font-bold hover:bg-muted"
             >
               {t("cookie.details")}
             </button>
             <button
               onClick={() => save({ necessary: true, preferences: false, statistics: false })}
-              className="rounded-full border border-border px-4 py-2 text-xs font-bold hover:bg-muted"
+              className="rounded-full border border-border px-3 py-2 text-xs font-bold hover:bg-muted"
             >
               {t("cookie.reject")}
             </button>
             {showDetails && (
               <button
                 onClick={() => save(choice)}
-                className="rounded-full border border-border px-4 py-2 text-xs font-bold hover:bg-muted"
+                className="rounded-full border border-border px-3 py-2 text-xs font-bold hover:bg-muted"
               >
                 {t("cookie.save")}
               </button>
             )}
             <button
               onClick={() => save({ necessary: true, preferences: true, statistics: true })}
-              className="rounded-full bg-[color:var(--color-alert-red)] px-5 py-2 text-xs font-black text-white hover:brightness-110"
+              className="rounded-full bg-[color:var(--color-alert-red)] px-4 py-2 text-xs font-black text-white hover:brightness-110"
             >
               {t("cookie.accept")}
             </button>

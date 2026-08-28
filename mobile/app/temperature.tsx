@@ -11,7 +11,7 @@ export default function Temperature() {
   const [targetMin, setTargetMin] = useState("0");
   const [targetMax, setTargetMax] = useState("7");
   const [busy, setBusy] = useState(false);
-  const { session, workspaceReady, organizationId, locationId, loading } = useSession();
+  const { session, workspaceReady, organizationId, locationId, role, loading } = useSession();
   const save = async () => {
     const value = Number(reading.replace(",", "."));
     const min = Number(targetMin.replace(",", "."));
@@ -60,6 +60,7 @@ export default function Temperature() {
   if (loading) return null;
   if (!session) return <Redirect href="/login" />;
   if (!workspaceReady) return <Redirect href="/onboarding" />;
+  if (role === "inspector") return <Redirect href="/inspection-readiness" />;
   return (
     <View style={styles.page}>
       <Text style={styles.label}>UNIT / LOCATION</Text>

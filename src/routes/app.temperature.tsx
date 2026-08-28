@@ -28,6 +28,7 @@ interface Row {
 
 function TemperaturePage() {
   const { user } = useAuth();
+  const canWrite = user?.role !== "inspector";
 
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +45,7 @@ function TemperaturePage() {
       .select("*")
       .order("logged_at", { ascending: false })
       .limit(50);
-    if (error) setErr(error.message);
+    if (error) setErr("Temperature records could not be loaded. Please try again.");
     else setRows((data ?? []) as Row[]);
     setLoading(false);
   }, []);
@@ -53,7 +54,7 @@ function TemperaturePage() {
   }, [load]);
 
   const submit = async () => {
-    if (!user) return;
+    if (!user || !canWrite) return;
     const v = parseFloat(value);
     if (!Number.isFinite(v) || v < -100 || v > 300) {
       setErr("Enter -100 to 300 °C.");
@@ -74,7 +75,7 @@ function TemperaturePage() {
     });
     setBusy(false);
     if (error) {
-      setErr(error.message);
+      setErr("The reading could not be saved. Check your access and try again.");
       return;
     }
     setValue("");
@@ -92,41 +93,56 @@ function TemperaturePage() {
         </p>
       </div>
 
-      <div className="surface p-5 grid md:grid-cols-6 gap-3">
-        <select
-          value={preset.id}
-          onChange={(e) => setPreset(PRESETS.find((p) => p.id === e.target.value) ?? PRESETS[0])}
-          className="md:col-span-2 rounded-lg border border-border bg-card px-3 py-2 text-sm"
-        >
-          {PRESETS.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name} ({p.min}…{p.max} °C)
-            </option>
-          ))}
-        </select>
-        <input
-          type="number"
-          step="0.1"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          placeholder="°C"
-          className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
-        />
-        <input
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          placeholder={"Note (optional)"}
-          className="md:col-span-2 rounded-lg border border-border bg-card px-3 py-2 text-sm"
-        />
-        <button
-          onClick={submit}
-          disabled={busy}
-          className="btn-alert-solid text-sm inline-flex items-center justify-center gap-2"
-        >
-          {busy ? <Loader2 size={14} className="animate-spin" /> : <PlusCircle size={14} />}
-          {"Save"}
-        </button>
-      </div>
+      {canWrite ? (
+        <div className="surface p-4 sm:p-5 grid sm:grid-cols-2 md:grid-cols-6 gap-3">
+          <select
+            aria-label="Temperature location and limits"
+            value={preset.id}
+            onChange={(e) => setPreset(PRESETS.find((p) => p.id === e.target.value) ?? PRESETS[0])}
+            className="sm:col-span-2 md:col-span-2 rounded-lg border border-border bg-card px-3 py-2.5 text-sm"
+          >
+            {PRESETS.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name} ({p.min}…{p.max} °C)
+              </option>
+            ))}
+          </select>
+          <input
+            aria-label="Temperature reading in Celsius"
+            type="number"
+            step="0.1"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            placeholder="°C"
+            className="rounded-lg border border-border bg-card px-3 py-2.5 text-sm"
+          />
+          <input
+            aria-label="Evidence note"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder={"Note (optional)"}
+            className="sm:col-span-2 md:col-span-2 rounded-lg border border-border bg-card px-3 py-2.5 text-sm"
+          />
+          <button
+            onClick={submit}
+            disabled={busy}
+            className="btn-alert-solid min-h-11 text-sm inline-flex items-center justify-center gap-2"
+          >
+            {busy ? <Loader2 size={14} className="animate-spin" /> : <PlusCircle size={14} />}
+            {"Save"}
+          </button>
+        </div>
+      ) : (
+        <div className="surface flex items-start gap-3 border-primary/20 bg-primary/5 p-4 text-sm">
+          <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-primary" />
+          <div>
+            <div className="font-semibold">Read-only evidence</div>
+            <p className="mt-0.5 text-muted-foreground">
+              Inspector access can review temperature history but cannot add or change records.
+            </p>
+          </div>
+        </div>
+      )}
 
       {err && (
         <div className="rounded-lg bg-destructive/10 text-destructive text-sm px-3 py-2">{err}</div>
@@ -147,7 +163,10 @@ function TemperaturePage() {
             {rows.map((r) => {
               const ok = r.status === "in_range";
               return (
-                <li key={r.id} className="p-4 flex items-center gap-4">
+                <li
+                  key={r.id}
+                  className="p-4 flex flex-wrap items-start gap-3 sm:items-center sm:gap-4"
+                >
                   <span
                     className={`h-10 w-10 rounded-xl grid place-items-center shrink-0 ${ok ? "bg-success/15 text-success" : "bg-[color:var(--color-alert-red)]/15 text-[color:var(--color-alert-red)]"}`}
                   >
@@ -162,7 +181,7 @@ function TemperaturePage() {
                     {r.note && <div className="text-xs text-muted-foreground mt-0.5">{r.note}</div>}
                   </div>
                   <div
-                    className={`font-display text-2xl ${ok ? "" : "text-[color:var(--color-alert-red)]"}`}
+                    className={`ml-auto whitespace-nowrap font-display text-xl sm:text-2xl ${ok ? "" : "text-[color:var(--color-alert-red)]"}`}
                   >
                     <Thermometer size={14} className="inline mr-1 opacity-60" />
                     {Number(r.reading).toFixed(1)} °C

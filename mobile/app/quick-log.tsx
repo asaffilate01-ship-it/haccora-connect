@@ -1,4 +1,4 @@
-import { router } from "expo-router";
+import { Redirect, router } from "expo-router";
 import {
   AlertTriangle,
   BookOpenCheck,
@@ -32,7 +32,11 @@ const actions: Action[] = [
 ];
 
 export default function QuickLog() {
-  const { actionPermissions } = useSession();
+  const { actionPermissions, loading, role, session, workspaceReady } = useSession();
+  if (loading) return null;
+  if (!session) return <Redirect href="/login" />;
+  if (!workspaceReady) return <Redirect href="/onboarding" />;
+  if (role === "inspector") return <Redirect href="/inspection-readiness" />;
   const visibleActions = actions.filter(
     ([, , , , permission]) => !permission || actionPermissions.includes(permission),
   );

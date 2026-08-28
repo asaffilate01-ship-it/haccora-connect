@@ -122,27 +122,29 @@ export function ContactCard() {
           required
           minLength={10}
           maxLength={2000}
-          rows={5}
+          rows={3}
           placeholder="Tell us what you need, how you record food safety today and any timescale."
-          className="fld min-h-32 resize-y"
+          className="fld min-h-24 resize-y"
         />
-        <input
-          name="phone"
-          aria-label={t("contact.phone") ?? "Phone Number"}
-          type="tel"
-          autoComplete="tel"
-          maxLength={40}
-          placeholder={t("contact.phone") ?? "Phone Number"}
-          className="fld"
-        />
-        <input
-          name="businessName"
-          aria-label={t("contact.business") ?? "Business Name"}
-          autoComplete="organization"
-          maxLength={160}
-          placeholder={t("contact.business") ?? "Business Name"}
-          className="fld"
-        />
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <input
+            name="phone"
+            aria-label={t("contact.phone") ?? "Phone Number"}
+            type="tel"
+            autoComplete="tel"
+            maxLength={40}
+            placeholder={t("contact.phone") ?? "Phone Number"}
+            className="fld"
+          />
+          <input
+            name="businessName"
+            aria-label={t("contact.business") ?? "Business Name"}
+            autoComplete="organization"
+            maxLength={160}
+            placeholder={t("contact.business") ?? "Business Name"}
+            className="fld"
+          />
+        </div>
         <input
           name="website"
           tabIndex={-1}

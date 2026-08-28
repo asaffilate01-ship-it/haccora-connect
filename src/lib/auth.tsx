@@ -408,8 +408,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithEmail = async (email: string, password: string) => {
     if (!authenticationAvailable) return { error: SUPABASE_UNAVAILABLE_MESSAGE };
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return { error: error.message };
+    if (data.user) {
+      const authenticatedUser = await fetchAuthUser(data.user.id, data.user.email ?? email);
+      setUser(authenticatedUser);
+    }
     return {};
   };
 

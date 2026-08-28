@@ -26,7 +26,7 @@ type Task = {
 type Completion = { task_id: string | null; completed_at: string; result: string };
 
 export default function Cleaning() {
-  const { session, organizationId, locationId, loading } = useSession();
+  const { session, organizationId, locationId, loading, role } = useSession();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [completions, setCompletions] = useState<Completion[]>([]);
   const [notes, setNotes] = useState<Record<string, string>>({});
@@ -59,6 +59,7 @@ export default function Cleaning() {
   );
   if (loading) return null;
   if (!session) return <Redirect href="/login" />;
+  if (role === "inspector") return <Redirect href="/inspection-readiness" />;
 
   const complete = async (task: Task, result: "satisfactory" | "recleaned" | "issue_reported") => {
     if (!organizationId) return;

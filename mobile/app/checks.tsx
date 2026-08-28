@@ -8,7 +8,7 @@ import { useSession } from "@/lib/session";
 export default function Checks() {
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
-  const { session, workspaceReady, organizationId, locationId, loading } = useSession();
+  const { session, workspaceReady, organizationId, locationId, role, loading } = useSession();
   const save = async () => {
     const { data } = await supabase.auth.getUser();
     if (!data.user || !organizationId || !title.trim()) return;
@@ -33,6 +33,7 @@ export default function Checks() {
   if (loading) return null;
   if (!session) return <Redirect href="/login" />;
   if (!workspaceReady) return <Redirect href="/onboarding" />;
+  if (role === "inspector") return <Redirect href="/inspection-readiness" />;
   return (
     <View style={styles.page}>
       <Text style={styles.label}>CHECK</Text>
