@@ -205,7 +205,7 @@ const en: Dict = {
   "time.todayAt": "Today 12:00",
   "time.trend": "+2 vs. last week",
 
-  "app.tag": "Riverside Kitchen · London",
+  "app.tag": "Haccora workspace",
   "menu.dashboard": "Overview",
   "menu.haccp": "HACCP plan",
   "menu.checks": "Daily checks",

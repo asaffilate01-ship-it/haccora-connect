@@ -43,7 +43,6 @@ export function getPublicSupabaseConfig(): PublicSupabaseConfig {
   return { url, publishableKey, configured: Boolean(url && publishableKey) };
 }
 
-
 export const isSupabaseConfigured = () => getPublicSupabaseConfig().configured;
 
 export const SUPABASE_UNAVAILABLE_MESSAGE =

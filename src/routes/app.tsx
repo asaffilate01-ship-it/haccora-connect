@@ -374,6 +374,11 @@ function AppShell() {
         ? pathname === i.to
         : pathname.startsWith(i.to) && (i.to !== "/app" || pathname === "/app"),
     ) ?? ALL_ITEMS.find((i) => !i.exact && pathname.startsWith(i.to));
+  const workspaceLabel = [user?.organizationName, user?.location]
+    .filter(
+      (value, index, values): value is string => Boolean(value) && values.indexOf(value) === index,
+    )
+    .join(" · ");
 
   // Notifications — live unread alerts from Supabase, role-scoped by RLS.
   type Notif = {
@@ -617,7 +622,7 @@ function AppShell() {
                   to={homeFor(user.role) as never}
                   className="text-muted-foreground hover:text-foreground truncate"
                 >
-                  {t("app.tag")}
+                  {workspaceLabel || "Haccora workspace"}
                 </Link>
                 {current && (
                   <>

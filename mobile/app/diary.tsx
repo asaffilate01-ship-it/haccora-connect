@@ -1,10 +1,11 @@
 import { useState } from "react";
+import { Redirect } from "expo-router";
 import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput } from "react-native";
 import { supabase } from "@/lib/supabase";
 import { useSession } from "@/lib/session";
 
 export default function Diary() {
-  const { session, organizationId, locationId } = useSession();
+  const { session, organizationId, locationId, loading, role, workspaceReady } = useSession();
   const [opening, setOpening] = useState(false);
   const [closing, setClosing] = useState(false);
   const [problems, setProblems] = useState("");
@@ -28,8 +29,15 @@ export default function Diary() {
       },
       { onConflict: "organization_id,location_id,diary_date" },
     );
-    Alert.alert(error ? "Could not save" : "Saved", error?.message ?? "Today's diary is stored.");
+    Alert.alert(
+      error ? "Could not save" : "Saved",
+      error ? "Check your access and try again." : "Today's diary is stored.",
+    );
   };
+  if (loading) return null;
+  if (!session) return <Redirect href="/login" />;
+  if (!workspaceReady) return <Redirect href="/onboarding" />;
+  if (role === "inspector") return <Redirect href="/inspection-readiness" />;
   return (
     <ScrollView contentContainerStyle={styles.page}>
       <Text style={styles.title}>Today’s diary</Text>
