@@ -355,7 +355,7 @@ const PROMO_PLANS = [
 const PROMO_ADVANTAGES = [
   {
     title: "Priced for independents",
-    body: "From £9.99 per site a month with a 7-day trial and no card up front — most UK competitors start higher or quote only on request.",
+    body: "From £9.99 per site a month, with an approval-only two-month trial available for suitable UK food businesses.",
   },
   {
     title: "Evidence that stands up",
@@ -568,8 +568,8 @@ function PromoHome() {
                 simple system your whole team can use — kitchen, office and inspector.
               </p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                <Link to="/login" className="btn-red w-full sm:w-auto">
-                  Start free trial <ArrowRight size={16} />
+                <Link to="/contact" className="btn-red w-full sm:w-auto">
+                  Request two-month trial <ArrowRight size={16} />
                 </Link>
                 <ProductTourDialog />
               </div>
@@ -778,8 +778,8 @@ function PromoHome() {
               Simple per-site pricing
             </h2>
             <p className="mt-3 max-w-2xl text-sm text-muted-foreground sm:text-base">
-              Start with a 7-day free trial, no card required. Prices exclude VAT where applicable
-              and are billed in GBP. Cancel before renewal at any time.
+              Tenant owners are approved by Haccora for either a two-month trial or a paid plan.
+              Prices exclude VAT where applicable and are billed in GBP.
             </p>
 
             <div className="-mx-4 mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 xl:grid-cols-4 [&::-webkit-scrollbar]:hidden">
@@ -825,14 +825,14 @@ function PromoHome() {
                   </ul>
                   <div className="mt-auto pt-6">
                     <Link
-                      to={plan.name === "Enterprise" ? "/contact" : "/login"}
+                      to="/contact"
                       className={`inline-flex w-full items-center justify-center rounded-full py-3 text-sm font-black uppercase tracking-wider transition ${
                         plan.featured
                           ? "bg-[color:var(--color-alert-green)] text-white hover:brightness-110"
                           : "bg-black text-white hover:bg-[color:var(--color-alert-red)]"
                       }`}
                     >
-                      {plan.name === "Enterprise" ? "Talk to us" : "Start free trial"}
+                      {plan.name === "Enterprise" ? "Talk to us" : "Request trial"}
                     </Link>
                   </div>
                 </div>

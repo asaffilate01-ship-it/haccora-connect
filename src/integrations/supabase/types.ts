@@ -1794,6 +1794,248 @@ export type Database = {
           },
         ]
       }
+      dokuvera_connections: {
+        Row: {
+          created_at: string
+          created_by: string
+          disabled_at: string | null
+          dokuvera_project_id: string
+          enabled: boolean
+          id: string
+          location_id: string
+          organization_id: string
+          project_label: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          disabled_at?: string | null
+          dokuvera_project_id: string
+          enabled?: boolean
+          id?: string
+          location_id: string
+          organization_id: string
+          project_label: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          disabled_at?: string | null
+          dokuvera_project_id?: string
+          enabled?: boolean
+          id?: string
+          location_id?: string
+          organization_id?: string
+          project_label?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dokuvera_connections_location_id_organization_id_fkey"
+            columns: ["location_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "dokuvera_connections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dokuvera_evidence: {
+        Row: {
+          captured_at: string
+          connection_id: string
+          created_at: string
+          file_size: number
+          gps_accuracy_m: number | null
+          gps_lat: number | null
+          gps_lng: number | null
+          id: string
+          location_id: string
+          location_label: string | null
+          media_type: string
+          mime_type: string
+          organization_id: string
+          received_at: string
+          sha256: string
+          source_event_id: string
+          source_media_id: string
+          source_metadata: Json
+          source_original_sha256: string | null
+          source_project_id: string
+          source_user_id: string | null
+          storage_path: string
+          text_notes: string | null
+          updated_at: string
+          voice_file_size: number | null
+          voice_mime_type: string | null
+          voice_sha256: string | null
+          voice_storage_path: string | null
+          voice_transcript: string | null
+        }
+        Insert: {
+          captured_at: string
+          connection_id: string
+          created_at?: string
+          file_size: number
+          gps_accuracy_m?: number | null
+          gps_lat?: number | null
+          gps_lng?: number | null
+          id?: string
+          location_id: string
+          location_label?: string | null
+          media_type: string
+          mime_type: string
+          organization_id: string
+          received_at?: string
+          sha256: string
+          source_event_id: string
+          source_media_id: string
+          source_metadata?: Json
+          source_original_sha256?: string | null
+          source_project_id: string
+          source_user_id?: string | null
+          storage_path: string
+          text_notes?: string | null
+          updated_at?: string
+          voice_file_size?: number | null
+          voice_mime_type?: string | null
+          voice_sha256?: string | null
+          voice_storage_path?: string | null
+          voice_transcript?: string | null
+        }
+        Update: {
+          captured_at?: string
+          connection_id?: string
+          created_at?: string
+          file_size?: number
+          gps_accuracy_m?: number | null
+          gps_lat?: number | null
+          gps_lng?: number | null
+          id?: string
+          location_id?: string
+          location_label?: string | null
+          media_type?: string
+          mime_type?: string
+          organization_id?: string
+          received_at?: string
+          sha256?: string
+          source_event_id?: string
+          source_media_id?: string
+          source_metadata?: Json
+          source_original_sha256?: string | null
+          source_project_id?: string
+          source_user_id?: string | null
+          storage_path?: string
+          text_notes?: string | null
+          updated_at?: string
+          voice_file_size?: number | null
+          voice_mime_type?: string | null
+          voice_sha256?: string | null
+          voice_storage_path?: string | null
+          voice_transcript?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dokuvera_evidence_connection_id_organization_id_fkey"
+            columns: ["connection_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "dokuvera_connections"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "dokuvera_evidence_location_id_organization_id_fkey"
+            columns: ["location_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "dokuvera_evidence_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dokuvera_evidence_source_event_id_fkey"
+            columns: ["source_event_id"]
+            isOneToOne: false
+            referencedRelation: "dokuvera_webhook_events"
+            referencedColumns: ["event_id"]
+          },
+        ]
+      }
+      dokuvera_webhook_events: {
+        Row: {
+          attempts: number
+          connection_id: string | null
+          created_at: string
+          event_id: string
+          event_type: string
+          failure_reason: string | null
+          id: string
+          organization_id: string | null
+          payload_sha256: string
+          processed_at: string | null
+          source_timestamp: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          connection_id?: string | null
+          created_at?: string
+          event_id: string
+          event_type: string
+          failure_reason?: string | null
+          id?: string
+          organization_id?: string | null
+          payload_sha256: string
+          processed_at?: string | null
+          source_timestamp: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          connection_id?: string | null
+          created_at?: string
+          event_id?: string
+          event_type?: string
+          failure_reason?: string | null
+          id?: string
+          organization_id?: string | null
+          payload_sha256?: string
+          processed_at?: string | null
+          source_timestamp?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dokuvera_webhook_events_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "dokuvera_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dokuvera_webhook_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       expiry_items: {
         Row: {
           batch: string | null
@@ -3261,6 +3503,7 @@ export type Database = {
         Row: {
           accepted_at: string | null
           created_at: string
+          default_location_id: string | null
           email: string
           expires_at: string
           id: string
@@ -3274,6 +3517,7 @@ export type Database = {
         Insert: {
           accepted_at?: string | null
           created_at?: string
+          default_location_id?: string | null
           email: string
           expires_at: string
           id?: string
@@ -3287,6 +3531,7 @@ export type Database = {
         Update: {
           accepted_at?: string | null
           created_at?: string
+          default_location_id?: string | null
           email?: string
           expires_at?: string
           id?: string
@@ -3303,6 +3548,13 @@ export type Database = {
             columns: ["role_profile_id", "organization_id"]
             isOneToOne: false
             referencedRelation: "organization_roles"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "organization_invitations_default_location_tenant_fk"
+            columns: ["default_location_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
             referencedColumns: ["id", "organization_id"]
           },
           {
@@ -3431,6 +3683,9 @@ export type Database = {
       }
       organizations: {
         Row: {
+          access_approval_type: string | null
+          access_approved_at: string | null
+          access_approved_by: string | null
           archived_at: string | null
           country_code: string
           created_at: string
@@ -3447,6 +3702,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          access_approval_type?: string | null
+          access_approved_at?: string | null
+          access_approved_by?: string | null
           archived_at?: string | null
           country_code?: string
           created_at?: string
@@ -3463,6 +3721,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          access_approval_type?: string | null
+          access_approved_at?: string | null
+          access_approved_by?: string | null
           archived_at?: string | null
           country_code?: string
           created_at?: string
@@ -3582,6 +3843,65 @@ export type Database = {
           occurred_at?: string
         }
         Relationships: []
+      }
+      platform_credit_control_cases: {
+        Row: {
+          access_restricted_at: string | null
+          created_at: string
+          grace_ends_at: string | null
+          id: string
+          internal_note: string | null
+          last_contacted_at: string | null
+          last_notified_stage: string | null
+          next_action_at: string | null
+          organization_id: string
+          payment_failed_at: string | null
+          resolved_at: string | null
+          status: string
+          subscription_status: string
+          updated_at: string
+        }
+        Insert: {
+          access_restricted_at?: string | null
+          created_at?: string
+          grace_ends_at?: string | null
+          id?: string
+          internal_note?: string | null
+          last_contacted_at?: string | null
+          last_notified_stage?: string | null
+          next_action_at?: string | null
+          organization_id: string
+          payment_failed_at?: string | null
+          resolved_at?: string | null
+          status?: string
+          subscription_status: string
+          updated_at?: string
+        }
+        Update: {
+          access_restricted_at?: string | null
+          created_at?: string
+          grace_ends_at?: string | null
+          id?: string
+          internal_note?: string | null
+          last_contacted_at?: string | null
+          last_notified_stage?: string | null
+          next_action_at?: string | null
+          organization_id?: string
+          payment_failed_at?: string | null
+          resolved_at?: string | null
+          status?: string
+          subscription_status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_credit_control_cases_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       platform_operators: {
         Row: {
@@ -5261,14 +5581,17 @@ export type Database = {
       }
       subscriptions: {
         Row: {
+          access_restricted_at: string | null
           billing_email: string | null
           cancel_at_period_end: boolean
           contract_mrr_pence: number | null
           currency: string
           current_period_end: string | null
+          grace_ends_at: string | null
           last_event_at: string | null
           location_limit: number | null
           organization_id: string
+          payment_failed_at: string | null
           plan: string
           price_override_reason: string | null
           provider_customer_id: string | null
@@ -5279,14 +5602,17 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          access_restricted_at?: string | null
           billing_email?: string | null
           cancel_at_period_end?: boolean
           contract_mrr_pence?: number | null
           currency?: string
           current_period_end?: string | null
+          grace_ends_at?: string | null
           last_event_at?: string | null
           location_limit?: number | null
           organization_id: string
+          payment_failed_at?: string | null
           plan?: string
           price_override_reason?: string | null
           provider_customer_id?: string | null
@@ -5297,14 +5623,17 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          access_restricted_at?: string | null
           billing_email?: string | null
           cancel_at_period_end?: boolean
           contract_mrr_pence?: number | null
           currency?: string
           current_period_end?: string | null
+          grace_ends_at?: string | null
           last_event_at?: string | null
           location_limit?: number | null
           organization_id?: string
+          payment_failed_at?: string | null
           plan?: string
           price_override_reason?: string | null
           provider_customer_id?: string | null
@@ -6960,6 +7289,24 @@ export type Database = {
       get_my_context: { Args: never; Returns: Json }
       get_my_entitlements: { Args: never; Returns: Json }
       get_my_platform_context: { Args: never; Returns: Json }
+      get_platform_credit_control_cases: {
+        Args: never
+        Returns: {
+          access_restricted_at: string
+          grace_ends_at: string
+          id: string
+          internal_note: string
+          last_contacted_at: string
+          last_notified_stage: string
+          next_action_at: string
+          organization_id: string
+          organization_name: string
+          payment_failed_at: string
+          status: string
+          subscription_status: string
+          updated_at: string
+        }[]
+      }
       get_platform_customers: {
         Args: never
         Returns: {
@@ -7128,6 +7475,15 @@ export type Database = {
         }
         Returns: undefined
       }
+      platform_manage_credit_control_case: {
+        Args: {
+          p_case_id: string
+          p_next_action_at?: string
+          p_note: string
+          p_status: string
+        }
+        Returns: undefined
+      }
       platform_manage_operator: {
         Args: {
           p_reason: string
@@ -7164,6 +7520,7 @@ export type Database = {
         Args: { p_request_id: string; p_status: string }
         Returns: undefined
       }
+      reconcile_billing_access: { Args: never; Returns: Json }
       record_asset_scan: {
         Args: {
           p_accuracy_metres?: number
@@ -7247,6 +7604,20 @@ export type Database = {
       support_add_case_message: {
         Args: { p_case_id: string; p_message: string }
         Returns: string
+      }
+      sync_credit_control_case: {
+        Args: {
+          p_access_restricted_at?: string
+          p_grace_ends_at?: string
+          p_organization_id: string
+          p_payment_failed_at?: string
+          p_subscription_status: string
+        }
+        Returns: string
+      }
+      tenant_capacity_changes_allowed: {
+        Args: { p_organization_id: string }
+        Returns: boolean
       }
       transition_corrective_action: {
         Args: {

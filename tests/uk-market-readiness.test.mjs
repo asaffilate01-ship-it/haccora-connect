@@ -2,10 +2,12 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
-test("UK onboarding has four nations and no German state default", () => {
+test("UK approval onboarding remains UK-only and tenant setup retains four nations", () => {
   const s = read("src/routes/onboarding.tsx");
+  const authorities = read("src/lib/uk-authorities.ts");
   for (const n of ["England", "Wales", "Scotland", "Northern Ireland"])
-    assert.match(s, new RegExp(n));
+    assert.match(authorities, new RegExp(n));
+  assert.match(s, /Approval-only access/);
   assert.doesNotMatch(s, /Berlin|Bayern|Nordrhein|GmbH|DE 123/);
 });
 test("UK daily evidence and PPDS schema are tenant scoped", () => {
@@ -238,10 +240,10 @@ test("public pricing offers four clear packages and trial conversion", () => {
   const pricingBlock = read("src/components/marketing/PricingPlans.tsx");
   for (const plan of ["solo", "complete", "group", "enterprise"])
     assert.match(pricingBlock, new RegExp(`k: "${plan}"`));
-  assert.match(pricingBlock, /Start 7-day free trial/);
+  assert.match(pricingBlock, /Request two-month trial/);
   assert.match(pricingBlock, /Contact sales/);
   assert.match(pricingBlock, /VAT/);
-  assert.match(pricingBlock, /No card required/);
+  assert.match(pricingBlock, /approval-only/);
 });
 
 test("Phase 7 replaces German regional concepts with four-nation UK authority context", () => {

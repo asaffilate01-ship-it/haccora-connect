@@ -226,10 +226,14 @@ const content: Record<LegalKey, LegalDoc> = {
         </P>
         <H>2. Trial, subscription and payment</H>
         <P>
-          The seven-day trial does not require card details. A paid subscription starts only at
-          checkout or when an order is accepted. Monthly plans renew monthly until cancelled. The
-          customer may cancel before renewal through the billing portal. Plan prices are per site,
-          per month and VAT is added where applicable.
+          Tenant owner accounts are activated only after Haccora approval. An approved trial lasts
+          up to two months unless the accepted order states otherwise. A paid subscription starts
+          only after confirmed payment or an accepted order. Monthly plans renew monthly until
+          cancelled. If payment fails, Haccora may allow a seven-day grace period during which
+          existing access continues but new users and premises cannot be added. Access may then be
+          restricted until payment is resolved without deleting customer evidence. The customer may
+          cancel before renewal through the billing portal. Plan prices are per site, per month and
+          VAT is added where applicable.
         </P>
         <H>3. Service and food-safety responsibility</H>
         <P>

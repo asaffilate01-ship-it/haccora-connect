@@ -131,6 +131,7 @@ async function stripeWebhook(request: Request, signatureHeader: string) {
     current_period_end?: unknown;
     cancel_at_period_end?: unknown;
     client_reference_id?: unknown;
+    subscription?: unknown;
     metadata?: Record<string, unknown>;
   };
   const event = JSON.parse(raw) as {
@@ -145,12 +146,19 @@ async function stripeWebhook(request: Request, signatureHeader: string) {
     return json(request, { error: "stripe_mode_mismatch" }, 409);
   }
   const object = event.data.object;
-  const organizationId = typeof object.metadata?.organization_id === "string"
+  let organizationId = typeof object.metadata?.organization_id === "string"
     ? object.metadata.organization_id
     : typeof object.client_reference_id === "string"
     ? object.client_reference_id
     : null;
   const service = serviceClient();
+  if (!organizationId && typeof object.customer === "string") {
+    const { data: customerSubscription } = await service.from("subscriptions")
+      .select("organization_id")
+      .eq("provider_customer_id", object.customer)
+      .maybeSingle();
+    organizationId = customerSubscription?.organization_id ?? null;
+  }
   const { error: eventError } = await service.from("billing_events").insert({
     provider_event_id: event.id,
     organization_id: organizationId,
@@ -164,11 +172,18 @@ async function stripeWebhook(request: Request, signatureHeader: string) {
     return json(request, { ok: true, duplicate: true });
   }
   if (eventError) throw eventError;
-  if (organizationId && event.type.startsWith("customer.subscription.")) {
-    const status = String(object.status ?? "unknown");
+  const billingStateEvent = event.type.startsWith("customer.subscription.") ||
+    ["invoice.payment_failed", "invoice.payment_succeeded", "invoice.paid"]
+      .includes(event.type);
+  if (organizationId && billingStateEvent) {
+    const status = event.type === "invoice.payment_failed"
+      ? "past_due"
+      : ["invoice.payment_succeeded", "invoice.paid"].includes(event.type)
+      ? "active"
+      : String(object.status ?? "unknown");
     const occurredAt = new Date(event.created * 1000).toISOString();
     const { data: existing } = await service.from("subscriptions").select(
-      "last_event_at",
+      "last_event_at,payment_failed_at,grace_ends_at,access_restricted_at,plan,provider_customer_id,provider_subscription_id,current_period_end,cancel_at_period_end",
     )
       .eq("organization_id", organizationId).maybeSingle();
     if (
@@ -182,29 +197,63 @@ async function stripeWebhook(request: Request, signatureHeader: string) {
       }).eq("provider_event_id", event.id);
       return json(request, { ok: true, ignored: "out_of_order_event" });
     }
+    const activeAccess = ["active", "trialing"].includes(status);
+    const graceAccess = status === "past_due";
+    const restrictedAccess = [
+      "canceled",
+      "unpaid",
+      "paused",
+      "incomplete_expired",
+    ].includes(status);
+    const paymentFailedAt = graceAccess
+      ? existing?.payment_failed_at ?? occurredAt
+      : activeAccess
+      ? null
+      : existing?.payment_failed_at ?? occurredAt;
+    const graceEndsAt = graceAccess
+      ? existing?.grace_ends_at ??
+        new Date(new Date(paymentFailedAt!).getTime() + 7 * 86400000)
+          .toISOString()
+      : activeAccess
+      ? null
+      : existing?.grace_ends_at ?? null;
+
     await service.from("subscriptions").upsert({
       organization_id: organizationId,
       provider_customer_id: typeof object.customer === "string"
         ? object.customer
-        : null,
-      provider_subscription_id: typeof object.id === "string"
-        ? object.id
-        : null,
+        : existing?.provider_customer_id ?? null,
+      provider_subscription_id:
+        event.type.startsWith("customer.subscription.") &&
+          typeof object.id === "string"
+          ? object.id
+          : typeof object.subscription === "string"
+          ? object.subscription
+          : existing?.provider_subscription_id ?? null,
       plan: typeof object.metadata?.haccora_plan === "string" &&
           ["solo", "complete", "group", "enterprise"].includes(
             object.metadata.haccora_plan,
           )
         ? object.metadata.haccora_plan
-        : "complete",
+        : existing?.plan ?? "complete",
       status,
       current_period_end: typeof object.current_period_end === "number"
         ? new Date(object.current_period_end * 1000).toISOString()
-        : null,
-      cancel_at_period_end: object.cancel_at_period_end === true,
+        : existing?.current_period_end ?? null,
+      cancel_at_period_end: typeof object.cancel_at_period_end === "boolean"
+        ? object.cancel_at_period_end
+        : existing?.cancel_at_period_end ?? false,
       last_event_at: occurredAt,
+      payment_failed_at: paymentFailedAt,
+      grace_ends_at: graceEndsAt,
+      access_restricted_at: restrictedAccess
+        ? existing?.access_restricted_at ?? occurredAt
+        : activeAccess
+        ? null
+        : existing?.access_restricted_at ?? null,
       updated_at: new Date().toISOString(),
     }, { onConflict: "organization_id" });
-    const enabled = ["active", "trialing"].includes(status);
+    const enabled = activeAccess || graceAccess;
     await service.from("subscription_entitlements").upsert([
       {
         organization_id: organizationId,
@@ -225,6 +274,54 @@ async function stripeWebhook(request: Request, signatureHeader: string) {
         limit_value: null,
       },
     ], { onConflict: "organization_id,entitlement" });
+
+    if (activeAccess) {
+      await service.from("organizations").update({
+        service_status: "active",
+        service_status_reason: null,
+        frozen_at: null,
+        frozen_by: null,
+        updated_at: new Date().toISOString(),
+      })
+        .eq("id", organizationId)
+        .eq("service_status", "frozen")
+        .like("service_status_reason", "[billing]%");
+    } else if (graceAccess) {
+      await service.from("organizations").update({
+        service_status_reason:
+          `[billing] Payment is overdue. Existing access continues until ${
+            new Date(graceEndsAt!).toLocaleDateString("en-GB")
+          }; new users and premises are blocked.`,
+        updated_at: new Date().toISOString(),
+      })
+        .eq("id", organizationId)
+        .eq("service_status", "active");
+    } else if (restrictedAccess) {
+      await service.from("organizations").update({
+        service_status: "frozen",
+        service_status_reason:
+          "[billing] Subscription access is restricted. The tenant owner can restore access through billing.",
+        frozen_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+        .eq("id", organizationId)
+        .neq("service_status", "closed");
+    }
+    const { error: creditControlError } = await service.rpc(
+      "sync_credit_control_case",
+      {
+        p_organization_id: organizationId,
+        p_subscription_status: status,
+        p_payment_failed_at: paymentFailedAt,
+        p_grace_ends_at: graceEndsAt,
+        p_access_restricted_at: restrictedAccess
+          ? existing?.access_restricted_at ?? occurredAt
+          : activeAccess
+          ? null
+          : existing?.access_restricted_at ?? null,
+      },
+    );
+    if (creditControlError) throw creditControlError;
   }
   await service.from("billing_events").update({
     processing_status: organizationId ? "processed" : "ignored",

@@ -23,8 +23,7 @@ export const Route = createFileRoute("/login")({
       { title: "Sign in — Haccora" },
       {
         name: "description",
-        content:
-          "Sign in or create your Haccora account. Role-based dashboards for owners, managers, chefs, staff, and inspectors.",
+        content: "Sign in to an approved Haccora tenant or accept a secure role invitation.",
       },
       { name: "robots", content: "noindex" },
     ],
@@ -58,7 +57,8 @@ function LoginPage() {
     inspectorInvite?: string;
   };
 
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const invitationSignup = Boolean(search?.invite || search?.inspectorInvite);
+  const [mode, setMode] = useState<"signin" | "signup">(invitationSignup ? "signup" : "signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -126,6 +126,10 @@ function LoginPage() {
         const { error } = await signInWithEmail(email, password);
         if (error) setError(error);
       } else {
+        if (!invitationSignup) {
+          setError("New Haccora accounts require an approval or a secure invitation.");
+          return;
+        }
         if (password.length < 12) {
           setError("Password must be at least 12 characters.");
           return;
@@ -175,7 +179,7 @@ function LoginPage() {
             {t("brand.slogan")}
           </div>
           <h1 className="mt-3 font-display text-3xl md:text-4xl leading-[1.08] tracking-tight">
-            {mode === "signin" ? "Welcome back." : "Create your account."}
+            {mode === "signin" ? "Welcome back." : "Accept your invitation."}
           </h1>
           <p className="mt-4 text-base md:text-lg text-muted-foreground">
             Role-based dashboards for owners, managers, chefs, staff and authorised reviewers.
@@ -223,13 +227,15 @@ function LoginPage() {
             >
               {"Existing account"}
             </button>
-            <button
-              type="button"
-              onClick={() => setMode("signup")}
-              className={`flex-1 py-2 rounded-full transition ${mode === "signup" ? "bg-white shadow" : "text-muted-foreground"}`}
-            >
-              {"New account"}
-            </button>
+            {invitationSignup && (
+              <button
+                type="button"
+                onClick={() => setMode("signup")}
+                className={`flex-1 py-2 rounded-full transition ${mode === "signup" ? "bg-white shadow" : "text-muted-foreground"}`}
+              >
+                {"Accept invitation"}
+              </button>
+            )}
           </div>
 
           <div className="mt-5 space-y-3">
@@ -251,7 +257,7 @@ function LoginPage() {
                 />
                 <p className="rounded-lg border border-black/10 bg-secondary/40 px-3 py-2 text-xs text-muted-foreground">
                   {
-                    "New accounts create a protected business workspace. Team and inspector roles are assigned later by invitation."
+                    "This account will receive only the tenant, role and premises contained in the secure invitation."
                   }
                 </p>
               </>
@@ -278,6 +284,16 @@ function LoginPage() {
             <div className="mt-4 text-sm rounded-lg bg-destructive/10 text-destructive px-3 py-2">
               {error}
             </div>
+          )}
+          {!invitationSignup && (
+            <p className="mt-5 rounded-xl border border-black/10 bg-secondary/40 px-4 py-3 text-xs leading-relaxed text-muted-foreground">
+              Tenant owner accounts are approval-only. Haccora can approve a two-month trial or a
+              paid subscription, after which the owner can invite users within the plan limits.{" "}
+              <Link to="/contact" className="font-bold text-foreground underline">
+                Request access
+              </Link>
+              .
+            </p>
           )}
           {info && (
             <div className="mt-4 text-sm rounded-lg bg-success/10 text-success px-3 py-2">

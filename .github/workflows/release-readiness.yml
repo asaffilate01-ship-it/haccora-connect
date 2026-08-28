@@ -108,6 +108,7 @@ jobs:
             privacy-requests/index.ts security-center/index.ts \
             file-scan/index.ts operations-dispatch/index.ts billing/index.ts \
             integration-admin/index.ts integration-dispatch/index.ts \
+            dokuvera-admin/index.ts dokuvera-webhook/index.ts \
             operations-health/index.ts
       - name: Verify deployed commit identity and health
         run: npm run health:check

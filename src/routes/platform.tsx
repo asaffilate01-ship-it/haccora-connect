@@ -18,6 +18,7 @@ import {
   Mail,
   MapPin,
   MessageSquareText,
+  PhoneCall,
   RefreshCw,
   Save,
   ShieldCheck,
@@ -121,6 +122,22 @@ type ContactEnquiry = {
   created_at: string;
 };
 
+type CreditControlCase = {
+  id: string;
+  organization_id: string;
+  organization_name: string;
+  status: "open" | "contacted" | "promise_to_pay" | "restricted" | "resolved" | "written_off";
+  subscription_status: string;
+  payment_failed_at: string | null;
+  grace_ends_at: string | null;
+  access_restricted_at: string | null;
+  last_notified_stage: string | null;
+  last_contacted_at: string | null;
+  next_action_at: string | null;
+  internal_note: string | null;
+  updated_at: string;
+};
+
 type ReadinessJob = {
   jobName: string;
   lastStatus: string;
@@ -153,7 +170,8 @@ type PlatformReadiness = {
 };
 
 type MfaFactor = { id: string; status: string };
-type PlatformSection = "overview" | "customers" | "sales" | "operations" | "administration";
+type PlatformSection =
+  "overview" | "customers" | "credit_control" | "sales" | "operations" | "administration";
 
 function PlatformOperations() {
   const { user, hydrated, signOut } = useAuth();
@@ -165,6 +183,7 @@ function PlatformOperations() {
   const [operators, setOperators] = useState<Operator[]>([]);
   const [auditEvents, setAuditEvents] = useState<AuditEvent[]>([]);
   const [enquiries, setEnquiries] = useState<ContactEnquiry[]>([]);
+  const [creditCases, setCreditCases] = useState<CreditControlCase[]>([]);
   const [readiness, setReadiness] = useState<PlatformReadiness | null>(null);
   const [readinessError, setReadinessError] = useState("");
   const [mfaLevel, setMfaLevel] = useState("aal1");
@@ -206,6 +225,7 @@ function PlatformOperations() {
       operatorsResult,
       auditResult,
       enquiriesResult,
+      creditCasesResult,
       readinessResult,
       assuranceResult,
       factorsResult,
@@ -230,6 +250,7 @@ function PlatformOperations() {
         )
         .order("created_at", { ascending: false })
         .limit(100),
+      (supabase as any).rpc("get_platform_credit_control_cases"),
       canAuditPlatform
         ? supabase.functions.invoke("platform-readiness", { body: {} })
         : Promise.resolve({ data: null, error: null }),
@@ -243,8 +264,9 @@ function PlatformOperations() {
       operatorsResult.error ||
       auditResult.error ||
       enquiriesResult.error;
-    if (failure) {
-      setError(failure.message ?? "The audited platform control plane could not be loaded.");
+    const loadFailure = failure || creditCasesResult.error;
+    if (loadFailure) {
+      setError(loadFailure.message ?? "The audited platform control plane could not be loaded.");
     }
     if (!dashboardResult.error) {
       setDashboard(dashboardResult.data as Dashboard);
@@ -263,6 +285,9 @@ function PlatformOperations() {
     }
     if (!enquiriesResult.error) {
       setEnquiries((enquiriesResult.data ?? []) as ContactEnquiry[]);
+    }
+    if (!creditCasesResult.error) {
+      setCreditCases((creditCasesResult.data ?? []) as CreditControlCase[]);
     }
     if (readinessResult.error) {
       setReadiness(null);
@@ -286,6 +311,7 @@ function PlatformOperations() {
   const support = user?.platformRole === "platform_support";
   const financialAccess = dashboard?.financial_access === true;
   const canManageProspects = owner || support;
+  const canManageCreditControl = owner || support;
   const platformTitle = owner
     ? "Platform owner dashboard"
     : support
@@ -299,6 +325,7 @@ function PlatformOperations() {
   const platformSections: Array<{ key: PlatformSection; label: string }> = [
     { key: "overview", label: "Overview" },
     { key: "customers", label: "Customers" },
+    { key: "credit_control", label: "Credit control" },
     ...(canManageProspects ? [{ key: "sales" as const, label: "Sales & enquiries" }] : []),
     ...(canAuditPlatform ? [{ key: "operations" as const, label: "Service health" }] : []),
     ...(canAuditPlatform ? [{ key: "administration" as const, label: "Team & audit" }] : []),
@@ -412,7 +439,9 @@ function PlatformOperations() {
       setTenantName("");
       setTenantOwnerEmail("");
       setTenantLocation("");
-      setNotice("Tenant created and its owner received a secure authentication invitation.");
+      setNotice(
+        `Tenant approved for ${tenantPlan === "trial" ? "a two-month trial" : "the selected paid plan"}; its owner received a secure invitation.`,
+      );
       await load();
     }
   };
@@ -508,6 +537,47 @@ function PlatformOperations() {
     if (updateError) setError(updateError.message);
     else {
       setNotice(`Enquiry from ${enquiry.first_name} ${enquiry.last_name} marked ${status}.`);
+      await load();
+    }
+  };
+
+  const manageCreditCase = async (
+    creditCase: CreditControlCase,
+    status: CreditControlCase["status"],
+  ) => {
+    if (!requireMfa()) return;
+    const note = window.prompt(
+      status === "promise_to_pay"
+        ? "Record the payment promise and agreed follow-up date in the note:"
+        : `Auditable note for ${status.replaceAll("_", " ")}:`,
+      creditCase.internal_note ?? "",
+    );
+    if (!note || note.trim().length < 4) return;
+    const nextAction =
+      status === "contacted" || status === "promise_to_pay"
+        ? window.prompt("Next action date (YYYY-MM-DD), or leave blank:")
+        : null;
+    if (nextAction && !/^\d{4}-\d{2}-\d{2}$/.test(nextAction)) {
+      setError("Enter the next action date as YYYY-MM-DD.");
+      return;
+    }
+    setBusy(`credit-${creditCase.id}`);
+    setError("");
+    const { error: updateError } = await (supabase as any).rpc(
+      "platform_manage_credit_control_case",
+      {
+        p_case_id: creditCase.id,
+        p_status: status,
+        p_note: note.trim(),
+        p_next_action_at: nextAction ? `${nextAction}T09:00:00.000Z` : null,
+      },
+    );
+    setBusy("");
+    if (updateError) setError(updateError.message);
+    else {
+      setNotice(
+        `${creditCase.organization_name}: credit-control case marked ${status.replaceAll("_", " ")}.`,
+      );
       await load();
     }
   };
@@ -995,15 +1065,144 @@ function PlatformOperations() {
           </div>
         )}
 
+        {activeSection === "credit_control" && (
+          <section className="surface overflow-hidden">
+            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border p-5 md:p-6">
+              <div>
+                <div className="flex items-center gap-2">
+                  <PhoneCall size={19} />
+                  <h2 className="font-display text-xl">Credit-control queue</h2>
+                </div>
+                <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
+                  Missed payments create an automatic case and notify the tenant owner and Haccora
+                  operators. Existing access has a seven-day grace period; records are retained if
+                  access is later restricted.
+                </p>
+              </div>
+              <span className="rounded-full bg-warning/15 px-3 py-1.5 text-xs font-black uppercase tracking-wider text-warning-foreground">
+                {
+                  creditCases.filter(
+                    (creditCase) => !["resolved", "written_off"].includes(creditCase.status),
+                  ).length
+                }{" "}
+                pending
+              </span>
+            </div>
+            {creditCases.length ? (
+              <div className="grid gap-3 p-4 md:p-6 lg:grid-cols-2">
+                {creditCases.map((creditCase) => {
+                  const isBusy = busy === `credit-${creditCase.id}`;
+                  const closed = ["resolved", "written_off"].includes(creditCase.status);
+                  return (
+                    <article
+                      key={creditCase.id}
+                      className={`rounded-2xl border p-4 ${
+                        creditCase.status === "restricted"
+                          ? "border-destructive/35 bg-destructive/5"
+                          : closed
+                            ? "border-border bg-secondary/25"
+                            : "border-warning/35 bg-warning/5"
+                      }`}
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <h3 className="font-semibold">{creditCase.organization_name}</h3>
+                          <div className="mt-1 text-xs capitalize text-muted-foreground">
+                            Subscription {creditCase.subscription_status.replaceAll("_", " ")}
+                          </div>
+                        </div>
+                        <span className="rounded-full bg-card px-2.5 py-1 text-[10px] font-black uppercase tracking-wider">
+                          {creditCase.status.replaceAll("_", " ")}
+                        </span>
+                      </div>
+                      <dl className="mt-4 grid gap-2 text-xs sm:grid-cols-2">
+                        <div>
+                          <dt className="text-muted-foreground">Payment failed</dt>
+                          <dd className="mt-0.5 font-semibold">
+                            {creditCase.payment_failed_at
+                              ? new Date(creditCase.payment_failed_at).toLocaleString("en-GB")
+                              : "Not recorded"}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-muted-foreground">Grace deadline</dt>
+                          <dd className="mt-0.5 font-semibold">
+                            {creditCase.grace_ends_at
+                              ? new Date(creditCase.grace_ends_at).toLocaleString("en-GB")
+                              : "Immediate restriction"}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-muted-foreground">Last automatic notice</dt>
+                          <dd className="mt-0.5 font-semibold capitalize">
+                            {creditCase.last_notified_stage?.replaceAll("_", " ") ?? "Queued"}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-muted-foreground">Next action</dt>
+                          <dd className="mt-0.5 font-semibold">
+                            {creditCase.next_action_at
+                              ? new Date(creditCase.next_action_at).toLocaleString("en-GB")
+                              : "None scheduled"}
+                          </dd>
+                        </div>
+                      </dl>
+                      {creditCase.internal_note && (
+                        <p className="mt-3 rounded-xl bg-card p-3 text-xs leading-5 text-foreground/80">
+                          {creditCase.internal_note}
+                        </p>
+                      )}
+                      {canManageCreditControl && !closed && (
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            disabled={isBusy}
+                            onClick={() => void manageCreditCase(creditCase, "contacted")}
+                            className="rounded-lg border border-border bg-card px-3 py-2 text-xs font-bold"
+                          >
+                            Mark contacted
+                          </button>
+                          <button
+                            type="button"
+                            disabled={isBusy}
+                            onClick={() => void manageCreditCase(creditCase, "promise_to_pay")}
+                            className="rounded-lg border border-border bg-card px-3 py-2 text-xs font-bold"
+                          >
+                            Promise to pay
+                          </button>
+                          {owner && (
+                            <button
+                              type="button"
+                              disabled={isBusy}
+                              onClick={() => void manageCreditCase(creditCase, "written_off")}
+                              className="rounded-lg border border-destructive/30 px-3 py-2 text-xs font-bold text-destructive"
+                            >
+                              Write off case
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </article>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="p-8 text-center text-sm text-muted-foreground">
+                No missed-payment cases have been recorded.
+              </div>
+            )}
+          </section>
+        )}
+
         {activeSection === "customers" && owner && (
           <section className="surface p-5">
             <div className="flex items-center gap-2">
               <UserPlus size={19} />
-              <h2 className="font-display text-xl">Add tenant</h2>
+              <h2 className="font-display text-xl">Approve tenant owner</h2>
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
               Creates a UK workspace, first premises, subscription limits and secure owner
-              invitation as one governed operation.
+              invitation as one governed operation. Trial approval lasts two months.
             </p>
             <form
               onSubmit={createTenant}
@@ -1055,7 +1254,7 @@ function PlatformOperations() {
                 ) : (
                   <Building2 size={15} />
                 )}{" "}
-                Create tenant
+                Approve tenant
               </button>
             </form>
           </section>

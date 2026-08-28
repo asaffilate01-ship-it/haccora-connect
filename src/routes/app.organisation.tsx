@@ -81,6 +81,7 @@ function OrganisationPage() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<"manager" | "chef" | "staff">("staff");
   const [inviteProfile, setInviteProfile] = useState("");
+  const [inviteLocation, setInviteLocation] = useState("");
   const [newLocation, setNewLocation] = useState("");
   const [newRegion, setNewRegion] = useState("");
   const [roleName, setRoleName] = useState("");
@@ -116,7 +117,13 @@ function OrganisationPage() {
       setOverview(overviewResult.data as Overview);
       setMembers((teamResult.data ?? []) as Member[]);
       setRoles((roleResult.data ?? []) as TenantRole[]);
-      setLocations((locationResult.data ?? []) as Location[]);
+      const loadedLocations = (locationResult.data ?? []) as Location[];
+      setLocations(loadedLocations);
+      setInviteLocation((current) =>
+        loadedLocations.some((location) => location.id === current && location.is_active)
+          ? current
+          : (loadedLocations.find((location) => location.is_active)?.id ?? ""),
+      );
     }
     setLoading(false);
   }, [canInvite]);
@@ -135,6 +142,7 @@ function OrganisationPage() {
         email: inviteEmail.trim(),
         role: selected?.base_role ?? inviteRole,
         roleProfileId: selected?.id ?? null,
+        locationId: inviteLocation,
       },
     });
     setBusy("");
@@ -220,6 +228,13 @@ function OrganisationPage() {
     () => roles.filter((role) => role.base_role === inviteRole),
     [inviteRole, roles],
   );
+  const trialCurrent =
+    overview?.subscription_status !== "trialing" ||
+    (!!overview.trial_ends_at && new Date(overview.trial_ends_at).getTime() > Date.now());
+  const capacityChangesAllowed =
+    overview?.service_status === "active" &&
+    ["active", "trialing"].includes(overview?.subscription_status ?? "") &&
+    trialCurrent;
 
   if (!user || !canInvite) return null;
   if (loading)
@@ -254,6 +269,12 @@ function OrganisationPage() {
           className="flex items-center gap-2 rounded-xl bg-success/10 p-4 text-sm text-success"
         >
           <Check size={16} /> {notice}
+        </div>
+      )}
+      {!capacityChangesAllowed && (
+        <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
+          New users and premises are unavailable until the Haccora platform operator approves a
+          current trial or paid subscription. Existing records remain protected.
         </div>
       )}
 
@@ -354,8 +375,25 @@ function OrganisationPage() {
                 ))}
               </select>
             )}
+            <select
+              required
+              className="field"
+              value={inviteLocation}
+              onChange={(event) => setInviteLocation(event.target.value)}
+            >
+              <option value="" disabled>
+                Assign a premises
+              </option>
+              {locations
+                .filter((location) => location.is_active)
+                .map((location) => (
+                  <option value={location.id} key={location.id}>
+                    {location.name}
+                  </option>
+                ))}
+            </select>
             <button
-              disabled={busy === "invite"}
+              disabled={busy === "invite" || !capacityChangesAllowed || !inviteLocation}
               className="btn-alert-solid min-h-11 w-full text-sm disabled:opacity-60"
             >
               {busy === "invite" ? (
@@ -394,7 +432,9 @@ function OrganisationPage() {
                 </div>
                 {user.role === "owner" && (
                   <button
-                    disabled={busy === location.id}
+                    disabled={
+                      busy === location.id || (!location.is_active && !capacityChangesAllowed)
+                    }
                     onClick={() => void setLocationStatus(location)}
                     className="rounded-lg border border-border px-3 py-2 text-xs font-bold disabled:opacity-50"
                   >
@@ -420,7 +460,10 @@ function OrganisationPage() {
                 onChange={(event) => setNewRegion(event.target.value)}
                 placeholder="Town or UK nation"
               />
-              <button disabled={busy === "location"} className="btn-secondary min-h-11 text-sm">
+              <button
+                disabled={busy === "location" || !capacityChangesAllowed}
+                className="btn-secondary min-h-11 text-sm disabled:opacity-50"
+              >
                 <MapPin size={14} /> Add
               </button>
             </form>

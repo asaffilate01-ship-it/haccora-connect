@@ -57,6 +57,6 @@ export const MARKETING_FAQS = [
   {
     question: "How do the trial, cancellation and data export work?",
     answer:
-      "The advertised trial lasts seven days and does not require a payment card. Paid plans are billed per site or group as shown in pricing. Customers can export their evidence before closure; final access, retention and deletion follow the agreed subscription and data-processing terms.",
+      "Tenant owner accounts are approval-only. Haccora may activate a two-month trial or a paid plan, after which the owner can invite users and premises within the subscription limits. A failed payment starts a seven-day grace period: existing access continues, but new users and premises are blocked. Access may then be restricted without deleting customer evidence. Restoration, export, retention and deletion follow the agreed subscription and data-processing terms.",
   },
 ] as const;

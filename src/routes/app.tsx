@@ -795,6 +795,22 @@ function AppShell() {
             </div>
           </header>
 
+          {user.serviceStatus === "active" && user.serviceStatusReason?.startsWith("[billing]") && (
+            <div
+              role="alert"
+              className="flex flex-col gap-2 border-b border-amber-300 bg-amber-50 px-4 py-3 text-xs text-amber-950 sm:flex-row sm:items-center sm:justify-between md:px-6"
+            >
+              <span>{user.serviceStatusReason.replace(/^\[billing\]\s*/, "")}</span>
+              {user.role === "owner" ? (
+                <Link to="/app/billing" className="shrink-0 font-bold underline">
+                  Resolve payment
+                </Link>
+              ) : (
+                <span className="shrink-0 font-semibold">Ask the tenant owner to resolve it.</span>
+              )}
+            </div>
+          )}
+
           <main id="main-content" tabIndex={-1} className="flex-1 min-w-0 pb-tabbar md:pb-0">
             <Outlet />
           </main>

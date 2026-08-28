@@ -58,6 +58,7 @@ export default function RootLayout() {
             <Stack.Screen name="inspection-readiness" options={{ title: "Evidence readiness" }} />
             <Stack.Screen name="coach" options={{ title: "Compliance coach" }} />
             <Stack.Screen name="settings" options={{ title: "Alerts & security" }} />
+            <Stack.Screen name="billing" options={{ title: "Billing & subscription" }} />
           </Stack>
           <BottomNav />
         </View>

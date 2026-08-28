@@ -66,6 +66,6 @@ jobs:
       - name: Inventory deployed Edge Functions
         run: |
           supabase functions list --project-ref "$PRODUCTION_PROJECT_REF" > functions-list.txt
-          for name in billing contact file-scan inspection-export inspector-invite integration-admin integration-dispatch notification-dispatch operations-dispatch operations-health platform-admin platform-readiness privacy-requests security-center sensor-ingest sensor-provision team-invite; do
+          for name in billing contact dokuvera-admin dokuvera-webhook file-scan inspection-export inspector-invite integration-admin integration-dispatch notification-dispatch operations-dispatch operations-health platform-admin platform-readiness privacy-requests security-center sensor-ingest sensor-provision team-invite; do
             grep -q "$name" functions-list.txt
           done
