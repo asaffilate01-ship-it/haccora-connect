@@ -67,9 +67,9 @@ test("hero product tour opens as a captioned first-party video with a transcript
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: /watch how we support your business/i }).click();
+  await page.getByRole("button", { name: /see Haccora in the kitchen/i }).click();
 
-  const dialog = page.getByRole("dialog", { name: /Haccora in under a minute/i });
+  const dialog = page.getByRole("dialog", { name: /Haccora in 10 seconds/i });
   await expect(dialog).toBeVisible();
   const video = dialog.locator("video");
   await expect(video).toBeVisible();

@@ -303,14 +303,14 @@ const en: Dict = {
   // Landing extras (FoodAlert-inspired)
   "nav.search": "Search",
   "nav.contact": "Contact us",
-  "hero.video.title": "Watch how we support your business",
-  "hero.video.modalTitle": "Haccora in under a minute",
-  "hero.video.duration": "38 sec",
+  "hero.video.title": "See Haccora in the kitchen",
+  "hero.video.modalTitle": "Haccora in 10 seconds",
+  "hero.video.duration": "10 sec",
   "hero.video.description":
-    "A product-led tour of daily routines, temperature evidence, corrective actions and inspection records.",
+    "A quick introduction to opening checks, HACCP records, team tasks and inspection-ready evidence.",
   "hero.video.transcriptTitle": "Read the video transcript",
   "hero.video.transcript":
-    "Haccora brings daily food-safety work into one clear workspace. Start each shift with visible opening, monitoring and closing routines. Record temperature readings, exceptions and corrective actions. Complete the daily diary and manager sign-off from desktop or mobile. Prepare a focused, read-only inspection view for the period and records selected. Haccora is structured for food businesses in the United Kingdom. Official guidance and your business-specific procedures remain authoritative. Haccora does not guarantee an inspection outcome.",
+    "Opening checks, HACCP records, staff tasks and inspector-ready evidence — all in one place. Food safety, organised. Haccora. Official guidance and your business-specific procedures remain authoritative. Haccora does not guarantee an inspection outcome.",
   "hero.video.unsupported":
     "Your browser cannot play this video. Open the transcript below for the same information.",
   "contact.title": "Get more information",
