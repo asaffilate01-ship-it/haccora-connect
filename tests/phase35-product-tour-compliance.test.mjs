@@ -27,12 +27,12 @@ test("hero product tour is playable, captioned, transcribed and first-party", as
   assert.match(productTour, /hero\.video\.transcript/);
   assert.doesNotMatch(productTour, /youtube|vimeo/i);
   assert.match(captions, /^WEBVTT/);
+  assert.match(captions, /Opening checks, HACCP records, staff tasks/i);
   assert.match(
-    captions,
+    translations,
     /Official guidance and your business-specific procedures remain authoritative/i,
   );
   assert.match(translations, /does not guarantee an inspection outcome/i);
-  assert.match(captions, /structured for food businesses in the United Kingdom/i);
   assert.match(builder, /screenshot-temperature\.jpg/);
   assert.match(builder, /mobile-temperature\.jpg/);
   assert.ok(videoStat.size > 750_000, "product tour video is unexpectedly small");
