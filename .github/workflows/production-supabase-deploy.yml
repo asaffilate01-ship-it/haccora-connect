@@ -54,18 +54,44 @@ jobs:
           --project-ref "$PRODUCTION_PROJECT_REF"
           --password "$SUPABASE_DB_PASSWORD"
 
+      - name: Archive pre-deployment migration ledger
+        run: |
+          mkdir -p production-release-evidence
+          supabase migration list --linked --password "$SUPABASE_DB_PASSWORD" \
+            > production-release-evidence/production-migration-list-before.txt
+
       - name: Preview forward-only migration plan
         run: supabase db push --dry-run --linked --password "$SUPABASE_DB_PASSWORD"
 
       - name: Apply forward-only migrations
         run: supabase db push --linked --include-all --password "$SUPABASE_DB_PASSWORD"
 
+      - name: Reconcile and archive applied migration ledger
+        env:
+          HACCORA_EVIDENCE_DIR: production-release-evidence
+          MIGRATION_LIST_FILE: production-release-evidence/production-migration-list.txt
+          MIGRATION_TARGET: production
+        run: |
+          supabase migration list --linked --password "$SUPABASE_DB_PASSWORD" \
+            > "$MIGRATION_LIST_FILE"
+          node scripts/verify-remote-migration-ledger.mjs
+
       - name: Deploy every Edge Function
         run: supabase functions deploy --project-ref "$PRODUCTION_PROJECT_REF"
 
       - name: Inventory deployed Edge Functions
         run: |
-          supabase functions list --project-ref "$PRODUCTION_PROJECT_REF" > functions-list.txt
+          supabase functions list --project-ref "$PRODUCTION_PROJECT_REF" \
+            > production-release-evidence/functions-list.txt
           for name in billing contact dokuvera-admin dokuvera-webhook file-scan inspection-export inspector-invite integration-admin integration-dispatch notification-dispatch operations-dispatch operations-health platform-admin platform-readiness privacy-requests security-center sensor-ingest sensor-provision team-invite; do
-            grep -q "$name" functions-list.txt
+            grep -q "$name" production-release-evidence/functions-list.txt
           done
+
+      - name: Retain production migration and function evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: production-supabase-${{ github.sha }}
+          path: production-release-evidence/
+          if-no-files-found: warn
+          retention-days: 90

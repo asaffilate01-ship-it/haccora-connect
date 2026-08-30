@@ -27,6 +27,8 @@ Deploy every directory under `supabase/functions`. JWT behavior is declared in `
 
 Schedule `file-scan`, `operations-dispatch` and `integration-dispatch` at least every five minutes and `notification-dispatch` at least every 15 minutes using POST plus the `x-cron-secret` header. Monitor non-2xx responses, missed schedules and dead-letter rows.
 
+The repository-managed `.github/workflows/production-dispatch.yml` supplies these schedules. Set the protected GitHub `SUPABASE_URL` variable and a `CRON_SECRET` repository secret matching the Supabase Edge Function secret, then manually run **Production scheduled dispatch** once. Keep the workflow enabled on the default branch; each invocation fails on any non-2xx dispatcher response.
+
 After the first successful run of every schedule, set the GitHub `OPERATIONS_HEALTH_URL` variable and `OPERATIONS_MONITOR_SECRET` secret, then run `npm run operations:health`. The protected endpoint returns 503 for overdue/failed jobs or dead letters and is checked every 15 minutes by `.github/workflows/uptime.yml`.
 
 Sensor secrets are returned once by `sensor-provision`. Deliver each secret through a secure device-management channel; never store it in GitHub, support tickets or analytics. Sensor POSTs use `x-device-secret` and must provide a globally unique event ID.
