@@ -16,7 +16,7 @@ export async function registerWebPush() {
   if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
     throw new Error("Background notifications are not supported by this browser.");
   }
-  const publicKey = (import.meta.env.VITE_WEB_PUSH_PUBLIC_KEY ?? "").trim();
+  const publicKey = VAPID_PUBLIC_KEY.trim();
   if (!publicKey) throw new Error("Web push has not been configured for this installation.");
   const permission = await Notification.requestPermission();
   if (permission !== "granted") throw new Error("Notification permission was not granted.");
