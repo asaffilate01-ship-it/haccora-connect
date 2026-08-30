@@ -27,7 +27,9 @@ export function getStripeEnvironment(): StripeEnv {
 }
 
 export function paymentsConfigured(): boolean {
-  return clientToken?.startsWith("pk_test_") === true || clientToken?.startsWith("pk_live_") === true;
+  return (
+    clientToken?.startsWith("pk_test_") === true || clientToken?.startsWith("pk_live_") === true
+  );
 }
 
 /** Human-readable price IDs registered in the payment catalogue. */

@@ -109,7 +109,9 @@ export async function applyBillingEvent(event: StripeEventShape, env: StripeEnv)
 
     const activeAccess = ["active", "trialing"].includes(status);
     const graceAccess = status === "past_due";
-    const restrictedAccess = ["canceled", "unpaid", "paused", "incomplete_expired"].includes(status);
+    const restrictedAccess = ["canceled", "unpaid", "paused", "incomplete_expired"].includes(
+      status,
+    );
 
     const paymentFailedAt = activeAccess ? null : (existing?.payment_failed_at ?? occurredAt);
     const graceEndsAt = graceAccess
@@ -167,7 +169,12 @@ export async function applyBillingEvent(event: StripeEventShape, env: StripeEnv)
       [
         { organization_id: organizationId, entitlement: "workflows", enabled, limit_value: null },
         { organization_id: organizationId, entitlement: "integrations", enabled, limit_value: 10 },
-        { organization_id: organizationId, entitlement: "native_mobile", enabled, limit_value: null },
+        {
+          organization_id: organizationId,
+          entitlement: "native_mobile",
+          enabled,
+          limit_value: null,
+        },
       ],
       { onConflict: "organization_id,entitlement" },
     );

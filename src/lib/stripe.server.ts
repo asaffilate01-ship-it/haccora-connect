@@ -79,11 +79,20 @@ export function getStripeErrorMessage(error: unknown): string {
 export async function verifyWebhook(
   req: Request,
   env: StripeEnv,
-): Promise<{ id: string; type: string; created: number; livemode?: boolean; data: { object: any }; raw: string }> {
+): Promise<{
+  id: string;
+  type: string;
+  created: number;
+  livemode?: boolean;
+  data: { object: any };
+  raw: string;
+}> {
   const signature = req.headers.get("stripe-signature");
   const body = await req.text();
   const secret =
-    env === "sandbox" ? getEnv("PAYMENTS_SANDBOX_WEBHOOK_SECRET") : getEnv("PAYMENTS_LIVE_WEBHOOK_SECRET");
+    env === "sandbox"
+      ? getEnv("PAYMENTS_SANDBOX_WEBHOOK_SECRET")
+      : getEnv("PAYMENTS_LIVE_WEBHOOK_SECRET");
 
   if (!signature || !body) throw new Error("Missing signature or body");
 
@@ -107,7 +116,11 @@ export async function verifyWebhook(
     false,
     ["sign"],
   );
-  const signed = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`${timestamp}.${body}`));
+  const signed = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    new TextEncoder().encode(`${timestamp}.${body}`),
+  );
   const expected = Buffer.from(new Uint8Array(signed)).toString("hex");
 
   if (!v1Signatures.includes(expected)) throw new Error("Invalid webhook signature");
