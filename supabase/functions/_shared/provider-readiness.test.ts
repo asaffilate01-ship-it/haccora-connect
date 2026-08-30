@@ -69,7 +69,9 @@ Deno.test("provider groups fail closed on unsafe production shapes", () => {
     ["malware", { MALWARE_SCAN_URL: "https://app.haccora.co.uk/scan" }],
     ["billing", { PAYMENTS_RUNTIME_PROVIDER: "supabase" }],
     ["billing", { PAYMENTS_ENVIRONMENT: "sandbox" }],
-    ["billing", { PAYMENTS_WEBHOOK_URL: "https://billing.example.test/webhook" }],
+    ["billing", {
+      PAYMENTS_WEBHOOK_URL: "https://billing.example.test/webhook",
+    }],
     ["schedulers", { CRON_SECRET: "too-short" }],
     ["monitoring", { OPERATIONS_MONITOR_SECRET: "too-short" }],
     ["integrations", { INTEGRATION_ENCRYPTION_KEY: "too-short" }],
