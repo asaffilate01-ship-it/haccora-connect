@@ -95,9 +95,27 @@ function withSecurityHeaders(response: Response, request: Request): Response {
   });
 }
 
+function canonicalHostRedirect(request: Request): Response | undefined {
+  if (request.method !== "GET" && request.method !== "HEAD") return undefined;
+
+  const requestUrl = new URL(request.url);
+  if (requestUrl.hostname === "www.haccora.co.uk") {
+    requestUrl.hostname = "haccora.co.uk";
+    return Response.redirect(requestUrl, 308);
+  }
+  if (requestUrl.hostname === "app.haccora.co.uk" && requestUrl.pathname === "/") {
+    requestUrl.pathname = "/login";
+    return Response.redirect(requestUrl, 302);
+  }
+  return undefined;
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      const hostRedirect = canonicalHostRedirect(request);
+      if (hostRedirect) return withSecurityHeaders(hostRedirect, request);
+
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return withSecurityHeaders(await normalizeCatastrophicSsrResponse(response), request);
