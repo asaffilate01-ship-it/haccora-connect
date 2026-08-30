@@ -20,7 +20,7 @@ jobs:
       - name: Report monitoring configuration
         env:
           CONFIGURED_PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
-          PRODUCTION_URL: ${{ vars.PRODUCTION_URL || 'https://hacccora-chums.lovable.app' }}
+          PRODUCTION_URL: ${{ vars.PRODUCTION_URL || 'https://haccora.co.uk' }}
           OPERATIONS_HEALTH_URL: ${{ vars.OPERATIONS_HEALTH_URL }}
           CONFIGURED_PRODUCTION_RELEASE_SHA: ${{ vars.PRODUCTION_RELEASE_SHA }}
           PRODUCTION_RELEASE_SHA: ${{ vars.PRODUCTION_RELEASE_SHA || github.sha }}
@@ -30,8 +30,8 @@ jobs:
         run: |
           launch_monitoring_missing=false
           if [ -z "$CONFIGURED_PRODUCTION_URL" ]; then
-            echo "::warning::PRODUCTION_URL is not configured; monitoring the temporary Lovable release URL."
-            echo "Temporary Lovable monitoring is active until the haccora.co.uk production URL is configured." >> "$GITHUB_STEP_SUMMARY"
+            echo "::warning::PRODUCTION_URL is not configured; monitoring the canonical haccora.co.uk URL."
+            echo "Canonical production monitoring is active; configure PRODUCTION_URL explicitly to remove this warning." >> "$GITHUB_STEP_SUMMARY"
           else
             echo "Production probes are enabled for the configured URL." >> "$GITHUB_STEP_SUMMARY"
           fi
@@ -60,7 +60,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     env:
-      PRODUCTION_URL: ${{ vars.PRODUCTION_URL || 'https://hacccora-chums.lovable.app' }}
+      PRODUCTION_URL: ${{ vars.PRODUCTION_URL || 'https://haccora.co.uk' }}
       EXPECTED_RELEASE_SHA: ${{ vars.PRODUCTION_RELEASE_SHA || github.sha }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
@@ -89,7 +89,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     env:
-      PRODUCTION_URL: ${{ vars.PRODUCTION_URL || 'https://hacccora-chums.lovable.app' }}
+      PRODUCTION_URL: ${{ vars.PRODUCTION_URL || 'https://haccora.co.uk' }}
       EXPECTED_RELEASE_SHA: ${{ vars.PRODUCTION_RELEASE_SHA || github.sha }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6

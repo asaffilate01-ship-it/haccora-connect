@@ -94,7 +94,8 @@ test("Phase 39 monitors real hosted legal routes and a release SHA before public
   for (const route of ["/help", "/platform", "/legal/terms", "/legal/company-details"]) {
     assert.match(smoke, new RegExp(route.replace("/", "\\/")));
   }
-  assert.match(uptime, /https:\/\/hacccora-chums\.lovable\.app/);
+  assert.match(uptime, /https:\/\/haccora\.co\.uk/);
+  assert.doesNotMatch(uptime, /hacccora-chums\.lovable\.app/);
   assert.match(uptime, /vars\.PRODUCTION_RELEASE_SHA \|\| github\.sha/);
   assert.doesNotMatch(uptime, /health:\s*\n\s*if:/);
   assert.match(uptime, /Public launch monitoring is incomplete/);
