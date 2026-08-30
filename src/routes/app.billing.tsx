@@ -116,7 +116,7 @@ function BillingPage() {
           {canManageBilling && subscription && (
             <button
               disabled={!!busy}
-              onClick={() => void launch("portal")}
+              onClick={() => void openPortal()}
               className="mt-6 min-h-11 rounded-xl border border-border px-4 text-sm font-bold"
             >
               {busy === "portal" ? (
