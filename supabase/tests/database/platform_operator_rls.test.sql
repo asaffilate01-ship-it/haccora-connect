@@ -39,14 +39,28 @@ insert into auth.users (
     '{}', now(), now()
   );
 
-insert into public.organizations (id, name, slug, created_by, country_code, timezone)
+insert into public.organizations (
+  id, name, slug, created_by, country_code, timezone,
+  access_approved_at, access_approval_type
+)
 values (
   'a0000000-0000-0000-0000-000000000001',
   'Tenant A',
   'tenant-a-platform-test',
   '10000000-0000-0000-0000-000000000001',
   'GB',
-  'Europe/London'
+  'Europe/London',
+  now(),
+  'paid'
+);
+
+insert into public.subscriptions (organization_id, plan, status, seats, currency)
+values (
+  'a0000000-0000-0000-0000-000000000001',
+  'complete',
+  'active',
+  5,
+  'gbp'
 );
 
 insert into public.platform_operators (user_id, role, status, display_name, created_by)
@@ -72,15 +86,6 @@ insert into public.organization_memberships (
   'manager',
   'active',
   now()
-);
-
-insert into public.subscriptions (organization_id, plan, status, seats, currency)
-values (
-  'a0000000-0000-0000-0000-000000000001',
-  'complete',
-  'trialing',
-  5,
-  'gbp'
 );
 
 set local role authenticated;
