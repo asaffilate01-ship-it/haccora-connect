@@ -143,6 +143,13 @@ jobs:
           npm run demo:access | tee release-evidence/demo-role-access.txt
           echo "DEMO_RLS_PASSED=true" >> "$GITHUB_ENV"
 
+      - name: Prove authenticated create, reload, update and delete persistence
+        if: ${{ inputs.mode == 'apply-and-test' }}
+        run: |
+          set -o pipefail
+          npm run demo:persistence | tee release-evidence/demo-role-persistence.txt
+          echo "DEMO_PERSISTENCE_PASSED=true" >> "$GITHUB_ENV"
+
       - name: Verify hosted release identity and health
         run: |
           set -o pipefail

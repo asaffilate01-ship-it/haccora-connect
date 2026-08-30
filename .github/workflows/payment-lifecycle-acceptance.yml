@@ -1,0 +1,68 @@
+name: Lovable Stripe lifecycle acceptance
+
+on:
+  workflow_dispatch:
+    inputs:
+      expected_state:
+        description: Provider-derived state expected after the Stripe/Lovable event
+        required: true
+        default: healthy
+        type: choice
+        options:
+          - healthy
+          - past_due
+          - restricted
+          - recovered
+      organization_id:
+        description: Tenant UUID used for the controlled payment acceptance account
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lovable-stripe-lifecycle-acceptance
+  cancel-in-progress: false
+
+jobs:
+  verify-state:
+    environment: production
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      HACCORA_ENV: production
+      SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
+      PAYMENT_ACCEPTANCE_ALLOWED_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+      PAYMENT_ACCEPTANCE_CONFIRM: HACCORA_PAYMENT_STATE_OBSERVATION
+      PAYMENT_ACCEPTANCE_OWNER_EMAIL: ${{ vars.ROLE_ACCEPTANCE_OWNER_EMAIL }}
+      PAYMENT_ACCEPTANCE_PLATFORM_EMAIL: ${{ vars.ROLE_ACCEPTANCE_PLATFORM_OWNER_EMAIL }}
+      PAYMENT_ACCEPTANCE_PASSWORD: ${{ secrets.ROLE_ACCEPTANCE_PASSWORD }}
+      PAYMENT_ACCEPTANCE_ORGANIZATION_ID: ${{ inputs.organization_id }}
+      PAYMENT_ACCEPTANCE_EXPECTED: ${{ inputs.expected_state }}
+      PAYMENT_ACCEPTANCE_OUTPUT: release-evidence/payment-lifecycle-state.json
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Verify protected acceptance configuration
+        run: |
+          test -n "$SUPABASE_URL" || { echo "::error::Set SUPABASE_URL."; exit 1; }
+          test -n "$SUPABASE_PUBLISHABLE_KEY" || { echo "::error::Set SUPABASE_PUBLISHABLE_KEY."; exit 1; }
+          test -n "$PAYMENT_ACCEPTANCE_OWNER_EMAIL" || { echo "::error::Set PAYMENT_ACCEPTANCE_OWNER_EMAIL."; exit 1; }
+          test -n "$PAYMENT_ACCEPTANCE_PLATFORM_EMAIL" || { echo "::error::Set PAYMENT_ACCEPTANCE_PLATFORM_EMAIL."; exit 1; }
+          test -n "$PAYMENT_ACCEPTANCE_PASSWORD" || { echo "::error::Set PAYMENT_ACCEPTANCE_PASSWORD."; exit 1; }
+      - name: Verify the observed Lovable Stripe lifecycle state
+        run: npm run payments:acceptance
+      - name: Upload redacted payment acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: lovable-stripe-${{ inputs.expected_state }}-${{ github.run_id }}
+          path: release-evidence/payment-lifecycle-state.json
+          if-no-files-found: error
+          retention-days: 90
