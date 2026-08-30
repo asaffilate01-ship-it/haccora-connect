@@ -1,3 +1,4 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
 # Production launch configuration
 
 Haccora's launch gate intentionally fails closed. It has 42 unique configuration controls. The repository can validate them and can safely generate five Haccora-owned secrets, but it cannot invent a company identity, legal approval or provider credential.
@@ -38,7 +39,7 @@ npm run launch:preflight
 | Application and Supabase    |        8 | Engineering / Supabase owner              | GitHub production variables, hosting values and Supabase project                                              |
 | Haccora legal identity      |        7 | iTechLounge owner                         | Verified legal identity and public contact details in GitHub variables                                        |
 | Legal and ICO approval      |        4 | iTechLounge owner / UK counsel            | Approval record, review date and ICO evidence; GitHub production variables contain only the references/status |
-| Stripe live billing         |        4 | Finance / Stripe administrator            | Public/routing values in GitHub; private connection and webhook secrets remain only in Lovable                 |
+| Stripe live billing         |        4 | Finance / Stripe administrator            | Public/routing values in GitHub; private connection and webhook secrets remain only in Lovable                |
 | Transactional email         |        2 | Operations / Resend administrator         | Resend production account plus verified haccora.co.uk DNS                                                     |
 | Document malware scanning   |        2 | Security / scanner administrator          | Scanner provider; endpoint variable and protected token                                                       |
 | Browser push gateway        |        3 | Engineering / push administrator          | VAPID public value plus protected gateway URL/token                                                           |
