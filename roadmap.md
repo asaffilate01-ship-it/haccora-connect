@@ -21,6 +21,7 @@
 - [ ] Lovable production: keep `STRIPE_LIVE_API_KEY`, `LOVABLE_API_KEY` and `PAYMENTS_LIVE_WEBHOOK_SECRET` there only.
 - [ ] Run **Production scheduled dispatch** workflow once.
 - [ ] Run **Deploy production Supabase** workflow, entering `dbjbhemmtdkzulsxfvmi`.
-- [ ] Add outstanding credentials: Resend, Expo/EAS, VAPID, VirusTotal and Dokuvera storage origin.
+- [x] VAPID public key wired; `WEB_PUSH_PRIVATE_KEY`, `WEB_PUSH_GATEWAY_URL` and `WEB_PUSH_GATEWAY_TOKEN` saved.
+- [ ] Add outstanding credentials: Resend, Expo/EAS, VirusTotal. Dokuvera secrets already saved.
 - [ ] Test genuine failed-payment/recovery, provider delivery, and authenticated physical-device mobile journeys.
 - [ ] Run **Production authenticated dashboards** after configuring the seven protected test-account email variables and shared password secret.

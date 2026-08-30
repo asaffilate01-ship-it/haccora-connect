@@ -1,3 +1,5 @@
+import { VAPID_PUBLIC_KEY } from "@/lib/web-push";
+
 const clientEnv = import.meta.env as Record<string, string | boolean | undefined>;
 const value = (name: string) => {
   const raw = clientEnv[name];
@@ -61,5 +63,5 @@ export const PUBLIC_LAUNCH_READINESS = {
   legalPublishReady,
   supportConfigured: Boolean(PUBLIC_CONFIG.supportUrl),
   statusConfigured: Boolean(PUBLIC_CONFIG.statusUrl),
-  browserPushConfigured: Boolean(value("VITE_WEB_PUSH_PUBLIC_KEY")),
+  browserPushConfigured: Boolean(VAPID_PUBLIC_KEY),
 };
