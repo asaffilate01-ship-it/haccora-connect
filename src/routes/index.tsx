@@ -259,7 +259,12 @@ function ScreenshotGallery() {
           offline-safe records on any phone.
         </p>
 
-        <div className="-mx-4 mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 [scroll-padding-inline:1rem] [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-8 sm:overflow-visible sm:px-0 lg:grid-cols-3 [&::-webkit-scrollbar]:hidden">
+        <div
+          aria-label="Haccora mobile app screenshots"
+          role="region"
+          tabIndex={0}
+          className="-mx-4 mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 [scroll-padding-inline:1rem] [scrollbar-width:none] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[color:var(--color-alert-red-on-dark)] sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-8 sm:overflow-visible sm:px-0 lg:grid-cols-3 [&::-webkit-scrollbar]:hidden"
+        >
           {MOBILE_SCREENS.map((item) => (
             <figure
               key={item.id}
