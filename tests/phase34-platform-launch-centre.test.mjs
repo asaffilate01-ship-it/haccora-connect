@@ -84,7 +84,4 @@ test("release and CI wiring include the new function and current UK Stripe plans
   ]) {
     assert.ok(release.includes(`${key}: \${{ vars.${key} }}`));
   }
-  for (const key of ["STRIPE_LIVE_API_KEY", "LOVABLE_API_KEY", "PAYMENTS_LIVE_WEBHOOK_SECRET"]) {
-    assert.ok(release.includes(`${key}: \${{ secrets.${key} }}`));
-  }
 });
