@@ -97,6 +97,7 @@ import { Route as AppAlertsRouteImport } from './routes/app.alerts'
 import { Route as AppAssetsScanRouteImport } from './routes/app.assets.scan'
 import { Route as AppAssetsAssetIdRouteImport } from './routes/app.assets.$assetId'
 import { Route as ApiPublicMalwareScanRouteImport } from './routes/api/public/malware-scan'
+import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -543,6 +544,12 @@ const ApiPublicMalwareScanRoute = ApiPublicMalwareScanRouteImport.update({
   path: '/api/public/malware-scan',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicPaymentsWebhookRoute =
+  ApiPublicPaymentsWebhookRouteImport.update({
+    id: '/api/public/payments/webhook',
+    path: '/api/public/payments/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -633,6 +640,7 @@ export interface FileRoutesByFullPath {
   '/api/public/malware-scan': typeof ApiPublicMalwareScanRoute
   '/app/assets/$assetId': typeof AppAssetsAssetIdRoute
   '/app/assets/scan': typeof AppAssetsScanRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -721,6 +729,7 @@ export interface FileRoutesByTo {
   '/api/public/malware-scan': typeof ApiPublicMalwareScanRoute
   '/app/assets/$assetId': typeof AppAssetsAssetIdRoute
   '/app/assets/scan': typeof AppAssetsScanRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -812,6 +821,7 @@ export interface FileRoutesById {
   '/api/public/malware-scan': typeof ApiPublicMalwareScanRoute
   '/app/assets/$assetId': typeof AppAssetsAssetIdRoute
   '/app/assets/scan': typeof AppAssetsScanRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -904,6 +914,7 @@ export interface FileRouteTypes {
     | '/api/public/malware-scan'
     | '/app/assets/$assetId'
     | '/app/assets/scan'
+    | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -992,6 +1003,7 @@ export interface FileRouteTypes {
     | '/api/public/malware-scan'
     | '/app/assets/$assetId'
     | '/app/assets/scan'
+    | '/api/public/payments/webhook'
   id:
     | '__root__'
     | '/'
@@ -1082,6 +1094,7 @@ export interface FileRouteTypes {
     | '/api/public/malware-scan'
     | '/app/assets/$assetId'
     | '/app/assets/scan'
+    | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1111,6 +1124,7 @@ export interface RootRouteChildren {
   IndustriesRestaurantsAndCafesRoute: typeof IndustriesRestaurantsAndCafesRoute
   IndustriesTakeawaysAndFastFoodRoute: typeof IndustriesTakeawaysAndFastFoodRoute
   ApiPublicMalwareScanRoute: typeof ApiPublicMalwareScanRoute
+  ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1731,6 +1745,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicMalwareScanRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/payments/webhook': {
+      id: '/api/public/payments/webhook'
+      path: '/api/public/payments/webhook'
+      fullPath: '/api/public/payments/webhook'
+      preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1919,6 +1940,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndustriesRestaurantsAndCafesRoute: IndustriesRestaurantsAndCafesRoute,
   IndustriesTakeawaysAndFastFoodRoute: IndustriesTakeawaysAndFastFoodRoute,
   ApiPublicMalwareScanRoute: ApiPublicMalwareScanRoute,
+  ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

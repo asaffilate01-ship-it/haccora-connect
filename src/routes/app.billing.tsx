@@ -4,6 +4,10 @@ import { Check, CreditCard, ExternalLink, Loader2, ShieldCheck, Users, MapPin } 
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/haccora-client";
 import { useAuth } from "@/lib/auth";
+import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
+import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
+import { HACCORA_PRICE_IDS, getStripeEnvironment, paymentsConfigured } from "@/lib/stripe";
+import { createPortalSession } from "@/utils/payments.functions";
 
 export const Route = createFileRoute("/app/billing")({ component: BillingPage });
 
@@ -21,6 +25,7 @@ function BillingPage() {
   const { user } = useAuth();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [checkoutPlan, setCheckoutPlan] = useState<keyof typeof HACCORA_PRICE_IDS | null>(null);
   useEffect(() => {
     if (!user?.organizationId) return;
     void (supabase as any)
@@ -32,16 +37,35 @@ function BillingPage() {
       .maybeSingle()
       .then(({ data }: { data: Subscription | null }) => setSubscription(data));
   }, [user?.organizationId]);
-  const launch = async (action: "checkout" | "portal", plan = "complete") => {
-    setBusy(action === "portal" ? action : plan);
-    const { data, error } = await supabase.functions.invoke("billing", { body: { action, plan } });
-    setBusy(null);
-    if (error || !data?.url) toast.error("Billing request failed.");
-    else window.location.assign(data.url);
+  const openPortal = async () => {
+    setBusy("portal");
+    try {
+      const result = await createPortalSession({
+        data: {
+          returnUrl: `${window.location.origin}/app/billing`,
+          environment: getStripeEnvironment(),
+        },
+      });
+      if ("error" in result) throw new Error(result.error);
+      window.open(result.url, "_blank", "noopener");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Billing request failed.");
+    } finally {
+      setBusy(null);
+    }
   };
+  const startCheckout = (plan: keyof typeof HACCORA_PRICE_IDS) => {
+    if (!paymentsConfigured()) {
+      toast.error("Payments are not configured for this build yet.");
+      return;
+    }
+    setCheckoutPlan(plan);
+  };
+
   const canManageBilling = user?.role === "owner";
   return (
     <div className="p-5 md:p-10 space-y-6 max-w-5xl">
+      <PaymentTestModeBanner />
       <div>
         <div className="eyebrow">{"Subscription"}</div>
         <h1 className="mt-1 text-3xl md:text-4xl">{"Plan & billing"}</h1>
@@ -93,7 +117,7 @@ function BillingPage() {
           {canManageBilling && subscription && (
             <button
               disabled={!!busy}
-              onClick={() => void launch("portal")}
+              onClick={() => void openPortal()}
               className="mt-6 min-h-11 rounded-xl border border-border px-4 text-sm font-bold"
             >
               {busy === "portal" ? (
@@ -155,20 +179,36 @@ function BillingPage() {
               {canManageBilling && subscription?.plan !== plan.code && (
                 <button
                   disabled={!!busy}
-                  onClick={() => void launch("checkout", plan.code)}
+                  onClick={() => startCheckout(plan.code as keyof typeof HACCORA_PRICE_IDS)}
                   className="btn-alert-solid mt-5 min-h-11 w-full text-sm"
                 >
-                  {busy === plan.code ? (
-                    <Loader2 className="animate-spin" size={15} />
-                  ) : (
-                    "Choose plan"
-                  )}
+                  {checkoutPlan === plan.code ? "Selected below" : "Choose plan"}
                 </button>
               )}
             </article>
           ))}
         </div>
       </section>
+      {canManageBilling && checkoutPlan && (
+        <section className="surface p-4 md:p-6">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-display text-2xl">Secure checkout</h2>
+            <button
+              onClick={() => setCheckoutPlan(null)}
+              className="min-h-11 rounded-xl border border-border px-4 text-sm font-bold"
+            >
+              Cancel
+            </button>
+          </div>
+          <div className="mt-4">
+            <StripeEmbeddedCheckout
+              key={checkoutPlan}
+              priceId={HACCORA_PRICE_IDS[checkoutPlan]}
+              returnUrl={`${typeof window === "undefined" ? "" : window.location.origin}/app/billing?checkout=complete`}
+            />
+          </div>
+        </section>
+      )}
       <p className="text-xs text-muted-foreground">
         {"Payment details are processed by Stripe; Haccora does not store card numbers."}
       </p>
