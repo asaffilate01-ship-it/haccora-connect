@@ -63,5 +63,5 @@ export const PUBLIC_LAUNCH_READINESS = {
   legalPublishReady,
   supportConfigured: Boolean(PUBLIC_CONFIG.supportUrl),
   statusConfigured: Boolean(PUBLIC_CONFIG.statusUrl),
-  browserPushConfigured: Boolean(value("VITE_WEB_PUSH_PUBLIC_KEY")),
+  browserPushConfigured: Boolean(VAPID_PUBLIC_KEY),
 };
