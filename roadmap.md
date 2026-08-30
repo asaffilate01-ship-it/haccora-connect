@@ -7,6 +7,8 @@
 - [x] Production CI repaired: web verification, 251 automated tests, lint, typecheck, formatting, Edge checks, native checks, fresh-database RLS and CodeQL are enforced.
 - [x] Built-in payments wired: catalogue (Food Cart £9.99, Complete £24.99, Group £59.99 GBP/month), embedded checkout, billing portal, and signed webhook at `/api/public/payments/webhook` driving the existing tenant entitlement/grace/credit-control state machine.
 - [x] Lovable-hosted Stripe boundary hardened: payment mode is server-owned, webhook modes must match, return URLs stay on `app.haccora.co.uk`, and private Lovable/Stripe values are verified at runtime without copying them to Supabase or GitHub.
+- [x] Authenticated persistence automated for staging and designated production test accounts: create, session reload, update, second reload, delete and cross-tenant denial, with pre-run preferences restored after the check.
+- [x] Lovable Stripe lifecycle state acceptance added for controlled `healthy`, `past_due`, `restricted` and `recovered` evidence without copying private Stripe or Lovable credentials into GitHub.
 
 ## In progress
 

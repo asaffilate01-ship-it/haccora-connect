@@ -1,0 +1,69 @@
+name: Production test-account persistence
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Confirm these are designated test accounts and their preferences may be restored
+        required: true
+        type: choice
+        options:
+          - designated-test-accounts
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-test-account-persistence
+  cancel-in-progress: false
+
+jobs:
+  role-persistence:
+    environment: production
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      HACCORA_ENV: production
+      SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
+      ROLE_PERSISTENCE_ALLOWED_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+      ROLE_PERSISTENCE_CONFIRM: HACCORA_DESIGNATED_TEST_ACCOUNTS_ONLY
+      ROLE_ACCEPTANCE_PASSWORD: ${{ secrets.ROLE_ACCEPTANCE_PASSWORD }}
+      ROLE_ACCEPTANCE_PLATFORM_OWNER_EMAIL: ${{ vars.ROLE_ACCEPTANCE_PLATFORM_OWNER_EMAIL }}
+      ROLE_ACCEPTANCE_OWNER_EMAIL: ${{ vars.ROLE_ACCEPTANCE_OWNER_EMAIL }}
+      ROLE_ACCEPTANCE_MANAGER_EMAIL: ${{ vars.ROLE_ACCEPTANCE_MANAGER_EMAIL }}
+      ROLE_ACCEPTANCE_CHEF_EMAIL: ${{ vars.ROLE_ACCEPTANCE_CHEF_EMAIL }}
+      ROLE_ACCEPTANCE_STAFF_EMAIL: ${{ vars.ROLE_ACCEPTANCE_STAFF_EMAIL }}
+      ROLE_ACCEPTANCE_INSPECTOR_EMAIL: ${{ vars.ROLE_ACCEPTANCE_INSPECTOR_EMAIL }}
+      ROLE_ACCEPTANCE_ISOLATION_OWNER_EMAIL: ${{ vars.ROLE_ACCEPTANCE_ISOLATION_OWNER_EMAIL }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Verify every configured acceptance identity exists
+        run: |
+          test "${{ inputs.confirmation }}" = "designated-test-accounts"
+          for key in \
+            SUPABASE_URL SUPABASE_PUBLISHABLE_KEY ROLE_ACCEPTANCE_PASSWORD \
+            ROLE_ACCEPTANCE_PLATFORM_OWNER_EMAIL ROLE_ACCEPTANCE_OWNER_EMAIL \
+            ROLE_ACCEPTANCE_MANAGER_EMAIL ROLE_ACCEPTANCE_CHEF_EMAIL \
+            ROLE_ACCEPTANCE_STAFF_EMAIL ROLE_ACCEPTANCE_INSPECTOR_EMAIL \
+            ROLE_ACCEPTANCE_ISOLATION_OWNER_EMAIL; do
+            test -n "${!key}" || { echo "::error::Missing protected configuration: ${key}"; exit 1; }
+          done
+      - name: Run authenticated create, reload, update and delete checks
+        run: |
+          mkdir -p release-evidence
+          set -o pipefail
+          npm run roles:persistence | tee release-evidence/production-role-persistence.txt
+      - name: Upload redacted persistence evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: production-role-persistence-${{ github.run_id }}
+          path: release-evidence/production-role-persistence.txt
+          if-no-files-found: error
+          retention-days: 90
