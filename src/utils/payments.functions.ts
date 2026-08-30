@@ -1,6 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { type StripeEnv, createStripeClient, getStripeErrorMessage } from "@/lib/stripe.server";
+import {
+  createStripeClient,
+  getConfiguredStripeEnvironment,
+  getStripeErrorMessage,
+} from "@/lib/stripe.server";
 import type Stripe from "stripe";
 
 type CheckoutSessionResult = { clientSecret: string } | { error: string };
@@ -11,6 +15,18 @@ const PLAN_BY_PRICE: Record<string, string> = {
   haccora_complete_monthly: "complete",
   haccora_group_monthly: "group",
 };
+
+function safeBillingReturnUrl(returnUrl?: string): string {
+  const applicationUrl = process.env.PUBLIC_APP_URL?.trim();
+  if (!applicationUrl) throw new Error("PUBLIC_APP_URL is not configured");
+
+  const application = new URL(applicationUrl);
+  const candidate = new URL(returnUrl ?? "/app/billing", application);
+  if (candidate.origin !== application.origin) {
+    throw new Error("Billing return URL must use the configured application origin.");
+  }
+  return candidate.toString();
+}
 
 async function requireBillingOwner(context: { supabase: any; userId: string }) {
   const { data, error } = await context.supabase
@@ -64,7 +80,7 @@ async function resolveOrCreateCustomer(
 
 export const createCheckoutSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { priceId: string; returnUrl: string; environment: StripeEnv }) => {
+  .inputValidator((data: { priceId: string; returnUrl: string }) => {
     if (!PLAN_BY_PRICE[data.priceId]) throw new Error("Unknown plan");
     return data;
   })
@@ -73,7 +89,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
     const plan = PLAN_BY_PRICE[data.priceId]!;
 
     try {
-      const stripe = createStripeClient(data.environment);
+      const stripe = createStripeClient(getConfiguredStripeEnvironment());
       const prices = await stripe.prices.list({ lookup_keys: [data.priceId] });
       const stripePrice = prices.data[0];
       if (!stripePrice) throw new Error("Plan is not available for purchase yet.");
@@ -92,7 +108,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
         line_items: [{ price: stripePrice.id, quantity: 1 }],
         mode: "subscription",
         ui_mode: "embedded_page",
-        return_url: data.returnUrl,
+        return_url: safeBillingReturnUrl(data.returnUrl),
         customer: customerId,
         client_reference_id: organizationId,
         metadata: {
@@ -118,7 +134,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
 
 export const createPortalSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { returnUrl?: string; environment: StripeEnv }) => data)
+  .inputValidator((data: { returnUrl?: string }) => data)
   .handler(async ({ data, context }): Promise<PortalSessionResult> => {
     const organizationId = await requireBillingOwner(context as any);
 
@@ -130,10 +146,10 @@ export const createPortalSession = createServerFn({ method: "POST" })
     if (!sub?.provider_customer_id) return { error: "No billing account found yet." };
 
     try {
-      const stripe = createStripeClient(data.environment);
+      const stripe = createStripeClient(getConfiguredStripeEnvironment());
       const portal = await stripe.billingPortal.sessions.create({
         customer: sub.provider_customer_id,
-        ...(data.returnUrl && { return_url: data.returnUrl }),
+        return_url: safeBillingReturnUrl(data.returnUrl),
       });
       return { url: portal.url };
     } catch (error) {

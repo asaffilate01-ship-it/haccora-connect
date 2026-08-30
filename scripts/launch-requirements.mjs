@@ -28,7 +28,7 @@ export const launchRequirementGroups = [
     id: "stripe",
     label: "Stripe live billing",
     owner: "Finance / Stripe administrator",
-    action: "Create live products, prices and webhook credentials in Haccora's Stripe account.",
+    action: "Activate the Lovable-connected Stripe account, live catalogue and signed web webhook.",
   },
   {
     id: "email",
@@ -94,6 +94,13 @@ const internalSecret = {
   minimumLength: 32,
   generatedByHaccora: true,
 };
+const lovableVariable = {
+  storage: "Lovable production environment and GitHub production variable",
+};
+const paymentsRoutingVariable = {
+  storage:
+    "Lovable production environment, GitHub production variable and Supabase Edge Function secret",
+};
 
 export const launchRequirements = [
   requirement("VITE_SUPABASE_URL", "application", "https", variable),
@@ -123,12 +130,10 @@ export const launchRequirements = [
     expected: "true",
   }),
 
-  requirement("STRIPE_SECRET_KEY", "stripe", "stripe-live-key", providerSecret),
-  requirement("STRIPE_WEBHOOK_SECRET", "stripe", "stripe-webhook-secret", providerSecret),
-  requirement("STRIPE_PRICE_SOLO", "stripe", "stripe-price", variable),
-  requirement("STRIPE_PRICE_COMPLETE", "stripe", "stripe-price", variable),
-  requirement("STRIPE_PRICE_GROUP", "stripe", "stripe-price", variable),
-  requirement("STRIPE_LIVE_MODE", "stripe", "boolean", { ...variable, expected: "true" }),
+  requirement("VITE_PAYMENTS_CLIENT_TOKEN", "stripe", "stripe-live-publishable", lovableVariable),
+  requirement("PAYMENTS_ENVIRONMENT", "stripe", "value", paymentsRoutingVariable),
+  requirement("PAYMENTS_RUNTIME_PROVIDER", "stripe", "value", paymentsRoutingVariable),
+  requirement("PAYMENTS_WEBHOOK_URL", "stripe", "https", paymentsRoutingVariable),
 
   requirement("RESEND_API_KEY", "email", "value", providerSecret),
   requirement("NOTIFICATION_FROM_EMAIL", "email", "value", variable),
@@ -198,6 +203,32 @@ function valueFailure(requirement, environment) {
     return `${requirement.name} must point at the Haccora scanning endpoint /api/public/malware-scan`;
   }
 
+  if (requirement.name === "PAYMENTS_WEBHOOK_URL") {
+    const appUrl = currentValue(environment, "PUBLIC_APP_URL");
+    try {
+      const webhook = new URL(current);
+      const app = new URL(appUrl);
+      if (
+        webhook.origin !== app.origin ||
+        webhook.pathname !== "/api/public/payments/webhook" ||
+        webhook.search ||
+        webhook.hash
+      ) {
+        return `${requirement.name} must be PUBLIC_APP_URL/api/public/payments/webhook`;
+      }
+    } catch {
+      return `${requirement.name} is not a valid Lovable payment webhook URL`;
+    }
+  }
+
+  if (requirement.name === "PAYMENTS_ENVIRONMENT" && current !== "live") {
+    return "PAYMENTS_ENVIRONMENT must be live for a production launch";
+  }
+
+  if (requirement.name === "PAYMENTS_RUNTIME_PROVIDER" && current !== "lovable") {
+    return "PAYMENTS_RUNTIME_PROVIDER must be lovable";
+  }
+
   if (requirement.name === "ALLOWED_ORIGINS") {
     const allowedOrigins = new Set(
       current
@@ -224,8 +255,8 @@ function valueFailure(requirement, environment) {
     return `${requirement.name} must contain at least ${requirement.minimumLength} characters`;
   }
 
-  if (requirement.type === "stripe-live-key" && !/^(?:sk|rk)_live_[A-Za-z0-9_]+$/.test(current)) {
-    return `${requirement.name} must be a Stripe live-mode secret or restricted key`;
+  if (requirement.type === "stripe-live-publishable" && !/^pk_live_[A-Za-z0-9_]+$/.test(current)) {
+    return `${requirement.name} must be a Stripe live-mode publishable key`;
   }
 
   if (requirement.type === "stripe-webhook-secret" && !/^whsec_[A-Za-z0-9_]+$/.test(current)) {
@@ -248,9 +279,6 @@ function valueFailure(requirement, environment) {
     }
     if (requirement.name === "VITE_LEGAL_CONTENT_APPROVED") {
       return `${requirement.name} must be true after documented counsel approval`;
-    }
-    if (requirement.name === "STRIPE_LIVE_MODE") {
-      return `${requirement.name} must be true for a production launch`;
     }
     return `${requirement.name} must be ${requirement.expected}`;
   }

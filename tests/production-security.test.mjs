@@ -452,7 +452,8 @@ test("production preflight blocks placeholders, missing approvals and incomplete
   const preflight = await readFile("scripts/verify-launch-env.mjs", "utf8");
   const requirements = await readFile("scripts/launch-requirements.mjs", "utf8");
   assert.match(requirements, /VITE_LEGAL_CONTENT_APPROVED/);
-  assert.match(requirements, /STRIPE_LIVE_MODE/);
+  assert.match(requirements, /PAYMENTS_ENVIRONMENT/);
+  assert.match(requirements, /VITE_PAYMENTS_CLIENT_TOKEN/);
   assert.match(preflight, /nativeReleaseEnvironmentFailures/);
   assert.match(requirements, /process\.env\.EAS_PROJECT_ID/);
   assert.match(requirements, /INTEGRATION_ENCRYPTION_KEY/);

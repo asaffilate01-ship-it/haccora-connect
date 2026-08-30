@@ -11,12 +11,9 @@ const productionEnvironment: Record<string, string> = {
   MALWARE_SCAN_URL: "https://app.haccora.co.uk/api/public/malware-scan",
   MALWARE_SCAN_TOKEN: "malware_token_1234567890",
   VIRUSTOTAL_API_KEY: "virus_total_key_1234567890",
-  STRIPE_SECRET_KEY: "sk_live_haccora123",
-  STRIPE_WEBHOOK_SECRET: "whsec_haccora123",
-  STRIPE_PRICE_SOLO: "price_solo123",
-  STRIPE_PRICE_COMPLETE: "price_complete123",
-  STRIPE_PRICE_GROUP: "price_group123",
-  STRIPE_LIVE_MODE: "true",
+  PAYMENTS_RUNTIME_PROVIDER: "lovable",
+  PAYMENTS_ENVIRONMENT: "live",
+  PAYMENTS_WEBHOOK_URL: "https://app.haccora.co.uk/api/public/payments/webhook",
   CRON_SECRET: "cron_secret_123456789012345678901",
   OPERATIONS_MONITOR_SECRET: "monitor_secret_123456789012345678",
   INTEGRATION_ENCRYPTION_KEY: "integration_key_12345678901234567",
@@ -49,7 +46,7 @@ Deno.test("production-shaped provider configuration passes every shape check", (
   const responseShape = JSON.stringify(results);
   for (
     const secret of [
-      productionEnvironment.STRIPE_SECRET_KEY,
+      productionEnvironment.PAYMENTS_WEBHOOK_URL,
       productionEnvironment.RESEND_API_KEY,
       productionEnvironment.CRON_SECRET,
     ]
@@ -70,8 +67,11 @@ Deno.test("provider groups fail closed on unsafe production shapes", () => {
     ["push", { WEB_PUSH_GATEWAY_TOKEN: "too-short" }],
     ["malware", { VIRUSTOTAL_API_KEY: "" }],
     ["malware", { MALWARE_SCAN_URL: "https://app.haccora.co.uk/scan" }],
-    ["billing", { STRIPE_SECRET_KEY: "sk_test_haccora123" }],
-    ["billing", { STRIPE_PRICE_GROUP: "product_group123" }],
+    ["billing", { PAYMENTS_RUNTIME_PROVIDER: "supabase" }],
+    ["billing", { PAYMENTS_ENVIRONMENT: "sandbox" }],
+    ["billing", {
+      PAYMENTS_WEBHOOK_URL: "https://billing.example.test/webhook",
+    }],
     ["schedulers", { CRON_SECRET: "too-short" }],
     ["monitoring", { OPERATIONS_MONITOR_SECRET: "too-short" }],
     ["integrations", { INTEGRATION_ENCRYPTION_KEY: "too-short" }],

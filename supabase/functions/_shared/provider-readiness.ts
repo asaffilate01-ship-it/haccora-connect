@@ -125,22 +125,27 @@ export function evaluateProviderConfiguration(
     },
     {
       key: "billing",
-      label: "Stripe live billing",
-      configured: matches(
-        readEnvironment,
-        "STRIPE_SECRET_KEY",
-        /^(?:sk|rk)_live_[A-Za-z0-9_]+$/,
-      ) &&
-        matches(
-          readEnvironment,
-          "STRIPE_WEBHOOK_SECRET",
-          /^whsec_[A-Za-z0-9_]+$/,
-        ) &&
-        ["STRIPE_PRICE_SOLO", "STRIPE_PRICE_COMPLETE", "STRIPE_PRICE_GROUP"]
-          .every((name) =>
-            matches(readEnvironment, name, /^price_[A-Za-z0-9_]+$/)
-          ) &&
-        value(readEnvironment, "STRIPE_LIVE_MODE") === "true",
+      label: "Lovable-hosted Stripe routing",
+      configured:
+        value(readEnvironment, "PAYMENTS_RUNTIME_PROVIDER") === "lovable" &&
+        value(readEnvironment, "PAYMENTS_ENVIRONMENT") === "live" &&
+        validHttpsUrl(value(readEnvironment, "PAYMENTS_WEBHOOK_URL")) &&
+        (() => {
+          try {
+            const application = new URL(
+              value(readEnvironment, "PUBLIC_APP_URL"),
+            );
+            const webhook = new URL(
+              value(readEnvironment, "PAYMENTS_WEBHOOK_URL"),
+            );
+            return webhook.origin === application.origin &&
+              webhook.pathname === "/api/public/payments/webhook" &&
+              webhook.search === "" &&
+              webhook.hash === "";
+          } catch {
+            return false;
+          }
+        })(),
     },
     {
       key: "schedulers",

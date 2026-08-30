@@ -4,6 +4,21 @@ import { getPublicSupabaseConfig } from "@/integrations/supabase/config";
 import { PUBLIC_LAUNCH_READINESS } from "@/lib/public-config";
 import { RELEASE_SHA } from "@/lib/release";
 
+function configured(value: string | undefined) {
+  return Boolean(value?.trim()) && !/(replace|example|your[_-]?project|set[_-]?with)/i.test(value!);
+}
+
+function lovablePaymentsReady() {
+  return (
+    process.env.PAYMENTS_RUNTIME_PROVIDER === "lovable" &&
+    process.env.PAYMENTS_ENVIRONMENT === "live" &&
+    process.env.VITE_PAYMENTS_CLIENT_TOKEN?.startsWith("pk_live_") === true &&
+    configured(process.env.STRIPE_LIVE_API_KEY) &&
+    configured(process.env.LOVABLE_API_KEY) &&
+    /^whsec_[A-Za-z0-9_]+$/.test(process.env.PAYMENTS_LIVE_WEBHOOK_SECRET?.trim() ?? "")
+  );
+}
+
 function hasValidHttpsOrigin(value: string | undefined) {
   try {
     const url = new URL((value ?? "").trim());
@@ -33,6 +48,7 @@ export const Route = createFileRoute("/readiness.json")({
           support: PUBLIC_LAUNCH_READINESS.supportConfigured,
           statusPage: PUBLIC_LAUNCH_READINESS.statusConfigured,
           browserPush: PUBLIC_LAUNCH_READINESS.browserPushConfigured,
+          payments: lovablePaymentsReady(),
         };
         const publicWebReady = Object.values(checks).every(Boolean);
 

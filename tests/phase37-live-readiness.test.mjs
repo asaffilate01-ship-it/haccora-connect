@@ -41,6 +41,7 @@ test("Phase 37 exposes release-bound public runtime readiness without secrets", 
     "support",
     "statusPage",
     "browserPush",
+    "payments",
     "publicWebReady",
   ]) {
     assert.match(route, new RegExp(marker));
@@ -48,7 +49,8 @@ test("Phase 37 exposes release-bound public runtime readiness without secrets", 
   assert.match(checker, /\/readiness\.json/);
   assert.match(checker, /EXPECTED_RELEASE_SHA/);
   assert.match(checker, /public runtime is not launch-ready/);
-  assert.doesNotMatch(route, /SERVICE_ROLE|SECRET_KEY|TOKEN/);
+  assert.doesNotMatch(route, /Deno\.env\.toObject|JSON\.stringify\(process\.env\)/);
+  assert.match(route, /payments: lovablePaymentsReady\(\)/);
   assert.match(workflow, /npm run readiness:check/);
   assert.match(workflow, /DEPLOYMENT_READINESS_PASSED: "true"/);
   assert.match(evidence, /DEPLOYMENT_READINESS_PASSED/);

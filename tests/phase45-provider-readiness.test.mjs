@@ -16,9 +16,9 @@ const [helper, endpoint, platform, fsaProspects, ci, release] = await Promise.al
 test("Phase 45 fails provider readiness closed on malformed production values", () => {
   assert.match(helper, /validHttpsOrigin/);
   assert.match(helper, /allowed\.has\(new URL\(applicationUrl\)\.origin\)/);
-  assert.match(helper, /\(\?:sk\|rk\)_live_/);
-  assert.match(helper, /whsec_/);
-  assert.match(helper, /price_/);
+  assert.match(helper, /PAYMENTS_RUNTIME_PROVIDER/);
+  assert.match(helper, /PAYMENTS_ENVIRONMENT/);
+  assert.match(helper, /\/api\/public\/payments\/webhook/);
   assert.match(helper, /VIRUSTOTAL_API_KEY/);
   assert.match(helper, /MALWARE_SCAN_TOKEN", 20/);
   assert.match(helper, /WEB_PUSH_GATEWAY_TOKEN", 32/);

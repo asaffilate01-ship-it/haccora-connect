@@ -19,7 +19,7 @@ Deploy to a separate Supabase staging project first. A successful local build do
 
 ## Edge Functions
 
-Set every server-only value documented in `.env.example`, including scanner, Stripe and integration encryption values, in Supabase secrets. Set `STRIPE_LIVE_MODE=false` in staging and `true` only beside live Stripe credentials. The service-role key and built-in Supabase URL/auth keys are supplied by the function runtime and must never enter client variables.
+Set the server-only Edge values documented in `.env.example`, including scanner, email, push and integration encryption values, in Supabase secrets. Stripe is served by the Lovable web runtime: keep its connection credentials and signing secrets in Lovable, and copy only `PAYMENTS_RUNTIME_PROVIDER`, `PAYMENTS_ENVIRONMENT` and `PAYMENTS_WEBHOOK_URL` to Supabase for platform routing-readiness reporting. The service-role key and built-in Supabase URL/auth keys are supplied by the function runtime and must never enter client variables.
 
 Set `OPERATIONS_MONITOR_SECRET` to a separate 32+ character value. Do not reuse `CRON_SECRET`: the production monitor must be able to read aggregate health without gaining permission to execute jobs.
 
@@ -42,7 +42,7 @@ Sensor secrets are returned once by `sensor-provision`. Deliver each secret thro
 - Exercise the ten acceptance tests in `PRODUCTION_READINESS.md` against staging.
 - Verify real redirect URLs, CORS origins, email delivery, push receipts, signed-document expiry and scheduler alerts.
 - Configure an external uptime monitor for `/health.json`; it intentionally reports only service identity and release liveness.
-- Verify `/readiness.json` before customer traffic is enabled. It reports only non-secret public-web gates—authentication, UK legal publication, support/status links and browser push—and the protected production workflow fails if any remain incomplete.
+- Verify `/readiness.json` before customer traffic is enabled. It reports only non-secret booleans for authentication, UK legal publication, support/status links, browser push and the Lovable-hosted live payment runtime; the protected production workflow fails if any remain incomplete.
 - Set the repository variables `PRODUCTION_RELEASE_SHA`, `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`. The scheduled workflow then detects release drift and directly checks the official Supabase Auth health endpoint.
 - Until `PRODUCTION_URL` is configured explicitly, scheduled health and release-drift probes use the canonical `https://haccora.co.uk` deployment and the current main SHA. This fallback is public and contains no credentials; set the variable to remove the configuration warning.
 - Set `PRODUCTION_PUBLIC_LAUNCH=true` only after the protected release gate passes. Scheduled readiness checks then fail closed if legal, support, status, push or authentication configuration regresses.

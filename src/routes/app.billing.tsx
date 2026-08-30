@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/haccora-client";
 import { useAuth } from "@/lib/auth";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
-import { HACCORA_PRICE_IDS, getStripeEnvironment, paymentsConfigured } from "@/lib/stripe";
+import { HACCORA_PRICE_IDS, paymentsConfigured } from "@/lib/stripe";
 import { createPortalSession } from "@/utils/payments.functions";
 
 export const Route = createFileRoute("/app/billing")({ component: BillingPage });
@@ -43,7 +43,6 @@ function BillingPage() {
       const result = await createPortalSession({
         data: {
           returnUrl: `${window.location.origin}/app/billing`,
-          environment: getStripeEnvironment(),
         },
       });
       if ("error" in result) throw new Error(result.error);
