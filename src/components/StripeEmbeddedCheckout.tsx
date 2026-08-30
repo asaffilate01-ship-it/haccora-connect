@@ -1,5 +1,5 @@
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
-import { getStripe, getStripeEnvironment } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
 import { createCheckoutSession } from "@/utils/payments.functions";
 
 interface StripeEmbeddedCheckoutProps {
@@ -13,7 +13,6 @@ export function StripeEmbeddedCheckout({ priceId, returnUrl }: StripeEmbeddedChe
       data: {
         priceId,
         returnUrl: returnUrl || window.location.href,
-        environment: getStripeEnvironment(),
       },
     });
     if ("error" in result) throw new Error(result.error);
