@@ -339,7 +339,7 @@ for (const marker of [
 
 const uptimeWorkflow = await readFile(path.join(root, ".github/workflows/uptime.yml"), "utf8");
 for (const marker of [
-  "https://hacccora-chums.lovable.app",
+  "https://haccora.co.uk",
   "vars.PRODUCTION_RELEASE_SHA || github.sha",
   "check-deployment-health.mjs",
   "check-deployment-smoke.mjs",
