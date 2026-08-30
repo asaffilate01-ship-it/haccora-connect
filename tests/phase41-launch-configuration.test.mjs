@@ -104,10 +104,7 @@ test("Phase 41 rejects a Stripe sandbox client token in the live release gate", 
   environment.VITE_PAYMENTS_CLIENT_TOKEN = ["pk", "test", "must", "not", "launch"].join("_");
   const result = await evaluateLaunchReadiness({ environment, root });
   assert.equal(result.ready, false);
-  assert.match(
-    formatLaunchReadiness(result),
-    /must be a Stripe live-mode publishable key/,
-  );
+  assert.match(formatLaunchReadiness(result), /must be a Stripe live-mode publishable key/);
 });
 
 test("Phase 41 keeps every launch control wired into the protected GitHub environment", async () => {
