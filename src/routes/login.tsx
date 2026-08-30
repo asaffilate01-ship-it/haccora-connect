@@ -213,8 +213,8 @@ function LoginPage() {
               className="mb-5 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-950"
             >
               {SUPABASE_UNAVAILABLE_MESSAGE} Please try again later or email{" "}
-              <a className="font-semibold underline" href="mailto:hello@haccora.co.uk">
-                hello@haccora.co.uk
+              <a className="font-semibold underline" href="mailto:support@haccora.co.uk">
+                support@haccora.co.uk
               </a>
               .
             </div>

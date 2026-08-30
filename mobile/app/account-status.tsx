@@ -30,7 +30,7 @@ export default function AccountStatus() {
       </Text>
       <Pressable
         accessibilityRole="button"
-        onPress={() => Linking.openURL("mailto:hello@haccora.co.uk?subject=Workspace%20access")}
+        onPress={() => Linking.openURL("mailto:support@haccora.co.uk?subject=Workspace%20access")}
         style={styles.primary}
       >
         <Text style={styles.primaryText}>Contact Haccora support</Text>
