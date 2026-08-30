@@ -132,8 +132,12 @@ export function evaluateProviderConfiguration(
         validHttpsUrl(value(readEnvironment, "PAYMENTS_WEBHOOK_URL")) &&
         (() => {
           try {
-            const application = new URL(value(readEnvironment, "PUBLIC_APP_URL"));
-            const webhook = new URL(value(readEnvironment, "PAYMENTS_WEBHOOK_URL"));
+            const application = new URL(
+              value(readEnvironment, "PUBLIC_APP_URL"),
+            );
+            const webhook = new URL(
+              value(readEnvironment, "PAYMENTS_WEBHOOK_URL"),
+            );
             return webhook.origin === application.origin &&
               webhook.pathname === "/api/public/payments/webhook" &&
               webhook.search === "" &&
