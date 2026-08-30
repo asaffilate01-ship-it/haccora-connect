@@ -178,14 +178,10 @@ function BillingPage() {
               {canManageBilling && subscription?.plan !== plan.code && (
                 <button
                   disabled={!!busy}
-                  onClick={() => void launch("checkout", plan.code)}
+                  onClick={() => startCheckout(plan.code as keyof typeof HACCORA_PRICE_IDS)}
                   className="btn-alert-solid mt-5 min-h-11 w-full text-sm"
                 >
-                  {busy === plan.code ? (
-                    <Loader2 className="animate-spin" size={15} />
-                  ) : (
-                    "Choose plan"
-                  )}
+                  {checkoutPlan === plan.code ? "Selected below" : "Choose plan"}
                 </button>
               )}
             </article>
