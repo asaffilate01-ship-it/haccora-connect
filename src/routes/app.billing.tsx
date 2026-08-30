@@ -188,6 +188,26 @@ function BillingPage() {
           ))}
         </div>
       </section>
+      {canManageBilling && checkoutPlan && (
+        <section className="surface p-4 md:p-6">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-display text-2xl">Secure checkout</h2>
+            <button
+              onClick={() => setCheckoutPlan(null)}
+              className="min-h-11 rounded-xl border border-border px-4 text-sm font-bold"
+            >
+              Cancel
+            </button>
+          </div>
+          <div className="mt-4">
+            <StripeEmbeddedCheckout
+              key={checkoutPlan}
+              priceId={HACCORA_PRICE_IDS[checkoutPlan]}
+              returnUrl={`${typeof window === "undefined" ? "" : window.location.origin}/app/billing?checkout=complete`}
+            />
+          </div>
+        </section>
+      )}
       <p className="text-xs text-muted-foreground">
         {"Payment details are processed by Stripe; Haccora does not store card numbers."}
       </p>
