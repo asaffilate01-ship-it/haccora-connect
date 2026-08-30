@@ -14,6 +14,23 @@ export function getConnectionApiKey(env: StripeEnv): string {
   return env === "sandbox" ? getEnv("STRIPE_SANDBOX_API_KEY") : getEnv("STRIPE_LIVE_API_KEY");
 }
 
+export function getConfiguredStripeEnvironment(): StripeEnv {
+  const configured = process.env.PAYMENTS_ENVIRONMENT?.trim();
+  if (configured !== "sandbox" && configured !== "live") {
+    throw new Error("PAYMENTS_ENVIRONMENT must be configured as sandbox or live");
+  }
+  return configured;
+}
+
+function constantTimeEqual(left: string, right: string): boolean {
+  if (left.length !== right.length) return false;
+  let difference = 0;
+  for (let index = 0; index < left.length; index += 1) {
+    difference |= left.charCodeAt(index) ^ right.charCodeAt(index);
+  }
+  return difference === 0;
+}
+
 // Routes api.stripe.com requests through the connector gateway, which holds
 // the real Stripe secret. The SDK never sees a live Stripe key.
 export function createStripeClient(env: StripeEnv): Stripe {
@@ -21,7 +38,7 @@ export function createStripeClient(env: StripeEnv): Stripe {
   const lovableApiKey = getEnv("LOVABLE_API_KEY");
 
   return new Stripe(connectionApiKey, {
-    apiVersion: "2026-08-26.dahlia",
+    apiVersion: "2026-03-25.dahlia",
     httpClient: Stripe.createFetchHttpClient((input, init) => {
       const stripeUrl = input instanceof Request ? input.url : input.toString();
       const gatewayUrl = stripeUrl.replace("https://api.stripe.com", GATEWAY_STRIPE_BASE);
@@ -123,7 +140,20 @@ export async function verifyWebhook(
   );
   const expected = Buffer.from(new Uint8Array(signed)).toString("hex");
 
-  if (!v1Signatures.includes(expected)) throw new Error("Invalid webhook signature");
+  if (!v1Signatures.some((candidate) => constantTimeEqual(candidate, expected))) {
+    throw new Error("Invalid webhook signature");
+  }
 
-  return { ...JSON.parse(body), raw: body };
+  const event = JSON.parse(body) as {
+    id: string;
+    type: string;
+    created: number;
+    livemode?: boolean;
+    data: { object: any };
+  };
+  if (event.livemode !== (env === "live")) {
+    throw new Error("Stripe event mode does not match the configured payment environment");
+  }
+
+  return { ...event, raw: body };
 }
