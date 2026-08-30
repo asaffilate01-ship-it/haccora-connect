@@ -12,6 +12,18 @@ const PLAN_BY_PRICE: Record<string, string> = {
   haccora_group_monthly: "group",
 };
 
+function safeBillingReturnUrl(returnUrl?: string): string {
+  const applicationUrl = process.env.PUBLIC_APP_URL?.trim();
+  if (!applicationUrl) throw new Error("PUBLIC_APP_URL is not configured");
+
+  const application = new URL(applicationUrl);
+  const candidate = new URL(returnUrl ?? "/app/billing", application);
+  if (candidate.origin !== application.origin) {
+    throw new Error("Billing return URL must use the configured application origin.");
+  }
+  return candidate.toString();
+}
+
 async function requireBillingOwner(context: { supabase: any; userId: string }) {
   const { data, error } = await context.supabase
     .from("organization_memberships")
@@ -92,7 +104,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
         line_items: [{ price: stripePrice.id, quantity: 1 }],
         mode: "subscription",
         ui_mode: "embedded_page",
-        return_url: data.returnUrl,
+        return_url: safeBillingReturnUrl(data.returnUrl),
         customer: customerId,
         client_reference_id: organizationId,
         metadata: {
@@ -133,7 +145,7 @@ export const createPortalSession = createServerFn({ method: "POST" })
       const stripe = createStripeClient(getConfiguredStripeEnvironment());
       const portal = await stripe.billingPortal.sessions.create({
         customer: sub.provider_customer_id,
-        ...(data.returnUrl && { return_url: data.returnUrl }),
+        return_url: safeBillingReturnUrl(data.returnUrl),
       });
       return { url: portal.url };
     } catch (error) {
