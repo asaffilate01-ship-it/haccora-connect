@@ -26,7 +26,7 @@ test("login clearly fails closed while secure services are unconfigured", async 
 
   assert.match(login, /role="alert"/);
   assert.match(login, /disabled=\{busy \|\| !authenticationAvailable\}/);
-  assert.match(login, /mailto:hello@haccora\.co\.uk/);
+  assert.match(login, /mailto:support@haccora\.co\.uk/);
 });
 
 test("production preflight still requires both browser and server Supabase values", async () => {
