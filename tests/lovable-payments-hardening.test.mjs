@@ -52,11 +52,7 @@ test("public and protected readiness use the Lovable payment boundary without ex
     assert.match(providerReadiness, new RegExp(marker));
     assert.match(workflow, new RegExp(marker));
   }
-  for (const secret of [
-    "STRIPE_LIVE_API_KEY",
-    "LOVABLE_API_KEY",
-    "PAYMENTS_LIVE_WEBHOOK_SECRET",
-  ]) {
+  for (const secret of ["STRIPE_LIVE_API_KEY", "LOVABLE_API_KEY", "PAYMENTS_LIVE_WEBHOOK_SECRET"]) {
     assert.match(publicReadiness, new RegExp(secret));
     assert.doesNotMatch(workflow, new RegExp(secret));
   }
