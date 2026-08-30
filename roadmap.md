@@ -23,7 +23,7 @@
 - [ ] Run **Deploy production Supabase** workflow, entering `dbjbhemmtdkzulsxfvmi`.
 - [x] VAPID public key wired; `WEB_PUSH_PRIVATE_KEY`, `WEB_PUSH_GATEWAY_URL` and `WEB_PUSH_GATEWAY_TOKEN` saved.
 - [x] Resend API key saved.
-- [ ] Set support@haccora.co.uk as the public support email across web and native shells.
+- [x] support@haccora.co.uk set as public support email across web and native shells.
 - [ ] Add outstanding credentials: Expo/EAS, VirusTotal. Dokuvera secrets already saved.
 - [ ] Test genuine failed-payment/recovery, provider delivery, and authenticated physical-device mobile journeys.
 - [ ] Run **Production authenticated dashboards** after configuring the seven protected test-account email variables and shared password secret.
