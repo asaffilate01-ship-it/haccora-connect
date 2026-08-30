@@ -1,0 +1,75 @@
+name: Production authenticated dashboards
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployment_url:
+        description: Deployed application origin serving the release under test
+        required: true
+        default: https://app.haccora.co.uk
+        type: string
+      confirmation:
+        description: Confirm the configured identities are designated production test accounts
+        required: true
+        type: choice
+        options:
+          - designated-test-accounts
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-authenticated-dashboards
+  cancel-in-progress: false
+
+jobs:
+  authenticated-dashboards:
+    environment: production
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      HACCORA_AUTHENTICATED_E2E: "true"
+      PLAYWRIGHT_BASE_URL: ${{ inputs.deployment_url }}
+      PLAYWRIGHT_JSON_OUTPUT_FILE: release-evidence/authenticated-dashboard-results.json
+      ROLE_ACCEPTANCE_PASSWORD: ${{ secrets.ROLE_ACCEPTANCE_PASSWORD }}
+      ROLE_ACCEPTANCE_PLATFORM_OWNER_EMAIL: ${{ vars.ROLE_ACCEPTANCE_PLATFORM_OWNER_EMAIL }}
+      ROLE_ACCEPTANCE_OWNER_EMAIL: ${{ vars.ROLE_ACCEPTANCE_OWNER_EMAIL }}
+      ROLE_ACCEPTANCE_MANAGER_EMAIL: ${{ vars.ROLE_ACCEPTANCE_MANAGER_EMAIL }}
+      ROLE_ACCEPTANCE_CHEF_EMAIL: ${{ vars.ROLE_ACCEPTANCE_CHEF_EMAIL }}
+      ROLE_ACCEPTANCE_STAFF_EMAIL: ${{ vars.ROLE_ACCEPTANCE_STAFF_EMAIL }}
+      ROLE_ACCEPTANCE_INSPECTOR_EMAIL: ${{ vars.ROLE_ACCEPTANCE_INSPECTOR_EMAIL }}
+      ROLE_ACCEPTANCE_ISOLATION_OWNER_EMAIL: ${{ vars.ROLE_ACCEPTANCE_ISOLATION_OWNER_EMAIL }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Verify protected dashboard-test configuration
+        run: |
+          test "${{ inputs.confirmation }}" = "designated-test-accounts"
+          for key in \
+            PLAYWRIGHT_BASE_URL ROLE_ACCEPTANCE_PASSWORD \
+            ROLE_ACCEPTANCE_PLATFORM_OWNER_EMAIL ROLE_ACCEPTANCE_OWNER_EMAIL \
+            ROLE_ACCEPTANCE_MANAGER_EMAIL ROLE_ACCEPTANCE_CHEF_EMAIL \
+            ROLE_ACCEPTANCE_STAFF_EMAIL ROLE_ACCEPTANCE_INSPECTOR_EMAIL \
+            ROLE_ACCEPTANCE_ISOLATION_OWNER_EMAIL; do
+            test -n "${!key}" || { echo "::error::Missing protected configuration: ${key}"; exit 1; }
+          done
+      - name: Install the production browser engine
+        run: npx playwright install --with-deps chromium
+      - name: Test every role on desktop and mobile
+        run: |
+          mkdir -p release-evidence
+          npm run test:e2e:authenticated
+      - name: Upload redacted authenticated dashboard evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: production-authenticated-dashboards-${{ github.run_id }}
+          path: |
+            release-evidence/authenticated-dashboard-results.json
+            test-results
+          if-no-files-found: error
+          retention-days: 90

@@ -9,6 +9,7 @@
 - [x] Lovable-hosted Stripe boundary hardened: payment mode is server-owned, webhook modes must match, return URLs stay on `app.haccora.co.uk`, and private Lovable/Stripe values are verified at runtime without copying them to Supabase or GitHub.
 - [x] Authenticated persistence automated for staging and designated production test accounts: create, session reload, update, second reload, delete and cross-tenant denial, with pre-run preferences restored after the check.
 - [x] Lovable Stripe lifecycle state acceptance added for controlled `healthy`, `past_due`, `restricted` and `recovered` evidence without copying private Stripe or Lovable credentials into GitHub.
+- [x] Authenticated production dashboard acceptance added for every supplied role on desktop and mobile, including live tenant context, route permissions, accessibility, overflow and browser-error evidence.
 
 ## In progress
 
@@ -22,3 +23,4 @@
 - [ ] Run **Deploy production Supabase** workflow, entering `dbjbhemmtdkzulsxfvmi`.
 - [ ] Add outstanding credentials: Resend, Expo/EAS, VAPID, VirusTotal and Dokuvera storage origin.
 - [ ] Test genuine failed-payment/recovery, provider delivery, and authenticated physical-device mobile journeys.
+- [ ] Run **Production authenticated dashboards** after configuring the seven protected test-account email variables and shared password secret.
