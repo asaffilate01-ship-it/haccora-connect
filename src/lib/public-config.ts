@@ -1,3 +1,5 @@
+import { VAPID_PUBLIC_KEY } from "@/lib/web-push";
+
 const clientEnv = import.meta.env as Record<string, string | boolean | undefined>;
 const value = (name: string) => {
   const raw = clientEnv[name];
