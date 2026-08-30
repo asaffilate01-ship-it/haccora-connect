@@ -93,6 +93,7 @@ const required = [
   ".github/workflows/staging-rehearsal.yml",
   ".github/workflows/native-internal-candidate.yml",
   ".github/workflows/uptime.yml",
+  ".github/workflows/production-dispatch.yml",
   ".github/CODEOWNERS",
   ".github/pull_request_template.md",
   "SECURITY.md",
