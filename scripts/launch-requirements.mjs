@@ -100,9 +100,6 @@ const lovableVariable = {
 const paymentsRoutingVariable = {
   storage: "Lovable production environment, GitHub production variable and Supabase Edge Function secret",
 };
-const lovableSecret = {
-  storage: "Lovable production environment and GitHub production secret",
-};
 
 export const launchRequirements = [
   requirement("VITE_SUPABASE_URL", "application", "https", variable),
@@ -133,20 +130,6 @@ export const launchRequirements = [
   }),
 
   requirement("VITE_PAYMENTS_CLIENT_TOKEN", "stripe", "stripe-live-publishable", lovableVariable),
-  requirement("STRIPE_LIVE_API_KEY", "stripe", "secret", {
-    ...lovableSecret,
-    minimumLength: 16,
-  }),
-  requirement("LOVABLE_API_KEY", "stripe", "secret", {
-    ...lovableSecret,
-    minimumLength: 20,
-  }),
-  requirement(
-    "PAYMENTS_LIVE_WEBHOOK_SECRET",
-    "stripe",
-    "stripe-webhook-secret",
-    lovableSecret,
-  ),
   requirement("PAYMENTS_ENVIRONMENT", "stripe", "value", paymentsRoutingVariable),
   requirement("PAYMENTS_RUNTIME_PROVIDER", "stripe", "value", paymentsRoutingVariable),
   requirement("PAYMENTS_WEBHOOK_URL", "stripe", "https", paymentsRoutingVariable),
