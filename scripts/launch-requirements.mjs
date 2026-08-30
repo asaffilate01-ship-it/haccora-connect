@@ -98,7 +98,8 @@ const lovableVariable = {
   storage: "Lovable production environment and GitHub production variable",
 };
 const paymentsRoutingVariable = {
-  storage: "Lovable production environment, GitHub production variable and Supabase Edge Function secret",
+  storage:
+    "Lovable production environment, GitHub production variable and Supabase Edge Function secret",
 };
 
 export const launchRequirements = [
@@ -254,10 +255,7 @@ function valueFailure(requirement, environment) {
     return `${requirement.name} must contain at least ${requirement.minimumLength} characters`;
   }
 
-  if (
-    requirement.type === "stripe-live-publishable" &&
-    !/^pk_live_[A-Za-z0-9_]+$/.test(current)
-  ) {
+  if (requirement.type === "stripe-live-publishable" && !/^pk_live_[A-Za-z0-9_]+$/.test(current)) {
     return `${requirement.name} must be a Stripe live-mode publishable key`;
   }
 
