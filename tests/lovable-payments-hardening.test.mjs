@@ -16,6 +16,8 @@ test("Lovable Stripe uses the SDK-supported API version and a server-owned mode"
   assert.match(server, /getConfiguredStripeEnvironment/);
   assert.match(server, /PAYMENTS_ENVIRONMENT/);
   assert.match(functions, /createStripeClient\(getConfiguredStripeEnvironment\(\)\)/);
+  assert.match(functions, /safeBillingReturnUrl/);
+  assert.match(functions, /candidate\.origin !== application\.origin/);
   assert.doesNotMatch(functions, /data\.environment|environment: StripeEnv/);
   assert.doesNotMatch(checkout, /getStripeEnvironment|environment:/);
   assert.doesNotMatch(billingPage, /getStripeEnvironment|environment:/);
