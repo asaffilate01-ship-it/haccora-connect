@@ -45,9 +45,9 @@ test("provider readiness reports structural validity without exposing or oversta
     "RESEND_API_KEY",
     "EXPO_ACCESS_TOKEN",
     "MALWARE_SCAN_URL",
-    "STRIPE_PRICE_SOLO",
-    "STRIPE_PRICE_COMPLETE",
-    "STRIPE_PRICE_GROUP",
+    "PAYMENTS_RUNTIME_PROVIDER",
+    "PAYMENTS_ENVIRONMENT",
+    "PAYMENTS_WEBHOOK_URL",
     "OPERATIONS_MONITOR_SECRET",
     "LEGAL_COUNSEL_APPROVAL_REFERENCE",
   ]) {
@@ -76,8 +76,15 @@ test("release and CI wiring include the new function and current UK Stripe plans
   assert.match(config, /\[functions\.platform-readiness\][\s\S]*verify_jwt = false/);
   assert.match(ci, /platform-readiness\/index\.ts/);
   assert.match(release, /platform-readiness\/index\.ts/);
-  for (const key of ["STRIPE_PRICE_SOLO", "STRIPE_PRICE_COMPLETE", "STRIPE_PRICE_GROUP"]) {
+  for (const key of [
+    "VITE_PAYMENTS_CLIENT_TOKEN",
+    "PAYMENTS_RUNTIME_PROVIDER",
+    "PAYMENTS_ENVIRONMENT",
+    "PAYMENTS_WEBHOOK_URL",
+  ]) {
     assert.ok(release.includes(`${key}: \${{ vars.${key} }}`));
   }
-  assert.doesNotMatch(release, /STRIPE_PRICE_PRO/);
+  for (const key of ["STRIPE_LIVE_API_KEY", "LOVABLE_API_KEY", "PAYMENTS_LIVE_WEBHOOK_SECRET"]) {
+    assert.ok(release.includes(`${key}: \${{ secrets.${key} }}`));
+  }
 });
