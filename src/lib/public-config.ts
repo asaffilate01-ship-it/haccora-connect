@@ -30,7 +30,7 @@ export const PUBLIC_CONFIG = {
     postalCity: value("VITE_LEGAL_POSTAL_CITY"),
     registeredIn: withDefault("VITE_LEGAL_REGISTERED_IN", "England and Wales"),
     companyNumber: value("VITE_LEGAL_COMPANY_NUMBER"),
-    email: withDefault("VITE_LEGAL_EMAIL", `hello@${COMPANY_DOMAIN}`),
+    email: withDefault("VITE_LEGAL_EMAIL", `support@${COMPANY_DOMAIN}`),
     phone: value("VITE_LEGAL_PHONE"),
     vatId: value("VITE_LEGAL_VAT_ID"),
     icoRegistration: value("VITE_LEGAL_ICO_REGISTRATION"),

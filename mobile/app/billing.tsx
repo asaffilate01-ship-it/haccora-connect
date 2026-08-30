@@ -39,7 +39,7 @@ export default function Billing() {
       <Pressable
         accessibilityRole="link"
         onPress={() =>
-          Linking.openURL("mailto:hello@haccora.co.uk?subject=Haccora%20billing%20support")
+          Linking.openURL("mailto:support@haccora.co.uk?subject=Haccora%20billing%20support")
         }
         style={styles.secondary}
       >
