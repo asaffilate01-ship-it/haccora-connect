@@ -112,9 +112,31 @@ for (const [pathname, expectedContentType, privateCache] of routes) {
   }
 }
 
+const hostRedirects = [
+  ["https://app.haccora.co.uk/", 302, "https://app.haccora.co.uk/login"],
+  ["https://www.haccora.co.uk/help?topic=alerts", 308, "https://haccora.co.uk/help?topic=alerts"],
+];
+
+for (const [requestUrl, expectedStatus, expectedLocation] of hostRedirects) {
+  const response = await worker.fetch(new Request(requestUrl), env, context);
+  if (response.status !== expectedStatus) {
+    failures.push(`${requestUrl}: expected ${expectedStatus}, received ${response.status}`);
+  }
+  if (response.headers.get("location") !== expectedLocation) {
+    failures.push(
+      `${requestUrl}: expected Location ${expectedLocation}, received ${response.headers.get("location") ?? "none"}`,
+    );
+  }
+  if (response.headers.get("x-content-type-options") !== "nosniff") {
+    failures.push(`${requestUrl}: redirect is missing X-Content-Type-Options security header`);
+  }
+}
+
 if (failures.length) {
   console.error(failures.map((failure) => `- ${failure}`).join("\n"));
   process.exit(1);
 }
 
-console.log(`Built Cloudflare worker smoke test passed (${routes.length} routes).`);
+console.log(
+  `Built Cloudflare worker smoke test passed (${routes.length} routes, ${hostRedirects.length} host redirects).`,
+);
