@@ -4,6 +4,10 @@ import { Check, CreditCard, ExternalLink, Loader2, ShieldCheck, Users, MapPin } 
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/haccora-client";
 import { useAuth } from "@/lib/auth";
+import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
+import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
+import { HACCORA_PRICE_IDS, getStripeEnvironment, paymentsConfigured } from "@/lib/stripe";
+import { createPortalSession } from "@/utils/payments.functions";
 
 export const Route = createFileRoute("/app/billing")({ component: BillingPage });
 
@@ -21,6 +25,7 @@ function BillingPage() {
   const { user } = useAuth();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [checkoutPlan, setCheckoutPlan] = useState<keyof typeof HACCORA_PRICE_IDS | null>(null);
   useEffect(() => {
     if (!user?.organizationId) return;
     void (supabase as any)
@@ -32,13 +37,31 @@ function BillingPage() {
       .maybeSingle()
       .then(({ data }: { data: Subscription | null }) => setSubscription(data));
   }, [user?.organizationId]);
-  const launch = async (action: "checkout" | "portal", plan = "complete") => {
-    setBusy(action === "portal" ? action : plan);
-    const { data, error } = await supabase.functions.invoke("billing", { body: { action, plan } });
-    setBusy(null);
-    if (error || !data?.url) toast.error("Billing request failed.");
-    else window.location.assign(data.url);
+  const openPortal = async () => {
+    setBusy("portal");
+    try {
+      const result = await createPortalSession({
+        data: {
+          returnUrl: `${window.location.origin}/app/billing`,
+          environment: getStripeEnvironment(),
+        },
+      });
+      if ("error" in result) throw new Error(result.error);
+      window.open(result.url, "_blank", "noopener");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Billing request failed.");
+    } finally {
+      setBusy(null);
+    }
   };
+  const startCheckout = (plan: keyof typeof HACCORA_PRICE_IDS) => {
+    if (!paymentsConfigured()) {
+      toast.error("Payments are not configured for this build yet.");
+      return;
+    }
+    setCheckoutPlan(plan);
+  };
+
   const canManageBilling = user?.role === "owner";
   return (
     <div className="p-5 md:p-10 space-y-6 max-w-5xl">
