@@ -6,9 +6,11 @@
 - [x] `haccora-production-completion-20260830.zip` verified — all 6 files already present and identical.
 - [x] Quality gate green (246 tests, lint/typecheck clean).
 
+- [x] Built-in payments wired: catalogue (Food Cart £9.99, Complete £24.99, Group £59.99 GBP/month), embedded checkout, billing portal, and signed webhook at `/api/public/payments/webhook` driving the existing tenant entitlement/grace/credit-control state machine.
+
 ## In progress
 
-- [ ] Add payments via Lovable built-in Stripe (user chose built-in over bring-your-own-key).
+- [ ] Complete payments go-live (claim account, verification) before real cards can be charged.
 
 ## Owner actions (cannot be done from Lovable)
 
