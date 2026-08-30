@@ -735,6 +735,7 @@ function AppShell() {
               {/* User menu */}
               <div className="relative">
                 <button
+                  aria-label={`Account menu for ${user.name}, ${t(`role.${user.role}`)}, ${workspaceLabel}`}
                   onClick={() => {
                     setMenuOpen((v) => !v);
                     setNotifOpen(false);

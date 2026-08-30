@@ -16,6 +16,10 @@ The harness uses `user_experience_preferences`, restores any row that existed be
 
 For the supplied production test identities, run **Production test-account persistence**. Configure the seven `ROLE_ACCEPTANCE_*_EMAIL` repository variables and the `ROLE_ACCEPTANCE_PASSWORD` repository secret. The production path uses only the publishable key and each user's authenticated session; it never receives a service-role key. It is additionally guarded by the exact Supabase URL and the designated-test-account confirmation.
 
+## Production authenticated dashboards
+
+Run **Production authenticated dashboards** after the current release and forward migrations are deployed. It signs into the platform owner, tenant owner, manager, chef, staff, inspector and isolation-owner accounts through the real browser login form on desktop and mobile. The workflow verifies the expected dashboard and tenant label, owner-only billing access, forbidden-route redirects, absence of browser/runtime errors, WCAG A/AA automation and horizontal overflow. Passwords are never written to the Playwright report; only redacted results and failure traces are retained.
+
 ## Lovable Stripe lifecycle
 
 Stripe remains hosted by Lovable. GitHub does not receive the live Stripe API key, webhook signing secret or Lovable private API key.

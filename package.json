@@ -17,6 +17,7 @@
     "typecheck": "tsc --noEmit",
     "test": "node --test tests/*.test.mjs",
     "test:e2e": "playwright test",
+    "test:e2e:authenticated": "playwright test tests/e2e/authenticated-role-dashboards.spec.ts --project=chromium --project=mobile-chromium --workers=1",
     "test:e2e:ui": "playwright test --ui",
     "verify": "node scripts/verify-production.mjs",
     "migrations:check": "node scripts/check-migration-lineage.mjs",
