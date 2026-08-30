@@ -40,12 +40,13 @@ function completeEnvironment() {
     LEGAL_COUNSEL_APPROVED_AT: "2026-08-11",
     LEGAL_ICO_FEE_STATUS_CONFIRMED: "true",
     VITE_LEGAL_CONTENT_APPROVED: "true",
-    STRIPE_SECRET_KEY: ["sk", "live", "validation", "only"].join("_"),
-    STRIPE_WEBHOOK_SECRET: ["whsec", "validation", "only"].join("_"),
-    STRIPE_PRICE_SOLO: "price_solo_validation_only",
-    STRIPE_PRICE_COMPLETE: "price_complete_validation_only",
-    STRIPE_PRICE_GROUP: "price_group_validation_only",
-    STRIPE_LIVE_MODE: "true",
+    VITE_PAYMENTS_CLIENT_TOKEN: ["pk", "live", "validation", "only"].join("_"),
+    STRIPE_LIVE_API_KEY: "lovable_connection_validation_only",
+    LOVABLE_API_KEY: "lovable_api_validation_only",
+    PAYMENTS_LIVE_WEBHOOK_SECRET: ["whsec", "validation", "only"].join("_"),
+    PAYMENTS_ENVIRONMENT: "live",
+    PAYMENTS_RUNTIME_PROVIDER: "lovable",
+    PAYMENTS_WEBHOOK_URL: "https://app.haccora.co.uk/api/public/payments/webhook",
     RESEND_API_KEY: "re_validation_only",
     NOTIFICATION_FROM_EMAIL: "Haccora Alerts <alerts@haccora.co.uk>",
     MALWARE_SCAN_URL: "https://app.haccora.co.uk/api/public/malware-scan",
@@ -78,11 +79,11 @@ function parseAssignments(content) {
   );
 }
 
-test("Phase 41 reports 44 unique production configuration controls by accountable owner", async () => {
-  assert.equal(launchRequirements.length, 44);
-  assert.equal(new Set(launchRequirements.map((item) => item.name)).size, 44);
+test("Phase 41 reports 45 unique production configuration controls by accountable owner", async () => {
+  assert.equal(launchRequirements.length, 45);
+  assert.equal(new Set(launchRequirements.map((item) => item.name)).size, 45);
   const result = await evaluateLaunchReadiness({ environment: {}, root });
-  assert.equal(result.failedControls, 44);
+  assert.equal(result.failedControls, 45);
   assert.equal(result.issues.length, 44);
   assert.equal(result.groups.filter((group) => group.issues.length).length, 10);
   const output = formatLaunchReadiness(result);
@@ -97,18 +98,18 @@ test("Phase 41 reports 44 unique production configuration controls by accountabl
 test("Phase 41 accepts a complete production-shaped environment without weakening the gate", async () => {
   const result = await evaluateLaunchReadiness({ environment: completeEnvironment(), root });
   assert.equal(result.ready, true, formatLaunchReadiness(result));
-  assert.equal(result.passedControls, 44);
+  assert.equal(result.passedControls, 45);
   assert.equal(result.issues.length, 0);
 });
 
 test("Phase 41 rejects Stripe sandbox credentials even when the live flag is true", async () => {
   const environment = completeEnvironment();
-  environment.STRIPE_SECRET_KEY = ["sk", "test", "must", "not", "launch"].join("_");
+  environment.VITE_PAYMENTS_CLIENT_TOKEN = ["pk", "test", "must", "not", "launch"].join("_");
   const result = await evaluateLaunchReadiness({ environment, root });
   assert.equal(result.ready, false);
   assert.match(
     formatLaunchReadiness(result),
-    /must be a Stripe live-mode secret or restricted key/,
+    /must be a Stripe live-mode publishable key/,
   );
 });
 
@@ -128,11 +129,11 @@ test("Phase 41 launch evidence never serialises configured values", async () => 
   const environment = completeEnvironment();
   const sentinel = "DO_NOT_PRINT_THIS_PROVIDER_SECRET";
   environment.RESEND_API_KEY = sentinel;
-  delete environment.STRIPE_PRICE_SOLO;
+  delete environment.PAYMENTS_LIVE_WEBHOOK_SECRET;
   const result = await evaluateLaunchReadiness({ environment, root });
   const rendered = `${formatLaunchReadiness(result)}\n${JSON.stringify(serialiseLaunchReadiness(result))}`;
   assert.doesNotMatch(rendered, new RegExp(sentinel));
-  assert.match(rendered, /STRIPE_PRICE_SOLO is missing/);
+  assert.match(rendered, /PAYMENTS_LIVE_WEBHOOK_SECRET is missing/);
 });
 
 test("Phase 41 bootstrap creates an ignored 0600 file and is idempotent", async () => {
