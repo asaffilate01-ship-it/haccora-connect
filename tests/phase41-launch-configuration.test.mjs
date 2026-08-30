@@ -84,7 +84,7 @@ test("Phase 41 reports 45 unique production configuration controls by accountabl
   assert.equal(new Set(launchRequirements.map((item) => item.name)).size, 45);
   const result = await evaluateLaunchReadiness({ environment: {}, root });
   assert.equal(result.failedControls, 45);
-  assert.equal(result.issues.length, 44);
+  assert.equal(result.issues.length, 45);
   assert.equal(result.groups.filter((group) => group.issues.length).length, 10);
   const output = formatLaunchReadiness(result);
   assert.match(output, /Application and Supabase/);
@@ -102,7 +102,7 @@ test("Phase 41 accepts a complete production-shaped environment without weakenin
   assert.equal(result.issues.length, 0);
 });
 
-test("Phase 41 rejects Stripe sandbox credentials even when the live flag is true", async () => {
+test("Phase 41 rejects a Stripe sandbox client token in the live release gate", async () => {
   const environment = completeEnvironment();
   environment.VITE_PAYMENTS_CLIENT_TOKEN = ["pk", "test", "must", "not", "launch"].join("_");
   const result = await evaluateLaunchReadiness({ environment, root });
