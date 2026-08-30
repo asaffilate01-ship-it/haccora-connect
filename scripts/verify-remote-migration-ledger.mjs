@@ -3,9 +3,15 @@ import path from "node:path";
 
 const root = process.cwd();
 const evidenceDir = path.resolve(root, process.env.HACCORA_EVIDENCE_DIR ?? "release-evidence");
+const migrationTarget = (process.env.MIGRATION_TARGET ?? "staging").trim();
+if (!/^[a-z0-9-]+$/.test(migrationTarget)) {
+  throw new Error("MIGRATION_TARGET must contain only lowercase letters, numbers and hyphens");
+}
 const ledgerFile = path.resolve(
   root,
-  process.env.STAGING_MIGRATION_LIST_FILE ?? "release-evidence/staging-migration-list.txt",
+  process.env.MIGRATION_LIST_FILE ??
+    process.env.STAGING_MIGRATION_LIST_FILE ??
+    `release-evidence/${migrationTarget}-migration-list.txt`,
 );
 const ansi = /\u001b\[[0-9;]*m/g;
 
@@ -43,6 +49,7 @@ const divergent = rows.filter((row) => row.local !== row.remote);
 
 const report = {
   schemaVersion: 1,
+  target: migrationTarget,
   checkedAt: new Date().toISOString(),
   expectedMigrations: expected.length,
   matchedMigrations: matched.size,
@@ -55,7 +62,7 @@ const report = {
 
 await mkdir(evidenceDir, { recursive: true });
 await writeFile(
-  path.join(evidenceDir, "staging-migration-ledger.json"),
+  path.join(evidenceDir, `${migrationTarget}-migration-ledger.json`),
   `${JSON.stringify(report, null, 2)}\n`,
   "utf8",
 );
