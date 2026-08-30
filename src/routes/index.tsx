@@ -230,7 +230,7 @@ function ScreenshotGallery() {
             <span className="h-2 w-2 rounded-full bg-white/20 sm:h-2.5 sm:w-2.5" />
             <span className="h-2 w-2 rounded-full bg-white/20 sm:h-2.5 sm:w-2.5" />
             <span className="h-2 w-2 rounded-full bg-white/20 sm:h-2.5 sm:w-2.5" />
-            <span className="ml-2 truncate rounded-md bg-white/5 px-2.5 py-1 text-[0.6rem] font-bold tracking-wide text-white/45 sm:ml-3 sm:px-3 sm:text-[0.65rem]">
+            <span className="ml-2 truncate rounded-md bg-white/5 px-2.5 py-1 text-[0.6rem] font-bold tracking-wide text-white/50 sm:ml-3 sm:px-3 sm:text-[0.65rem]">
               haccora.co.uk
             </span>
           </div>
@@ -250,7 +250,7 @@ function ScreenshotGallery() {
       </figure>
 
       <div className="mt-12 md:mt-14">
-        <p className="eyebrow text-[color:var(--color-alert-red)]">On the floor</p>
+        <p className="eyebrow text-[color:var(--color-alert-red-on-dark)]">On the floor</p>
         <h3 className="mt-2 text-xl font-black uppercase tracking-tight text-white sm:text-2xl">
           Built mobile-first for kitchen teams
         </h3>
@@ -259,7 +259,12 @@ function ScreenshotGallery() {
           offline-safe records on any phone.
         </p>
 
-        <div className="-mx-4 mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 [scroll-padding-inline:1rem] [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-8 sm:overflow-visible sm:px-0 lg:grid-cols-3 [&::-webkit-scrollbar]:hidden">
+        <div
+          aria-label="Haccora mobile app screenshots"
+          role="region"
+          tabIndex={0}
+          className="-mx-4 mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 [scroll-padding-inline:1rem] [scrollbar-width:none] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[color:var(--color-alert-red-on-dark)] sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-8 sm:overflow-visible sm:px-0 lg:grid-cols-3 [&::-webkit-scrollbar]:hidden"
+        >
           {MOBILE_SCREENS.map((item) => (
             <figure
               key={item.id}
@@ -287,7 +292,7 @@ function ScreenshotGallery() {
             </figure>
           ))}
         </div>
-        <p className="mt-3 text-center text-[0.65rem] font-bold uppercase tracking-widest text-white/35 sm:hidden">
+        <p className="mt-3 text-center text-[0.65rem] font-bold uppercase tracking-widest text-white/50 sm:hidden">
           Swipe for more screens
         </p>
       </div>
@@ -682,7 +687,7 @@ function PromoHome() {
         {/* Screenshots */}
         <section id="screens" className="bg-black text-white scroll-mt-32">
           <div className="mx-auto max-w-[1400px] px-4 py-12 sm:py-16 md:px-8 md:py-24">
-            <p className="eyebrow text-[color:var(--color-alert-red)]">Inside Haccora</p>
+            <p className="eyebrow text-[color:var(--color-alert-red-on-dark)]">Inside Haccora</p>
             <h2 className="mt-3 display-black uppercase tracking-tight">
               Real screens from the live product
             </h2>
@@ -838,7 +843,7 @@ function PromoHome() {
                 </div>
               ))}
             </div>
-            <p className="mt-3 text-center text-[0.65rem] font-bold uppercase tracking-widest text-black/35 sm:hidden">
+            <p className="mt-3 text-center text-[0.65rem] font-bold uppercase tracking-widest text-black/60 sm:hidden">
               Swipe for more plans
             </p>
 

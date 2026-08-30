@@ -54,6 +54,26 @@ const publishedNoopFunctionReplays = new Set([
   // before the named Phase 34 migration reached main. Both immutable entries
   // are safe and idempotent; permit only this exact published replay.
   "public.require_platform_operator_aal2:20260809212658_86b75e75-ddd4-4ecc-8273-a1a80d42645d.sql:20260809230000_platform_step_up_security.sql",
+  // Lovable applied the tenant-aware temperature repair before the named
+  // forward migration was committed. Both ledger entries are CREATE OR
+  // REPLACE operations with identical bodies, so preserve the published
+  // history and permit only these exact no-op replays.
+  "public.tg_temp_alert:20260828052942_c2776d95-dcee-4c41-bd34-ed2d2ccb8459.sql:20260828090000_restore_tenant_temperature_alerts.sql",
+  "public.tg_activity_log_temp:20260828052942_c2776d95-dcee-4c41-bd34-ed2d2ccb8459.sql:20260828090000_restore_tenant_temperature_alerts.sql",
+  // The approval-only access and credit-control package followed the same
+  // linked-project-then-named-migration path. Its DDL is explicitly
+  // idempotent; allow only the exact published function pairs below.
+  "public.tenant_capacity_changes_allowed:20260828112335_34c293ea-4051-4d53-b076-9ed2e80c9c4b.sql:20260828120000_approval_only_tenant_access.sql",
+  "public.guard_approved_tenant_invitation:20260828112335_34c293ea-4051-4d53-b076-9ed2e80c9c4b.sql:20260828120000_approval_only_tenant_access.sql",
+  "public.guard_approved_inspector_invitation:20260828112335_34c293ea-4051-4d53-b076-9ed2e80c9c4b.sql:20260828120000_approval_only_tenant_access.sql",
+  "public.guard_approved_active_membership:20260828112335_34c293ea-4051-4d53-b076-9ed2e80c9c4b.sql:20260828120000_approval_only_tenant_access.sql",
+  "public.guard_approved_active_location:20260828112335_34c293ea-4051-4d53-b076-9ed2e80c9c4b.sql:20260828120000_approval_only_tenant_access.sql",
+  "public.accept_organization_invitation:20260828112335_34c293ea-4051-4d53-b076-9ed2e80c9c4b.sql:20260828120000_approval_only_tenant_access.sql",
+  "public.accept_inspector_invitation:20260828112335_34c293ea-4051-4d53-b076-9ed2e80c9c4b.sql:20260828120000_approval_only_tenant_access.sql",
+  "public.sync_credit_control_case:20260828112335_34c293ea-4051-4d53-b076-9ed2e80c9c4b.sql:20260828120000_approval_only_tenant_access.sql",
+  "public.get_platform_credit_control_cases:20260828112335_34c293ea-4051-4d53-b076-9ed2e80c9c4b.sql:20260828120000_approval_only_tenant_access.sql",
+  "public.platform_manage_credit_control_case:20260828112335_34c293ea-4051-4d53-b076-9ed2e80c9c4b.sql:20260828120000_approval_only_tenant_access.sql",
+  "public.reconcile_billing_access:20260828112335_34c293ea-4051-4d53-b076-9ed2e80c9c4b.sql:20260828120000_approval_only_tenant_access.sql",
 ]);
 
 const files = (await readdir(migrationDirectory)).filter((file) => file.endsWith(".sql")).sort();

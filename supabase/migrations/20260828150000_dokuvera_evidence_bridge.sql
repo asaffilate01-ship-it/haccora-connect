@@ -2,10 +2,14 @@
 -- Dokuvera projects are mapped to one Haccora premises. Only the service role
 -- can ingest or mutate evidence; tenant members and explicitly scoped
 -- inspectors receive read-only access.
+--
+-- Lovable applied the schema under 20260828112146 before this named package
+-- migration reached main. Preserve both ledger entries while keeping this
+-- named convergence migration safe to replay on fresh databases.
 
 begin;
 
-create table public.dokuvera_connections (
+create table if not exists public.dokuvera_connections (
   id uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations(id) on delete restrict,
   location_id uuid not null,
@@ -23,10 +27,10 @@ create table public.dokuvera_connections (
   check ((enabled and disabled_at is null) or (not enabled))
 );
 
-create index dokuvera_connections_org_location_idx
+create index if not exists dokuvera_connections_org_location_idx
   on public.dokuvera_connections (organization_id, location_id, enabled);
 
-create table public.dokuvera_webhook_events (
+create table if not exists public.dokuvera_webhook_events (
   id uuid primary key default gen_random_uuid(),
   event_id uuid not null unique,
   connection_id uuid references public.dokuvera_connections(id) on delete restrict,
@@ -43,10 +47,10 @@ create table public.dokuvera_webhook_events (
   updated_at timestamptz not null default clock_timestamp()
 );
 
-create index dokuvera_webhook_events_org_created_idx
+create index if not exists dokuvera_webhook_events_org_created_idx
   on public.dokuvera_webhook_events (organization_id, created_at desc);
 
-create table public.dokuvera_evidence (
+create table if not exists public.dokuvera_evidence (
   id uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations(id) on delete restrict,
   location_id uuid not null,
@@ -89,9 +93,9 @@ create table public.dokuvera_evidence (
     references public.dokuvera_connections(id, organization_id) on delete restrict
 );
 
-create index dokuvera_evidence_org_captured_idx
+create index if not exists dokuvera_evidence_org_captured_idx
   on public.dokuvera_evidence (organization_id, captured_at desc);
-create index dokuvera_evidence_location_captured_idx
+create index if not exists dokuvera_evidence_location_captured_idx
   on public.dokuvera_evidence (organization_id, location_id, captured_at desc);
 
 alter table public.dokuvera_connections enable row level security;
@@ -106,10 +110,12 @@ revoke all on public.dokuvera_webhook_events from anon, authenticated;
 revoke insert, update, delete on public.dokuvera_connections,
   public.dokuvera_evidence from anon, authenticated;
 
+drop policy if exists dokuvera_connections_manage_read on public.dokuvera_connections;
 create policy dokuvera_connections_manage_read
   on public.dokuvera_connections for select to authenticated
   using (public.can_manage_organization(organization_id));
 
+drop policy if exists dokuvera_evidence_tenant_read on public.dokuvera_evidence;
 create policy dokuvera_evidence_tenant_read
   on public.dokuvera_evidence for select to authenticated
   using (

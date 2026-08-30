@@ -77,18 +77,40 @@ insert into auth.users (
     '{}', now(), now()
   );
 
-insert into public.organizations (id, name, slug, created_by) values
+insert into public.organizations (
+  id, name, slug, created_by, access_approved_at, access_approval_type
+) values
   (
     'a0000000-0000-0000-0000-000000000001',
     'Tenant A',
     'tenant-a-test',
-    '10000000-0000-0000-0000-000000000001'
+    '10000000-0000-0000-0000-000000000001',
+    now(),
+    'paid'
   ),
   (
     'b0000000-0000-0000-0000-000000000002',
     'Tenant B',
     'tenant-b-test',
-    '20000000-0000-0000-0000-000000000002'
+    '20000000-0000-0000-0000-000000000002',
+    now(),
+    'paid'
+  );
+
+insert into public.subscriptions (organization_id, plan, status, seats, currency) values
+  (
+    'a0000000-0000-0000-0000-000000000001',
+    'complete',
+    'active',
+    5,
+    'gbp'
+  ),
+  (
+    'b0000000-0000-0000-0000-000000000002',
+    'complete',
+    'active',
+    5,
+    'gbp'
   );
 
 insert into public.locations (id, organization_id, name) values
