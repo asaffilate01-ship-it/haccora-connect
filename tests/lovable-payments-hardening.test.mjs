@@ -58,7 +58,7 @@ test("public and protected readiness use the Lovable payment boundary without ex
     "PAYMENTS_LIVE_WEBHOOK_SECRET",
   ]) {
     assert.match(publicReadiness, new RegExp(secret));
-    assert.match(workflow, new RegExp(secret));
+    assert.doesNotMatch(workflow, new RegExp(secret));
   }
   assert.match(publicReadiness, /payments: lovablePaymentsReady\(\)/);
 });
