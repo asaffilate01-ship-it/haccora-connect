@@ -65,6 +65,7 @@ function BillingPage() {
   const canManageBilling = user?.role === "owner";
   return (
     <div className="p-5 md:p-10 space-y-6 max-w-5xl">
+      <PaymentTestModeBanner />
       <div>
         <div className="eyebrow">{"Subscription"}</div>
         <h1 className="mt-1 text-3xl md:text-4xl">{"Plan & billing"}</h1>
