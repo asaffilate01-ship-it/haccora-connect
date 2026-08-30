@@ -2,7 +2,7 @@
 
 A step-by-step guide for everything that remains outside the codebase. Work top to bottom; each step ends with a check you can run.
 
-At any point run `npm run launch:preflight` (or `node scripts/report-launch-readiness.mjs`) to see which of the 44 controls still fail.
+At any point run `npm run launch:preflight` (or `node scripts/report-launch-readiness.mjs`) to see which of the 45 controls still fail.
 
 ---
 
@@ -38,14 +38,16 @@ Then have UK counsel review `/legal/privacy`, `/legal/cookies`, `/legal/terms` a
 
 ---
 
-## Step 3 — Payments (Stripe live mode)
+## Step 3 — Payments (Lovable-hosted Stripe live mode)
 
-1. Complete Stripe account activation for iTechLounge.
-2. Create live prices for Solo, Complete and Group; copy the IDs into `STRIPE_PRICE_SOLO`, `STRIPE_PRICE_COMPLETE`, `STRIPE_PRICE_GROUP`.
-3. Set `STRIPE_SECRET_KEY` (live), create the webhook endpoint pointing at the billing function and store `STRIPE_WEBHOOK_SECRET`.
-4. Set `STRIPE_LIVE_MODE=true` only once live credentials are in place.
+1. Claim and activate the Stripe account connected through Lovable for iTechLounge.
+2. In the connected live catalogue, create recurring GBP prices with these exact lookup keys: `haccora_food_cart_monthly`, `haccora_complete_monthly`, and `haccora_group_monthly`.
+3. In the Lovable production environment set `VITE_PAYMENTS_CLIENT_TOKEN` to the live publishable key, add `STRIPE_LIVE_API_KEY`, `LOVABLE_API_KEY` and `PAYMENTS_LIVE_WEBHOOK_SECRET`, then set `PAYMENTS_ENVIRONMENT=live`.
+4. Register exactly one live Stripe webhook at `https://app.haccora.co.uk/api/public/payments/webhook`. Subscribe to subscription changes plus `invoice.payment_failed`, `invoice.payment_succeeded` and `invoice.paid`.
+5. Set the non-secret routing markers `PAYMENTS_RUNTIME_PROVIDER=lovable` and `PAYMENTS_WEBHOOK_URL=https://app.haccora.co.uk/api/public/payments/webhook` in Lovable/GitHub and Supabase Edge configuration. Do not copy Stripe or Lovable credentials into the legacy Supabase billing function.
+6. Remove or disable any live webhook that targets the older Supabase `billing` Edge Function so the same event cannot drive two billing paths.
 
-**Check:** run one real checkout, one renewal, one failed payment, one cancellation, plus a replayed/out-of-order webhook — all should be idempotent.
+**Check:** `/readiness.json` reports `payments: true`; then run one real checkout, renewal, failed payment, recovery and cancellation plus duplicate/out-of-order events. Confirm the subscription, entitlements, credit-control case and tenant service status persist after reload.
 
 ---
 
