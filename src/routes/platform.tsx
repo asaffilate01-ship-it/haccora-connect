@@ -171,12 +171,7 @@ type PlatformReadiness = {
 
 type MfaFactor = { id: string; status: string };
 type PlatformSection =
-  | "overview"
-  | "customers"
-  | "credit_control"
-  | "sales"
-  | "operations"
-  | "administration";
+  "overview" | "customers" | "credit_control" | "sales" | "operations" | "administration";
 
 function PlatformOperations() {
   const { user, hydrated, signOut } = useAuth();

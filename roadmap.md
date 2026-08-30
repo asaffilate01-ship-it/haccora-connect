@@ -10,6 +10,7 @@
 - [x] Authenticated persistence automated for staging and designated production test accounts: create, session reload, update, second reload, delete and cross-tenant denial, with pre-run preferences restored after the check.
 - [x] Lovable Stripe lifecycle state acceptance added for controlled `healthy`, `past_due`, `restricted` and `recovered` evidence without copying private Stripe or Lovable credentials into GitHub.
 - [x] Authenticated production dashboard acceptance added for every supplied role on desktop and mobile, including live tenant context, route permissions, accessibility, overflow and browser-error evidence.
+- [x] Protected GitHub production-configuration preflight added for Supabase deployment, scheduling and all designated role-acceptance accounts without exposing secret values.
 
 ## In progress
 
@@ -18,6 +19,7 @@
 ## Owner actions
 
 - [ ] GitHub Actions: confirm variables `SUPABASE_URL`, `PRODUCTION_SUPABASE_PROJECT_REF`, `VITE_PAYMENTS_CLIENT_TOKEN`, `PAYMENTS_ENVIRONMENT=live`, `PAYMENTS_RUNTIME_PROVIDER=lovable`, `PAYMENTS_WEBHOOK_URL`; secrets `CRON_SECRET`, `SUPABASE_ACCESS_TOKEN`, `PRODUCTION_SUPABASE_DB_PASSWORD`.
+- [ ] Run **Production workflow configuration preflight** before the production deployment and acceptance workflows.
 - [ ] Lovable production: keep `STRIPE_LIVE_API_KEY`, `LOVABLE_API_KEY` and `PAYMENTS_LIVE_WEBHOOK_SECRET` there only.
 - [ ] Run **Production scheduled dispatch** workflow once.
 - [ ] Run **Deploy production Supabase** workflow, entering `dbjbhemmtdkzulsxfvmi`.
