@@ -95,6 +95,9 @@ const internalSecret = {
   generatedByHaccora: true,
 };
 const lovableVariable = {
+  storage: "Lovable production environment and GitHub production variable",
+};
+const paymentsRoutingVariable = {
   storage: "Lovable production environment, GitHub production variable and Supabase Edge Function secret",
 };
 const lovableSecret = {
@@ -144,9 +147,9 @@ export const launchRequirements = [
     "stripe-webhook-secret",
     lovableSecret,
   ),
-  requirement("PAYMENTS_ENVIRONMENT", "stripe", "value", lovableVariable),
-  requirement("PAYMENTS_RUNTIME_PROVIDER", "stripe", "value", lovableVariable),
-  requirement("PAYMENTS_WEBHOOK_URL", "stripe", "https", lovableVariable),
+  requirement("PAYMENTS_ENVIRONMENT", "stripe", "value", paymentsRoutingVariable),
+  requirement("PAYMENTS_RUNTIME_PROVIDER", "stripe", "value", paymentsRoutingVariable),
+  requirement("PAYMENTS_WEBHOOK_URL", "stripe", "https", paymentsRoutingVariable),
 
   requirement("RESEND_API_KEY", "email", "value", providerSecret),
   requirement("NOTIFICATION_FROM_EMAIL", "email", "value", variable),
