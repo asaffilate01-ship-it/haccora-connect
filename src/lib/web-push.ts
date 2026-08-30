@@ -1,5 +1,11 @@
 import { supabase } from "@/integrations/supabase/haccora-client";
 
+// VAPID public key for browser push subscriptions. This value is public by
+// design and is shipped as a fallback when no build-time env override is set.
+export const VAPID_PUBLIC_KEY =
+  (import.meta.env.VITE_WEB_PUSH_PUBLIC_KEY as string | undefined) ??
+  "BFYrxAGmeujWaIkBejrrOO7e_F7dELLXO2na7-DTD03Rz_HF2jeV5DL8vB6N2oH_KX0hYqEgDc-JBmFwPTUWdFI";
+
 function decodePublicKey(value: string) {
   const padding = "=".repeat((4 - (value.length % 4)) % 4);
   const base64 = (value + padding).replaceAll("-", "+").replaceAll("_", "/");
