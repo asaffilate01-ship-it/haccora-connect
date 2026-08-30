@@ -1,4 +1,6 @@
 npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
 # Production launch configuration
 
 Haccora's launch gate intentionally fails closed. It has 42 unique configuration controls. The repository can validate them and can safely generate five Haccora-owned secrets, but it cannot invent a company identity, legal approval or provider credential.
