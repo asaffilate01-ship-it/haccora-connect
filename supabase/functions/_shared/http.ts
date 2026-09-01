@@ -7,9 +7,11 @@ const DEFAULT_PRODUCTION_ORIGINS = [
 function exactOrigin(value: string): string | null {
   try {
     const url = new URL(value);
-    const localDevelopment =
-      url.protocol === "http:" && (url.hostname === "localhost" || url.hostname === "127.0.0.1");
-    if ((url.protocol !== "https:" && !localDevelopment) || url.origin !== value) return null;
+    const localDevelopment = url.protocol === "http:" &&
+      (url.hostname === "localhost" || url.hostname === "127.0.0.1");
+    if (
+      (url.protocol !== "https:" && !localDevelopment) || url.origin !== value
+    ) return null;
     return url.origin;
   } catch {
     return null;
@@ -62,7 +64,10 @@ export function preflight(request: Request): Response | null {
   if (!isTrustedOrigin(origin)) {
     return new Response(JSON.stringify({ error: "origin_not_allowed" }), {
       status: 403,
-      headers: { ...corsHeaders(request), "Content-Type": "application/json; charset=utf-8" },
+      headers: {
+        ...corsHeaders(request),
+        "Content-Type": "application/json; charset=utf-8",
+      },
     });
   }
   return new Response(null, { status: 204, headers: corsHeaders(request) });
@@ -75,12 +80,18 @@ export function requirePost(request: Request): Response | null {
 }
 
 export class RequestBodyError extends Error {
-  constructor(public readonly code: "body_too_large" | "invalid_json", public readonly status: 400 | 413) {
+  constructor(
+    public readonly code: "body_too_large" | "invalid_json",
+    public readonly status: 400 | 413,
+  ) {
     super(code);
   }
 }
 
-export async function readLimitedText(request: Request, maxBytes = 64 * 1024): Promise<string> {
+export async function readLimitedText(
+  request: Request,
+  maxBytes = 64 * 1024,
+): Promise<string> {
   const announced = Number(request.headers.get("content-length") ?? "0");
   if (Number.isFinite(announced) && announced > maxBytes) {
     throw new RequestBodyError("body_too_large", 413);
@@ -109,7 +120,10 @@ export async function readLimitedText(request: Request, maxBytes = 64 * 1024): P
   }
 }
 
-export async function readJsonBody(request: Request, maxBytes = 64 * 1024): Promise<unknown> {
+export async function readJsonBody(
+  request: Request,
+  maxBytes = 64 * 1024,
+): Promise<unknown> {
   const raw = await readLimitedText(request, maxBytes);
   try {
     return JSON.parse(raw);
@@ -119,13 +133,15 @@ export async function readJsonBody(request: Request, maxBytes = 64 * 1024): Prom
 }
 
 export function clientIpAddress(request: Request): string {
-  const forwarded = request.headers.get("x-forwarded-for")?.split(",").at(-1)?.trim();
-  const candidate =
-    request.headers.get("cf-connecting-ip")?.trim() ||
+  const forwarded = request.headers.get("x-forwarded-for")?.split(",").at(-1)
+    ?.trim();
+  const candidate = request.headers.get("cf-connecting-ip")?.trim() ||
     request.headers.get("x-real-ip")?.trim() ||
     forwarded ||
     "unknown";
-  return /^[0-9a-f:.]{2,64}$/i.test(candidate) ? candidate.toLowerCase() : "unknown";
+  return /^[0-9a-f:.]{2,64}$/i.test(candidate)
+    ? candidate.toLowerCase()
+    : "unknown";
 }
 
 export async function sha256(value: string): Promise<string> {

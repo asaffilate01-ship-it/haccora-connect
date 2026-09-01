@@ -39,7 +39,9 @@ Deno.serve(async (request) => {
   if (early) return early;
   try {
     const body = Input.parse(await readJsonBody(request, 16 * 1024));
-    const ipHash = await sha256(`${clientIpAddress(request)}:${env("CONTACT_HASH_SALT")}`);
+    const ipHash = await sha256(
+      `${clientIpAddress(request)}:${env("CONTACT_HASH_SALT")}`,
+    );
     const supabase = serviceClient();
 
     const { data: allowed, error: rateError } = await supabase.rpc(
