@@ -1,6 +1,13 @@
 import { z } from "zod";
 import { hasDokuveraIntegrationAccess } from "../_shared/dokuvera-access.ts";
-import { env, json, preflight, requirePost } from "../_shared/http.ts";
+import {
+  env,
+  json,
+  preflight,
+  readJsonBody,
+  RequestBodyError,
+  requirePost,
+} from "../_shared/http.ts";
 import { requireUser, serviceClient } from "../_shared/supabase.ts";
 
 const Input = z.discriminatedUnion("action", [
@@ -27,7 +34,7 @@ Deno.serve(async (request) => {
   if (early) return early;
   try {
     const { client, user } = await requireUser(request);
-    const input = Input.parse(await request.json());
+    const input = Input.parse(await readJsonBody(request, 16 * 1024));
     const { data: context, error: contextError } = await client.rpc(
       "get_my_context",
     );
@@ -110,6 +117,9 @@ Deno.serve(async (request) => {
       callback_url: callbackUrl(),
     }, 201);
   } catch (error) {
+    if (error instanceof RequestBodyError) {
+      return json(request, { error: error.code }, error.status);
+    }
     const unauthorized = error instanceof Error &&
       error.message === "Unauthorized";
     console.error(error);

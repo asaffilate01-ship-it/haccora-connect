@@ -1,5 +1,12 @@
 import { z } from "zod";
-import { env, json, preflight, requirePost } from "../_shared/http.ts";
+import {
+  env,
+  json,
+  preflight,
+  readJsonBody,
+  RequestBodyError,
+  requirePost,
+} from "../_shared/http.ts";
 import { requireUser, serviceClient } from "../_shared/supabase.ts";
 
 const Input = z.discriminatedUnion("action", [
@@ -55,7 +62,7 @@ Deno.serve(async (request) => {
   if (early) return early;
   try {
     const { client, user: actor } = await requireUser(request);
-    const input = Input.parse(await request.json());
+    const input = Input.parse(await readJsonBody(request, 32 * 1024));
     const { data: platformContext, error: contextError } = await client.rpc(
       "get_my_platform_context",
     );
@@ -249,6 +256,9 @@ Deno.serve(async (request) => {
       throw error;
     }
   } catch (error) {
+    if (error instanceof RequestBodyError) {
+      return json(request, { error: error.code }, error.status);
+    }
     if (error instanceof z.ZodError) {
       return json(request, { error: "invalid_request" }, 400);
     }

@@ -49,6 +49,7 @@ Deno.serve(async (request) => {
       }
       const response = await fetch(scannerUrl, {
         method: "POST",
+        signal: AbortSignal.timeout(30_000),
         headers: {
           Authorization: `Bearer ${scannerToken}`,
           "content-type": file.type || "application/octet-stream",

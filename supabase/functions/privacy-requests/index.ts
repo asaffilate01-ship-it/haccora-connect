@@ -1,5 +1,11 @@
 import { z } from "zod";
-import { json, preflight, requirePost } from "../_shared/http.ts";
+import {
+  json,
+  preflight,
+  readJsonBody,
+  RequestBodyError,
+  requirePost,
+} from "../_shared/http.ts";
 import { requireUser } from "../_shared/supabase.ts";
 
 const Input = z.object({
@@ -19,7 +25,7 @@ Deno.serve(async (request) => {
   if (early) return early;
   try {
     const { client, user } = await requireUser(request);
-    const input = Input.parse(await request.json());
+    const input = Input.parse(await readJsonBody(request, 16 * 1024));
     const { data: context, error: contextError } = await client.rpc(
       "get_my_context",
     );
@@ -62,6 +68,9 @@ Deno.serve(async (request) => {
     });
     return json(request, { ok: true, request: data }, 201);
   } catch (error) {
+    if (error instanceof RequestBodyError) {
+      return json(request, { error: error.code }, error.status);
+    }
     return json(request, {
       error: error instanceof Error && error.message === "Unauthorized"
         ? "unauthorized"

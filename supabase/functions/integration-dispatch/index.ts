@@ -70,6 +70,7 @@ Deno.serve(async (request) => {
       const response = await fetch(target, {
         method: "POST",
         redirect: "error",
+        signal: AbortSignal.timeout(15_000),
         headers: {
           "content-type": "application/json",
           "user-agent": "Haccora-Webhooks/1.0",
