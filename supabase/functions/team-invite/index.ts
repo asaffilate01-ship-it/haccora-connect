@@ -1,5 +1,13 @@
 import { z } from "zod";
-import { env, json, preflight, requirePost, sha256 } from "../_shared/http.ts";
+import {
+  env,
+  json,
+  preflight,
+  readJsonBody,
+  RequestBodyError,
+  requirePost,
+  sha256,
+} from "../_shared/http.ts";
 import { requireUser, serviceClient } from "../_shared/supabase.ts";
 
 const Input = z.object({
@@ -18,7 +26,7 @@ Deno.serve(async (request) => {
   if (early) return early;
   try {
     const { client, user } = await requireUser(request);
-    const input = Input.parse(await request.json());
+    const input = Input.parse(await readJsonBody(request, 16 * 1024));
     const { data: context, error: contextError } = await client.rpc(
       "get_my_context",
     );
@@ -101,6 +109,7 @@ Deno.serve(async (request) => {
     }/login?invite=${encodeURIComponent(token)}`;
     const invited = await fetch("https://api.resend.com/emails", {
       method: "POST",
+      signal: AbortSignal.timeout(15_000),
       headers: {
         Authorization: `Bearer ${env("RESEND_API_KEY")}`,
         "Content-Type": "application/json",
@@ -123,6 +132,9 @@ Deno.serve(async (request) => {
     }
     return json(request, { ok: true }, 201);
   } catch (error) {
+    if (error instanceof RequestBodyError) {
+      return json(request, { error: error.code }, error.status);
+    }
     if (error instanceof z.ZodError) {
       return json(request, { error: "invalid_request" }, 400);
     }

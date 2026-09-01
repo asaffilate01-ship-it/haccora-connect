@@ -1,5 +1,14 @@
 import { z } from "zod";
-import { env, json, preflight, requirePost, sha256 } from "../_shared/http.ts";
+import {
+  clientIpAddress,
+  env,
+  json,
+  preflight,
+  readJsonBody,
+  RequestBodyError,
+  requirePost,
+  sha256,
+} from "../_shared/http.ts";
 import { serviceClient } from "../_shared/supabase.ts";
 
 const Input = z.object({
@@ -29,20 +38,20 @@ Deno.serve(async (request) => {
   const early = preflight(request) ?? requirePost(request);
   if (early) return early;
   try {
-    const body = Input.parse(await request.json());
-    const forwarded =
-      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-        "unknown";
-    const ipHash = await sha256(`${forwarded}:${env("CONTACT_HASH_SALT")}`);
+    const body = Input.parse(await readJsonBody(request, 16 * 1024));
+    const ipHash = await sha256(`${clientIpAddress(request)}:${env("CONTACT_HASH_SALT")}`);
     const supabase = serviceClient();
 
-    const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-    const { count } = await supabase
-      .from("contact_requests")
-      .select("id", { count: "exact", head: true })
-      .eq("source_ip_hash", ipHash)
-      .gte("created_at", since);
-    if ((count ?? 0) >= 5) return json(request, { error: "rate_limited" }, 429);
+    const { data: allowed, error: rateError } = await supabase.rpc(
+      "consume_rate_limit",
+      {
+        p_bucket_key: `contact:${ipHash}`,
+        p_limit: 5,
+        p_window_seconds: 3600,
+      },
+    );
+    if (rateError) throw rateError;
+    if (allowed !== true) return json(request, { error: "rate_limited" }, 429);
 
     const { error } = await supabase.from("contact_requests").insert({
       first_name: body.firstName,
@@ -61,6 +70,9 @@ Deno.serve(async (request) => {
     if (error) throw error;
     return json(request, { ok: true }, 201);
   } catch (error) {
+    if (error instanceof RequestBodyError) {
+      return json(request, { error: error.code }, error.status);
+    }
     if (error instanceof z.ZodError) {
       return json(
         request,

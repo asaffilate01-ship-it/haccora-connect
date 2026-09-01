@@ -130,7 +130,9 @@ test("Phase 26 CI enforces the governed audit and all deployable Edge Functions"
     JSON.parse(packageJson).scripts["audit:production"],
     "node scripts/check-production-audits.mjs",
   );
-  assert.equal(JSON.parse(policy).exceptions.length, 2);
+  assert.equal(JSON.parse(policy).exceptions.length, 0);
+  assert.equal(JSON.parse(mobilePackage).overrides.metro, "0.84.5");
+  assert.equal(JSON.parse(mobilePackage).overrides["query-string"], "9.5.0");
   assert.equal(JSON.parse(mobilePackage).overrides.nanoid, "3.3.18");
   assert.equal(JSON.parse(mobilePackage).dependencies.nanoid, undefined);
 });
