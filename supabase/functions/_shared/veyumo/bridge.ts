@@ -1,6 +1,11 @@
-import { createClient } from "npm:@supabase/supabase-js@2.57.2";
-import { BridgeError, parseAction, signedHeaders, httpsUrl } from "./protocol.mjs";
-import { env, db, check, body, json, fail, originHeaders } from "./runtime.ts";
+import { createClient } from "@supabase/supabase-js";
+import {
+  BridgeError,
+  httpsUrl,
+  parseAction,
+  signedHeaders,
+} from "./protocol.mjs";
+import { body, check, db, env, fail, json, originHeaders } from "./runtime.ts";
 
 // source is a code constant in each app, never a field from the browser.
 export function bridge(source: string) {
@@ -8,26 +13,41 @@ export function bridge(source: string) {
     let cors = {};
     try {
       cors = originHeaders(req);
-      if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
-      if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405, cors);
+      if (req.method === "OPTIONS") {
+        return new Response(null, { status: 204, headers: cors });
+      }
+      if (req.method !== "POST") {
+        return json({ error: "method_not_allowed" }, 405, cors);
+      }
       const authorization = req.headers.get("authorization") || "";
-      if (!authorization.startsWith("Bearer ")) throw new BridgeError("sign_in_required", 401);
-      const client = createClient(env("SUPABASE_URL"), env("SUPABASE_ANON_KEY"), {
-        global: { headers: { Authorization: authorization } },
-        auth: { persistSession: false, autoRefreshToken: false },
-      });
+      if (!authorization.startsWith("Bearer ")) {
+        throw new BridgeError("sign_in_required", 401);
+      }
+      const client = createClient(
+        env("SUPABASE_URL"),
+        env("SUPABASE_ANON_KEY"),
+        {
+          global: { headers: { Authorization: authorization } },
+          auth: { persistSession: false, autoRefreshToken: false },
+        },
+      );
       const { data, error } = await client.auth.getUser();
       if (error || !data.user) throw new BridgeError("sign_in_required", 401);
       const user = data.user;
-      if (!user.email || !user.email_confirmed_at) throw new BridgeError("verify_email_first", 403);
+      if (!user.email || !user.email_confirmed_at) {
+        throw new BridgeError("verify_email_first", 403);
+      }
       const command = parseAction(await body(req));
       let subject = user.id;
-      let entitlement: any = { active: false };
+      let entitlement: { active: boolean; expiresAt?: string } = {
+        active: false,
+      };
       const service = db();
       if (source === "haccora") {
         const context = check(await client.rpc("get_my_context"));
-        if (!context?.organization_id || context.role !== "owner")
+        if (!context?.organization_id || context.role !== "owner") {
           throw new BridgeError("business_owner_required", 403);
+        }
         subject = context.organization_id;
         const sub = check(
           await service
@@ -56,18 +76,18 @@ export function bridge(source: string) {
         );
       }
       const market = env("VEYUMO_MARKET") || "GB";
-      if (!["GB", "DE"].includes(market))
+      if (!["GB", "DE"].includes(market)) {
         throw new BridgeError("invalid_market_configuration", 503);
+      }
       const raw = JSON.stringify({
         command,
         actor: {
           subject,
           email: user.email,
           verified: true,
-          fullName:
-            typeof user.user_metadata?.full_name === "string"
-              ? user.user_metadata.full_name.slice(0, 200)
-              : undefined,
+          fullName: typeof user.user_metadata?.full_name === "string"
+            ? user.user_metadata.full_name.slice(0, 200)
+            : undefined,
           market,
           entitlement,
         },
@@ -98,7 +118,9 @@ export function bridge(source: string) {
       return json(result, response.status, cors);
     } catch (error) {
       const response = fail(error);
-      Object.entries(cors).forEach(([k, v]) => response.headers.set(k, String(v)));
+      Object.entries(cors).forEach(([k, v]) =>
+        response.headers.set(k, String(v))
+      );
       return response;
     }
   };
@@ -109,20 +131,34 @@ async function stripeEntitlement(
   customerId: string | undefined,
   owner: { organizationId?: string; email?: string },
 ) {
-  if (!subscriptionId?.startsWith("sub_") || !customerId || !env("STRIPE_SECRET_KEY"))
+  if (
+    !subscriptionId?.startsWith("sub_") || !customerId ||
+    !env("STRIPE_SECRET_KEY")
+  ) {
     return { active: false };
+  }
   try {
     const headers = { authorization: `Bearer ${env("STRIPE_SECRET_KEY")}` };
     const response = await fetch(
-      `https://api.stripe.com/v1/subscriptions/${encodeURIComponent(subscriptionId)}`,
+      `https://api.stripe.com/v1/subscriptions/${
+        encodeURIComponent(subscriptionId)
+      }`,
       { headers, signal: AbortSignal.timeout(8000) },
     );
     if (!response.ok) return { active: false };
     const sub = await response.json();
-    if (sub.customer !== customerId || sub.status !== "active" || sub.livemode !== true)
+    if (
+      sub.customer !== customerId || sub.status !== "active" ||
+      sub.livemode !== true
+    ) {
       return { active: false };
-    if (owner.organizationId && sub.metadata?.organization_id !== owner.organizationId)
+    }
+    if (
+      owner.organizationId &&
+      sub.metadata?.organization_id !== owner.organizationId
+    ) {
       return { active: false };
+    }
     // Legacy Craftvaro subscription rows are mutable. Verify the Stripe customer identity as well.
     if (owner.email) {
       const customer = await fetch(
@@ -131,10 +167,14 @@ async function stripeEntitlement(
       );
       if (!customer.ok) return { active: false };
       const c = await customer.json();
-      if (c.deleted || c.email?.toLowerCase() !== owner.email.toLowerCase())
+      if (c.deleted || c.email?.toLowerCase() !== owner.email.toLowerCase()) {
         return { active: false };
+      }
     }
-    return { active: true, expiresAt: new Date(Date.now() + 300000).toISOString() };
+    return {
+      active: true,
+      expiresAt: new Date(Date.now() + 300000).toISOString(),
+    };
   } catch {
     return { active: false };
   }

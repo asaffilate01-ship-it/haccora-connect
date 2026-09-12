@@ -20,27 +20,47 @@ export function parseAction(value) {
     typeof value !== "object" ||
     Array.isArray(value) ||
     !actions.includes(value.action)
-  )
+  ) {
     throw new BridgeError("invalid_action");
-  const allowed = ["action", "offerId", "subscriptionId", "token", "email", "invitationId"];
-  if (Object.keys(value).some((k) => !allowed.includes(k)))
+  }
+  const allowed = [
+    "action",
+    "offerId",
+    "subscriptionId",
+    "token",
+    "email",
+    "invitationId",
+  ];
+  if (Object.keys(value).some((k) => !allowed.includes(k))) {
     throw new BridgeError("unexpected_field");
-  for (const k of allowed.slice(1))
-    if (value[k] !== undefined && (typeof value[k] !== "string" || value[k].length > 320))
+  }
+  for (const k of allowed.slice(1)) {
+    if (
+      value[k] !== undefined &&
+      (typeof value[k] !== "string" || value[k].length > 320)
+    ) {
       throw new BridgeError("invalid_field");
-  if (value.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.email))
+    }
+  }
+  if (value.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.email)) {
     throw new BridgeError("invalid_email");
+  }
   return value;
 }
 export function httpsUrl(value) {
   const u = new URL(value);
-  if (u.protocol !== "https:" || u.username || u.password || u.hash)
+  if (u.protocol !== "https:" || u.username || u.password || u.hash) {
     throw new BridgeError("invalid_endpoint", 503);
+  }
   return u;
 }
 export async function digest(value) {
-  const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
-  return [...new Uint8Array(b)].map((v) => v.toString(16).padStart(2, "0")).join("");
+  const b = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(value),
+  );
+  return [...new Uint8Array(b)].map((v) => v.toString(16).padStart(2, "0"))
+    .join("");
 }
 export async function hmac(secret, value) {
   const key = await crypto.subtle.importKey(
@@ -50,8 +70,13 @@ export async function hmac(secret, value) {
     false,
     ["sign"],
   );
-  const b = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(value));
-  return [...new Uint8Array(b)].map((v) => v.toString(16).padStart(2, "0")).join("");
+  const b = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    new TextEncoder().encode(value),
+  );
+  return [...new Uint8Array(b)].map((v) => v.toString(16).padStart(2, "0"))
+    .join("");
 }
 export function same(a, b) {
   if (typeof a !== "string" || a.length !== b.length) return false;
@@ -60,7 +85,9 @@ export function same(a, b) {
   return n === 0;
 }
 export async function signedHeaders(source, secret, raw, now = Date.now()) {
-  if (!secret || secret.length < 32) throw new BridgeError("bridge_not_configured", 503);
+  if (!secret || secret.length < 32) {
+    throw new BridgeError("bridge_not_configured", 503);
+  }
   const timestamp = String(Math.floor(now / 1000));
   const id = crypto.randomUUID();
   return {
@@ -68,53 +95,75 @@ export async function signedHeaders(source, secret, raw, now = Date.now()) {
     "x-veyumo-source": source,
     "x-veyumo-id": id,
     "x-veyumo-timestamp": timestamp,
-    "x-veyumo-signature": await hmac(secret, `${source}.${id}.${timestamp}.${raw}`),
+    "x-veyumo-signature": await hmac(
+      secret,
+      `${source}.${id}.${timestamp}.${raw}`,
+    ),
   };
 }
 export async function verify(headers, secret, raw, now = Date.now()) {
   const source = headers.get("x-veyumo-source") || "";
   const id = headers.get("x-veyumo-id") || "";
   const timestamp = headers.get("x-veyumo-timestamp") || "";
-  if (!secret || secret.length < 32) throw new BridgeError("bridge_not_configured", 503);
+  if (!secret || secret.length < 32) {
+    throw new BridgeError("bridge_not_configured", 503);
+  }
   if (
     !/^[a-z_]+$/.test(source) ||
     !/^[a-f0-9-]{36}$/.test(id) ||
     !/^\d{10}$/.test(timestamp) ||
     Math.abs(now / 1000 - Number(timestamp)) > 300
-  )
+  ) {
     throw new BridgeError("invalid_signature", 401);
+  }
   if (
     !same(
       headers.get("x-veyumo-signature") || "",
       await hmac(secret, `${source}.${id}.${timestamp}.${raw}`),
     )
-  )
+  ) {
     throw new BridgeError("invalid_signature", 401);
+  }
   return { source, id };
 }
 export async function verifySvix(headers, secret, raw, now = Date.now()) {
   if (!secret) throw new BridgeError("gigs_webhook_not_configured", 503);
   const id = headers.get("webhook-id") || "";
   const t = headers.get("webhook-timestamp") || "";
-  if (!id || !/^[0-9]{10}$/.test(t) || Math.abs(now / 1000 - Number(t)) > 300)
+  if (!id || !/^[0-9]{10}$/.test(t) || Math.abs(now / 1000 - Number(t)) > 300) {
     throw new BridgeError("invalid_signature", 401);
+  }
   let key;
   try {
-    key = Uint8Array.from(atob(secret.replace(/^whsec_/, "")), (c) => c.charCodeAt(0));
+    key = Uint8Array.from(
+      atob(secret.replace(/^whsec_/, "")),
+      (c) => c.charCodeAt(0),
+    );
   } catch {
     throw new BridgeError("invalid_webhook_secret", 503);
   }
-  const k = await crypto.subtle.importKey("raw", key, { name: "HMAC", hash: "SHA-256" }, false, [
-    "sign",
-  ]);
-  const sig = await crypto.subtle.sign("HMAC", k, new TextEncoder().encode(`${id}.${t}.${raw}`));
+  const k = await crypto.subtle.importKey(
+    "raw",
+    key,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    [
+      "sign",
+    ],
+  );
+  const sig = await crypto.subtle.sign(
+    "HMAC",
+    k,
+    new TextEncoder().encode(`${id}.${t}.${raw}`),
+  );
   const expected = btoa(String.fromCharCode(...new Uint8Array(sig)));
   if (
     !(headers.get("webhook-signature") || "")
       .split(" ")
       .some((s) => s.startsWith("v1,") && same(s.slice(3), expected))
-  )
+  ) {
     throw new BridgeError("invalid_signature", 401);
+  }
   return id;
 }
 export function eligible(entitlement, now = Date.now()) {
@@ -134,7 +183,9 @@ export function canOffer(offer, entitlement, market) {
 }
 export function safeSessionUrl(url, allowedOrigins) {
   const u = httpsUrl(url);
-  if (!allowedOrigins.includes(u.origin)) throw new BridgeError("unapproved_checkout_origin", 502);
+  if (!allowedOrigins.includes(u.origin)) {
+    throw new BridgeError("unapproved_checkout_origin", 502);
+  }
   return u.href;
 }
 export function publicOffer(o) {
