@@ -1,3 +1,4 @@
+import { VeyumoMobile } from "@/components/veyumo/VeyumoMobile";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Check, CreditCard, ExternalLink, Loader2, ShieldCheck, Users, MapPin } from "lucide-react";
@@ -65,6 +66,7 @@ function BillingPage() {
   return (
     <div className="p-5 md:p-10 space-y-6 max-w-5xl">
       <PaymentTestModeBanner />
+      {canManageBilling && <VeyumoMobile />}
       <div>
         <div className="eyebrow">{"Subscription"}</div>
         <h1 className="mt-1 text-3xl md:text-4xl">{"Plan & billing"}</h1>

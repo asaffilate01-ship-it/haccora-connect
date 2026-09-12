@@ -56,3 +56,8 @@ verify_jwt = true
 
 [functions.team-invite]
 verify_jwt = true
+
+
+# Veyumo validates the local user or server signature inside the function.
+[functions.veyumo-bridge]
+verify_jwt = false
