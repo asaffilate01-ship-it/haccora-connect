@@ -1,5 +1,12 @@
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
-import { corsHeaders, json, preflight, requirePost } from "../_shared/http.ts";
+import {
+  corsHeaders,
+  json,
+  preflight,
+  readJsonBody,
+  RequestBodyError,
+  requirePost,
+} from "../_shared/http.ts";
 import { requireUser } from "../_shared/supabase.ts";
 
 type ExportInput = { from?: string; to?: string };
@@ -9,7 +16,7 @@ Deno.serve(async (request) => {
   if (early) return early;
   try {
     const { client, user } = await requireUser(request);
-    const input = (await request.json()) as ExportInput;
+    const input = (await readJsonBody(request, 8 * 1024)) as ExportInput;
     const from = input.from
       ? new Date(input.from)
       : new Date(Date.now() - 30 * 86400000);
@@ -325,6 +332,9 @@ Deno.serve(async (request) => {
       },
     });
   } catch (error) {
+    if (error instanceof RequestBodyError) {
+      return json(request, { error: error.code }, error.status);
+    }
     console.error(error);
     return json(
       request,

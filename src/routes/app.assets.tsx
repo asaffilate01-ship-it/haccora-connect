@@ -1,3 +1,4 @@
+import { BusinessServicePrompt } from "@/components/BusinessServicePrompt";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -339,6 +340,10 @@ function AssetsPage() {
           </article>
         ))}
       </section>
+      <BusinessServicePrompt
+        services={["craftvaro", "insure360", "suppliers"]}
+        title="Keep your premises running"
+      />
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { BusinessServicePrompt } from "@/components/BusinessServicePrompt";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
@@ -340,6 +341,10 @@ function TrainingPage() {
           }
         </p>
       </div>
+      <BusinessServicePrompt
+        services={["training", "xpertjobs", "insure360"]}
+        title="People and training services"
+      />
     </div>
   );
 }

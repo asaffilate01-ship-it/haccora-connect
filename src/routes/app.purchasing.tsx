@@ -1,3 +1,4 @@
+import { BusinessServicePrompt } from "@/components/BusinessServicePrompt";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
@@ -196,6 +197,10 @@ function PurchasingPage() {
           t={t}
         />
       )}
+      <BusinessServicePrompt
+        services={["suppliers", "taxnuvia", "dishbee"]}
+        title="Get more from your purchasing"
+      />
     </div>
   );
 }

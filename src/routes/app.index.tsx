@@ -1,3 +1,4 @@
+import { BusinessServicePrompt } from "@/components/BusinessServicePrompt";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
@@ -346,6 +347,10 @@ function Dashboard() {
         <StaffView tasks={visibleTasks} done={done} dataAvailable={!loadError} />
       )}
       {user.role === "inspector" && <InspectorView />}
+      <BusinessServicePrompt
+        services={["taxnuvia", "omni-intelligence", "insure360"]}
+        title="Grow and protect your business"
+      />
     </div>
   );
 }

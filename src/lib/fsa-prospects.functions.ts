@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuth } from "@/integrations/supabase/haccora-auth-middleware";
 import { assertPlatformOperator, fetchAuthorities, syncFsaProspects } from "./fsa-prospects.server";
 
 export const listFsaAuthorities = createServerFn({ method: "GET" })

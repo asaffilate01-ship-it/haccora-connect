@@ -47,6 +47,21 @@ function leafAdvisories(report, packageName, seen = new Set()) {
 }
 
 export function assessAudit(report, scope, policy, today = new Date()) {
+  if (
+    !report ||
+    report.error ||
+    !report.vulnerabilities ||
+    typeof report.vulnerabilities !== "object" ||
+    Array.isArray(report.vulnerabilities)
+  ) {
+    return {
+      passed: false,
+      exceptions: [],
+      uncoveredDirect: [],
+      unexplainedChains: ["invalid_audit_report"],
+      expired: [],
+    };
+  }
   const vulnerabilityNames = Object.keys(report.vulnerabilities ?? {});
   if (!vulnerabilityNames.length) return { passed: true, exceptions: [] };
 
@@ -101,6 +116,9 @@ function runAudit(scope, directory, policy) {
     throw new Error(`${scope} npm audit did not return valid JSON: ${result.stderr.trim()}`);
   }
   const assessment = assessAudit(report, scope, policy);
+  if (result.error || result.signal || result.status === null || ![0, 1].includes(result.status)) {
+    throw new Error(`${scope} dependency audit could not complete; no clean result is available.`);
+  }
   if (!assessment.passed) {
     throw new Error(
       `${scope} dependency audit failed: ${JSON.stringify({

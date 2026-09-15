@@ -1,3 +1,4 @@
+import { BusinessServicePrompt } from "@/components/BusinessServicePrompt";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -562,6 +563,10 @@ function OrganisationPage() {
           )}
         </section>
       </div>
+      <BusinessServicePrompt
+        services={["xpertjobs", "training", "veyumo"]}
+        title="Support your growing team"
+      />
     </div>
   );
 }

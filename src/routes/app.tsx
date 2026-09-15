@@ -87,6 +87,7 @@ const GROUPS: NavGroup[] = [
       { to: "/app/quick-log", icon: PlusCircle, key: "Quick log", nav: "checks" },
       { to: "/app/coach", icon: Lightbulb, key: "Compliance coach", nav: "dashboard" },
       { to: "/app/get-started", icon: Rocket, key: "Get started", nav: "dashboard" },
+      { to: "/app/add-ons", icon: PlugZap, key: "Business services", nav: "addons" },
       { to: "/app/readiness", icon: Gauge, key: "UK readiness", nav: "dashboard" },
       { to: "/app/control-centre", icon: Command, key: "menu.control", nav: "control" },
     ],
@@ -281,6 +282,7 @@ function AppShell() {
       { prefix: "/app/control-centre", nav: "control" },
       { prefix: "/app/workflows", nav: "workflows" },
       { prefix: "/app/billing", nav: "billing" },
+      { prefix: "/app/add-ons", nav: "addons" },
       { prefix: "/app/integrations", nav: "integrations" },
       { prefix: "/app/preferences", nav: "preferences" },
     ];

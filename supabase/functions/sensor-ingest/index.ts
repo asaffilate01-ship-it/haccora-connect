@@ -3,6 +3,8 @@ import {
   constantTimeEqual,
   json,
   preflight,
+  readJsonBody,
+  RequestBodyError,
   requirePost,
   sha256,
 } from "../_shared/http.ts";
@@ -20,7 +22,7 @@ Deno.serve(async (request) => {
   const early = preflight(request) ?? requirePost(request);
   if (early) return early;
   try {
-    const body = Input.parse(await request.json());
+    const body = Input.parse(await readJsonBody(request, 16 * 1024));
     const capturedAt = new Date(body.capturedAt).getTime();
     const now = Date.now();
     if (capturedAt < now - 7 * 86400000 || capturedAt > now + 10 * 60_000) {
@@ -86,6 +88,9 @@ Deno.serve(async (request) => {
       .eq("id", device.id);
     return json(request, { ok: true }, 202);
   } catch (error) {
+    if (error instanceof RequestBodyError) {
+      return json(request, { error: error.code }, error.status);
+    }
     if (error instanceof z.ZodError) {
       return json(request, { error: "invalid_request" }, 400);
     }

@@ -1,3 +1,4 @@
+import { BusinessServicePrompt } from "@/components/BusinessServicePrompt";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useI18n } from "@/lib/i18n";
@@ -219,6 +220,10 @@ function MenuPage() {
           )}
         </div>
       )}
+      <BusinessServicePrompt
+        services={["dishbee", "eventplanr", "zoryn-rewards"]}
+        title="Turn your menu into more sales"
+      />
     </div>
   );
 }

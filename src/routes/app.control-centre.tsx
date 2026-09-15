@@ -1,3 +1,4 @@
+import { BusinessServicePrompt } from "@/components/BusinessServicePrompt";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -243,6 +244,10 @@ function ControlCentrePage() {
           </ul>
         )}
       </div>
+      <BusinessServicePrompt
+        services={["omni-intelligence", "omni-comms", "insure360"]}
+        title="More support for your operation"
+      />
     </div>
   );
 }

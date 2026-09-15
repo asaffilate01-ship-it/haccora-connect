@@ -104,6 +104,16 @@ for (const [pathname, expectedContentType, privateCache] of routes) {
   ) {
     failures.push(`${pathname}: release identity header does not match the built commit`);
   }
+  const csp = response.headers.get("content-security-policy") ?? "";
+  for (const required of [
+    "script-src 'self' 'unsafe-inline' https://js.stripe.com https://checkout.stripe.com",
+    "frame-src https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com",
+    "frame-ancestors 'none'",
+    "script-src-attr 'none'",
+  ]) {
+    if (!csp.includes(required))
+      failures.push(`${pathname}: checkout-safe CSP missing ${required}`);
+  }
   if (!response.headers.has("content-security-policy")) {
     failures.push(`${pathname}: missing Content-Security-Policy security header`);
   }
