@@ -6,7 +6,7 @@ const read = (file) => readFile(new URL(`../${file}`, import.meta.url), "utf8");
 
 test("Edge CORS trusts exact configured origins and bounds request bodies", async () => {
   const source = await read("supabase/functions/_shared/http.ts");
-  assert.match(source, /https:\/\/app\.haccora\.co\.uk/);
+  assert.ok(source.includes('"https://app.haccora.co.uk"'));
   assert.match(source, /configuredOrigins\.has\(normalized\)/);
   assert.doesNotMatch(source, /endsWith\(["']\.lovable/);
   assert.match(source, /status: 403/);
