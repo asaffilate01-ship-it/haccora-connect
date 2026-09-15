@@ -165,11 +165,19 @@ test("Phase 27 writes only a non-sensitive acceptance digest", async () => {
 });
 
 test("action pin validation bounds malformed references and accepts nested pinned actions", async () => {
-  const result = await run(process.execPath, ["--input-type=module", "-e", `
+  const result = await run(
+    process.execPath,
+    [
+      "--input-type=module",
+      "-e",
+      `
     import { findUnpinnedActions } from './scripts/check-action-pins.mjs';
     const malformed = '  - uses: ' + '!/'.repeat(50000) + '!';
     if (findUnpinnedActions(malformed).length !== 1) process.exit(1);
-  `], { cwd: new URL("..", import.meta.url), timeout: 2000 });
+  `,
+    ],
+    { cwd: new URL("..", import.meta.url), timeout: 2000 },
+  );
   assert.equal(result.stderr, "");
   assert.deepEqual(findUnpinnedActions(`- uses: owner/repo/sub/action@${"a".repeat(40)}`), []);
   assert.equal(findUnpinnedActions(`- uses: owner//repo@${"a".repeat(40)}`).length, 1);
