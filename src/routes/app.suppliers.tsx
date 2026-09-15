@@ -1,3 +1,4 @@
+import { BusinessServicePrompt } from "@/components/BusinessServicePrompt";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
@@ -240,6 +241,10 @@ function SuppliersPage() {
           })}
         </div>
       )}
+      <BusinessServicePrompt
+        services={["suppliers", "craftvaro", "insure360"]}
+        title="Source, maintain and protect"
+      />
     </div>
   );
 }

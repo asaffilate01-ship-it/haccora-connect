@@ -1,5 +1,14 @@
 import { z } from "zod";
-import { env, json, preflight, requirePost, sha256 } from "../_shared/http.ts";
+import {
+  clientIpAddress,
+  env,
+  json,
+  preflight,
+  readJsonBody,
+  RequestBodyError,
+  requirePost,
+  sha256,
+} from "../_shared/http.ts";
 import { requireUser } from "../_shared/supabase.ts";
 
 const Input = z.discriminatedUnion("action", [
@@ -22,9 +31,8 @@ Deno.serve(async (request) => {
   if (early) return early;
   try {
     const { client, user } = await requireUser(request);
-    const input = Input.parse(await request.json());
-    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-      "unknown";
+    const input = Input.parse(await readJsonBody(request, 16 * 1024));
+    const ip = clientIpAddress(request);
     const agent = request.headers.get("user-agent") ?? "unknown";
     const salt = env("CONTACT_HASH_SALT");
     const ipHash = await sha256(`${salt}:${ip}`);
@@ -65,6 +73,9 @@ Deno.serve(async (request) => {
     });
     return json(request, { ok: true });
   } catch (error) {
+    if (error instanceof RequestBodyError) {
+      return json(request, { error: error.code }, error.status);
+    }
     return json(request, {
       error: error instanceof Error && error.message === "Unauthorized"
         ? "unauthorized"

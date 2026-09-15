@@ -5,6 +5,8 @@ import {
   env,
   json,
   preflight,
+  readLimitedText,
+  RequestBodyError,
   requirePost,
   sha256,
 } from "../_shared/http.ts";
@@ -157,7 +159,7 @@ Deno.serve(async (request) => {
   const service = serviceClient();
   let eventId: string | null = null;
   try {
-    const rawBody = await request.text();
+    const rawBody = await readLimitedText(request, 256 * 1024);
     const timestampHeader = request.headers.get("x-dokuvera-timestamp") ?? "";
     const signatureHeader = request.headers.get("x-dokuvera-signature") ?? "";
     const eventHeader = request.headers.get("x-dokuvera-event-id") ?? "";
@@ -353,6 +355,9 @@ Deno.serve(async (request) => {
           updated_at: new Date().toISOString(),
         })
         .eq("event_id", eventId);
+    }
+    if (error instanceof RequestBodyError) {
+      return json(request, { error: error.code }, error.status);
     }
     return json(request, { error: "delivery_failed" }, 400);
   }

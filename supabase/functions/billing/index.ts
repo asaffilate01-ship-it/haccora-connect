@@ -4,6 +4,9 @@ import {
   env,
   json,
   preflight,
+  readJsonBody,
+  readLimitedText,
+  RequestBodyError,
   requirePost,
   sha256,
 } from "../_shared/http.ts";
@@ -29,6 +32,7 @@ async function stripeRequest(path: string, body: URLSearchParams) {
       "content-type": "application/x-www-form-urlencoded",
     },
     body,
+    signal: AbortSignal.timeout(15_000),
   });
   const result = await response.json() as {
     id?: string;
@@ -45,7 +49,7 @@ async function stripeRequest(path: string, body: URLSearchParams) {
 
 async function authenticatedAction(request: Request) {
   const { client, user } = await requireUser(request);
-  const input = Action.parse(await request.json());
+  const input = Action.parse(await readJsonBody(request, 8 * 1024));
   const { data: context, error } = await client.rpc("get_my_context");
   if (error) throw error;
   const workspace = (context ?? {}) as Record<string, unknown>;
@@ -97,7 +101,7 @@ async function authenticatedAction(request: Request) {
 }
 
 async function stripeWebhook(request: Request, signatureHeader: string) {
-  const raw = await request.text();
+  const raw = await readLimitedText(request, 512 * 1024);
   const signatureParts = signatureHeader.split(",").map((part) => {
     const separator = part.indexOf("=");
     return separator > 0
@@ -339,6 +343,9 @@ Deno.serve(async (request) => {
       ? await stripeWebhook(request, signature)
       : await authenticatedAction(request);
   } catch (error) {
+    if (error instanceof RequestBodyError) {
+      return json(request, { error: error.code }, error.status);
+    }
     const unauthorized = error instanceof Error &&
       error.message === "Unauthorized";
     console.error(error);

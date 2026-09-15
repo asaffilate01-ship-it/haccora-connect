@@ -12,7 +12,15 @@ export function findUnpinnedActions(source, filename = "workflow") {
     if (!match) continue;
     const reference = match[1];
     if (reference.startsWith("./")) continue;
-    if (/^[^/@\s]+\/[^/@\s]+(?:\/[^@\s]+)*@[a-f0-9]{40}$/.test(reference)) continue;
+    const parts = reference.split("@");
+    const segments = parts[0].split("/");
+    if (
+      parts.length === 2 &&
+      /^[a-f0-9]{40}$/.test(parts[1]) &&
+      segments.length >= 2 &&
+      segments.every((segment) => segment.length > 0 && !/\s/.test(segment))
+    )
+      continue;
     failures.push(
       `${filename}:${index + 1} action is not pinned to a full commit SHA: ${reference}`,
     );

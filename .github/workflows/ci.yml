@@ -124,7 +124,7 @@ jobs:
           integration-dispatch/index.ts
           dokuvera-admin/index.ts
           dokuvera-webhook/index.ts
-          operations-health/index.ts
+          operations-health/index.ts veyumo-bridge/index.ts
 
   browser-e2e:
     needs: web

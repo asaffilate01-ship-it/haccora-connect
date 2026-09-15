@@ -1,3 +1,4 @@
+import { BusinessServicePrompt } from "@/components/BusinessServicePrompt";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Check, CreditCard, ExternalLink, Loader2, ShieldCheck, Users, MapPin } from "lucide-react";
@@ -211,6 +212,10 @@ function BillingPage() {
       <p className="text-xs text-muted-foreground">
         {"Payment details are processed by Stripe; Haccora does not store card numbers."}
       </p>
+      <BusinessServicePrompt
+        services={["taxnuvia", "insure360", "veyumo"]}
+        title="Finance and business essentials"
+      />
     </div>
   );
 }

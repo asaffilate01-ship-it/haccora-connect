@@ -5,6 +5,12 @@ import { cn } from "@/lib/utils";
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const;
+const SAFE_CSS_COLOR =
+  /^(?:#[\da-f]{3,8}|(?:rgb|hsl)a?\([\d.,%\s-]+\)|(?:oklch|lab|lch)\([\d.%\s/-]+\)|var\(--[a-z\d_-]+\))$/i;
+
+function safeCssIdentifier(value: string): string {
+  return value.replace(/[^a-zA-Z0-9_-]/g, "");
+}
 
 export type ChartConfig = {
   [k in string]: {
@@ -40,7 +46,7 @@ const ChartContainer = React.forwardRef<
   }
 >(({ id, className, children, config, ...props }, ref) => {
   const uniqueId = React.useId();
-  const chartId = `chart-${id || uniqueId.replace(/:/g, "")}`;
+  const chartId = `chart-${safeCssIdentifier(id || uniqueId) || "default"}`;
 
   return (
     <ChartContext.Provider value={{ config }}>
@@ -68,26 +74,25 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null;
   }
 
-  return (
-    <style
-      dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
+  const css = Object.entries(THEMES)
+    .map(
+      ([theme, prefix]) => `
 ${prefix} [data-chart=${id}] {
 ${colorConfig
   .map(([key, itemConfig]) => {
     const color = itemConfig.theme?.[theme as keyof typeof itemConfig.theme] || itemConfig.color;
-    return color ? `  --color-${key}: ${color};` : null;
+    const safeKey = safeCssIdentifier(key);
+    return safeKey && color && SAFE_CSS_COLOR.test(color)
+      ? `  --color-${safeKey}: ${color};`
+      : null;
   })
   .join("\n")}
 }
 `,
-          )
-          .join("\n"),
-      }}
-    />
-  );
+    )
+    .join("\n");
+
+  return <style>{css}</style>;
 };
 
 const ChartTooltip = RechartsPrimitive.Tooltip;

@@ -65,6 +65,7 @@ const NAV_KEYS = [
   "billing",
   "integrations",
   "preferences",
+  "addons",
 ] as const;
 export type NavKey = (typeof NAV_KEYS)[number];
 
@@ -108,6 +109,7 @@ export const ROLE_PERMISSIONS: Record<Role, NavKey[]> = {
     "billing",
     "integrations",
     "preferences",
+    "addons",
   ],
   manager: [
     "dashboard",

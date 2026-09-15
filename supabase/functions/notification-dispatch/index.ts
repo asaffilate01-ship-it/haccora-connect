@@ -442,6 +442,7 @@ async function processPushReceipts(
   const accessToken = Deno.env.get("EXPO_ACCESS_TOKEN");
   const response = await fetch("https://exp.host/--/api/v2/push/getReceipts", {
     method: "POST",
+    signal: AbortSignal.timeout(15_000),
     headers: {
       "Content-Type": "application/json",
       ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
@@ -527,6 +528,7 @@ async function sendEmail(
   }
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
+    signal: AbortSignal.timeout(15_000),
     headers: {
       Authorization: `Bearer ${env("RESEND_API_KEY")}`,
       "Content-Type": "application/json",
@@ -569,6 +571,7 @@ async function sendPush(
     const gateway = env("WEB_PUSH_GATEWAY_URL");
     const gatewayResponse = await fetch(gateway, {
       method: "POST",
+      signal: AbortSignal.timeout(15_000),
       headers: {
         Authorization: `Bearer ${env("WEB_PUSH_GATEWAY_TOKEN")}`,
         "Content-Type": "application/json",
@@ -591,6 +594,7 @@ async function sendPush(
   const accessToken = Deno.env.get("EXPO_ACCESS_TOKEN");
   const response = await fetch("https://exp.host/--/api/v2/push/send", {
     method: "POST",
+    signal: AbortSignal.timeout(15_000),
     headers: {
       "Content-Type": "application/json",
       ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),

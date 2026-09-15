@@ -1,3 +1,4 @@
+import { BusinessServicePrompt } from "@/components/BusinessServicePrompt";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -434,6 +435,10 @@ function IntegrationsPage() {
           </ul>
         </section>
       </div>
+      <BusinessServicePrompt
+        services={["omni-intelligence", "dishbee", "omni-comms"]}
+        title="Connect your business tools"
+      />
     </div>
   );
 }

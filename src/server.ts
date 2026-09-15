@@ -55,9 +55,9 @@ function withSecurityHeaders(response: Response, request: Request): Response {
   headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   headers.set(
     "Permissions-Policy",
-    "camera=(self), geolocation=(self), microphone=(), payment=(), usb=()",
+    'camera=(self), geolocation=(self), microphone=(), payment=(self "https://js.stripe.com" "https://checkout.stripe.com"), usb=()',
   );
-  headers.set("Cross-Origin-Opener-Policy", "same-origin");
+  headers.set("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
   headers.set("Cross-Origin-Resource-Policy", "same-site");
   if (RELEASE_VERIFIED) headers.set("X-Haccora-Release", RELEASE_SHA);
   headers.set(
@@ -68,11 +68,14 @@ function withSecurityHeaders(response: Response, request: Request): Response {
       "frame-ancestors 'none'",
       "form-action 'self'",
       "object-src 'none'",
-      "script-src 'self' 'unsafe-inline'",
+      "script-src 'self' 'unsafe-inline' https://js.stripe.com https://checkout.stripe.com",
+      "script-src-attr 'none'",
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob:",
+      "img-src 'self' data: blob: https://*.stripe.com",
       "font-src 'self' data:",
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://checkout.stripe.com https://m.stripe.network https://q.stripe.com",
+      "frame-src https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com",
+      "media-src 'self' blob:",
       "worker-src 'self' blob:",
       "manifest-src 'self'",
       "upgrade-insecure-requests",
