@@ -1,4 +1,5 @@
 import Constants from "expo-constants";
+import { getInitialURL } from "expo-linking";
 import * as Notifications from "expo-notifications";
 import { router } from "expo-router";
 import { Platform } from "react-native";
@@ -102,15 +103,26 @@ const ALLOWED_ROUTES = new Set([
 ]);
 
 function openNotification(response: Notifications.NotificationResponse | null) {
+  if (!response) return;
   const data = response?.notification.request.content.data;
   const requested = typeof data?.nativeRoute === "string" ? data.nativeRoute : "/dashboard";
   router.push((ALLOWED_ROUTES.has(requested) ? requested : "/dashboard") as never);
+  void Notifications.clearLastNotificationResponseAsync().catch(() => undefined);
 }
 
 export function configureNotificationNavigation() {
-  void Notifications.getLastNotificationResponseAsync().then(openNotification);
+  let active = true;
+  // A cold-start recovery/equipment link takes priority over a cached push tap.
+  void Promise.all([getInitialURL(), Notifications.getLastNotificationResponseAsync()])
+    .then(([initialUrl, response]) => {
+      if (active && !initialUrl) openNotification(response);
+    })
+    .catch(() => undefined);
   const subscription = Notifications.addNotificationResponseReceivedListener(openNotification);
-  return () => subscription.remove();
+  return () => {
+    active = false;
+    subscription.remove();
+  };
 }
 
 export async function unregisterPushNotifications() {
