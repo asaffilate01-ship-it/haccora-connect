@@ -1,5 +1,5 @@
 begin;
-select plan(14);
+select plan(24);
 insert into auth.users (
   id, aud, role, email, encrypted_password, email_confirmed_at,
   raw_app_meta_data, raw_user_meta_data, created_at, updated_at
@@ -131,5 +131,21 @@ select throws_ok($$select public.get_my_business_service_requests()$$, '42501', 
 reset role;
 select ok(not has_function_privilege('anon', 'public.request_business_service(text,text,boolean,boolean)', 'EXECUTE'), 'anonymous callers cannot request services');
 select ok(not has_function_privilege('anon', 'public.get_my_business_service_requests()', 'EXECUTE'), 'anonymous callers cannot list service requests');
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000001', true);
+select set_config('request.jwt.claims', '{"email":"owner-a@example.test","role":"authenticated","sub":"10000000-0000-0000-0000-000000000001"}', true);
+select lives_ok($$select public.request_business_service('omni-agentic', 'Discuss a scoped service setup for this workspace', true, false)$$, 'owner can request omni-agentic');
+select lives_ok($$select public.request_business_service('omni-genai', 'Discuss a scoped service setup for this workspace', true, false)$$, 'owner can request omni-genai');
+select lives_ok($$select public.request_business_service('omni-intelligent-ai', 'Discuss a scoped service setup for this workspace', true, false)$$, 'owner can request omni-intelligent-ai');
+select lives_ok($$select public.request_business_service('omni-rag', 'Discuss a scoped service setup for this workspace', true, false)$$, 'owner can request omni-rag');
+select lives_ok($$select public.request_business_service('omni-graphrag', 'Discuss a scoped service setup for this workspace', true, false)$$, 'owner can request omni-graphrag');
+select lives_ok($$select public.request_business_service('omni-metrics', 'Discuss a scoped service setup for this workspace', true, false)$$, 'owner can request omni-metrics');
+select lives_ok($$select public.request_business_service('omni-financials', 'Discuss a scoped service setup for this workspace', true, false)$$, 'owner can request omni-financials');
+select lives_ok($$select public.request_business_service('lawquo', 'Discuss a scoped service setup for this workspace', true, false)$$, 'owner can request lawquo');
+select is((select count(*) from public.get_my_business_service_requests()), 9::bigint, 'all new service requests persist for the owner');
+select set_config('request.jwt.claim.sub', '20000000-0000-0000-0000-000000000002', true);
+select set_config('request.jwt.claims', '{"email":"owner-b@example.test","role":"authenticated","sub":"20000000-0000-0000-0000-000000000002"}', true);
+select is((select count(*) from public.get_my_business_service_requests()), 1::bigint, 'new AI and financial enquiries remain isolated from another tenant');
+reset role;
 select * from finish();
 rollback;

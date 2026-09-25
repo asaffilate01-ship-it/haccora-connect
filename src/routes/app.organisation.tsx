@@ -564,7 +564,7 @@ function OrganisationPage() {
         </section>
       </div>
       <BusinessServicePrompt
-        services={["xpertjobs", "training", "veyumo"]}
+        services={["xpertjobs", "training", "lawquo"]}
         title="Support your growing team"
       />
     </div>

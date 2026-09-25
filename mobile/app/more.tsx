@@ -53,6 +53,7 @@ const groups: readonly Group[] = [
       ["Corrective actions", "/actions", ALL_TENANT_ROLES, BellRing],
       ["Compliance coach", "/coach", ["owner", "manager"], Lightbulb],
       ["Billing & subscription", "/billing", ["owner"], CreditCard],
+      ["Business services & AI", "/add-ons", ["owner"], Lightbulb],
       ["Alerts & security", "/settings", ALL_WORKSPACE_ROLES, ShieldCheck],
     ],
   ],
@@ -63,7 +64,7 @@ export default function More() {
   const visibleGroups = groups
     .map(
       ([name, items]) =>
-        [name, items.filter(([, , roles]) => !role || roles.includes(role))] as const,
+        [name, items.filter(([, , roles]) => Boolean(role && roles.includes(role)))] as const,
     )
     .filter(([, items]) => items.length > 0);
 
