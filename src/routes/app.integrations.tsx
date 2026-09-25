@@ -436,7 +436,7 @@ function IntegrationsPage() {
         </section>
       </div>
       <BusinessServicePrompt
-        services={["omni-intelligence", "dishbee", "omni-comms"]}
+        services={["omni-agentic", "omni-rag", "omni-graphrag"]}
         title="Connect your business tools"
       />
     </div>

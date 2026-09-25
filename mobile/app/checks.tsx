@@ -2,19 +2,19 @@ import { useState } from "react";
 import { Redirect } from "expo-router";
 import { Alert, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { enqueue } from "@/lib/offline-queue";
-import { supabase } from "@/lib/supabase";
 import { useSession } from "@/lib/session";
 
 export default function Checks() {
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
   const { session, workspaceReady, organizationId, locationId, role, loading } = useSession();
   const save = async () => {
-    const { data } = await supabase.auth.getUser();
-    if (!data.user || !organizationId || !title.trim()) return;
+    if (busy || !session || !organizationId || !title.trim()) return;
+    setBusy(true);
     try {
       await enqueue("checks", {
-        user_id: data.user.id,
+        user_id: session.user.id,
         organization_id: organizationId,
         location_id: locationId,
         kind: "daily",
@@ -28,6 +28,8 @@ export default function Checks() {
       Alert.alert("Saved", "The check is stored or queued for sync.");
     } catch {
       Alert.alert("Not saved", "The encrypted app storage was unavailable. Please try again.");
+    } finally {
+      setBusy(false);
     }
   };
   if (loading) return null;
@@ -53,8 +55,8 @@ export default function Checks() {
         placeholder="Optional evidence note"
         style={[styles.input, { minHeight: 100 }]}
       />
-      <Pressable onPress={save} style={styles.button}>
-        <Text style={styles.buttonText}>Complete check</Text>
+      <Pressable disabled={busy || !title.trim()} onPress={save} style={styles.button}>
+        <Text style={styles.buttonText}>{busy ? "Saving…" : "Complete check"}</Text>
       </Pressable>
     </View>
   );

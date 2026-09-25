@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Redirect } from "expo-router";
 import { Alert, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { enqueue } from "@/lib/offline-queue";
-import { supabase } from "@/lib/supabase";
+import { temperatureValues } from "@/lib/evidence-validation";
 import { useSession } from "@/lib/session";
 
 export default function Temperature() {
@@ -13,34 +13,18 @@ export default function Temperature() {
   const [busy, setBusy] = useState(false);
   const { session, workspaceReady, organizationId, locationId, role, loading } = useSession();
   const save = async () => {
-    const value = Number(reading.replace(",", "."));
-    const min = Number(targetMin.replace(",", "."));
-    const max = Number(targetMax.replace(",", "."));
-    if (
-      !organizationId ||
-      !location.trim() ||
-      !Number.isFinite(value) ||
-      !Number.isFinite(min) ||
-      !Number.isFinite(max) ||
-      value < -100 ||
-      value > 300 ||
-      min < -100 ||
-      max > 300 ||
-      min >= max
-    )
+    if (busy) return;
+    const values = temperatureValues(reading, targetMin, targetMax);
+    if (!session || !organizationId || !location.trim() || !values)
       return Alert.alert(
         "Check the values",
         "Location, reading and valid minimum/maximum limits are required.",
       );
     setBusy(true);
-    const { data } = await supabase.auth.getUser();
-    if (!data.user) {
-      setBusy(false);
-      return;
-    }
+    const { value, min, max } = values;
     try {
       await enqueue("temperature_logs", {
-        user_id: data.user.id,
+        user_id: session.user.id,
         organization_id: organizationId,
         location_id: locationId,
         location: location.trim(),
