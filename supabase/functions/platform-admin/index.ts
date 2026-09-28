@@ -165,6 +165,9 @@ Deno.serve(async (request) => {
     if (error instanceof z.ZodError) {
       return json(request, { error: "invalid_request" }, 400);
     }
+    if (error instanceof Error && error.message === "Unauthorized") {
+      return json(request, { error: "unauthorized" }, 401);
+    }
     console.error(error);
     return json(request, { error: "platform_admin_failed" }, 500);
   }
