@@ -18,6 +18,7 @@ const [
   mobileConfig,
   privacyMap,
   ci,
+  tenantSetup,
 ] = await Promise.all([
   read("supabase/migrations/20260809150000_saas_control_plane_and_asset_scan_evidence.sql"),
   read("src/routes/platform.tsx"),
@@ -32,6 +33,7 @@ const [
   read("mobile/app.json"),
   read("mobile/store/PRIVACY_DATA_MAP.md"),
   read(".github/workflows/ci.yml"),
+  read("supabase/migrations/20260927090000_shared_core_tenant_setup.sql"),
 ]);
 
 test("Phase 28 provides an audited GBP SaaS owner financial and tenant control plane", () => {
@@ -124,15 +126,15 @@ test("custom roles remain a restrictive layer over built-in tenant RLS", () => {
   assert.match(migration, /organization\.service_status = 'active'/);
 });
 
-test("platform provisioning is owner-authenticated, UK-only and rolls back failed invitations", () => {
+test("platform provisioning is owner-authenticated, UK-only and atomic", () => {
   assert.match(platformAdmin, /get_my_platform_context/);
   assert.match(platformAdmin, /role !== "platform_owner"/);
-  assert.match(platformAdmin, /country_code: "GB"/);
-  assert.match(platformAdmin, /timezone: "Europe\/London"/);
-  assert.match(platformAdmin, /currency: "gbp"/);
-  assert.match(platformAdmin, /organization_memberships/);
-  assert.match(platformAdmin, /platform_tenant_created/);
-  assert.match(platformAdmin, /auth\.admin\.deleteUser/);
+  assert.match(platformAdmin, /platform_get_tenant_setups/);
+  assert.match(tenantSetup, /'GB', 'Europe\/London'/);
+  assert.match(tenantSetup, /'gbp', v_setup.owner_email/);
+  assert.match(tenantSetup, /organization_memberships/);
+  assert.match(tenantSetup, /platform_tenant_created/);
+  assert.match(tenantSetup, /for update/);
   assert.match(ci, /platform-admin\/index\.ts/);
 });
 

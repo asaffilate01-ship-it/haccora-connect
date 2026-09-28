@@ -11,13 +11,9 @@ import { requireUser, serviceClient } from "../_shared/supabase.ts";
 
 const Input = z.discriminatedUnion("action", [
   z.object({
-    action: z.literal("create_tenant"),
-    businessName: z.string().trim().min(2).max(160),
-    ownerEmail: z.string().email().max(254).transform((value) =>
-      value.toLowerCase()
-    ),
-    locationName: z.string().trim().min(2).max(160),
-    plan: z.enum(["trial", "solo", "complete", "group", "enterprise"]),
+    action: z.literal("invite_tenant_owner"),
+    setupId: z.string().uuid(),
+    revision: z.number().int().positive(),
   }),
   z.object({
     action: z.literal("invite_operator"),
@@ -47,15 +43,6 @@ const Input = z.discriminatedUnion("action", [
     internal: z.boolean().default(false),
   }),
 ]);
-
-function slugFor(name: string) {
-  const base =
-    name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") ||
-    "tenant";
-  return `${base.slice(0, 48)}-${
-    crypto.randomUUID().replaceAll("-", "").slice(0, 8)
-  }`;
-}
 
 Deno.serve(async (request) => {
   const early = preflight(request) ?? requirePost(request);
@@ -139,122 +126,38 @@ Deno.serve(async (request) => {
       return json(request, { ok: true, userId: invited.data.user.id }, 201);
     }
 
-    const { data: plan, error: planError } = await service.from(
-      "platform_plan_catalog",
-    )
-      .select(
-        "code,monthly_price_pence,included_seats,max_locations,enabled_modules",
-      )
-      .eq("code", input.plan).eq("active", true).single();
-    if (planError || !plan) {
-      return json(request, { error: "invalid_plan" }, 400);
+    // Read the saved setup through the caller's MFA-protected RPC. The browser
+    // cannot supply a different email or grant a plan through this invitation.
+    const { data: setups, error: setupError } = await client.rpc(
+      "platform_get_tenant_setups",
+    );
+    if (setupError) throw setupError;
+    const setup = (Array.isArray(setups) ? setups : []).find(
+      (row: Record<string, unknown>) => row.id === input.setupId,
+    );
+    if (!setup || setup.revision !== input.revision || setup.organization_id) {
+      return json(request, { error: "setup_changed_reload_required" }, 409);
     }
-
+    if (setup.owner_verified) {
+      return json(request, { ok: true, alreadyVerified: true });
+    }
     const invited = await service.auth.admin.inviteUserByEmail(
-      input.ownerEmail,
+      String(setup.owner_email),
       { redirectTo },
     );
     if (invited.error || !invited.data.user) {
-      return json(request, { error: "tenant_owner_invite_failed" }, 409);
-    }
-    const ownerId = invited.data.user.id;
-    const trialEndsAt = new Date();
-    trialEndsAt.setUTCMonth(trialEndsAt.getUTCMonth() + 2);
-    let organizationId: string | null = null;
-    try {
-      const { data: organization, error: organizationError } = await service
-        .from("organizations")
-        .insert({
-          name: input.businessName,
-          slug: slugFor(input.businessName),
-          country_code: "GB",
-          timezone: "Europe/London",
-          enabled_modules: plan.enabled_modules,
-          created_by: ownerId,
-          service_status: "active",
-          access_approved_at: new Date().toISOString(),
-          access_approved_by: actor.id,
-          access_approval_type: plan.code === "trial" ? "trial" : "paid",
-        }).select("id").single();
-      if (organizationError || !organization) throw organizationError;
-      organizationId = organization.id;
-
-      const { error: subscriptionError } = await service.from("subscriptions")
-        .upsert({
-          organization_id: organization.id,
-          plan: plan.code,
-          status: plan.code === "trial" ? "trialing" : "active",
-          seats: plan.included_seats,
-          location_limit: plan.max_locations,
-          contract_mrr_pence: plan.monthly_price_pence ?? 0,
-          currency: "gbp",
-          billing_email: input.ownerEmail,
-          trial_ends_at: plan.code === "trial"
-            ? trialEndsAt.toISOString()
-            : null,
-          payment_failed_at: null,
-          grace_ends_at: null,
-          access_restricted_at: null,
-        });
-      if (subscriptionError) throw subscriptionError;
-
-      const { data: location, error: locationError } = await service.from(
-        "locations",
-      ).insert({
-        organization_id: organization.id,
-        name: input.locationName,
-        timezone: "Europe/London",
-      }).select("id").single();
-      if (locationError || !location) throw locationError;
-
-      const { error: membershipError } = await service.from(
-        "organization_memberships",
-      ).insert({
-        organization_id: organization.id,
-        user_id: ownerId,
-        role: "owner",
-        default_location_id: location.id,
-        status: "active",
-        invited_by: actor.id,
-      });
-      if (membershipError) throw membershipError;
-
-      await service.from("profiles").update({
-        current_organization_id: organization.id,
-        current_location_id: location.id,
-        restaurant_name: input.businessName,
-        location: input.locationName,
-        language: "en",
-      }).eq("id", ownerId);
-
-      await service.from("platform_audit_events").insert({
-        actor_id: actor.id,
-        event_type: "platform_tenant_created",
-        metadata: {
-          organization_id: organization.id,
-          owner_user_id: ownerId,
-          plan: plan.code,
-          approval_type: plan.code === "trial" ? "trial" : "paid",
-          trial_days: plan.code === "trial" ? 60 : null,
-        },
-      });
       return json(request, {
-        ok: true,
-        organizationId: organization.id,
-        ownerId,
-      }, 201);
-    } catch (error) {
-      if (organizationId) {
-        await service.from("organizations").update({
-          service_status: "closed",
-          service_status_reason:
-            "Automatic rollback after tenant provisioning failed",
-          archived_at: new Date().toISOString(),
-        }).eq("id", organizationId);
-      }
-      await service.auth.admin.deleteUser(ownerId);
-      throw error;
+        error: "owner_invite_failed_use_existing_account_or_retry",
+      }, 409);
     }
+    const { error: auditError } = await service.from("platform_audit_events")
+      .insert({
+        actor_id: actor.id,
+        event_type: "platform_tenant_owner_invited",
+        metadata: { setup_id: setup.id, revision: setup.revision },
+      });
+    if (auditError) throw auditError;
+    return json(request, { ok: true }, 201);
   } catch (error) {
     if (error instanceof RequestBodyError) {
       return json(request, { error: error.code }, error.status);

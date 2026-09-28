@@ -5,11 +5,12 @@ import test from "node:test";
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("tenant ownership is approval-only and self-service workspace creation is revoked", async () => {
-  const [migration, platformAdmin, login, onboarding] = await Promise.all([
+  const [migration, platformAdmin, login, onboarding, setup] = await Promise.all([
     read("supabase/migrations/20260828120000_approval_only_tenant_access.sql"),
     read("supabase/functions/platform-admin/index.ts"),
     read("src/routes/login.tsx"),
     read("src/routes/onboarding.tsx"),
+    read("supabase/migrations/20260927090000_shared_core_tenant_setup.sql"),
   ]);
 
   assert.match(
@@ -19,8 +20,10 @@ test("tenant ownership is approval-only and self-service workspace creation is r
   assert.match(migration, /access_approved_at/);
   assert.match(migration, /access_approved_by/);
   assert.match(migration, /access_approval_type/);
-  assert.match(platformAdmin, /access_approved_by: actor\.id/);
-  assert.match(platformAdmin, /setUTCMonth\(trialEndsAt\.getUTCMonth\(\) \+ 2\)/);
+  assert.match(platformAdmin, /invite_tenant_owner/);
+  assert.doesNotMatch(platformAdmin, /action: z.literal\("create_tenant"\)/);
+  assert.match(setup, /access_approved_by/);
+  assert.match(setup, /interval '60 days'/);
   assert.match(login, /invitationSignup/);
   assert.match(login, /Tenant owner accounts are approval-only/);
   assert.doesNotMatch(onboarding, /bootstrap_my_organization/);

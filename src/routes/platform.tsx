@@ -28,6 +28,7 @@ import {
   Users,
   XCircle,
 } from "lucide-react";
+import { TenantSetupPanel } from "@/components/platform/TenantSetupPanel";
 import { BrandLogo } from "@/components/BrandLogo";
 import { supabase } from "@/integrations/supabase/haccora-client";
 import { homeFor, useAuth } from "@/lib/auth";
@@ -198,10 +199,6 @@ function PlatformOperations() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState("");
-  const [tenantName, setTenantName] = useState("");
-  const [tenantOwnerEmail, setTenantOwnerEmail] = useState("");
-  const [tenantLocation, setTenantLocation] = useState("");
-  const [tenantPlan, setTenantPlan] = useState("trial");
   const [operatorName, setOperatorName] = useState("");
   const [operatorEmail, setOperatorEmail] = useState("");
   const [operatorRole, setOperatorRole] = useState<Operator["role"]>("platform_support");
@@ -417,33 +414,6 @@ function PlatformOperations() {
       "MFA step-up is required before changing enquiries, tenants, subscriptions or SaaS staff.",
     );
     return false;
-  };
-
-  const createTenant = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!requireMfa()) return;
-    setBusy("tenant-create");
-    setError("");
-    const { error: createError } = await supabase.functions.invoke("platform-admin", {
-      body: {
-        action: "create_tenant",
-        businessName: tenantName.trim(),
-        ownerEmail: tenantOwnerEmail.trim(),
-        locationName: tenantLocation.trim(),
-        plan: tenantPlan,
-      },
-    });
-    setBusy("");
-    if (createError) setError(createError.message);
-    else {
-      setTenantName("");
-      setTenantOwnerEmail("");
-      setTenantLocation("");
-      setNotice(
-        `Tenant approved for ${tenantPlan === "trial" ? "a two-month trial" : "the selected paid plan"}; its owner received a secure invitation.`,
-      );
-      await load();
-    }
   };
 
   const inviteOperator = async (event: React.FormEvent) => {
@@ -1195,69 +1165,12 @@ function PlatformOperations() {
         )}
 
         {activeSection === "customers" && owner && (
-          <section className="surface p-5">
-            <div className="flex items-center gap-2">
-              <UserPlus size={19} />
-              <h2 className="font-display text-xl">Approve tenant owner</h2>
-            </div>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Creates a UK workspace, first premises, subscription limits and secure owner
-              invitation as one governed operation. Trial approval lasts two months.
-            </p>
-            <form
-              onSubmit={createTenant}
-              className="mt-4 grid gap-3 lg:grid-cols-[1.2fr_1.2fr_1fr_10rem_auto]"
-            >
-              <input
-                required
-                minLength={2}
-                className="field"
-                value={tenantName}
-                onChange={(event) => setTenantName(event.target.value)}
-                placeholder="Business name"
-              />
-              <input
-                required
-                type="email"
-                className="field"
-                value={tenantOwnerEmail}
-                onChange={(event) => setTenantOwnerEmail(event.target.value)}
-                placeholder="owner@business.co.uk"
-              />
-              <input
-                required
-                minLength={2}
-                className="field"
-                value={tenantLocation}
-                onChange={(event) => setTenantLocation(event.target.value)}
-                placeholder="First premises"
-              />
-              <select
-                className="field"
-                value={tenantPlan}
-                onChange={(event) => setTenantPlan(event.target.value)}
-              >
-                {plans
-                  .filter((plan) => plan.active)
-                  .map((plan) => (
-                    <option value={plan.code} key={plan.code}>
-                      {plan.name}
-                    </option>
-                  ))}
-              </select>
-              <button
-                disabled={busy === "tenant-create"}
-                className="btn-alert-solid min-h-11 text-sm"
-              >
-                {busy === "tenant-create" ? (
-                  <Loader2 className="animate-spin" size={15} />
-                ) : (
-                  <Building2 size={15} />
-                )}{" "}
-                Approve tenant
-              </button>
-            </form>
-          </section>
+          <TenantSetupPanel
+            plans={plans}
+            requireMfa={requireMfa}
+            unlocked={mfaLevel === "aal2"}
+            onLaunched={load}
+          />
         )}
 
         {activeSection === "customers" && (
