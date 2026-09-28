@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.15"
   }
   public: {
     Tables: {
@@ -3975,6 +3975,75 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_tenant_setups: {
+        Row: {
+          address_line: string
+          business_name: string
+          created_at: string
+          created_by: string
+          id: string
+          intended_plan: string
+          launched_at: string | null
+          location_name: string
+          organization_id: string | null
+          owner_email: string
+          postcode: string
+          requested_addons: string[]
+          revision: number
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          address_line: string
+          business_name: string
+          created_at?: string
+          created_by: string
+          id?: string
+          intended_plan: string
+          launched_at?: string | null
+          location_name: string
+          organization_id?: string | null
+          owner_email: string
+          postcode: string
+          requested_addons?: string[]
+          revision?: number
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          address_line?: string
+          business_name?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          intended_plan?: string
+          launched_at?: string | null
+          location_name?: string
+          organization_id?: string | null
+          owner_email?: string
+          postcode?: string
+          requested_addons?: string[]
+          revision?: number
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_tenant_setups_intended_plan_fkey"
+            columns: ["intended_plan"]
+            isOneToOne: false
+            referencedRelation: "platform_plan_catalog"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "platform_tenant_setups_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ppds_label_versions: {
         Row: {
           allergens: string[]
@@ -7475,6 +7544,11 @@ export type Database = {
         }
         Returns: undefined
       }
+      platform_get_tenant_setups: { Args: never; Returns: Json }
+      platform_launch_tenant_setup: {
+        Args: { p_id: string; p_reason: string; p_revision: number }
+        Returns: string
+      }
       platform_manage_credit_control_case: {
         Args: {
           p_case_id: string
@@ -7515,6 +7589,21 @@ export type Database = {
           p_subscription_status?: string
         }
         Returns: undefined
+      }
+      platform_save_tenant_setup: {
+        Args: {
+          p_address_line: string
+          p_business_name: string
+          p_id: string
+          p_intended_plan: string
+          p_location_name: string
+          p_owner_email: string
+          p_postcode: string
+          p_requested_addons: string[]
+          p_revision: number
+          p_slug: string
+        }
+        Returns: string
       }
       platform_update_contact_request: {
         Args: { p_request_id: string; p_status: string }
@@ -7575,6 +7664,7 @@ export type Database = {
         Args: { p_platform: string; p_token: string }
         Returns: undefined
       }
+      require_tenant_setup_operator: { Args: never; Returns: undefined }
       save_tenant_role: {
         Args: {
           p_action_permissions: string[]
