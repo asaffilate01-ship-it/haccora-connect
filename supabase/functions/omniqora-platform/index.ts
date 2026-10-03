@@ -1,3 +1,5 @@
+// deno-fmt-ignore-file
+// deno-lint-ignore-file no-explicit-any
 import {z} from "zod";
 import {decryptSecret,encryptSecret} from "../_shared/integration-crypto.ts";
 import {constantTimeEqual,env,json,preflight,requirePost} from "../_shared/http.ts";
