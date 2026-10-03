@@ -93,6 +93,7 @@ import { Route as AppCalibrationRouteImport } from './routes/app.calibration'
 import { Route as AppBillingRouteImport } from './routes/app.billing'
 import { Route as AppAuditsRouteImport } from './routes/app.audits'
 import { Route as AppAssetsRouteImport } from './routes/app.assets'
+import { Route as AppAiAssistantRouteImport } from './routes/app.ai-assistant'
 import { Route as AppAlertsRouteImport } from './routes/app.alerts'
 import { Route as AppAddOnsRouteImport } from './routes/app.add-ons'
 import { Route as AppAssetsScanRouteImport } from './routes/app.assets.scan'
@@ -525,6 +526,11 @@ const AppAssetsRoute = AppAssetsRouteImport.update({
   path: '/assets',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAiAssistantRoute = AppAiAssistantRouteImport.update({
+  id: '/ai-assistant',
+  path: '/ai-assistant',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAlertsRoute = AppAlertsRouteImport.update({
   id: '/alerts',
   path: '/alerts',
@@ -577,6 +583,7 @@ export interface FileRoutesByFullPath {
   '/readiness.json': typeof ReadinessDotjsonRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/app/add-ons': typeof AppAddOnsRoute
+  '/app/ai-assistant': typeof AppAiAssistantRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/assets': typeof AppAssetsRouteWithChildren
   '/app/audits': typeof AppAuditsRoute
@@ -667,6 +674,7 @@ export interface FileRoutesByTo {
   '/readiness.json': typeof ReadinessDotjsonRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/app/add-ons': typeof AppAddOnsRoute
+  '/app/ai-assistant': typeof AppAiAssistantRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/assets': typeof AppAssetsRouteWithChildren
   '/app/audits': typeof AppAuditsRoute
@@ -760,6 +768,7 @@ export interface FileRoutesById {
   '/readiness.json': typeof ReadinessDotjsonRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/app/add-ons': typeof AppAddOnsRoute
+  '/app/ai-assistant': typeof AppAiAssistantRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/assets': typeof AppAssetsRouteWithChildren
   '/app/audits': typeof AppAuditsRoute
@@ -854,6 +863,7 @@ export interface FileRouteTypes {
     | '/readiness.json'
     | '/sitemap.xml'
     | '/app/add-ons'
+    | '/app/ai-assistant'
     | '/app/alerts'
     | '/app/assets'
     | '/app/audits'
@@ -944,6 +954,7 @@ export interface FileRouteTypes {
     | '/readiness.json'
     | '/sitemap.xml'
     | '/app/add-ons'
+    | '/app/ai-assistant'
     | '/app/alerts'
     | '/app/assets'
     | '/app/audits'
@@ -1036,6 +1047,7 @@ export interface FileRouteTypes {
     | '/readiness.json'
     | '/sitemap.xml'
     | '/app/add-ons'
+    | '/app/ai-assistant'
     | '/app/alerts'
     | '/app/assets'
     | '/app/audits'
@@ -1729,6 +1741,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAssetsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/ai-assistant': {
+      id: '/app/ai-assistant'
+      path: '/ai-assistant'
+      fullPath: '/app/ai-assistant'
+      preLoaderRoute: typeof AppAiAssistantRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/alerts': {
       id: '/app/alerts'
       path: '/alerts'
@@ -1790,6 +1809,7 @@ const AppAssetsRouteWithChildren = AppAssetsRoute._addFileChildren(
 
 interface AppRouteChildren {
   AppAddOnsRoute: typeof AppAddOnsRoute
+  AppAiAssistantRoute: typeof AppAiAssistantRoute
   AppAlertsRoute: typeof AppAlertsRoute
   AppAssetsRoute: typeof AppAssetsRouteWithChildren
   AppAuditsRoute: typeof AppAuditsRoute
@@ -1845,6 +1865,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppAddOnsRoute: AppAddOnsRoute,
+  AppAiAssistantRoute: AppAiAssistantRoute,
   AppAlertsRoute: AppAlertsRoute,
   AppAssetsRoute: AppAssetsRouteWithChildren,
   AppAuditsRoute: AppAuditsRoute,
