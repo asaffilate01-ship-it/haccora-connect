@@ -12,10 +12,11 @@ const run = promisify(execFile);
 const read = (file) => readFile(new URL(`../${file}`, import.meta.url), "utf8");
 const releaseSha = "1234567890abcdef1234567890abcdef12345678";
 const productionUrl = "https://app.haccora.co.uk";
-const requiredRisks = [
-  { id: "mobile:image-size:GHSA-W3RX-R6R6-PGPR", expiresOn: "2026-09-30" },
-  { id: "mobile:image-size:GHSA-5P2G-FCMC-QVQQ", expiresOn: "2026-09-30" },
-];
+const dependencyPolicy = JSON.parse(await read("security/dependency-audit-exceptions.json"));
+const requiredRisks = dependencyPolicy.exceptions.map((entry) => ({
+  id: `${entry.scope}:${entry.package}:${entry.advisory.toUpperCase()}`,
+  expiresOn: entry.expiresOn,
+}));
 
 function acceptance(now = new Date()) {
   const completedAt = new Date(now.getTime() - 60 * 60_000).toISOString();
