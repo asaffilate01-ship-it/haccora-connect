@@ -34,3 +34,17 @@ test("AI calls are tenant scoped, entitled and do not send raw Haccora records",
   assert.doesNotMatch(fn, /select\("\*"\).*checks/);
   assert.match(fn, /never certify legal compliance or a hygiene rating/);
 });
+
+test("Dishbee projection contract supports a non-persisting live validation probe", () => {
+  assert.match(fn, /action:z\.literal\("validate_projection"\)/);
+  assert.match(fn, /persisted:false/);
+  assert.match(fn, /reviewRequired:true/);
+  assert.match(fn, /x-omniqora-sync-secret/);
+  const validateBlock = fn.slice(
+    fn.indexOf('if(i.action==="validate_projection")'),
+    fn.indexOf('if(i.action==="sync_projection")'),
+  );
+  assert.doesNotMatch(validateBlock, /omniqora_projection_inbox/);
+  assert.doesNotMatch(validateBlock, /\.insert\(/);
+  assert.doesNotMatch(validateBlock, /\.update\(/);
+});
