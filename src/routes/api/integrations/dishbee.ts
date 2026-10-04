@@ -171,8 +171,7 @@ async function projectEvent(db: Db, connection: any, event: Event, locationId: s
         received_at: date(payload["receivedAt"] ?? event.occurredAt),
         status: text(payload["status"], "accepted"),
         delivery_temp_c: payload["deliveryTempC"] == null ? null : number(payload["deliveryTempC"]),
-        temp_ok:
-          payload["tempOk"] == null ? null : Boolean(payload["tempOk"]),
+        temp_ok: payload["tempOk"] == null ? null : Boolean(payload["tempOk"]),
         condition_ok: payload["conditionOk"] == null ? null : Boolean(payload["conditionOk"]),
         packaging_ok: payload["packagingOk"] == null ? null : Boolean(payload["packagingOk"]),
         allergen_label_ok:
@@ -235,8 +234,7 @@ async function projectEvent(db: Db, connection: any, event: Event, locationId: s
     const max = payload["targetMax"] == null ? null : number(payload["targetMax"]);
     const inRange =
       payload["inRange"] == null
-        ? (min == null || reading >= min) &&
-          (max == null || reading <= max)
+        ? (min == null || reading >= min) && (max == null || reading <= max)
         : Boolean(payload["inRange"]);
 
     const { data, error } = await db
@@ -245,7 +243,10 @@ async function projectEvent(db: Db, connection: any, event: Event, locationId: s
         organization_id: organizationId,
         location_id: locationId,
         user_id: actor,
-        location: text(payload["assetName"], text(payload["locationName"], "Dishbee temperature point")),
+        location: text(
+          payload["assetName"],
+          text(payload["locationName"], "Dishbee temperature point"),
+        ),
         reading,
         target_min: min,
         target_max: max,
@@ -262,8 +263,7 @@ async function projectEvent(db: Db, connection: any, event: Event, locationId: s
 
   if (event.eventType === "dishbee.compliance.incident.created") {
     const evidence =
-      payload["evidence"] &&
-      typeof payload["evidence"] === "object"
+      payload["evidence"] && typeof payload["evidence"] === "object"
         ? payload["evidence"]
         : { dishbee: payload };
 
