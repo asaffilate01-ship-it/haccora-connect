@@ -41,7 +41,10 @@ test("Dishbee projection contract supports a non-persisting live validation prob
   assert.match(fn, /persisted:false/);
   assert.match(fn, /reviewRequired:true/);
   assert.match(fn, /x-omniqora-sync-secret/);
-  const validateBlock = fn.slice(fn.indexOf('if(i.action==="validate_projection")'), fn.indexOf('if(i.action==="sync_projection")'));
+  const validateBlock = fn.slice(
+    fn.indexOf('if(i.action==="validate_projection")'),
+    fn.indexOf('if(i.action==="sync_projection")'),
+  );
   assert.doesNotMatch(validateBlock, /omniqora_projection_inbox/);
   assert.doesNotMatch(validateBlock, /\.insert\(/);
   assert.doesNotMatch(validateBlock, /\.update\(/);
