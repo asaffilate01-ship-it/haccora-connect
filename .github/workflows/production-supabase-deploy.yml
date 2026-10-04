@@ -54,6 +54,18 @@ jobs:
           --project-ref "$PRODUCTION_PROJECT_REF"
           --password "$SUPABASE_DB_PASSWORD"
 
+      - name: Verify Omniqora bridge runtime secrets
+        run: |
+          set -euo pipefail
+          mkdir -p production-release-evidence
+          supabase secrets list --project-ref "$PRODUCTION_PROJECT_REF"             > production-release-evidence/production-secret-inventory.txt
+          for name in INTEGRATION_ENCRYPTION_KEY OMNIQORA_PROVISIONING_SECRET OMNIQORA_SYNC_SECRET; do
+            grep -q "$name" production-release-evidence/production-secret-inventory.txt || {
+              echo "Missing required production Edge secret: $name"
+              exit 1
+            }
+          done
+
       - name: Archive pre-deployment migration ledger
         run: |
           mkdir -p production-release-evidence
@@ -83,7 +95,7 @@ jobs:
         run: |
           supabase functions list --project-ref "$PRODUCTION_PROJECT_REF" \
             > production-release-evidence/functions-list.txt
-          for name in billing contact dokuvera-admin dokuvera-webhook file-scan inspection-export inspector-invite integration-admin integration-dispatch notification-dispatch operations-dispatch operations-health platform-admin platform-readiness privacy-requests security-center sensor-ingest sensor-provision team-invite veyumo-bridge; do
+          for name in billing contact dokuvera-admin dokuvera-webhook file-scan inspection-export inspector-invite integration-admin integration-dispatch notification-dispatch omniqora-platform operations-dispatch operations-health platform-admin platform-readiness privacy-requests security-center sensor-ingest sensor-provision team-invite veyumo-bridge; do
             grep -q "$name" production-release-evidence/functions-list.txt
           done
 
