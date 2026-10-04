@@ -307,8 +307,7 @@ async function projectEvent(db: Db, connection: any, event: Event, locationId: s
     }
 
     const evidence =
-      payload["evidence"] &&
-      typeof payload["evidence"] === "object"
+      payload["evidence"] && typeof payload["evidence"] === "object"
         ? payload["evidence"]
         : { dishbee: payload };
 
