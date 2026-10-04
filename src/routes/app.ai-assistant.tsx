@@ -167,11 +167,7 @@ function AiEvidenceAssistant() {
           label="AI Copilot"
           active={enabled("haccora.ai-copilot")}
         />
-        <StatusCard
-          icon={<FileSearch2 size={16} />}
-          label="RAG"
-          active={enabled("haccora.rag")}
-        />
+        <StatusCard icon={<FileSearch2 size={16} />} label="RAG" active={enabled("haccora.rag")} />
         <StatusCard
           icon={<Network size={16} />}
           label="GraphRAG"
@@ -256,15 +252,10 @@ function AiEvidenceAssistant() {
         <section className="surface p-5 space-y-4">
           <div className="flex justify-between gap-3">
             <div>
-              <div className="text-xs uppercase text-muted-foreground">
-                Run {runId.slice(0, 8)}
-              </div>
+              <div className="text-xs uppercase text-muted-foreground">Run {runId.slice(0, 8)}</div>
               <h2 className="text-lg">Status: {runStatus || "queued"}</h2>
             </div>
-            <button
-              className="btn-secondary px-3 py-2 text-sm"
-              onClick={() => void readRun(runId)}
-            >
+            <button className="btn-secondary px-3 py-2 text-sm" onClick={() => void readRun(runId)}>
               Refresh
             </button>
           </div>
@@ -312,8 +303,8 @@ function AiEvidenceAssistant() {
           {runStatus === "completed" && (
             <p className="flex gap-2 text-xs text-muted-foreground">
               <CheckCircle2 size={14} />
-              Completed by the governed Omniqora runtime. Review the evidence and any proposed action
-              before changing an approved compliance control.
+              Completed by the governed Omniqora runtime. Review the evidence and any proposed
+              action before changing an approved compliance control.
             </p>
           )}
         </section>
