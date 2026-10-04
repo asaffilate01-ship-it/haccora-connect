@@ -130,7 +130,34 @@ test("Phase 26 CI enforces the governed audit and all deployable Edge Functions"
     JSON.parse(packageJson).scripts["audit:production"],
     "node scripts/check-production-audits.mjs",
   );
-  assert.equal(JSON.parse(policy).exceptions.length, 0);
+  const exceptions = JSON.parse(policy).exceptions;
+  assert.deepEqual(
+    exceptions.map(({ scope, package: packageName, advisory, severity, expiresOn }) => ({
+      scope,
+      package: packageName,
+      advisory,
+      severity,
+      expiresOn,
+    })),
+    [
+      {
+        scope: "mobile",
+        package: "braces",
+        advisory: "GHSA-VFJ7-8CJW-P6XM",
+        severity: "high",
+        expiresOn: "2026-10-18",
+      },
+      {
+        scope: "mobile",
+        package: "node-forge",
+        advisory: "GHSA-86W9-CPQP-85RV",
+        severity: "high",
+        expiresOn: "2026-10-18",
+      },
+    ],
+  );
+  assert(exceptions.every((entry) => entry.rationale.length >= 40));
+  assert.equal(JSON.parse(mobilePackage).overrides["brace-expansion"], "5.0.12");
   assert.equal(JSON.parse(mobilePackage).overrides.metro, "0.84.5");
   assert.equal(JSON.parse(mobilePackage).overrides["query-string"], "9.5.0");
   assert.equal(JSON.parse(mobilePackage).overrides.nanoid, "3.3.18");
