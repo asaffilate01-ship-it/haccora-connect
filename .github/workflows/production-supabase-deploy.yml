@@ -54,6 +54,18 @@ jobs:
           --project-ref "$PRODUCTION_PROJECT_REF"
           --password "$SUPABASE_DB_PASSWORD"
 
+      - name: Verify Omniqora bridge runtime secrets
+        run: |
+          set -euo pipefail
+          mkdir -p production-release-evidence
+          supabase secrets list --project-ref "$PRODUCTION_PROJECT_REF"             > production-release-evidence/production-secret-inventory.txt
+          for name in INTEGRATION_ENCRYPTION_KEY OMNIQORA_PROVISIONING_SECRET OMNIQORA_SYNC_SECRET; do
+            grep -q "$name" production-release-evidence/production-secret-inventory.txt || {
+              echo "Missing required production Edge secret: $name"
+              exit 1
+            }
+          done
+
       - name: Archive pre-deployment migration ledger
         run: |
           mkdir -p production-release-evidence
