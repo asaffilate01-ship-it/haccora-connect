@@ -35,7 +35,6 @@ test("AI calls are tenant scoped, entitled and do not send raw Haccora records",
   assert.match(fn, /never certify legal compliance or a hygiene rating/);
 });
 
-
 test("Dishbee projection contract supports a non-persisting live validation probe", () => {
   assert.match(fn, /action:z\.literal\("validate_projection"\)/);
   assert.match(fn, /persisted:false/);
