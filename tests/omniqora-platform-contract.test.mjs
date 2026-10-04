@@ -3,10 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const migration = await readFile(
-  new URL(
-    "../supabase/migrations/20261004013000_omniqora_platform_bridge.sql",
-    import.meta.url,
-  ),
+  new URL("../supabase/migrations/20261004013000_omniqora_platform_bridge.sql", import.meta.url),
   "utf8",
 );
 const fn = await readFile(
