@@ -1,4 +1,21 @@
 {
   "schemaVersion": 1,
-  "exceptions": []
+  "exceptions": [
+    {
+      "scope": "mobile",
+      "package": "braces",
+      "advisory": "GHSA-VFJ7-8CJW-P6XM",
+      "severity": "high",
+      "expiresOn": "2026-10-18",
+      "rationale": "Expo/Metro build-time dependency via micromatch 4.0.8; no patched braces release is available as of 2026-10-04. Not bundled as Haccora application logic."
+    },
+    {
+      "scope": "mobile",
+      "package": "node-forge",
+      "advisory": "GHSA-86W9-CPQP-85RV",
+      "severity": "high",
+      "expiresOn": "2026-10-18",
+      "rationale": "Expo CLI/code-signing build-time dependency; node-forge 1.4.0 remains the latest npm release as of 2026-10-04. Reassess before expiry."
+    }
+  ]
 }
