@@ -14,6 +14,10 @@ test("production Supabase deploy is protected and verifies the Omniqora bridge f
   assert.match(workflow, /supabase db push --dry-run/);
   assert.match(workflow, /supabase functions deploy/);
   assert.match(workflow, /omniqora-platform/);
+  assert.match(workflow, /OMNIQORA_PROVISIONING_SECRET/);
+  assert.match(workflow, /OMNIQORA_SYNC_SECRET/);
+  assert.match(workflow, /INTEGRATION_ENCRYPTION_KEY/);
+  assert.match(workflow, /supabase secrets list/);
   assert.match(workflow, /production-release-evidence\/functions-list\.txt/);
   assert.doesNotMatch(workflow, /SUPABASE_SERVICE_ROLE_KEY/);
 });
