@@ -43,16 +43,10 @@ function date(value: unknown) {
   const raw = String(value ?? "").trim();
   if (!raw) return new Date().toISOString();
   const parsed = new Date(raw);
-  return Number.isNaN(parsed.getTime())
-    ? new Date().toISOString()
-    : parsed.toISOString();
+  return Number.isNaN(parsed.getTime()) ? new Date().toISOString() : parsed.toISOString();
 }
 
-async function resolveLocation(
-  db: Db,
-  connectionId: string,
-  dishbeeLocationId?: string | null,
-) {
+async function resolveLocation(db: Db, connectionId: string, dishbeeLocationId?: string | null) {
   if (!dishbeeLocationId) return null;
   const { data, error } = await db
     .from("dishbee_runtime_locations")
@@ -66,12 +60,7 @@ async function resolveLocation(
   return String(data.haccora_location_id);
 }
 
-async function entityMap(
-  db: Db,
-  connectionId: string,
-  type: string,
-  id: string,
-) {
+async function entityMap(db: Db, connectionId: string, type: string, id: string) {
   const { data, error } = await db
     .from("dishbee_runtime_entity_maps")
     .select("haccora_entity_type,haccora_entity_id,metadata")
@@ -83,12 +72,7 @@ async function entityMap(
   return data ?? null;
 }
 
-async function projectEvent(
-  db: Db,
-  connection: any,
-  event: Event,
-  locationId: string | null,
-) {
+async function projectEvent(db: Db, connection: any, event: Event, locationId: string | null) {
   const payload = event.payload;
   const actor = String(connection.actor_user_id);
   const organizationId = String(connection.organization_id);
@@ -110,10 +94,7 @@ async function projectEvent(
           location_id: locationId,
           completed_by: actor,
           task_id: mapped.haccora_entity_id,
-          task_area_snapshot: text(
-            payload["checklistName"],
-            "Dishbee checklist",
-          ),
+          task_area_snapshot: text(payload["checklistName"], "Dishbee checklist"),
           result: text(payload["result"], "completed"),
           notes: text(payload["note"]) || null,
           completed_at: date(payload["completedAt"]),
@@ -134,10 +115,7 @@ async function projectEvent(
         performed_at: date(payload["completedAt"]),
         captured_at: date(payload["completedAt"]),
         flow_key: "dishbee-checklist",
-        title: text(
-          payload["checklistName"],
-          "Dishbee operational checklist",
-        ),
+        title: text(payload["checklistName"], "Dishbee operational checklist"),
         status: "completed",
         steps: payload,
         notes: text(payload["note"]) || null,
@@ -159,17 +137,13 @@ async function projectEvent(
         user_id: actor,
         item: text(
           payload["inventoryItemName"],
-          "Dishbee inventory item " +
-            text(payload["inventoryItemId"], event.subjectId),
+          "Dishbee inventory item " + text(payload["inventoryItemId"], event.subjectId),
         ),
         qty: quantity,
         unit: text(payload["unit"], "each"),
         reason: text(payload["reason"], "waste"),
         note: text(payload["note"]) || null,
-        cost_eur:
-          payload["costPence"] == null
-            ? null
-            : number(payload["costPence"]) / 100,
+        cost_eur: payload["costPence"] == null ? null : number(payload["costPence"]) / 100,
         logged_at: date(payload["createdAt"] ?? event.occurredAt),
         idempotency_key: idempotencyKey,
       })
@@ -191,33 +165,18 @@ async function projectEvent(
           "Dishbee supplier " + text(payload["supplierId"], ""),
         ),
         product: text(payload["productSummary"], "Purchase receipt"),
-        quantity:
-          payload["quantity"] == null ? null : number(payload["quantity"]),
+        quantity: payload["quantity"] == null ? null : number(payload["quantity"]),
         unit: text(payload["unit"]) || null,
-        delivery_reference:
-          text(payload["invoiceRef"]) ||
-          text(payload["purchaseId"]) ||
-          null,
+        delivery_reference: text(payload["invoiceRef"]) || text(payload["purchaseId"]) || null,
         received_at: date(payload["receivedAt"] ?? event.occurredAt),
         status: text(payload["status"], "accepted"),
-        delivery_temp_c:
-          payload["deliveryTempC"] == null
-            ? null
-            : number(payload["deliveryTempC"]),
+        delivery_temp_c: payload["deliveryTempC"] == null ? null : number(payload["deliveryTempC"]),
         temp_ok:
           payload["tempOk"] == null ? null : Boolean(payload["tempOk"]),
-        condition_ok:
-          payload["conditionOk"] == null
-            ? null
-            : Boolean(payload["conditionOk"]),
-        packaging_ok:
-          payload["packagingOk"] == null
-            ? null
-            : Boolean(payload["packagingOk"]),
+        condition_ok: payload["conditionOk"] == null ? null : Boolean(payload["conditionOk"]),
+        packaging_ok: payload["packagingOk"] == null ? null : Boolean(payload["packagingOk"]),
         allergen_label_ok:
-          payload["allergenLabelOk"] == null
-            ? null
-            : Boolean(payload["allergenLabelOk"]),
+          payload["allergenLabelOk"] == null ? null : Boolean(payload["allergenLabelOk"]),
         batch_lot: text(payload["batchLot"]) || null,
         use_by: text(payload["useBy"]) || null,
         best_before: text(payload["bestBefore"]) || null,
@@ -226,9 +185,7 @@ async function projectEvent(
           payload["notes"],
           payload["totalPence"] == null
             ? ""
-            : "Dishbee purchase total " +
-                String(payload["totalPence"]) +
-                "p",
+            : "Dishbee purchase total " + String(payload["totalPence"]) + "p",
         ),
         idempotency_key: idempotencyKey,
       })
@@ -239,9 +196,7 @@ async function projectEvent(
   }
 
   if (event.eventType === "dishbee.compliance.allergens.updated") {
-    const key =
-      "dishbee-menu:" +
-      text(payload["menuItemId"], event.subjectId);
+    const key = "dishbee-menu:" + text(payload["menuItemId"], event.subjectId);
     const { data: existing, error: readError } = await db
       .from("recipes")
       .select("id")
@@ -254,9 +209,7 @@ async function projectEvent(
       organization_id: organizationId,
       location_id: locationId,
       name: text(payload["name"], "Dishbee menu item"),
-      allergens: Array.isArray(payload["allergens"])
-        ? payload["allergens"].map(String)
-        : [],
+      allergens: Array.isArray(payload["allergens"]) ? payload["allergens"].map(String) : [],
       price_eur: number(payload["pricePence"], 0) / 100,
       cost_eur: number(payload["costPence"], 0) / 100,
       category: text(payload["category"]) || null,
@@ -266,29 +219,20 @@ async function projectEvent(
     };
 
     if (existing) {
-      const { error } = await db
-        .from("recipes")
-        .update(values)
-        .eq("id", existing.id);
+      const { error } = await db.from("recipes").update(values).eq("id", existing.id);
       if (error) throw new Error(error.message);
       return { table: "recipes", id: String(existing.id) };
     }
 
-    const { data, error } = await db
-      .from("recipes")
-      .insert(values)
-      .select("id")
-      .single();
+    const { data, error } = await db.from("recipes").insert(values).select("id").single();
     if (error) throw new Error(error.message);
     return { table: "recipes", id: String(data.id) };
   }
 
   if (event.eventType === "dishbee.compliance.temperature.recorded") {
     const reading = number(payload["reading"]);
-    const min =
-      payload["targetMin"] == null ? null : number(payload["targetMin"]);
-    const max =
-      payload["targetMax"] == null ? null : number(payload["targetMax"]);
+    const min = payload["targetMin"] == null ? null : number(payload["targetMin"]);
+    const max = payload["targetMax"] == null ? null : number(payload["targetMax"]);
     const inRange =
       payload["inRange"] == null
         ? (min == null || reading >= min) &&
@@ -301,10 +245,7 @@ async function projectEvent(
         organization_id: organizationId,
         location_id: locationId,
         user_id: actor,
-        location: text(
-          payload["assetName"],
-          text(payload["locationName"], "Dishbee temperature point"),
-        ),
+        location: text(payload["assetName"], text(payload["locationName"], "Dishbee temperature point")),
         reading,
         target_min: min,
         target_max: max,
@@ -348,10 +289,7 @@ async function projectEvent(
     return { table: "incidents", id: String(data.id) };
   }
 
-  if (
-    event.eventType ===
-    "dishbee.compliance.corrective_action.created"
-  ) {
+  if (event.eventType === "dishbee.compliance.corrective_action.created") {
     const sourceId = text(payload["sourceId"], event.subjectId);
     const { data: existing, error: readError } = await db
       .from("corrective_actions")
@@ -383,10 +321,7 @@ async function projectEvent(
         source_table: "dishbee",
         source_id: sourceId,
         category: text(payload["category"], "food_safety"),
-        description: text(
-          payload["description"],
-          "Corrective action from Dishbee",
-        ),
+        description: text(payload["description"], "Corrective action from Dishbee"),
         severity: text(payload["severity"], "medium"),
         status: text(payload["status"], "open"),
         immediate_action: text(payload["immediateAction"]) || null,
@@ -426,66 +361,39 @@ async function projectEvent(
   return { table: "haccp_flow_runs", id: String(data.id) };
 }
 
-export const Route = createFileRoute(
-  "/api/integrations/dishbee",
-)({
+export const Route = createFileRoute("/api/integrations/dishbee")({
   server: {
     handlers: {
       POST: async ({ request }) => {
         const token = bearer(request);
         if (token.length < 32) {
-          return Response.json(
-            { error: "unauthorized" },
-            { status: 401 },
-          );
+          return Response.json({ error: "unauthorized" }, { status: 401 });
         }
 
         try {
           const bodyText = await request.text();
-          if (
-            new TextEncoder().encode(bodyText).length >
-            256 * 1024
-          ) {
-            return Response.json(
-              { error: "payload_too_large" },
-              { status: 413 },
-            );
+          if (new TextEncoder().encode(bodyText).length > 256 * 1024) {
+            return Response.json({ error: "payload_too_large" }, { status: 413 });
           }
 
           const event = EventSchema.parse(JSON.parse(bodyText));
           const tokenHash = await sha256(token);
-          const { supabaseAdmin } = await import(
-            "@/integrations/supabase/client.server"
-          );
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const db = supabaseAdmin as any;
 
-          const {
-            data: connection,
-            error: connectionError,
-          } = await db
+          const { data: connection, error: connectionError } = await db
             .from("dishbee_runtime_connections")
-            .select(
-              "id,organization_id,dishbee_tenant_id,actor_user_id,status",
-            )
+            .select("id,organization_id,dishbee_tenant_id,actor_user_id,status")
             .eq("token_hash", tokenHash)
             .maybeSingle();
           if (connectionError) {
             throw new Error(connectionError.message);
           }
           if (!connection || connection.status !== "live") {
-            return Response.json(
-              { error: "connection_not_live" },
-              { status: 403 },
-            );
+            return Response.json({ error: "connection_not_live" }, { status: 403 });
           }
-          if (
-            String(connection.dishbee_tenant_id) !==
-            event.dishbeeTenantId
-          ) {
-            return Response.json(
-              { error: "tenant_mismatch" },
-              { status: 403 },
-            );
+          if (String(connection.dishbee_tenant_id) !== event.dishbeeTenantId) {
+            return Response.json({ error: "tenant_mismatch" }, { status: 403 });
           }
 
           const locationId = await resolveLocation(
@@ -493,10 +401,7 @@ export const Route = createFileRoute(
             String(connection.id),
             event.dishbeeLocationId,
           );
-          const {
-            data: existing,
-            error: existingError,
-          } = await db
+          const { data: existing, error: existingError } = await db
             .from("dishbee_runtime_events")
             .select("id,status,target_table,target_id")
             .eq("connection_id", connection.id)
@@ -516,10 +421,7 @@ export const Route = createFileRoute(
 
           let receiptId = existing?.id;
           if (!receiptId) {
-            const {
-              data: receipt,
-              error: receiptError,
-            } = await db
+            const { data: receipt, error: receiptError } = await db
               .from("dishbee_runtime_events")
               .insert({
                 connection_id: connection.id,
@@ -541,12 +443,7 @@ export const Route = createFileRoute(
           }
 
           try {
-            const target = await projectEvent(
-              db,
-              connection,
-              event,
-              locationId,
-            );
+            const target = await projectEvent(db, connection, event, locationId);
             await db
               .from("dishbee_runtime_events")
               .update({
@@ -571,10 +468,7 @@ export const Route = createFileRoute(
               targetId: target.id,
             });
           } catch (error) {
-            const message =
-              error instanceof Error
-                ? error.message
-                : "dishbee_projection_failed";
+            const message = error instanceof Error ? error.message : "dishbee_projection_failed";
             await db
               .from("dishbee_runtime_events")
               .update({
@@ -595,17 +489,11 @@ export const Route = createFileRoute(
         } catch (error) {
           console.error("[haccora-dishbee-runtime]", error);
           if (error instanceof z.ZodError) {
-            return Response.json(
-              { error: "invalid_event" },
-              { status: 422 },
-            );
+            return Response.json({ error: "invalid_event" }, { status: 422 });
           }
           return Response.json(
             {
-              error:
-                error instanceof Error
-                  ? error.message
-                  : "request_failed",
+              error: error instanceof Error ? error.message : "request_failed",
             },
             { status: 400 },
           );
