@@ -38,7 +38,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run audit:production
       - run: npm run verify
       - run: npm run migrations:check
       - run: npm run secrets:check
@@ -47,6 +46,7 @@ jobs:
       - run: npm run lint:check
       - run: npm run format:check
       - run: npm run build
+      - run: npm run audit:production
         env:
           VITE_SUPABASE_URL: https://example.supabase.co
           VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
@@ -122,6 +122,7 @@ jobs:
           billing/index.ts
           integration-admin/index.ts
           integration-dispatch/index.ts
+          omniqora-platform/index.ts
           dokuvera-admin/index.ts
           dokuvera-webhook/index.ts
           operations-health/index.ts veyumo-bridge/index.ts
