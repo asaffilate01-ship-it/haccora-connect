@@ -1,0 +1,45 @@
+name: Repair review-branch npm lockfile
+on:
+  push:
+    branches: [feature/20261005-dishbee-compliance-runtime]
+    paths: [.github/workflows/branch-lockfile-repair.yml]
+permissions:
+  contents: read
+jobs:
+  repair:
+    if: github.repository == 'asaffilate01-ship-it/haccora-connect' && github.ref == 'refs/heads/feature/20261005-dishbee-compliance-runtime'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: 22
+      - name: Regenerate npm metadata without executing dependency scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(node -p "require('./package.json').packageManager")" = 'npm@10.9.4'
+          npm install --global npm@10.9.4 --ignore-scripts --no-audit --no-fund
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+          npm ci --ignore-scripts --no-audit --no-fund
+          test "$(git diff --name-only)" = 'package-lock.json'
+      - name: Commit only the lockfile to the same review branch
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          branch='feature/20261005-dishbee-compliance-runtime'
+          remote_sha="$(git ls-remote origin "refs/heads/$branch" | cut -f1)"
+          test "$remote_sha" = "$EXPECTED_SHA" || { echo 'Branch moved; refusing stale repair'; exit 1; }
+          git add -- package-lock.json
+          test "$(git diff --cached --name-only)" = 'package-lock.json'
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'fix(deps): align npm lockfile with the intended TanStack versions'
+          git push origin "HEAD:refs/heads/$branch"
+          printf 'Repaired review-branch commit: %s\n' "$(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
