@@ -99,6 +99,7 @@ import { Route as AppAddOnsRouteImport } from './routes/app.add-ons'
 import { Route as AppAssetsScanRouteImport } from './routes/app.assets.scan'
 import { Route as AppAssetsAssetIdRouteImport } from './routes/app.assets.$assetId'
 import { Route as ApiPublicMalwareScanRouteImport } from './routes/api/public/malware-scan'
+import { Route as ApiIntegrationsDishbeeRouteImport } from './routes/api/integrations/dishbee'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -556,6 +557,11 @@ const ApiPublicMalwareScanRoute = ApiPublicMalwareScanRouteImport.update({
   path: '/api/public/malware-scan',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiIntegrationsDishbeeRoute = ApiIntegrationsDishbeeRouteImport.update({
+  id: '/api/integrations/dishbee',
+  path: '/api/integrations/dishbee',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
     id: '/api/public/payments/webhook',
@@ -651,6 +657,7 @@ export interface FileRoutesByFullPath {
   '/legal/terms': typeof LegalTermsRoute
   '/app/': typeof AppIndexRoute
   '/blog/': typeof BlogIndexRoute
+  '/api/integrations/dishbee': typeof ApiIntegrationsDishbeeRoute
   '/api/public/malware-scan': typeof ApiPublicMalwareScanRoute
   '/app/assets/$assetId': typeof AppAssetsAssetIdRoute
   '/app/assets/scan': typeof AppAssetsScanRoute
@@ -742,6 +749,7 @@ export interface FileRoutesByTo {
   '/legal/terms': typeof LegalTermsRoute
   '/app': typeof AppIndexRoute
   '/blog': typeof BlogIndexRoute
+  '/api/integrations/dishbee': typeof ApiIntegrationsDishbeeRoute
   '/api/public/malware-scan': typeof ApiPublicMalwareScanRoute
   '/app/assets/$assetId': typeof AppAssetsAssetIdRoute
   '/app/assets/scan': typeof AppAssetsScanRoute
@@ -836,6 +844,7 @@ export interface FileRoutesById {
   '/legal/terms': typeof LegalTermsRoute
   '/app/': typeof AppIndexRoute
   '/blog/': typeof BlogIndexRoute
+  '/api/integrations/dishbee': typeof ApiIntegrationsDishbeeRoute
   '/api/public/malware-scan': typeof ApiPublicMalwareScanRoute
   '/app/assets/$assetId': typeof AppAssetsAssetIdRoute
   '/app/assets/scan': typeof AppAssetsScanRoute
@@ -931,6 +940,7 @@ export interface FileRouteTypes {
     | '/legal/terms'
     | '/app/'
     | '/blog/'
+    | '/api/integrations/dishbee'
     | '/api/public/malware-scan'
     | '/app/assets/$assetId'
     | '/app/assets/scan'
@@ -1022,6 +1032,7 @@ export interface FileRouteTypes {
     | '/legal/terms'
     | '/app'
     | '/blog'
+    | '/api/integrations/dishbee'
     | '/api/public/malware-scan'
     | '/app/assets/$assetId'
     | '/app/assets/scan'
@@ -1115,6 +1126,7 @@ export interface FileRouteTypes {
     | '/legal/terms'
     | '/app/'
     | '/blog/'
+    | '/api/integrations/dishbee'
     | '/api/public/malware-scan'
     | '/app/assets/$assetId'
     | '/app/assets/scan'
@@ -1147,6 +1159,7 @@ export interface RootRouteChildren {
   IndustriesPubsAndBarsRoute: typeof IndustriesPubsAndBarsRoute
   IndustriesRestaurantsAndCafesRoute: typeof IndustriesRestaurantsAndCafesRoute
   IndustriesTakeawaysAndFastFoodRoute: typeof IndustriesTakeawaysAndFastFoodRoute
+  ApiIntegrationsDishbeeRoute: typeof ApiIntegrationsDishbeeRoute
   ApiPublicMalwareScanRoute: typeof ApiPublicMalwareScanRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
@@ -1783,6 +1796,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicMalwareScanRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/integrations/dishbee': {
+      id: '/api/integrations/dishbee'
+      path: '/api/integrations/dishbee'
+      fullPath: '/api/integrations/dishbee'
+      preLoaderRoute: typeof ApiIntegrationsDishbeeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
       path: '/api/public/payments/webhook'
@@ -1981,6 +2001,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndustriesPubsAndBarsRoute: IndustriesPubsAndBarsRoute,
   IndustriesRestaurantsAndCafesRoute: IndustriesRestaurantsAndCafesRoute,
   IndustriesTakeawaysAndFastFoodRoute: IndustriesTakeawaysAndFastFoodRoute,
+  ApiIntegrationsDishbeeRoute: ApiIntegrationsDishbeeRoute,
   ApiPublicMalwareScanRoute: ApiPublicMalwareScanRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
