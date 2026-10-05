@@ -93,12 +93,13 @@ import { Route as AppCalibrationRouteImport } from './routes/app.calibration'
 import { Route as AppBillingRouteImport } from './routes/app.billing'
 import { Route as AppAuditsRouteImport } from './routes/app.audits'
 import { Route as AppAssetsRouteImport } from './routes/app.assets'
-import { Route as AppAiAssistantRouteImport } from './routes/app.ai-assistant'
 import { Route as AppAlertsRouteImport } from './routes/app.alerts'
+import { Route as AppAiAssistantRouteImport } from './routes/app.ai-assistant'
 import { Route as AppAddOnsRouteImport } from './routes/app.add-ons'
 import { Route as AppAssetsScanRouteImport } from './routes/app.assets.scan'
 import { Route as AppAssetsAssetIdRouteImport } from './routes/app.assets.$assetId'
 import { Route as ApiPublicMalwareScanRouteImport } from './routes/api/public/malware-scan'
+import { Route as ApiIntegrationsDishbeeRouteImport } from './routes/api/integrations/dishbee'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -526,14 +527,14 @@ const AppAssetsRoute = AppAssetsRouteImport.update({
   path: '/assets',
   getParentRoute: () => AppRoute,
 } as any)
-const AppAiAssistantRoute = AppAiAssistantRouteImport.update({
-  id: '/ai-assistant',
-  path: '/ai-assistant',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppAlertsRoute = AppAlertsRouteImport.update({
   id: '/alerts',
   path: '/alerts',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAiAssistantRoute = AppAiAssistantRouteImport.update({
+  id: '/ai-assistant',
+  path: '/ai-assistant',
   getParentRoute: () => AppRoute,
 } as any)
 const AppAddOnsRoute = AppAddOnsRouteImport.update({
@@ -554,6 +555,11 @@ const AppAssetsAssetIdRoute = AppAssetsAssetIdRouteImport.update({
 const ApiPublicMalwareScanRoute = ApiPublicMalwareScanRouteImport.update({
   id: '/api/public/malware-scan',
   path: '/api/public/malware-scan',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiIntegrationsDishbeeRoute = ApiIntegrationsDishbeeRouteImport.update({
+  id: '/api/integrations/dishbee',
+  path: '/api/integrations/dishbee',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicPaymentsWebhookRoute =
@@ -651,6 +657,7 @@ export interface FileRoutesByFullPath {
   '/legal/terms': typeof LegalTermsRoute
   '/app/': typeof AppIndexRoute
   '/blog/': typeof BlogIndexRoute
+  '/api/integrations/dishbee': typeof ApiIntegrationsDishbeeRoute
   '/api/public/malware-scan': typeof ApiPublicMalwareScanRoute
   '/app/assets/$assetId': typeof AppAssetsAssetIdRoute
   '/app/assets/scan': typeof AppAssetsScanRoute
@@ -742,6 +749,7 @@ export interface FileRoutesByTo {
   '/legal/terms': typeof LegalTermsRoute
   '/app': typeof AppIndexRoute
   '/blog': typeof BlogIndexRoute
+  '/api/integrations/dishbee': typeof ApiIntegrationsDishbeeRoute
   '/api/public/malware-scan': typeof ApiPublicMalwareScanRoute
   '/app/assets/$assetId': typeof AppAssetsAssetIdRoute
   '/app/assets/scan': typeof AppAssetsScanRoute
@@ -836,6 +844,7 @@ export interface FileRoutesById {
   '/legal/terms': typeof LegalTermsRoute
   '/app/': typeof AppIndexRoute
   '/blog/': typeof BlogIndexRoute
+  '/api/integrations/dishbee': typeof ApiIntegrationsDishbeeRoute
   '/api/public/malware-scan': typeof ApiPublicMalwareScanRoute
   '/app/assets/$assetId': typeof AppAssetsAssetIdRoute
   '/app/assets/scan': typeof AppAssetsScanRoute
@@ -931,6 +940,7 @@ export interface FileRouteTypes {
     | '/legal/terms'
     | '/app/'
     | '/blog/'
+    | '/api/integrations/dishbee'
     | '/api/public/malware-scan'
     | '/app/assets/$assetId'
     | '/app/assets/scan'
@@ -1022,6 +1032,7 @@ export interface FileRouteTypes {
     | '/legal/terms'
     | '/app'
     | '/blog'
+    | '/api/integrations/dishbee'
     | '/api/public/malware-scan'
     | '/app/assets/$assetId'
     | '/app/assets/scan'
@@ -1115,6 +1126,7 @@ export interface FileRouteTypes {
     | '/legal/terms'
     | '/app/'
     | '/blog/'
+    | '/api/integrations/dishbee'
     | '/api/public/malware-scan'
     | '/app/assets/$assetId'
     | '/app/assets/scan'
@@ -1147,6 +1159,7 @@ export interface RootRouteChildren {
   IndustriesPubsAndBarsRoute: typeof IndustriesPubsAndBarsRoute
   IndustriesRestaurantsAndCafesRoute: typeof IndustriesRestaurantsAndCafesRoute
   IndustriesTakeawaysAndFastFoodRoute: typeof IndustriesTakeawaysAndFastFoodRoute
+  ApiIntegrationsDishbeeRoute: typeof ApiIntegrationsDishbeeRoute
   ApiPublicMalwareScanRoute: typeof ApiPublicMalwareScanRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
@@ -1741,18 +1754,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAssetsRouteImport
       parentRoute: typeof AppRoute
     }
-    '/app/ai-assistant': {
-      id: '/app/ai-assistant'
-      path: '/ai-assistant'
-      fullPath: '/app/ai-assistant'
-      preLoaderRoute: typeof AppAiAssistantRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/app/alerts': {
       id: '/app/alerts'
       path: '/alerts'
       fullPath: '/app/alerts'
       preLoaderRoute: typeof AppAlertsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/ai-assistant': {
+      id: '/app/ai-assistant'
+      path: '/ai-assistant'
+      fullPath: '/app/ai-assistant'
+      preLoaderRoute: typeof AppAiAssistantRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/add-ons': {
@@ -1781,6 +1794,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/malware-scan'
       fullPath: '/api/public/malware-scan'
       preLoaderRoute: typeof ApiPublicMalwareScanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/integrations/dishbee': {
+      id: '/api/integrations/dishbee'
+      path: '/api/integrations/dishbee'
+      fullPath: '/api/integrations/dishbee'
+      preLoaderRoute: typeof ApiIntegrationsDishbeeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/payments/webhook': {
@@ -1981,6 +2001,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndustriesPubsAndBarsRoute: IndustriesPubsAndBarsRoute,
   IndustriesRestaurantsAndCafesRoute: IndustriesRestaurantsAndCafesRoute,
   IndustriesTakeawaysAndFastFoodRoute: IndustriesTakeawaysAndFastFoodRoute,
+  ApiIntegrationsDishbeeRoute: ApiIntegrationsDishbeeRoute,
   ApiPublicMalwareScanRoute: ApiPublicMalwareScanRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
