@@ -286,6 +286,14 @@ export const Route=createFileRoute("/api/integrations/dishbee")({
           }
 
           const locationId=await resolveLocation(db,String(connection.id),event.dishbeeLocationId);
+          if(new URL(request.url).searchParams.get("probe")==="1"){
+            // Validation probe from PR #46: verifies token, tenant and premises mapping
+            // without writing a receipt or any compliance record.
+            await db.from("dishbee_runtime_connections")
+              .update({last_error:null,updated_at:new Date().toISOString()})
+              .eq("id",connection.id);
+            return Response.json({ok:true,probe:true,organizationId:connection.organization_id,haccoraLocationId:locationId});
+          }
           const{data:existing,error:existingError}=await db.from("dishbee_runtime_events")
             .select("id,status,target_table,target_id")
             .eq("connection_id",connection.id).eq("event_key",event.eventKey).maybeSingle();
