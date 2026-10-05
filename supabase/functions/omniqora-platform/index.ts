@@ -10,6 +10,7 @@ const Input=z.discriminatedUnion("action",[
  z.object({action:z.literal("provision_workspace"),omniqoraTenantId:uuid,businessName:z.string().trim().min(2).max(160),slug:z.string().trim().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(64),mode:z.enum(["standalone","dishbee-addon"]),existingOrganizationId:uuid.nullish(),locationName:z.string().trim().min(1).max(160).default("Main site"),address:z.record(z.string(),z.unknown()).default({})}),
  z.object({action:z.literal("bind_control_plane"),omniqoraTenantId:uuid,organizationId:uuid,controlPlaneUrl:httpsUrl,intelligenceUrl:httpsUrl,controlPlaneKey:z.string().regex(/^oqcp_[a-f0-9]{64}$/)}),
  z.object({action:z.literal("bind_dishbee_runtime"),omniqoraTenantId:uuid,organizationId:uuid,dishbeeTenantId:uuid,runtimeToken:z.string().min(32).max(512),locations:z.array(z.object({dishbeeLocationId:uuid,haccoraLocationId:uuid})).min(1).max(200)}),
+ z.object({action:z.literal("provision_location"),omniqoraTenantId:uuid,organizationId:uuid,omniqoraLocationId:uuid,name:z.string().trim().min(1).max(160),address:z.record(z.string(),z.unknown()).default({}),timezone:z.string().trim().min(1).max(80).default(TIMEZONE)}),
  z.object({action:z.literal("status")}),
  z.object({action:z.literal("ai_start"),kind:z.enum(["compliance_question","inspection_readiness","allergen_review","corrective_action_review","haccp_review","regulatory_question"]),question:z.string().trim().min(10).max(3000)}),
  z.object({action:z.literal("ai_status"),runId:uuid}),
@@ -56,6 +57,27 @@ async function intelligence(c:any,key:string,body:Record<string,unknown>){if(!c.
 Deno.serve(async r=>{const early=preflight(r)??requirePost(r);if(early)return early;try{const i=await readInput(r),db=serviceClient();
  if(i.action==="provision_workspace"){if(!secret(r,"x-omniqora-provisioning-secret","OMNIQORA_PROVISIONING_SECRET"))return json(r,{error:"forbidden"},403);const old=await db.from("omniqora_connections").select("organization_id,mode,status").eq("omniqora_tenant_id",i.omniqoraTenantId).maybeSingle();if(old.data)return json(r,{ok:true,organizationId:old.data.organization_id,status:old.data.status,idempotent:true});let organizationId=i.existingOrganizationId??null,locationId:string|null=null;if(i.mode==="standalone"&&!organizationId)return json(r,{error:"standalone_requires_existing_haccora_workspace"},409);if(organizationId){const o=await db.from("organizations").select("id,country_code").eq("id",organizationId).maybeSingle();if(!o.data||o.data.country_code!==COUNTRY_CODE)return json(r,{error:"existing_workspace_country_mismatch"},409);}else{const slug=`${i.slug.slice(0,54)}-${i.omniqoraTenantId.slice(0,8)}`;const o=await db.from("organizations").insert({name:i.businessName,slug,country_code:COUNTRY_CODE,timezone:TIMEZONE,enabled_modules:["haccp","temperature","cleaning","menu","purchasing","rota","training","audits"],created_by:null}).select("id").single();if(o.error)throw o.error;organizationId=o.data.id;const l=await db.from("locations").insert({organization_id:organizationId,name:i.locationName,timezone:TIMEZONE,address:{...i.address,country:COUNTRY_CODE}}).select("id").single();if(l.error)throw l.error;locationId=l.data.id;}const ins=await db.from("omniqora_connections").insert({organization_id:organizationId,omniqora_tenant_id:i.omniqoraTenantId,mode:i.mode,country_code:COUNTRY_CODE,status:"provisioned"});if(ins.error)throw ins.error;return json(r,{ok:true,organizationId,locationId,status:"provisioned"},201);}
  if(i.action==="bind_control_plane"){if(!secret(r,"x-omniqora-provisioning-secret","OMNIQORA_PROVISIONING_SECRET"))return json(r,{error:"forbidden"},403);const cur=await db.from("omniqora_connections").select("*").eq("organization_id",i.organizationId).eq("omniqora_tenant_id",i.omniqoraTenantId).maybeSingle();if(!cur.data)return json(r,{error:"workspace_not_provisioned"},404);const probe={...cur.data,control_plane_url:url(i.controlPlaneUrl),intelligence_url:url(i.intelligenceUrl),encrypted_control_plane_key:await encryptSecret(i.controlPlaneKey)};const {s}=await snapshot(probe);const up=await db.from("omniqora_connections").update({control_plane_url:probe.control_plane_url,intelligence_url:probe.intelligence_url,encrypted_control_plane_key:probe.encrypted_control_plane_key,entitlement_snapshot:s,snapshot_generated_at:s.generatedAt??new Date().toISOString(),status:"connected",last_error:null,last_synced_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq("organization_id",i.organizationId);if(up.error)throw up.error;return json(r,{ok:true,organizationId:i.organizationId,status:"connected"});}
+ if(i.action==="provision_location"){
+   if(!secret(r,"x-omniqora-provisioning-secret","OMNIQORA_PROVISIONING_SECRET"))return json(r,{error:"forbidden"},403);
+   const cn=await db.from("omniqora_connections").select("organization_id,omniqora_tenant_id,status").eq("organization_id",i.organizationId).eq("omniqora_tenant_id",i.omniqoraTenantId).maybeSingle();
+   if(!cn.data||cn.data.status==="disabled")return json(r,{error:"workspace_not_connected"},404);
+   const existing=await db.from("omniqora_location_links").select("haccora_location_id").eq("organization_id",i.organizationId).eq("omniqora_location_id",i.omniqoraLocationId).maybeSingle();
+   if(existing.error)throw existing.error;
+   if(existing.data){
+     return json(r,{ok:true,organizationId:i.organizationId,omniqoraLocationId:i.omniqoraLocationId,haccoraLocationId:existing.data.haccora_location_id,idempotent:true});
+   }
+   const loc=await db.from("locations").insert({
+     organization_id:i.organizationId,name:i.name,timezone:i.timezone,
+     address:{...i.address,country:COUNTRY_CODE,omniqoraLocationId:i.omniqoraLocationId},
+   }).select("id").single();
+   if(loc.error)throw loc.error;
+   const link=await db.from("omniqora_location_links").insert({
+     organization_id:i.organizationId,omniqora_tenant_id:i.omniqoraTenantId,
+     omniqora_location_id:i.omniqoraLocationId,haccora_location_id:loc.data.id,
+   });
+   if(link.error)throw link.error;
+   return json(r,{ok:true,organizationId:i.organizationId,omniqoraLocationId:i.omniqoraLocationId,haccoraLocationId:loc.data.id},201);
+ }
  if(i.action==="bind_dishbee_runtime"){
    if(!secret(r,"x-omniqora-provisioning-secret","OMNIQORA_PROVISIONING_SECRET"))return json(r,{error:"forbidden"},403);
    const cn=await db.from("omniqora_connections").select("organization_id,omniqora_tenant_id,status").eq("organization_id",i.organizationId).eq("omniqora_tenant_id",i.omniqoraTenantId).maybeSingle();
