@@ -24,7 +24,7 @@ test("Dishbee compliance runtime is tenant scoped and stores only token hashes",
   assert.match(runtimeMigration,/token_hash text not null/);
   assert.match(runtimeMigration,/dishbee_tenant_id uuid not null/);
   assert.match(runtimeMigration,/dishbee_runtime_locations/);
-  assert.match(runtimeMigration,/ENABLE ROW LEVEL SECURITY/);
+  assert.match(runtimeMigration,/enable row level security/i);
   assert.doesNotMatch(runtimeMigration,/runtime_token text/i);
 });
 
