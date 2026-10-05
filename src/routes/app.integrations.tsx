@@ -46,6 +46,14 @@ type DokuveraConnection = {
   enabled: boolean;
   created_at: string;
 };
+type DishbeeRuntime = {
+  connectionId?: string;
+  dishbeeTenantId?: string;
+  status?: string;
+  lastEventAt?: string | null;
+  lastError?: string | null;
+  locations?: Array<{ dishbeeLocationId: string; haccoraLocationId: string; active: boolean }>;
+};
 
 function IntegrationsPage() {
   const { user } = useAuth();
@@ -53,6 +61,11 @@ function IntegrationsPage() {
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [dokuveraConnections, setDokuveraConnections] = useState<DokuveraConnection[]>([]);
+  const [dishbeeRuntime, setDishbeeRuntime] = useState<DishbeeRuntime | null>(null);
+  const [dishbeeTenantId, setDishbeeTenantId] = useState("");
+  const [dishbeeMappings, setDishbeeMappings] = useState<Record<string, string>>({});
+  const [dishbeeSecret, setDishbeeSecret] = useState<string | null>(null);
+  const [dishbeeBusy, setDishbeeBusy] = useState(false);
   const [name, setName] = useState("");
   const [url, setUrl] = useState("");
   const [dokuveraLabel, setDokuveraLabel] = useState("");
@@ -66,28 +79,42 @@ function IntegrationsPage() {
     ? `${publicSupabaseUrl}/functions/v1/dokuvera-webhook`
     : "Available after the production service URL is configured";
   const load = useCallback(async () => {
-    const [endpointResult, deliveryResult, locationResult, dokuveraResult] = await Promise.all([
-      (supabase as any)
-        .from("webhook_endpoints")
-        .select("id,name,url,event_types,enabled,failure_count,created_at")
-        .order("created_at", { ascending: false }),
-      (supabase as any)
-        .from("webhook_deliveries")
-        .select("id,endpoint_id,event_type,status,attempts,created_at")
-        .order("created_at", { ascending: false })
-        .limit(25),
-      (supabase as any).from("locations").select("id,name").eq("is_active", true).order("name"),
-      (supabase as any)
-        .from("dokuvera_connections")
-        .select("id,location_id,dokuvera_project_id,project_label,enabled,created_at")
-        .order("created_at", { ascending: false }),
-    ]);
+    const [endpointResult, deliveryResult, locationResult, dokuveraResult, dishbeeResult] =
+      await Promise.all([
+        (supabase as any)
+          .from("webhook_endpoints")
+          .select("id,name,url,event_types,enabled,failure_count,created_at")
+          .order("created_at", { ascending: false }),
+        (supabase as any)
+          .from("webhook_deliveries")
+          .select("id,endpoint_id,event_type,status,attempts,created_at")
+          .order("created_at", { ascending: false })
+          .limit(25),
+        (supabase as any).from("locations").select("id,name").eq("is_active", true).order("name"),
+        (supabase as any)
+          .from("dokuvera_connections")
+          .select("id,location_id,dokuvera_project_id,project_label,enabled,created_at")
+          .order("created_at", { ascending: false }),
+        user?.organizationId
+          ? (supabase as any).rpc("get_my_dishbee_runtime", { p_organization: user.organizationId })
+          : Promise.resolve({ data: {}, error: null }),
+      ]);
     setEndpoints((endpointResult.data ?? []) as Endpoint[]);
     setDeliveries((deliveryResult.data ?? []) as Delivery[]);
     setLocations((locationResult.data ?? []) as Location[]);
     setDokuveraConnections((dokuveraResult.data ?? []) as DokuveraConnection[]);
     setDokuveraLocationId((current) => current || locationResult.data?.[0]?.id || "");
-  }, []);
+    const runtime = (dishbeeResult.data ?? {}) as DishbeeRuntime;
+    setDishbeeRuntime(runtime.connectionId ? runtime : null);
+    setDishbeeTenantId((current) => current || runtime.dishbeeTenantId || "");
+    if (runtime.locations?.length) {
+      setDishbeeMappings(
+        Object.fromEntries(
+          runtime.locations.map((row) => [row.haccoraLocationId, row.dishbeeLocationId]),
+        ),
+      );
+    }
+  }, [user?.organizationId]);
   useEffect(() => {
     void load();
   }, [load]);
@@ -160,6 +187,63 @@ function IntegrationsPage() {
       void load();
     }
   };
+
+  const configureDishbeeRuntime = async () => {
+    if (!user?.organizationId || user.role !== "owner") {
+      toast.error("Only the organisation owner can connect Dishbee.");
+      return;
+    }
+    if (
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+        dishbeeTenantId.trim(),
+      )
+    ) {
+      toast.error("Enter the Dishbee tenant UUID.");
+      return;
+    }
+    const mapped = locations.flatMap((location) => {
+      const dishbeeLocationId = (dishbeeMappings[location.id] ?? "").trim();
+      return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+        dishbeeLocationId,
+      )
+        ? [{ dishbeeLocationId, haccoraLocationId: location.id, active: true }]
+        : [];
+    });
+    if (!mapped.length) {
+      toast.error("Map at least one Haccora premises to a Dishbee location UUID.");
+      return;
+    }
+    const bytes = crypto.getRandomValues(new Uint8Array(32));
+    const rawToken =
+      "hcr_" +
+      Array.from(bytes)
+        .map((byte) => byte.toString(16).padStart(2, "0"))
+        .join("");
+    const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(rawToken));
+    const tokenHash = Array.from(new Uint8Array(digest))
+      .map((byte) => byte.toString(16).padStart(2, "0"))
+      .join("");
+    setDishbeeBusy(true);
+    const { error } = await (supabase as any).rpc("configure_my_dishbee_runtime", {
+      p_organization: user.organizationId,
+      p_dishbee_tenant: dishbeeTenantId.trim(),
+      p_token_hash: tokenHash,
+      p_locations: mapped,
+      p_status: "live",
+    });
+    setDishbeeBusy(false);
+    if (error) {
+      toast.error(
+        error.message?.includes("MFA")
+          ? "Complete MFA, then reconnect Dishbee."
+          : (error.message ?? "Dishbee could not be connected."),
+      );
+      return;
+    }
+    setDishbeeSecret(rawToken);
+    toast.success("Dishbee runtime connected. Copy the token into Dishbee landlord setup now.");
+    void load();
+  };
   return (
     <div className="p-5 md:p-10 space-y-6">
       <div>
@@ -169,6 +253,139 @@ function IntegrationsPage() {
           {"Connect verified capture evidence and send signed operational events."}
         </p>
       </div>
+      <section className="surface overflow-hidden">
+        <div className="border-b border-border bg-secondary/30 p-5">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex gap-3">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
+                <PlugZap size={20} />
+              </span>
+              <div>
+                <h2 className="font-display text-xl">Dishbee operational sync</h2>
+                <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+                  Connect Dishbee restaurant operations to this Haccora workspace. Temperature,
+                  cleaning/checklist, waste, supplier, allergen, incident and corrective-action
+                  events are projected into Haccora with tenant and premises isolation.
+                </p>
+              </div>
+            </div>
+            <span
+              className={
+                "rounded-full px-3 py-1 text-[11px] font-black uppercase " +
+                (dishbeeRuntime?.status === "live"
+                  ? "bg-emerald-100 text-emerald-900"
+                  : "bg-amber-100 text-amber-900")
+              }
+            >
+              {dishbeeRuntime?.status === "live" ? "Connected" : "Owner setup"}
+            </span>
+          </div>
+        </div>
+        <div className="grid gap-6 p-5 xl:grid-cols-[minmax(0,1fr)_minmax(19rem,0.8fr)]">
+          <div className="space-y-4">
+            <label className="text-xs font-bold text-muted-foreground">
+              Dishbee tenant UUID
+              <input
+                value={dishbeeTenantId}
+                onChange={(event) => setDishbeeTenantId(event.target.value)}
+                placeholder="00000000-0000-0000-0000-000000000000"
+                className="mt-1 min-h-11 w-full rounded-xl border border-input bg-background px-3 font-mono text-xs"
+              />
+            </label>
+            <div>
+              <div className="text-xs font-black uppercase tracking-wider text-muted-foreground">
+                Premises mapping
+              </div>
+              <div className="mt-2 space-y-2">
+                {locations.map((location) => (
+                  <label
+                    key={location.id}
+                    className="grid gap-2 rounded-xl border border-border p-3 text-xs md:grid-cols-[12rem_1fr] md:items-center"
+                  >
+                    <span className="font-bold">{location.name}</span>
+                    <input
+                      value={dishbeeMappings[location.id] ?? ""}
+                      onChange={(event) =>
+                        setDishbeeMappings((current) => ({
+                          ...current,
+                          [location.id]: event.target.value,
+                        }))
+                      }
+                      placeholder="Dishbee location UUID"
+                      className="min-h-10 rounded-lg border border-input bg-background px-3 font-mono text-[11px]"
+                    />
+                  </label>
+                ))}
+              </div>
+            </div>
+            <button
+              disabled={dishbeeBusy || user?.role !== "owner"}
+              onClick={() => void configureDishbeeRuntime()}
+              className="min-h-11 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground disabled:opacity-50"
+            >
+              {dishbeeBusy ? (
+                <Loader2 className="mr-2 inline animate-spin" size={16} />
+              ) : (
+                <PlugZap className="mr-2 inline" size={16} />
+              )}
+              {dishbeeRuntime?.status === "live"
+                ? "Rotate token & update mapping"
+                : "Connect Dishbee"}
+            </button>
+            <p className="text-xs text-muted-foreground">
+              Haccora stores only the SHA-256 hash of the token. The raw token is shown once and
+              must be saved into the Dishbee landlord Vault connection. Re-running setup rotates it.
+            </p>
+          </div>
+          <div className="space-y-3">
+            <div className="rounded-xl border border-border bg-secondary/20 p-4">
+              <div className="text-xs font-black uppercase tracking-wider text-muted-foreground">
+                Runtime health
+              </div>
+              <div className="mt-2 text-sm font-bold">
+                {dishbeeRuntime?.status ?? "Not connected"}
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Last event:{" "}
+                {dishbeeRuntime?.lastEventAt
+                  ? new Date(dishbeeRuntime.lastEventAt).toLocaleString("en-GB")
+                  : "none yet"}
+              </p>
+              {dishbeeRuntime?.lastError && (
+                <p className="mt-2 text-xs text-destructive">{dishbeeRuntime.lastError}</p>
+              )}
+            </div>
+            {dishbeeSecret && (
+              <div
+                role="alert"
+                className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-950"
+              >
+                <div className="font-bold">Copy this Dishbee token now</div>
+                <p className="mt-1 text-xs">It will not be shown again after you dismiss it.</p>
+                <div className="mt-3 flex gap-2">
+                  <code className="min-w-0 flex-1 overflow-auto rounded-lg bg-white p-3 text-[10px]">
+                    {dishbeeSecret}
+                  </code>
+                  <button
+                    onClick={() => void navigator.clipboard.writeText(dishbeeSecret)}
+                    className="rounded-lg border border-amber-300 bg-white px-3"
+                    aria-label="Copy Dishbee token"
+                  >
+                    <Copy size={16} />
+                  </button>
+                </div>
+                <button
+                  onClick={() => setDishbeeSecret(null)}
+                  className="mt-3 text-xs font-bold underline"
+                >
+                  I saved it
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
       <section className="surface overflow-hidden">
         <div className="border-b border-border bg-secondary/30 p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
