@@ -93,8 +93,8 @@ import { Route as AppCalibrationRouteImport } from './routes/app.calibration'
 import { Route as AppBillingRouteImport } from './routes/app.billing'
 import { Route as AppAuditsRouteImport } from './routes/app.audits'
 import { Route as AppAssetsRouteImport } from './routes/app.assets'
-import { Route as AppAiAssistantRouteImport } from './routes/app.ai-assistant'
 import { Route as AppAlertsRouteImport } from './routes/app.alerts'
+import { Route as AppAiAssistantRouteImport } from './routes/app.ai-assistant'
 import { Route as AppAddOnsRouteImport } from './routes/app.add-ons'
 import { Route as AppAssetsScanRouteImport } from './routes/app.assets.scan'
 import { Route as AppAssetsAssetIdRouteImport } from './routes/app.assets.$assetId'
@@ -526,14 +526,14 @@ const AppAssetsRoute = AppAssetsRouteImport.update({
   path: '/assets',
   getParentRoute: () => AppRoute,
 } as any)
-const AppAiAssistantRoute = AppAiAssistantRouteImport.update({
-  id: '/ai-assistant',
-  path: '/ai-assistant',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppAlertsRoute = AppAlertsRouteImport.update({
   id: '/alerts',
   path: '/alerts',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAiAssistantRoute = AppAiAssistantRouteImport.update({
+  id: '/ai-assistant',
+  path: '/ai-assistant',
   getParentRoute: () => AppRoute,
 } as any)
 const AppAddOnsRoute = AppAddOnsRouteImport.update({
@@ -1741,18 +1741,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAssetsRouteImport
       parentRoute: typeof AppRoute
     }
-    '/app/ai-assistant': {
-      id: '/app/ai-assistant'
-      path: '/ai-assistant'
-      fullPath: '/app/ai-assistant'
-      preLoaderRoute: typeof AppAiAssistantRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/app/alerts': {
       id: '/app/alerts'
       path: '/alerts'
       fullPath: '/app/alerts'
       preLoaderRoute: typeof AppAlertsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/ai-assistant': {
+      id: '/app/ai-assistant'
+      path: '/ai-assistant'
+      fullPath: '/app/ai-assistant'
+      preLoaderRoute: typeof AppAiAssistantRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/add-ons': {
