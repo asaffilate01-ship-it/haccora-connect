@@ -36,7 +36,7 @@ test("Dishbee ingestion validates bearer, tenant mapping and idempotency", () =>
   assert.match(route, /tenant_mismatch/);
   assert.match(route, /dishbee_runtime_locations/);
   assert.match(route, /event_key/);
-  assert.match(route, /duplicate:true/);
+  assert.match(route, /duplicate: ?true/);
 });
 
 test("Dishbee compliance events project into specialist Haccora records", () => {

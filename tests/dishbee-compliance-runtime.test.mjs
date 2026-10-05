@@ -31,7 +31,7 @@ test("Dishbee compliance runtime is tenant scoped and stores only token hashes",
 test("Dishbee receiver is idempotent and projects specialist compliance records", () => {
   assert.match(receiver, /eventKey/);
   assert.match(receiver, /dishbee_runtime_events/);
-  assert.match(receiver, /duplicate:true/);
+  assert.match(receiver, /duplicate: ?true/);
   assert.match(receiver, /temperature_logs/);
   assert.match(receiver, /cleaning_completions/);
   assert.match(receiver, /goods_in_logs/);
