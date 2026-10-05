@@ -21,7 +21,7 @@ test("the authenticated premises probe is read-only and explicitly reports non-p
 
 test("a non-probe request cannot create compliance evidence for an unrelated event family", () => {
   const scope = source.indexOf('event.eventType.startsWith("dishbee.compliance.")');
-  const receipts = source.indexOf('const { data: existing, error: existingError }');
+  const receipts = source.indexOf("const { data: existing, error: existingError }");
   assert(scope > 0 && scope < receipts);
   assert.match(source, /unsupported_event_scope/);
 });
