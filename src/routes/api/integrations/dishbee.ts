@@ -360,16 +360,19 @@ export const Route = createFileRoute("/api/integrations/dishbee")({
           if (new URL(request.url).searchParams.get("probe") === "1") {
             // Validation probe from PR #46: verifies token, tenant and premises mapping
             // without writing a receipt or any compliance record.
-            await db
-              .from("dishbee_runtime_connections")
-              .update({ last_error: null, updated_at: new Date().toISOString() })
-              .eq("id", connection.id);
+            if (!locationId) {
+              return Response.json({ error: "dishbee_location_required" }, { status: 400 });
+            }
             return Response.json({
               ok: true,
               probe: true,
+              persisted: false,
               organizationId: connection.organization_id,
               haccoraLocationId: locationId,
             });
+          }
+          if (!event.eventType.startsWith("dishbee.compliance.")) {
+            return Response.json({ error: "unsupported_event_scope" }, { status: 400 });
           }
           const { data: existing, error: existingError } = await db
             .from("dishbee_runtime_events")
