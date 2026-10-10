@@ -13,6 +13,7 @@ import {
   BUSINESS_SERVICES,
   SERVICE_CATEGORIES,
   SERVICE_REQUEST_STATUS,
+  filterBusinessServices,
   type BusinessService,
 } from "@/lib/business-services";
 import { useAuth } from "@/lib/auth";
@@ -106,17 +107,7 @@ function BusinessServicesPage() {
     void loadRequests();
   }, [loadRequests]);
 
-  const filtered = useMemo(
-    () =>
-      BUSINESS_SERVICES.filter(
-        (item) =>
-          (category === "All services" || item.category === category) &&
-          `${item.name} ${item.title} ${item.description}`
-            .toLowerCase()
-            .includes(query.trim().toLowerCase()),
-      ),
-    [category, query],
-  );
+  const filtered = useMemo(() => filterBusinessServices(query, category), [category, query]);
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -157,8 +148,8 @@ function BusinessServicesPage() {
         </div>
         <h1 className="mt-3 text-3xl md:text-4xl">More for your business</h1>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed">
-          Find the people, supplies and technology to run and grow your food business. Explore
-          services individually or ask for a quote across several.
+          Explore AI, reporting, financial tools, people, supplies and technology for your food
+          business. Choose a service or ask for a quote across several.
         </p>
         <p className="mt-4 text-xs">
           Your Haccora plan continues separately. Each additional service needs its own agreed
@@ -183,7 +174,7 @@ function BusinessServicesPage() {
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search accountants, suppliers, recruitment…"
+            placeholder="Search AI, GraphRAG, financials, recruitment…"
             className="min-h-12 w-full rounded-xl border border-border bg-card py-3 pl-10 pr-4 text-sm"
           />
         </label>
@@ -341,6 +332,17 @@ function BusinessServicesPage() {
                   </li>
                 ))}
               </ul>
+              {selected.dataNeeded && (
+                <div className="rounded-xl border border-border p-3 text-sm">
+                  <h3 className="font-semibold">Data to agree before connection</h3>
+                  <p className="mt-1 text-muted-foreground">{selected.dataNeeded.join(" · ")}</p>
+                </div>
+              )}
+              {selected.reviewNote && (
+                <p className="text-xs leading-relaxed text-muted-foreground">
+                  {selected.reviewNote}
+                </p>
+              )}
               {selected.href && (
                 <a
                   href={selected.href}

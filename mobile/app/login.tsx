@@ -12,11 +12,17 @@ export default function Login() {
   const [busy, setBusy] = useState(false);
   if (session) return <Redirect href="/dashboard" />;
   const submit = async () => {
+    if (busy) return;
     setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-    setBusy(false);
-    if (error) Alert.alert("Sign in failed", error.message);
-    else router.replace("/");
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      if (error) Alert.alert("Sign in failed", error.message);
+      else router.replace("/");
+    } catch {
+      Alert.alert("Sign in unavailable", "Check your connection and try again.");
+    } finally {
+      setBusy(false);
+    }
   };
   return (
     <View style={styles.page}>
@@ -48,6 +54,14 @@ export default function Login() {
       >
         <Text style={styles.buttonText}>{busy ? "Signing in…" : "Sign in"}</Text>
       </Pressable>
+      <Pressable
+        accessibilityRole="button"
+        disabled={busy}
+        style={styles.recovery}
+        onPress={() => router.push("/forgot-password")}
+      >
+        <Text style={styles.recoveryText}>Forgot your password?</Text>
+      </Pressable>
     </View>
   );
 }
@@ -59,4 +73,6 @@ const styles = StyleSheet.create({
   input: { borderWidth: 1, borderColor: "#d8d8d8", borderRadius: 12, padding: 14, fontSize: 16 },
   button: { backgroundColor: "#e43f2c", borderRadius: 24, padding: 15, alignItems: "center" },
   buttonText: { color: "#fff", fontWeight: "800", fontSize: 16 },
+  recovery: { minHeight: 48, justifyContent: "center", alignItems: "center" },
+  recoveryText: { color: "#a31024", fontSize: 16, textDecorationLine: "underline" },
 });

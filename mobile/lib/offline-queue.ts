@@ -3,25 +3,32 @@ import NetInfo from "@react-native-community/netinfo";
 import * as Crypto from "expo-crypto";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
-import { supabase } from "./supabase";
+import type { Session } from "@supabase/supabase-js";
+import { createReplayClient } from "./supabase";
+import {
+  actorColumns,
+  belongsToUser,
+  replayEvidence,
+  type EvidenceJob as Job,
+  type EvidenceTable as Table,
+} from "./offline-replay";
 
 const KEY = "haccora-offline-queue-v1";
 const jobKey = (id: string) => `haccora-offline-job-${id}`;
-type Table =
-  | "checks"
-  | "temperature_logs"
-  | "haccp_flow_runs"
-  | "goods_in_logs"
-  | "cleaning_completions"
-  | "asset_events";
-type Job = {
-  id: string;
-  table: Table;
-  payload: Record<string, unknown>;
-  queuedAt: string;
-  attempts: number;
-  lastError?: string;
-};
+let activeSession: Session | null = null;
+const listeners = new Set<() => void>();
+
+export function subscribeQueueChanges(listener: () => void) {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+export function setOfflineSession(session: Session | null) {
+  activeSession = session;
+  listeners.forEach((listener) => listener());
+}
 
 let operation: Promise<void> = Promise.resolve();
 
@@ -61,41 +68,62 @@ async function write(jobs: Job[]) {
       .filter((id) => !retained.has(id))
       .map((id) => SecureStore.deleteItemAsync(jobKey(id))),
   );
+  listeners.forEach((listener) => listener());
 }
 
 export async function enqueue(table: Table, payload: Record<string, unknown>) {
   const id = Crypto.randomUUID();
   await withQueueLock(async () => {
-    const jobs = await read();
-    jobs.push({
+    const job: Job = {
       id,
       table,
       payload: { ...payload, idempotency_key: id },
       queuedAt: new Date().toISOString(),
       attempts: 0,
-    });
+    };
+    if (!activeSession || !belongsToUser(job, activeSession.user.id)) {
+      throw new Error("Evidence must belong to the signed-in user and workspace");
+    }
+    const jobs = await read();
+    jobs.push(job);
     await write(jobs);
   });
-  await flush();
+  // Persistence succeeded. A later network failure must not turn this into a
+  // misleading 'not saved' result or encourage the user to submit a duplicate.
+  void flush().catch(() => undefined);
   return id;
 }
 
 export async function flush() {
   return withQueueLock(async () => {
+    const session = activeSession;
+    if (!session || Platform.OS === "web") return;
     const network = await NetInfo.fetch();
-    if (!network.isConnected) return;
+    if (!network.isConnected || network.isInternetReachable === false) return;
     const jobs = await read();
-    const remaining: Job[] = [];
-    for (const job of jobs) {
-      const { error } = await supabase.from(job.table).insert(job.payload);
-      if (error && error.code !== "23505") {
-        remaining.push({
-          ...job,
-          attempts: job.attempts + 1,
-          lastError: error.message.slice(0, 300),
-        });
-      }
-    }
+    const client = createReplayClient(session.access_token);
+    const remaining = await replayEvidence(
+      jobs,
+      session.user.id,
+      async (job) => {
+        if (activeSession?.access_token !== session.access_token) {
+          throw new Error("Session changed; retry with the original account");
+        }
+        const { error } = await client.from(job.table).insert(job.payload);
+        return error;
+      },
+      async (job) => {
+        if (job.payload.idempotency_key !== job.id) return false;
+        const { data, error } = await client
+          .from(job.table)
+          .select("id")
+          .eq("idempotency_key", job.id)
+          .eq("organization_id", job.payload.organization_id)
+          .eq(actorColumns[job.table], session.user.id)
+          .maybeSingle();
+        return !error && Boolean(data);
+      },
+    );
     // Evidence is never discarded merely because a retry limit was reached.
     await write(remaining);
   });
@@ -103,15 +131,19 @@ export async function flush() {
 
 export function startOfflineSync() {
   return NetInfo.addEventListener((state) => {
-    if (state.isConnected) void flush();
+    if (state.isConnected) void flush().catch(() => undefined);
   });
 }
 
 export async function getQueueStatus() {
-  const jobs = await read();
-  return {
-    pending: jobs.length,
-    failed: jobs.filter((job) => job.lastError).length,
-    oldestQueuedAt: jobs[0]?.queuedAt ?? null,
-  };
+  return withQueueLock(async () => {
+    const session = activeSession;
+    if (!session || Platform.OS === "web") return { pending: 0, failed: 0, oldestQueuedAt: null };
+    const jobs = (await read()).filter((job) => belongsToUser(job, session.user.id));
+    return {
+      pending: jobs.length,
+      failed: jobs.filter((job) => job.lastError).length,
+      oldestQueuedAt: jobs[0]?.queuedAt ?? null,
+    };
+  });
 }

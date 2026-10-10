@@ -348,7 +348,7 @@ function Dashboard() {
       )}
       {user.role === "inspector" && <InspectorView />}
       <BusinessServicePrompt
-        services={["taxnuvia", "omni-intelligence", "insure360"]}
+        services={["omni-intelligence", "omni-metrics", "omni-financials"]}
         title="Grow and protect your business"
       />
     </div>

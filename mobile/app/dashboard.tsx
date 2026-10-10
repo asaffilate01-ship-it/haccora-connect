@@ -22,7 +22,7 @@ import { useEffect, useMemo, useState } from "react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { supabase } from "@/lib/supabase";
 import { useSession } from "@/lib/session";
-import { getQueueStatus } from "@/lib/offline-queue";
+import { getQueueStatus, subscribeQueueChanges } from "@/lib/offline-queue";
 import { cardShadow, colours, screen } from "@/lib/theme";
 
 type Today = {
@@ -87,6 +87,8 @@ export default function Dashboard() {
   } = useSession();
   const network = useNetInfo();
   const [pending, setPending] = useState(0);
+  const [queueError, setQueueError] = useState(false);
+  const [failedSync, setFailedSync] = useState(0);
   const [dataState, setDataState] = useState<"loading" | "ready" | "error">("loading");
   const [today, setToday] = useState<Today>({
     done: 0,
@@ -97,8 +99,26 @@ export default function Dashboard() {
   });
 
   useEffect(() => {
-    void getQueueStatus().then((status) => setPending(status.pending));
-  }, [network.isConnected]);
+    let active = true;
+    const refreshQueue = () => {
+      void getQueueStatus()
+        .then((status) => {
+          if (!active) return;
+          setPending(status.pending);
+          setFailedSync(status.failed);
+          setQueueError(false);
+        })
+        .catch(() => {
+          if (active) setQueueError(true);
+        });
+    };
+    refreshQueue();
+    const unsubscribe = subscribeQueueChanges(refreshQueue);
+    return () => {
+      active = false;
+      unsubscribe();
+    };
+  }, [network.isConnected, session?.user.id]);
 
   useEffect(() => {
     if (!session || !workspaceReady) return;
@@ -258,18 +278,26 @@ export default function Dashboard() {
         )}
         <View style={styles.flex}>
           <Text style={styles.syncTitle}>
-            {network.isConnected === false
-              ? "Working offline"
-              : pending
-                ? "Syncing securely"
-                : "Up to date"}
+            {queueError
+              ? "Sync status unavailable"
+              : failedSync
+                ? "Evidence needs another sync"
+                : network.isConnected === false
+                  ? "Working offline"
+                  : pending
+                    ? "Syncing securely"
+                    : "Up to date"}
           </Text>
           <Text style={styles.syncBody}>
-            {network.isConnected === false
-              ? `${pending} change${pending === 1 ? "" : "s"} securely queued on this device`
-              : pending
-                ? `${pending} queued change${pending === 1 ? "" : "s"} being sent`
-                : "server confirmed · saved to your workspace"}
+            {queueError
+              ? "Your saved evidence has not been cleared. Reopen the app to check sync status."
+              : failedSync
+                ? `${failedSync} change${failedSync === 1 ? "" : "s"} retained for retry`
+                : network.isConnected === false
+                  ? `${pending} change${pending === 1 ? "" : "s"} securely queued on this device`
+                  : pending
+                    ? `${pending} queued change${pending === 1 ? "" : "s"} being sent`
+                    : "server confirmed · saved to your workspace"}
           </Text>
         </View>
       </View>

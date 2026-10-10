@@ -24,6 +24,12 @@ export const supabase = createClient(url, key, {
   },
 });
 
+// Pin replay requests to the session that started them, even if a shared device
+// changes account while a request is in flight. Server RLS remains authoritative.
+export function createReplayClient(accessToken: string) {
+  return createClient(url!, key!, { accessToken: async () => accessToken });
+}
+
 if (Platform.OS !== "web") {
   AppState.addEventListener("change", (state) => {
     if (state === "active") supabase.auth.startAutoRefresh();

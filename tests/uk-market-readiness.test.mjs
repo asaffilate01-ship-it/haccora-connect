@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { actorColumns } from "../mobile/lib/offline-replay.ts";
 import { readFileSync, readdirSync } from "node:fs";
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
 test("UK approval onboarding remains UK-only and tenant setup retains four nations", () => {
@@ -402,7 +403,7 @@ test("Phase 16 wires compact offline delivery checks and manager alerts", () => 
   assert.match(native, /Packaging intact/);
   assert.match(native, /Corrective action required/);
   assert.match(web, /allergen_label_ok/);
-  assert.match(queue, /"goods_in_logs"/);
+  assert.equal(actorColumns.goods_in_logs, "user_id");
   assert.match(dispatch, /rejected_delivery_review/);
   assert.match(dispatch, /nativeRoute: "\/goods-in"/);
 });
@@ -427,7 +428,7 @@ test("Phase 17 wires compact web and offline-native cleaning flows", () => {
     assert.match(source, /cleaning_completions/);
   }
   assert.match(native, /enqueue\("cleaning_completions"/);
-  assert.match(queue, /"cleaning_completions"/);
+  assert.equal(actorColumns.cleaning_completions, "completed_by");
   assert.match(dispatch, /scheduled cleaning task/);
   assert.doesNotMatch(web, /Sanixyl|DesInfekt|FrostClean/);
 });

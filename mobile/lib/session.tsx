@@ -1,8 +1,15 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { Session } from "@supabase/supabase-js";
-import { createContext, useContext, useEffect, useState, type PropsWithChildren } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type PropsWithChildren,
+} from "react";
 import { supabase } from "./supabase";
-import { flush, startOfflineSync } from "./offline-queue";
+import { flush, setOfflineSession, startOfflineSync } from "./offline-queue";
 import { configureNotificationNavigation, syncPushNotifications } from "./push";
 
 type SessionContextValue = {
@@ -53,9 +60,13 @@ export function SessionProvider({ children }: PropsWithChildren) {
   const [serviceStatus, setServiceStatus] = useState<"active" | "frozen" | "closed">("active");
   const [platformRole, setPlatformRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const workspaceRequest = useRef(0);
+  const workspaceUser = useRef<string | null>(null);
 
   const loadWorkspace = async (nextSession: Session | null) => {
-    if (!nextSession) {
+    const request = ++workspaceRequest.current;
+    if (!nextSession || workspaceUser.current !== nextSession.user.id) {
+      workspaceUser.current = nextSession?.user.id ?? null;
       setWorkspaceReady(false);
       setOrganizationId(null);
       setOrganizationName(null);
@@ -67,17 +78,22 @@ export function SessionProvider({ children }: PropsWithChildren) {
       setActionPermissions([]);
       setServiceStatus("active");
       setPlatformRole(null);
-      await AsyncStorage.removeItem(WORKSPACE_CACHE_KEY);
-      return;
+      if (!nextSession) {
+        await AsyncStorage.removeItem(WORKSPACE_CACHE_KEY);
+        return;
+      }
     }
     const [workspaceResult, platformResult] = await Promise.all([
       supabase.rpc("get_my_context"),
       supabase.rpc("get_my_platform_context"),
     ]);
+    if (request !== workspaceRequest.current) return;
     const { data, error } = workspaceResult;
     if (error) {
       const cached = await AsyncStorage.getItem(WORKSPACE_CACHE_KEY);
+      if (request !== workspaceRequest.current) return;
       let context: {
+        userId?: string;
         organizationId?: string;
         organizationName?: string | null;
         locationId?: string | null;
@@ -91,6 +107,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
       } = {};
       try {
         context = cached ? JSON.parse(cached) : {};
+        if (context.userId !== nextSession.user.id) context = {};
       } catch {
         await AsyncStorage.removeItem(WORKSPACE_CACHE_KEY);
       }
@@ -155,6 +172,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
     await AsyncStorage.setItem(
       WORKSPACE_CACHE_KEY,
       JSON.stringify({
+        userId: nextSession.user.id,
         organizationId: nextOrganizationId,
         organizationName: nextOrganizationName,
         locationId: nextLocationId,
@@ -172,28 +190,45 @@ export function SessionProvider({ children }: PropsWithChildren) {
   const refreshWorkspace = async () => loadWorkspace(session);
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data }) => {
-      setSession(data.session);
-      await loadWorkspace(data.session);
-      setLoading(false);
-      if (data.session) {
-        void flush();
-        void syncPushNotifications().catch(() => undefined);
-      }
-    });
-    const { data } = supabase.auth.onAuthStateChange((_event, next) => {
+    let mounted = true;
+    let authEvents = 0;
+    const applySession = async (next: Session | null) => {
+      if (!mounted) return;
       setSession(next);
-      void loadWorkspace(next).then(() => {
-        if (next) {
-          void flush();
+      setOfflineSession(next);
+      try {
+        await loadWorkspace(next);
+        if (mounted && next) {
+          void flush().catch(() => undefined);
           void syncPushNotifications().catch(() => undefined);
         }
-      });
+      } catch {
+        if (mounted) setWorkspaceReady(false);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    const { data } = supabase.auth.onAuthStateChange((_event, next) => {
+      authEvents += 1;
+      // Do not await Supabase calls while its auth event lock is held.
+      void applySession(next);
     });
+    const hydrationVersion = authEvents;
+    void supabase.auth
+      .getSession()
+      .then(({ data: initial }) => {
+        if (mounted && hydrationVersion === authEvents) void applySession(initial.session);
+      })
+      .catch(() => {
+        if (mounted && hydrationVersion === authEvents) void applySession(null);
+      });
     const stopOfflineSync = startOfflineSync();
     const stopNotificationNavigation = configureNotificationNavigation();
     return () => {
+      mounted = false;
+      workspaceRequest.current += 1;
       data.subscription.unsubscribe();
+      setOfflineSession(null);
       stopOfflineSync();
       stopNotificationNavigation();
     };

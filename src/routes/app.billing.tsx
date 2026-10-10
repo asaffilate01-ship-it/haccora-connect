@@ -213,7 +213,7 @@ function BillingPage() {
         {"Payment details are processed by Stripe; Haccora does not store card numbers."}
       </p>
       <BusinessServicePrompt
-        services={["taxnuvia", "insure360", "veyumo"]}
+        services={["omni-financials", "taxnuvia", "lawquo"]}
         title="Finance and business essentials"
       />
     </div>
