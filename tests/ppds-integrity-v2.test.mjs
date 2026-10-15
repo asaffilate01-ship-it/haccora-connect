@@ -82,5 +82,5 @@ test("safe methods require on-premises documented management responses", async (
   assert.match(route, /acknowledged/);
   assert.match(route, /templateVersion/);
   assert.match(route, /jurisdiction/);
-  assert.doesNotMatch(route, /status: "active"\s*,\s*adopted_by/);
+  assert.match(route, /managementConfirmed: true/);
 });
