@@ -58,6 +58,7 @@ export function IngredientChangeReview({
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [loading, setLoading] = useState(false);
+  const [queueReady, setQueueReady] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const selected = useMemo(
@@ -72,6 +73,7 @@ export function IngredientChangeReview({
   const load = useCallback(async () => {
     if (!organizationId || !canManage) return;
     setLoading(true);
+    setQueueReady(false);
     const { data, error: queryError } = await db
       .from("ingredient_change_requests")
       .select(
@@ -86,12 +88,14 @@ export function IngredientChangeReview({
       return;
     }
     setPending((data ?? []) as ChangeRequest[]);
+    setQueueReady(true);
     setError("");
   }, [organizationId, canManage]);
 
   useEffect(() => {
     setIngredientId("");
     setPending([]);
+    setQueueReady(false);
     setReviewId("");
     setNotice("");
     if (canManage) void load();
@@ -111,7 +115,7 @@ export function IngredientChangeReview({
   };
 
   const submit = async () => {
-    if (!canManage || !selected || busy || loading) return;
+    if (!canManage || !selected || busy || loading || !queueReady) return;
     if (
       statement.trim().length < 3 ||
       !version.trim() ||
@@ -148,7 +152,7 @@ export function IngredientChangeReview({
   };
 
   const review = async (approve: boolean) => {
-    if (!canManage || !reviewId || busy || loading || reviewNote.trim().length < 12) {
+    if (!canManage || !reviewId || busy || loading || !queueReady || reviewNote.trim().length < 12) {
       setError("Select a pending request and record a review reason of at least 12 characters.");
       return;
     }
@@ -317,7 +321,7 @@ export function IngredientChangeReview({
               <button
                 type="button"
                 className="btn-primary px-4 py-2"
-                disabled={busy || loading}
+                disabled={busy || loading || !queueReady}
                 onClick={() => void submit()}
               >
                 Save proposed change
@@ -367,6 +371,10 @@ export function IngredientChangeReview({
                   Proposed may contain: {item.proposed_may_contain.join(", ") || "None listed"}
                 </p>
                 <p className="text-xs">Proposed ingredients: {item.proposed_statement}</p>
+                <p className="text-xs text-muted-foreground">
+                  Current contains:{" "}
+                  {ingredients.find((ingredient) => ingredient.id === item.ingredient_id)?.allergens.join(", ") || "None recorded"}
+                </p>
                 <button
                   type="button"
                   className="rounded-md border px-3 py-1 text-xs"
@@ -397,7 +405,7 @@ export function IngredientChangeReview({
                       <button
                         type="button"
                         className="btn-primary px-3 py-2 text-xs"
-                        disabled={busy || reviewNote.trim().length < 12}
+                        disabled={busy || !queueReady || reviewNote.trim().length < 12}
                         onClick={() => void review(true)}
                       >
                         <CheckCircle2 size={14} className="inline mr-1" /> Approve
@@ -405,7 +413,7 @@ export function IngredientChangeReview({
                       <button
                         type="button"
                         className="rounded-md border px-3 py-2 text-xs"
-                        disabled={busy || reviewNote.trim().length < 12}
+                        disabled={busy || !queueReady || reviewNote.trim().length < 12}
                         onClick={() => void review(false)}
                       >
                         Reject
