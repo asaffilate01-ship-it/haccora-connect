@@ -59,6 +59,7 @@ function SafeMethods() {
       return;
     }
     setLoading(true);
+    setProfile(null);
     const [templates, adoptions, site] = await Promise.all([
       supabase.from("safe_method_templates").select("*").order("title"),
       supabase
@@ -75,6 +76,8 @@ function SafeMethods() {
     ]);
     setLoading(false);
     if (templates.error || adoptions.error || site.error) {
+      setMethods([]);
+      setAdopted([]);
       setError("Could not load this premises' controlled methods. Refresh before reviewing.");
       return;
     }
@@ -87,6 +90,9 @@ function SafeMethods() {
   }, [user?.organizationId, user?.locationId]);
 
   useEffect(() => {
+    setSelectedId(null);
+    setAnswers({});
+    setAcknowledged(false);
     void load();
   }, [load]);
 
@@ -122,7 +128,17 @@ function SafeMethods() {
   };
 
   const save = async () => {
-    if (!canManage || !selected || !profile || !user?.organizationId || !user.locationId) return;
+    if (
+      !canManage ||
+      !selected ||
+      !profile ||
+      !user?.organizationId ||
+      !user.locationId ||
+      error ||
+      !selected.prompts.length
+    ) {
+      return;
+    }
     const complete = selected.prompts.every((_, index) => (answers[String(index)] ?? "").trim().length >= 12);
     if (!complete || !acknowledged) {
       setError("Explain each control in at least 12 characters and confirm the management review.");
