@@ -29,6 +29,8 @@ type ChangeRequest = {
 type Props = {
   organizationId: string;
   ingredients: IngredientSummary[];
+  recipeLinks: Array<{ recipe_id: string; ingredient_id: string }>;
+  recipes: Array<{ id: string; name: string }>;
   canManage: boolean;
   onApplied: () => void;
 };
@@ -38,6 +40,8 @@ const db = supabase as any;
 export function IngredientChangeReview({
   organizationId,
   ingredients,
+  recipeLinks,
+  recipes,
   canManage,
   onApplied,
 }: Props) {
@@ -60,6 +64,10 @@ export function IngredientChangeReview({
     () => ingredients.find((ingredient) => ingredient.id === ingredientId),
     [ingredientId, ingredients],
   );
+  const affectedRecipes = (id: string) =>
+    recipes.filter((recipe) =>
+      recipeLinks.some((link) => link.recipe_id === recipe.id && link.ingredient_id === id),
+    );
 
   const load = useCallback(async () => {
     if (!organizationId || !canManage) return;
@@ -103,7 +111,7 @@ export function IngredientChangeReview({
   };
 
   const submit = async () => {
-    if (!canManage || !selected || busy || loading || error) return;
+    if (!canManage || !selected || busy || loading) return;
     if (
       statement.trim().length < 3 ||
       !version.trim() ||
@@ -131,14 +139,14 @@ export function IngredientChangeReview({
       setError("Request was not saved. A pending request may already exist for this ingredient.");
       return;
     }
-    setNotice("Proposed change recorded. The live ingredient and labels have not been changed.");
-    setError("");
     chooseIngredient("");
+    setError("");
     await load();
+    setNotice("Proposed change recorded. The live ingredient and labels have not been changed.");
   };
 
   const review = async (approve: boolean) => {
-    if (!canManage || !reviewId || busy || loading || reviewNote.trim().length < 12 || error) {
+    if (!canManage || !reviewId || busy || loading || reviewNote.trim().length < 12) {
       setError("Select a pending request and record a review reason of at least 12 characters.");
       return;
     }
@@ -211,6 +219,9 @@ export function IngredientChangeReview({
               <p className="text-xs text-muted-foreground">
                 Current version: {selected.specification_version ?? "Not recorded"}
               </p>
+              <p className="text-xs font-semibold">
+                {affectedRecipes(selected.id).length} linked recipes require re-verification after approval.
+              </p>
               <label className="text-sm block">
                 New supplier version
                 <input className="input block w-full mt-1" maxLength={80} value={version}
@@ -282,6 +293,11 @@ export function IngredientChangeReview({
                   {item.expected_version || "Unversioned"} → {item.proposed_version}
                 </div>
                 <div className="text-xs">Source reference: {item.evidence_reference}</div>
+                <div className="rounded-md bg-secondary/60 p-2 text-xs">
+                  Affects {affectedRecipes(item.ingredient_id).length} recorded recipes:{" "}
+                  {affectedRecipes(item.ingredient_id).map((recipe) => recipe.name).join(", ") ||
+                    "No linked recipes found"}
+                </div>
                 <p className="text-xs">{item.reason}</p>
                 <p className="text-xs">
                   Proposed contains: {item.proposed_allergens.join(", ") || "None listed"}
