@@ -15,8 +15,10 @@ const EventSchema = z.object({
 
 type Event = z.infer<typeof EventSchema>;
 type Db = any;
-const NumberField = z.union([z.number(), z.string().trim().min(1)])
-  .transform((value) => Number(value)).pipe(z.number().finite());
+const NumberField = z
+  .union([z.number(), z.string().trim().min(1)])
+  .transform((value) => Number(value))
+  .pipe(z.number().finite());
 const PositiveNumber = NumberField.pipe(z.number().positive());
 const OptionalNumber = NumberField.optional().nullable();
 const Timestamp = z.string().datetime({ offset: true });
@@ -24,35 +26,61 @@ const Currency = z.enum(["GBP", "EUR"]);
 
 // Unrecognised events must never create an apparently completed HACCP record.
 const CompliancePayloads: Record<string, z.ZodType> = {
-  "dishbee.compliance.checklist.completed": z.object({
-    checklistName: z.string().trim().min(1),
-    completedAt: Timestamp.optional(),
-  }).passthrough(),
-  "dishbee.compliance.waste.recorded": z.object({
-    quantity: PositiveNumber, costPence: OptionalNumber, currency: Currency.optional(),
-  }).passthrough(),
-  "dishbee.compliance.supplier.receipt": z.object({
-    supplierName: z.string().trim().min(1), deliveryTempC: OptionalNumber,
-    receivedAt: Timestamp.optional(),
-  }).passthrough(),
-  "dishbee.compliance.allergens.updated": z.object({
-    menuItemId: z.string().min(1), name: z.string().trim().min(1),
-    allergens: z.array(z.string().trim().min(1)).max(14),
-    pricePence: OptionalNumber, costPence: OptionalNumber, currency: Currency.optional(),
-  }).passthrough(),
-  "dishbee.compliance.temperature.recorded": z.object({
-    reading: NumberField, targetMin: OptionalNumber, targetMax: OptionalNumber,
-    loggedAt: Timestamp.optional(),
-  }).passthrough().refine(
-    (p) => p.targetMin == null || p.targetMax == null || p.targetMin <= p.targetMax,
-    "temperature_limits_reversed",
-  ),
-  "dishbee.compliance.incident.created": z.object({
-    title: z.string().trim().min(1), occurredAt: Timestamp.optional(),
-  }).passthrough(),
-  "dishbee.compliance.corrective_action.created": z.object({
-    description: z.string().trim().min(1), dueAt: Timestamp.optional(),
-  }).passthrough(),
+  "dishbee.compliance.checklist.completed": z
+    .object({
+      checklistName: z.string().trim().min(1),
+      completedAt: Timestamp.optional(),
+    })
+    .passthrough(),
+  "dishbee.compliance.waste.recorded": z
+    .object({
+      quantity: PositiveNumber,
+      costPence: OptionalNumber,
+      currency: Currency.optional(),
+    })
+    .passthrough(),
+  "dishbee.compliance.supplier.receipt": z
+    .object({
+      supplierName: z.string().trim().min(1),
+      deliveryTempC: OptionalNumber,
+      receivedAt: Timestamp.optional(),
+    })
+    .passthrough(),
+  "dishbee.compliance.allergens.updated": z
+    .object({
+      menuItemId: z.string().min(1),
+      name: z.string().trim().min(1),
+      allergens: z.array(z.string().trim().min(1)).max(14),
+      pricePence: OptionalNumber,
+      costPence: OptionalNumber,
+      currency: Currency.optional(),
+    })
+    .passthrough(),
+  "dishbee.compliance.temperature.recorded": z
+    .object({
+      reading: NumberField,
+      targetMin: OptionalNumber,
+      targetMax: OptionalNumber,
+      loggedAt: Timestamp.optional(),
+    })
+    .passthrough()
+    .refine(
+      (p) =>
+        p.targetMin == null || p.targetMax == null || p.targetMin <= p.targetMax,
+      "temperature_limits_reversed",
+    ),
+  "dishbee.compliance.incident.created": z
+    .object({
+      title: z.string().trim().min(1),
+      occurredAt: Timestamp.optional(),
+    })
+    .passthrough(),
+  "dishbee.compliance.corrective_action.created": z
+    .object({
+      description: z.string().trim().min(1),
+      dueAt: Timestamp.optional(),
+    })
+    .passthrough(),
 };
 
 function eventCurrency(payload: Record<string, unknown>): "GBP" | "EUR" {
@@ -185,8 +213,10 @@ async function projectEvent(db: Db, connection: any, event: Event, locationId: s
         unit: text(p["unit"], "each"),
         reason: text(p["reason"], "waste"),
         note: text(p["note"]) || null,
-        cost_eur: p["costPence"] == null || currency !== "EUR" ? null : number(p["costPence"]) / 100,
-        cost_gbp: p["costPence"] == null || currency !== "GBP" ? null : number(p["costPence"]) / 100,
+        cost_eur:
+          p["costPence"] == null || currency !== "EUR" ? null : number(p["costPence"]) / 100,
+        cost_gbp:
+          p["costPence"] == null || currency !== "GBP" ? null : number(p["costPence"]) / 100,
         source_currency: currency,
         logged_at: date(p["createdAt"] ?? event.occurredAt),
         idempotency_key: idempotency,
