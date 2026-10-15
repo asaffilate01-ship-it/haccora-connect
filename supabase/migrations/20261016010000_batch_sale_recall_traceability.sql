@@ -96,6 +96,9 @@ begin
       or btrim(v_receipt.product) <> btrim(new.product_name)
       or v_receipt.received_at is distinct from new.received_at
       or v_receipt.use_by is distinct from new.use_by
+      or v_receipt.quantity is distinct from new.quantity
+      or nullif(btrim(coalesce(v_receipt.unit, '')), '')
+         is distinct from nullif(btrim(coalesce(new.unit, '')), '')
       or btrim(coalesce(v_receipt.delivery_reference, v_receipt.id::text))
          <> btrim(new.delivery_reference) then
       raise exception 'Goods-in receipt is not an accepted matching premises batch';
