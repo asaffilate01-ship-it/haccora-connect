@@ -37,6 +37,33 @@ type Props = {
 
 const db = supabase as any;
 
+// Normalise legacy ingredient allergen keys to UK customer-facing declarations.
+const allergenAliases: Record<string, string> = {
+  gluten: "Cereals containing gluten",
+  crustacean: "Crustaceans",
+  egg: "Eggs",
+  fish: "Fish",
+  peanut: "Peanuts",
+  soy: "Soya",
+  milk: "Milk",
+  nuts: "Tree nuts",
+  celery: "Celery",
+  mustard: "Mustard",
+  sesame: "Sesame",
+  sulphite: "Sulphur dioxide and sulphites",
+  lupin: "Lupin",
+  mollusc: "Molluscs",
+};
+function standardiseAllergens(values: string[]): string[] {
+  return [...new Set(values.map((value) => {
+    const canonical = UK_ALLERGENS.find(
+      (allergen) => allergen.toLowerCase() === value.toLowerCase(),
+    );
+    return canonical ?? allergenAliases[value.toLowerCase()] ?? value;
+  }))];
+}
+
+
 export function IngredientChangeReview({
   organizationId,
   ingredients,
@@ -106,8 +133,8 @@ export function IngredientChangeReview({
     setIngredientId(id);
     setStatement(ingredient?.ingredient_statement ?? "");
     setVersion("");
-    setContains(ingredient?.allergens ?? []);
-    setMayContain(ingredient?.may_contain ?? []);
+    setContains(standardiseAllergens(ingredient?.allergens ?? []));
+    setMayContain(standardiseAllergens(ingredient?.may_contain ?? []));
     setReference("");
     setReason("");
     setError("");
