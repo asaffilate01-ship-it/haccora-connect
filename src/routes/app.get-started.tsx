@@ -45,7 +45,11 @@ function GetStarted() {
   const [error, setError] = useState("");
 
   const load = useCallback(async () => {
-    if (!user?.organizationId) return;
+    if (!user?.organizationId || !user.locationId) {
+      setLoading(false);
+      setError("Select an active premises before using the setup checklist.");
+      return;
+    }
     setLoading(true);
     setError("");
     const count = { count: "exact" as const, head: true };
@@ -53,19 +57,46 @@ function GetStarted() {
       await Promise.all([
         supabase
           .from("site_compliance_profiles")
-          .select("id", count)
-          .eq("organization_id", user.organizationId),
+          .select("location_id,jurisdiction")
+          .eq("organization_id", user.organizationId)
+          .eq("location_id", user.locationId)
+          .maybeSingle(),
         supabase
           .from("organization_memberships")
           .select("id", count)
           .eq("organization_id", user.organizationId)
           .eq("status", "active"),
-        supabase.from("site_safe_methods").select("id", count).eq("status", "active"),
-        supabase.from("assets").select("id", count),
-        supabase.from("suppliers").select("id", count),
-        supabase.from("recipes").select("id", count),
-        supabase.from("checks").select("id", count),
-        supabase.from("training_records").select("id", count),
+        supabase
+          .from("site_safe_methods")
+          .select("id,controls,review_due_at")
+          .eq("organization_id", user.organizationId)
+          .eq("location_id", user.locationId)
+          .eq("status", "active"),
+        supabase
+          .from("assets")
+          .select("id", count)
+          .eq("organization_id", user.organizationId)
+          .eq("location_id", user.locationId),
+        supabase
+          .from("suppliers")
+          .select("id", count)
+          .eq("organization_id", user.organizationId)
+          .or(`location_id.eq.${user.locationId},location_id.is.null`),
+        supabase
+          .from("recipes")
+          .select("id", count)
+          .eq("organization_id", user.organizationId)
+          .or(`location_id.eq.${user.locationId},location_id.is.null`),
+        supabase
+          .from("checks")
+          .select("id", count)
+          .eq("organization_id", user.organizationId)
+          .eq("location_id", user.locationId),
+        supabase
+          .from("training_records")
+          .select("id", count)
+          .eq("organization_id", user.organizationId)
+          .eq("location_id", user.locationId),
         supabase
           .from("subscriptions")
           .select("trial_ends_at")
@@ -84,11 +115,28 @@ function GetStarted() {
       subscription,
     ];
     const firstError = results.find((result) => result.error)?.error;
-    if (firstError) setError(firstError.message);
+    if (firstError) {
+      setError("Site onboarding data could not be verified. Refresh before relying on progress.");
+      setLoading(false);
+      return;
+    }
+    const completedMethods = (methods.data ?? []).filter((row) => {
+      const details = row.controls as Record<string, unknown> | null;
+      const answers = details?.answers as Record<string, string> | undefined;
+      return (
+        details?.managementConfirmed === true &&
+        details?.jurisdiction === profile.data?.jurisdiction &&
+        typeof details?.templateVersion === "string" &&
+        Boolean(answers) &&
+        Object.values(answers ?? {}).length > 0 &&
+        Object.values(answers ?? {}).every((answer) => answer.trim().length >= 12) &&
+        (!row.review_due_at || row.review_due_at >= new Date().toISOString().slice(0, 10))
+      );
+    }).length;
     setSnapshot({
-      profile: profile.count ?? 0,
+      profile: profile.data ? 1 : 0,
       team: team.count ?? 0,
-      methods: methods.count ?? 0,
+      methods: completedMethods,
       assets: assets.count ?? 0,
       suppliers: suppliers.count ?? 0,
       recipes: recipes.count ?? 0,
@@ -97,7 +145,7 @@ function GetStarted() {
       trialEndsAt: subscription.data?.trial_ends_at ?? null,
     });
     setLoading(false);
-  }, [user?.organizationId]);
+  }, [user?.organizationId, user?.locationId]);
 
   useEffect(() => {
     void load();
@@ -185,13 +233,13 @@ function GetStarted() {
         <aside className="surface p-5 h-fit">
           <Rocket size={22} />
           <div className="mt-4 text-4xl font-black tabular-nums">
-            {loading ? "—" : `${progress}%`}
+            {loading || error ? "—" : `${progress}%`}
           </div>
           <div className="mt-3 h-2 overflow-hidden rounded-full bg-secondary">
             <div className="h-full bg-success transition-all" style={{ width: `${progress}%` }} />
           </div>
           <p className="mt-3 text-xs text-muted-foreground">
-            {completed} of {steps.length} setup steps complete
+            {error ? "Progress unavailable" : `${completed} of ${steps.length} setup steps complete`}
           </p>
           {trialDays !== null && (
             <div className="mt-4 rounded-xl bg-secondary p-3 text-xs">
