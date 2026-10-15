@@ -103,7 +103,19 @@ function Ppds() {
       void load();
     }
   };
+  const unverifiedIngredients = selected.filter(
+    (ingredient) =>
+      !ingredient.ingredient_statement?.trim() ||
+      !ingredient.specification_version ||
+      !ingredient.reviewed_at,
+  );
   const generate = async () => {
+    if (unverifiedIngredients.length) {
+      setMsg(
+        "Cannot generate: review and version every ingredient specification against its current supplier information first.",
+      );
+      return;
+    }
     if (!user?.organizationId || !user.locationId || !recipeId || !selected.length) {
       setMsg("Add recipe ingredients before generating a PPDS label.");
       return;
@@ -135,7 +147,11 @@ function Ppds() {
       version: (last?.version ?? 0) + 1,
       generated_by: user.id,
     });
-    setMsg(error?.message ?? "Traceable PPDS label version generated.");
+    setMsg(
+      error?.message ??
+        "Traceable PPDS label version generated; verify the printed output before use.",
+    );
+    if (!error) void load();
   };
   const attachIngredient = async () => {
     if (!user?.organizationId || !recipeId || !ingredientId) return;
@@ -288,7 +304,17 @@ function Ppds() {
                 : "Matches the current ingredient specification versions."}
             </div>
           )}
-          <button className="btn-primary px-4 py-2" onClick={() => void generate()}>
+          {unverifiedIngredients.length > 0 && (
+            <div role="alert" className="rounded-lg border border-warning/40 p-3 text-sm">
+              {unverifiedIngredients.length} ingredient specification(s) need a reviewed statement
+              and version before label generation.
+            </div>
+          )}
+          <button
+            className="btn-primary px-4 py-2"
+            disabled={unverifiedIngredients.length > 0}
+            onClick={() => void generate()}
+          >
             Generate controlled version
           </button>
           <p className="text-xs text-muted-foreground">

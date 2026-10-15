@@ -7,7 +7,6 @@ import { CalendarDays, Clock, Play, Square, User, Loader2, Plus, Trash2, X } fro
 
 export const Route = createFileRoute("/app/rota")({ component: RotaPage });
 
-const DAYS_DE = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 const DAYS_EN = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 interface Shift {
@@ -35,7 +34,8 @@ function startOfWeek(d: Date) {
   return s;
 }
 function fmtDate(d: Date) {
-  return d.toISOString().slice(0, 10);
+  // Local calendar date, not UTC: avoids a one-day shift around BST/DST.
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
 function RotaPage() {
@@ -47,7 +47,14 @@ function RotaPage() {
   const canManage = role === "owner" || role === "manager";
 
   const [tab, setTab] = useState<"rota" | "clock">("rota");
-  const [weekStart] = useState(() => startOfWeek(new Date()));
+  const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
+  const [error, setError] = useState("");
+  const moveWeek = (amount: number) =>
+    setWeekStart((previous) => {
+      const next = new Date(previous);
+      next.setDate(previous.getDate() + amount * 7);
+      return next;
+    });
   const weekDates = useMemo(
     () =>
       Array.from({ length: 7 }, (_, i) => {
@@ -71,7 +78,7 @@ function RotaPage() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [{ data: s }, { data: c }] = await Promise.all([
+    const [{ data: s, error: shiftsError }, { data: c, error: clockError }] = await Promise.all([
       supabase
         .from("shifts")
         .select("*")
@@ -80,6 +87,12 @@ function RotaPage() {
         .order("shift_date"),
       supabase.from("time_clock").select("*").order("clock_in", { ascending: false }).limit(20),
     ]);
+    if (shiftsError || clockError) {
+      setError("Could not refresh the rota or time clock. Please retry.");
+      setLoading(false);
+      return;
+    }
+    setError("");
     // Fetch profile names for clock entries
     const ids = Array.from(new Set((c ?? []).map((x) => x.user_id)));
     const nameMap: Record<string, string> = {};
@@ -108,27 +121,46 @@ function RotaPage() {
   }, [shifts]);
 
   const myOpen = clocks.find((c) => c.user_id === user?.id && !c.clock_out);
+  const plannedHours = shifts.reduce((sum, shift) => {
+    const [startHour, startMinute] = shift.start_time.split(":").map(Number);
+    const [endHour, endMinute] = shift.end_time.split(":").map(Number);
+    return sum + Math.max(0, (endHour * 60 + endMinute - startHour * 60 - startMinute) / 60);
+  }, 0);
 
   const clockIn = async () => {
     if (!user) return;
     setBusy(true);
-    await supabase.from("time_clock").insert({ user_id: user.id, role_label: role });
+    const { error: clockError } = await supabase
+      .from("time_clock")
+      .insert({ user_id: user.id, role_label: role });
     setBusy(false);
-    load();
+    if (clockError) {
+      setError("Clock-in failed; no successful entry was confirmed.");
+      return;
+    }
+    void load();
   };
   const clockOut = async () => {
     if (!myOpen) return;
     setBusy(true);
-    await supabase
+    const { error: clockError } = await supabase
       .from("time_clock")
       .update({ clock_out: new Date().toISOString() })
       .eq("id", myOpen.id);
     setBusy(false);
-    load();
+    if (clockError) {
+      setError("Clock-out failed; please retry.");
+      return;
+    }
+    void load();
   };
   const deleteShift = async (id: string) => {
-    await supabase.from("shifts").delete().eq("id", id);
-    load();
+    const { error: deleteError } = await supabase.from("shifts").delete().eq("id", id);
+    if (deleteError) {
+      setError("Shift could not be removed.");
+      return;
+    }
+    void load();
   };
 
   return (
@@ -152,6 +184,40 @@ function RotaPage() {
         )}
       </div>
 
+      {error && (
+        <div
+          role="alert"
+          className="surface border border-destructive/40 p-3 text-sm text-destructive"
+        >
+          {error}
+        </div>
+      )}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div
+          className="inline-flex rounded-lg border border-border bg-card p-1"
+          aria-label="Rota week navigation"
+        >
+          <button type="button" className="px-3 py-2 text-sm" onClick={() => moveWeek(-1)}>
+            Previous week
+          </button>
+          <button
+            type="button"
+            className="px-3 py-2 text-sm border-x border-border"
+            onClick={() => setWeekStart(startOfWeek(new Date()))}
+          >
+            This week
+          </button>
+          <button type="button" className="px-3 py-2 text-sm" onClick={() => moveWeek(1)}>
+            Next week
+          </button>
+        </div>
+        <span className="text-sm text-muted-foreground">
+          {fmtDate(weekStart)} – {fmtDate(weekEnd)}
+        </span>
+      </div>
+      <p className="text-sm text-muted-foreground" aria-live="polite">
+        {shifts.length} scheduled shifts · {plannedHours.toFixed(1)} planned staff hours this week
+      </p>
       <div className="inline-flex rounded-full border border-border bg-card p-1 text-sm">
         <button
           onClick={() => setTab("rota")}
@@ -383,12 +449,17 @@ function ShiftForm({
     rangeStart.setDate(rangeStart.getDate() - 1);
     const rangeEnd = new Date(endAt);
     rangeEnd.setDate(rangeEnd.getDate() + 1);
-    const { data: nearby } = await supabase
+    const { data: nearby, error: nearbyError } = await supabase
       .from("shifts")
       .select("shift_date,start_time,end_time")
       .eq("staff_name", staff)
-      .gte("shift_date", rangeStart.toISOString().slice(0, 10))
-      .lte("shift_date", rangeEnd.toISOString().slice(0, 10));
+      .gte("shift_date", fmtDate(rangeStart))
+      .lte("shift_date", fmtDate(rangeEnd));
+    if (nearbyError) {
+      setSaving(false);
+      setError("Could not verify rest periods. The shift has not been saved.");
+      return;
+    }
     const conflict = (nearby ?? []).some((shift) => {
       const existingStart = new Date(`${shift.shift_date}T${shift.start_time}`);
       const existingEnd = new Date(`${shift.shift_date}T${shift.end_time}`);
