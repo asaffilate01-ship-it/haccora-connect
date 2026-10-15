@@ -1,0 +1,30 @@
+name: Phase 58 one-time source formatting
+on:
+  push:
+    branches: [feature/haccora-batch-to-sale-recall-oct2026]
+    paths: [.github/workflows/phase58-formatter-once.yml]
+permissions:
+  contents: write
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: |
+          npx prettier --write src/routes/app.traceability.tsx src/routes/app.recalls.tsx src/routes/app.tsx tests/batch-to-sale-recall-traceability.test.mjs docs/PHASE-58-BATCH-TO-SALE-RECALL-TRACEABILITY.md
+      - name: Commit formatting on Phase 58 feature branch
+        run: |
+          git config user.name 'Haccora CI Formatter'
+          git config user.email 'haccora-ci@users.noreply.github.com'
+          git add src/routes/app.traceability.tsx src/routes/app.recalls.tsx src/routes/app.tsx tests/batch-to-sale-recall-traceability.test.mjs docs/PHASE-58-BATCH-TO-SALE-RECALL-TRACEABILITY.md
+          if ! git diff --cached --quiet; then
+            git commit -m 'style: format phase 58 lot-traceability UI and documentation'
+            git push origin HEAD:feature/haccora-batch-to-sale-recall-oct2026
+          fi
