@@ -74,4 +74,64 @@ create trigger block_site_safe_method_review_update
 before update or delete on public.site_safe_method_review_events
 for each row execute function public.block_safe_method_review_mutation();
 
+-- Fail closed at the database boundary; clients must not self-certify a
+-- blank or mismatched active method by bypassing the guided form.
+create or replace function public.validate_site_safe_method_activation()
+returns trigger language plpgsql security definer set search_path=public,pg_temp as $
+declare
+  v_prompts jsonb;
+  v_version text;
+  v_jurisdiction text;
+  v_answers jsonb;
+  v_position integer;
+begin
+  if new.status <> 'active' then
+    return new;
+  end if;
+
+  select version, prompts into v_version, v_prompts
+  from public.safe_method_templates
+  where id = new.template_id;
+
+  select jurisdiction into v_jurisdiction
+  from public.site_compliance_profiles
+  where organization_id = new.organization_id
+    and location_id = new.location_id;
+
+  if v_jurisdiction is null
+    or v_version is null
+    or jsonb_typeof(v_prompts) <> 'array'
+    or jsonb_array_length(v_prompts) = 0
+    or new.controls->>'jurisdiction' is distinct from v_jurisdiction
+    or new.controls->>'templateVersion' is distinct from v_version
+    or new.controls->>'managementConfirmed' is distinct from 'true'
+    or new.controls->>'reviewedBy' is distinct from auth.uid()::text
+    or new.adopted_by is distinct from auth.uid()
+    or new.adopted_at is null
+    or new.review_due_at is null
+    or new.review_due_at < current_date
+  then
+    raise exception 'Premises-specific management review required';
+  end if;
+
+  v_answers := new.controls->'answers';
+  if jsonb_typeof(v_answers) <> 'object' then
+    raise exception 'Safe method control answers required';
+  end if;
+
+  for v_position in 0..jsonb_array_length(v_prompts) - 1 loop
+    if length(btrim(coalesce(v_answers->>v_position::text, ''))) < 12 then
+      raise exception 'Every safe method prompt requires an actual site procedure';
+    end if;
+  end loop;
+  return new;
+end $;
+
+revoke all on function public.validate_site_safe_method_activation()
+from public, anon, authenticated;
+
+create trigger validate_site_safe_method_activation
+before insert or update on public.site_safe_methods
+for each row execute function public.validate_site_safe_method_activation();
+
 commit;
