@@ -73,10 +73,7 @@ const CompliancePayloads: Record<string, z.ZodType> = {
       (p) => p.targetMin == null || p.targetMax == null || p.targetMin <= p.targetMax,
       "temperature_limits_reversed",
     )
-    .refine(
-      (p) => p.targetMin != null || p.targetMax != null,
-      "temperature_target_range_required",
-    ),
+    .refine((p) => p.targetMin != null || p.targetMax != null, "temperature_target_range_required"),
   "dishbee.compliance.incident.created": z
     .object({
       title: z.string().trim().min(1),
@@ -310,9 +307,7 @@ async function projectEvent(db: Db, connection: any, event: Event, locationId: s
     const max = p["targetMax"] == null ? null : number(p["targetMax"]);
     // A client-supplied "inRange: true" cannot override recorded unsafe readings.
     const inRange =
-      (min == null || reading >= min) &&
-      (max == null || reading <= max) &&
-      p["inRange"] !== false;
+      (min == null || reading >= min) && (max == null || reading <= max) && p["inRange"] !== false;
     const { data, error } = await db
       .from("temperature_logs")
       .insert({
