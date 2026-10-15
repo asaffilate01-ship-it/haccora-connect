@@ -57,6 +57,7 @@ function TraceabilityPage() {
   const [recalls, setRecalls] = useState<Recall[]>([]);
   const [selectedBatch, setSelectedBatch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [dataReady, setDataReady] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -81,6 +82,7 @@ function TraceabilityPage() {
       return;
     }
     setLoading(true);
+    setDataReady(false);
     const [i, g, b, a, r] = await Promise.all([
       supabase.from("ingredients").select("id,name").eq("organization_id", user.organizationId),
       supabase
@@ -125,6 +127,7 @@ function TraceabilityPage() {
       return;
     }
     setError("");
+    setDataReady(true);
     setIngredients((i.data ?? []) as Ingredient[]);
     setReceipts((g.data ?? []) as Receipt[]);
     setBatches((b.data ?? []) as Batch[]);
@@ -166,7 +169,7 @@ function TraceabilityPage() {
   };
 
   const addBatch = async () => {
-    if (!canManage || saving || loading || error || !user?.organizationId || !user.locationId) {
+    if (!canManage || saving || loading || !dataReady || !user?.organizationId || !user.locationId) {
       return;
     }
     const receipt = receipts.find((item) => item.id === receiptId);
@@ -212,7 +215,7 @@ function TraceabilityPage() {
   };
 
   const addOrder = async () => {
-    if (!canManage || saving || loading || error || !user?.organizationId || !user.locationId) {
+    if (!canManage || saving || loading || !dataReady || !user?.organizationId || !user.locationId) {
       return;
     }
     if (
@@ -257,7 +260,7 @@ function TraceabilityPage() {
   };
 
   const decideHold = async (quarantine: boolean) => {
-    if (!canManage || saving || loading || error || !batch || holdReason.trim().length < 12) {
+    if (!canManage || saving || loading || !dataReady || !batch || holdReason.trim().length < 12) {
       setError("A manager and a reason of at least 12 characters are required.");
       return;
     }
@@ -364,7 +367,7 @@ function TraceabilityPage() {
             <Field label="Delivery reference" value={deliveryRef} onChange={setDeliveryRef} />
           </div>
           <button className="btn-primary px-4 py-2 text-sm" type="button"
-            disabled={saving || loading || !receiptId || Boolean(error)} onClick={() => void addBatch()}>
+            disabled={saving || loading || !dataReady || !receiptId} onClick={() => void addBatch()}>
             {saving ? "Saving…" : "Record lot"}
           </button>
           <Link to="/app/goodsin" className="text-xs underline ml-3">Open goods-in records</Link>
@@ -408,7 +411,7 @@ function TraceabilityPage() {
               onChange={(e) => setOrderNote(e.target.value)} placeholder="Kitchen batch record, prep sheet or verified stock movement" />
           </label>
           <button className="btn-primary px-4 py-2 text-sm" type="button"
-            disabled={saving || loading || !batch || batch.status !== "available" || Boolean(error)}
+            disabled={saving || loading || !dataReady || !batch || batch.status !== "available"}
             onClick={() => void addOrder()}>
             Record manual allocation
           </button>
@@ -475,10 +478,10 @@ function TraceabilityPage() {
             </label>
             <div className="flex gap-3 flex-wrap">
               {batch.status === "available" ? (
-                <button className="btn-alert-solid text-sm px-4 py-2" disabled={saving || loading || Boolean(error)}
+                <button className="btn-alert-solid text-sm px-4 py-2" disabled={saving || loading || !dataReady}
                   onClick={() => void decideHold(true)}>Quarantine recorded lot</button>
               ) : (
-                <button className="rounded-lg border border-border px-4 py-2 text-sm" disabled={saving || loading || Boolean(error)}
+                <button className="rounded-lg border border-border px-4 py-2 text-sm" disabled={saving || loading || !dataReady}
                   onClick={() => void decideHold(false)}>Manager release review</button>
               )}
               <Link to="/app/recalls" className="underline text-sm self-center">View recall cases</Link>
