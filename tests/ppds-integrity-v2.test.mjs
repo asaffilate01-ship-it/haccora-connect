@@ -96,3 +96,21 @@ test("safe methods require on-premises documented management responses", async (
   assert.match(route, /jurisdiction/);
   assert.match(route, /managementConfirmed: true/);
 });
+
+test("site safe-method reviews are captured by an append-only server trigger", async () => {
+  const sql = await readFile(
+    new URL(
+      "../supabase/migrations/20261015223000_safe_method_review_evidence.sql",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  assert.match(sql, /site_safe_method_review_events/);
+  assert.match(sql, /security definer set search_path=public,pg_temp/);
+  assert.match(sql, /after insert or update on public.site_safe_methods/);
+  assert.match(sql, /to_jsonb\(old\), to_jsonb\(new\)/);
+  assert.match(sql, /before update or delete on public.site_safe_method_review_events/);
+  assert.match(sql, /grant select on public.site_safe_method_review_events to authenticated/);
+  assert.doesNotMatch(sql, /grant (insert|update|delete) on public.site_safe_method_review_events/i);
+});
+
