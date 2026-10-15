@@ -1,0 +1,31 @@
+name: Phase 56 one-time formatting
+on:
+  push:
+    branches: [feature/haccora-guided-safe-methods-ppds-v2]
+    paths: [.github/workflows/phase56-format-once.yml]
+permissions:
+  contents: write
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Format changed Phase 56 source
+        run: |
+          npx prettier --write src/lib/ppds-integrity.ts src/routes/app.safe-methods.tsx src/routes/app.ppds.tsx src/routes/app.get-started.tsx src/routes/app.recipes.tsx src/routes/app.waste.tsx src/routes/api/integrations/dishbee.ts tests/ppds-integrity-v2.test.mjs tests/dilagee-operations-upgrade.test.mjs
+      - name: Commit formatting to current feature branch only
+        run: |
+          git config user.name 'Haccora CI Formatter'
+          git config user.email 'haccora-ci@users.noreply.github.com'
+          git add src/lib/ppds-integrity.ts src/routes/app.safe-methods.tsx src/routes/app.ppds.tsx src/routes/app.get-started.tsx src/routes/app.recipes.tsx src/routes/app.waste.tsx src/routes/api/integrations/dishbee.ts tests/ppds-integrity-v2.test.mjs tests/dilagee-operations-upgrade.test.mjs
+          if ! git diff --cached --quiet; then
+            git commit -m 'style: apply approved Prettier formatting to phase 56'
+            git push origin HEAD:feature/haccora-guided-safe-methods-ppds-v2
+          fi
