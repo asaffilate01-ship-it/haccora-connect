@@ -33,7 +33,9 @@ test("service-only atomic ingestion validates active mapped premises and conflic
   assert.match(sql, /Conflicting Dishbee order replay or duplicate reference/);
   assert.match(sql, /grant execute on function public\.ingest_dishbee_trace_order/);
   assert.match(sql, /\) to service_role;/);
-  const restrictedIngestionAcl = sql.split("create or replace function public.link_dishbee_trace_batch")[0];
+  const restrictedIngestionAcl = sql.split(
+    "create or replace function public.link_dishbee_trace_batch",
+  )[0];
   assert.doesNotMatch(restrictedIngestionAcl, /to authenticated;\s*$/);
 });
 
@@ -59,7 +61,10 @@ test("manual lot-link decision enforces same-site, chronological and reviewed ev
   assert.match(sql, /foreign key \(batch_id, organization_id, location_id\)/);
   assert.match(sql, /create or replace function public\.link_dishbee_trace_batch/);
   assert.match(sql, /length\(btrim\(coalesce\(p_evidence_note,''\)\)\) < 12/);
-  assert.match(sql, /public\.can_operate_record\(auth\.uid\(\),v_line\.location_id,v_line\.organization_id\)/);
+  assert.match(
+    sql,
+    /public\.can_operate_record\(auth\.uid\(\),v_line\.location_id,v_line\.organization_id\)/,
+  );
   assert.match(sql, /v_batch\.received_at > v_order\.occurred_at/);
   assert.match(sql, /manager_reviewed_not_complete/);
 });
