@@ -105,14 +105,18 @@ function TraceabilityPage() {
         .limit(200),
       (supabase as any)
         .from("traceability_batches")
-        .select("id,ingredient_id,supplier_name,product_name,batch_code,delivery_reference,received_at,use_by,status")
+        .select(
+          "id,ingredient_id,supplier_name,product_name,batch_code,delivery_reference,received_at,use_by,status",
+        )
         .eq("organization_id", user.organizationId)
         .eq("location_id", user.locationId)
         .order("received_at", { ascending: false })
         .limit(200),
       (supabase as any)
         .from("traceability_sale_allocations")
-        .select("id,batch_id,order_source,order_reference,item_name,portions,attribution,evidence_note,occurred_at")
+        .select(
+          "id,batch_id,order_source,order_reference,item_name,portions,attribution,evidence_note,occurred_at",
+        )
         .eq("organization_id", user.organizationId)
         .eq("location_id", user.locationId)
         .order("occurred_at", { ascending: false })
@@ -134,7 +138,9 @@ function TraceabilityPage() {
     ]);
     setLoading(false);
     if (i.error || g.error || b.error || a.error || r.error || e.error) {
-      setError("Traceability evidence is incomplete or unavailable. Do not rely on this screen for a release decision.");
+      setError(
+        "Traceability evidence is incomplete or unavailable. Do not rely on this screen for a release decision.",
+      );
       setIngredients([]);
       setReceipts([]);
       setBatches([]);
@@ -165,8 +171,7 @@ function TraceabilityPage() {
     [allocations, selectedBatch],
   );
   const affectedOrders = useMemo(
-    () =>
-      new Set(matched.map((item) => `${item.order_source}:${item.order_reference}`)).size,
+    () => new Set(matched.map((item) => `${item.order_source}:${item.order_reference}`)).size,
     [matched],
   );
 
@@ -187,7 +192,14 @@ function TraceabilityPage() {
   };
 
   const addBatch = async () => {
-    if (!canManage || saving || loading || !dataReady || !user?.organizationId || !user.locationId) {
+    if (
+      !canManage ||
+      saving ||
+      loading ||
+      !dataReady ||
+      !user?.organizationId ||
+      !user.locationId
+    ) {
       return;
     }
     const receipt = receipts.find((item) => item.id === receiptId);
@@ -198,7 +210,9 @@ function TraceabilityPage() {
       product.trim().length < 2 ||
       deliveryRef.trim().length < 4
     ) {
-      setError("Choose an ingredient and enter a supplier, product, batch lot and delivery reference.");
+      setError(
+        "Choose an ingredient and enter a supplier, product, batch lot and delivery reference.",
+      );
       return;
     }
     if (!receipt) {
@@ -233,7 +247,14 @@ function TraceabilityPage() {
   };
 
   const addOrder = async () => {
-    if (!canManage || saving || loading || !dataReady || !user?.organizationId || !user.locationId) {
+    if (
+      !canManage ||
+      saving ||
+      loading ||
+      !dataReady ||
+      !user?.organizationId ||
+      !user.locationId
+    ) {
       return;
     }
     if (
@@ -247,7 +268,9 @@ function TraceabilityPage() {
       !orderOccurredAt ||
       !Number.isFinite(new Date(orderOccurredAt).getTime())
     ) {
-      setError("Choose an available batch and provide an order reference, food item, portions and allocation evidence.");
+      setError(
+        "Choose an available batch and provide an order reference, food item, portions and allocation evidence.",
+      );
       return;
     }
     setSaving(true);
@@ -271,7 +294,9 @@ function TraceabilityPage() {
       setError("Order allocation could not be saved. Check the batch status and order reference.");
       return;
     }
-    setMessage("Manual lot-to-order evidence recorded. This is not a verified Dishbee order import.");
+    setMessage(
+      "Manual lot-to-order evidence recorded. This is not a verified Dishbee order import.",
+    );
     setOrderRef("");
     setOrderItem("");
     setOrderNote("");
@@ -285,23 +310,22 @@ function TraceabilityPage() {
       setError("A manager and a reason of at least 12 characters are required.");
       return;
     }
-    if (!window.confirm(
-      quarantine
-        ? "Quarantine this lot? New allocations will be blocked until an authorised release."
-        : "Release this lot? Check linked recalls, physical stock and competent food-safety approval first.",
-    )) {
+    if (
+      !window.confirm(
+        quarantine
+          ? "Quarantine this lot? New allocations will be blocked until an authorised release."
+          : "Release this lot? Check linked recalls, physical stock and competent food-safety approval first.",
+      )
+    ) {
       return;
     }
     setSaving(true);
-    const { error: holdError } = await (supabase as any).rpc(
-      "set_traceability_batch_hold",
-      {
-        p_batch_id: batch.id,
-        p_quarantine: quarantine,
-        p_reason: holdReason.trim(),
-        p_recall_id: recallId || null,
-      },
-    );
+    const { error: holdError } = await (supabase as any).rpc("set_traceability_batch_hold", {
+      p_batch_id: batch.id,
+      p_quarantine: quarantine,
+      p_reason: holdReason.trim(),
+      p_recall_id: recallId || null,
+    });
     setSaving(false);
     if (holdError) {
       setError("Quarantine decision failed. Review case status and permissions before retrying.");
@@ -332,25 +356,39 @@ function TraceabilityPage() {
         <div className="eyebrow">HACCORA · LOT TRACEABILITY</div>
         <h1 className="text-3xl mt-1">Batch-to-sale recall evidence</h1>
         <p className="text-sm text-muted-foreground mt-2 max-w-3xl">
-          Connect a received ingredient lot with manually evidenced orders. Inspect affected
-          order references and quarantine stock without claiming a complete customer or
-          marketplace history.
+          Connect a received ingredient lot with manually evidenced orders. Inspect affected order
+          references and quarantine stock without claiming a complete customer or marketplace
+          history.
         </p>
       </header>
 
       <div role="note" className="rounded-xl border border-warning/40 bg-warning/10 p-4 text-sm">
         <AlertTriangle size={16} className="inline mr-2" />
-        Manual evidence only. Missing allocations, unrecorded sales, shared kitchens and
-        orders from Dishbee or delivery partners may not appear. An empty impact list does
-        not prove that no customers were affected. Review all source records during a recall.
+        Manual evidence only. Missing allocations, unrecorded sales, shared kitchens and orders from
+        Dishbee or delivery partners may not appear. An empty impact list does not prove that no
+        customers were affected. Review all source records during a recall.
       </div>
 
-      {error && <div role="alert" className="rounded-lg border border-destructive/40 p-3 text-sm text-destructive">{error}</div>}
-      {message && <div role="status" className="surface p-3 text-sm">{message}</div>}
+      {error && (
+        <div
+          role="alert"
+          className="rounded-lg border border-destructive/40 p-3 text-sm text-destructive"
+        >
+          {error}
+        </div>
+      )}
+      {message && (
+        <div role="status" className="surface p-3 text-sm">
+          {message}
+        </div>
+      )}
 
       <section className="grid gap-3 sm:grid-cols-3">
         <Metric label="Recorded batches" value={batches.length} />
-        <Metric label="Quarantined lots" value={batches.filter((item) => item.status === "quarantined").length} />
+        <Metric
+          label="Quarantined lots"
+          value={batches.filter((item) => item.status === "quarantined").length}
+        />
         <Metric label="Manual order allocations" value={allocations.length} />
       </section>
 
@@ -365,7 +403,11 @@ function TraceabilityPage() {
           </p>
           <label className="block text-sm">
             Goods-in batch receipt
-            <select className="input w-full mt-1" value={receiptId} onChange={(e) => setReceipt(e.target.value)}>
+            <select
+              className="input w-full mt-1"
+              value={receiptId}
+              onChange={(e) => setReceipt(e.target.value)}
+            >
               <option value="">Choose accepted goods-in receipt</option>
               {receipts.map((receipt) => (
                 <option key={receipt.id} value={receipt.id}>
@@ -376,9 +418,17 @@ function TraceabilityPage() {
           </label>
           <label className="block text-sm">
             Ingredient
-            <select className="input w-full mt-1" value={ingredientId} onChange={(e) => setIngredientId(e.target.value)}>
+            <select
+              className="input w-full mt-1"
+              value={ingredientId}
+              onChange={(e) => setIngredientId(e.target.value)}
+            >
               <option value="">Select ingredient</option>
-              {ingredients.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+              {ingredients.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
             </select>
           </label>
           <div className="grid gap-2 sm:grid-cols-2">
@@ -387,11 +437,17 @@ function TraceabilityPage() {
             <Field label="Lot / batch" value={lot} onChange={setLot} />
             <Field label="Delivery reference" value={deliveryRef} onChange={setDeliveryRef} />
           </div>
-          <button className="btn-primary px-4 py-2 text-sm" type="button"
-            disabled={saving || loading || !dataReady || !receiptId} onClick={() => void addBatch()}>
+          <button
+            className="btn-primary px-4 py-2 text-sm"
+            type="button"
+            disabled={saving || loading || !dataReady || !receiptId}
+            onClick={() => void addBatch()}
+          >
             {saving ? "Saving…" : "Record lot"}
           </button>
-          <Link to="/app/goodsin" className="text-xs underline ml-3">Open goods-in records</Link>
+          <Link to="/app/goodsin" className="text-xs underline ml-3">
+            Open goods-in records
+          </Link>
         </div>
 
         <div className="surface p-5 space-y-3">
@@ -399,12 +455,16 @@ function TraceabilityPage() {
             <ClipboardList size={19} /> 2. Attribute lot to an order
           </h2>
           <p className="text-xs text-muted-foreground">
-            This is a manual staff assertion, including when the reference was originally issued
-            by Dishbee. It must not be presented as automatic POS synchronization.
+            This is a manual staff assertion, including when the reference was originally issued by
+            Dishbee. It must not be presented as automatic POS synchronization.
           </p>
           <label className="block text-sm">
             Ingredient lot
-            <select className="input w-full mt-1" value={selectedBatch} onChange={(e) => setSelectedBatch(e.target.value)}>
+            <select
+              className="input w-full mt-1"
+              value={selectedBatch}
+              onChange={(e) => setSelectedBatch(e.target.value)}
+            >
               <option value="">Select recorded lot</option>
               {batches.map((item) => (
                 <option key={item.id} value={item.id}>
@@ -415,7 +475,11 @@ function TraceabilityPage() {
           </label>
           <label className="block text-sm">
             Order reference origin
-            <select className="input w-full mt-1" value={orderSource} onChange={(e) => setOrderSource(e.target.value)}>
+            <select
+              className="input w-full mt-1"
+              value={orderSource}
+              onChange={(e) => setOrderSource(e.target.value)}
+            >
               <option value="dishbee">Dishbee reference (manually entered)</option>
               <option value="manual">Till / manual order</option>
               <option value="other">Other partner reference</option>
@@ -425,16 +489,29 @@ function TraceabilityPage() {
             <Field label="Order reference" value={orderRef} onChange={setOrderRef} />
             <Field label="Food item" value={orderItem} onChange={setOrderItem} />
             <Field label="Portions" type="number" value={portions} onChange={setPortions} />
-            <Field label="Order date/time (local)" type="datetime-local" value={orderOccurredAt} onChange={setOrderOccurredAt} />
+            <Field
+              label="Order date/time (local)"
+              type="datetime-local"
+              value={orderOccurredAt}
+              onChange={setOrderOccurredAt}
+            />
           </div>
           <label className="block text-sm">
             Why does this lot belong to this order?
-            <textarea className="input mt-1 w-full min-h-20" maxLength={1000} value={orderNote}
-              onChange={(e) => setOrderNote(e.target.value)} placeholder="Kitchen batch record, prep sheet or verified stock movement" />
+            <textarea
+              className="input mt-1 w-full min-h-20"
+              maxLength={1000}
+              value={orderNote}
+              onChange={(e) => setOrderNote(e.target.value)}
+              placeholder="Kitchen batch record, prep sheet or verified stock movement"
+            />
           </label>
-          <button className="btn-primary px-4 py-2 text-sm" type="button"
+          <button
+            className="btn-primary px-4 py-2 text-sm"
+            type="button"
             disabled={saving || loading || !dataReady || !batch || batch.status !== "available"}
-            onClick={() => void addOrder()}>
+            onClick={() => void addOrder()}
+          >
             Record manual allocation
           </button>
         </div>
@@ -454,7 +531,10 @@ function TraceabilityPage() {
             <div className="grid sm:grid-cols-3 gap-3">
               <Metric label="Distinct recorded orders" value={affectedOrders} />
               <Metric label="Allocation records" value={matched.length} />
-              <Metric label="Recorded portions" value={matched.reduce((sum, item) => sum + item.portions, 0)} />
+              <Metric
+                label="Recorded portions"
+                value={matched.reduce((sum, item) => sum + item.portions, 0)}
+              />
             </div>
             <div className="overflow-x-auto rounded-lg border">
               <table className="w-full text-left text-sm">
@@ -478,56 +558,85 @@ function TraceabilityPage() {
                     </tr>
                   ))}
                   {matched.length === 0 && (
-                    <tr><td colSpan={5} className="p-4 text-sm">No linked manual allocations were found. Exposure is unknown, not zero.</td></tr>
+                    <tr>
+                      <td colSpan={5} className="p-4 text-sm">
+                        No linked manual allocations were found. Exposure is unknown, not zero.
+                      </td>
+                    </tr>
                   )}
                 </tbody>
               </table>
             </div>
             <div className="rounded-lg border p-3 space-y-2">
               <h3 className="font-bold text-sm">Lot hold/release history</h3>
-              {events.filter((entry) => entry.batch_id === batch.id).map((entry) => (
-                <p className="text-xs" key={entry.id}>
-                  <strong>{entry.event_type}</strong> · {new Date(entry.recorded_at).toLocaleString("en-GB")} · {entry.reason}
-                </p>
-              ))}
+              {events
+                .filter((entry) => entry.batch_id === batch.id)
+                .map((entry) => (
+                  <p className="text-xs" key={entry.id}>
+                    <strong>{entry.event_type}</strong> ·{" "}
+                    {new Date(entry.recorded_at).toLocaleString("en-GB")} · {entry.reason}
+                  </p>
+                ))}
               {!events.some((entry) => entry.batch_id === batch.id) && (
                 <p className="text-xs text-muted-foreground">No recorded decisions for this lot.</p>
               )}
             </div>
             <label className="block text-sm">
               Link to an existing recall (optional)
-              <select className="input block w-full mt-1" value={recallId} onChange={(e) => setRecallId(e.target.value)}>
+              <select
+                className="input block w-full mt-1"
+                value={recallId}
+                onChange={(e) => setRecallId(e.target.value)}
+              >
                 <option value="">No linked case selected</option>
                 {recalls.map((item) => (
-                  <option key={item.id} value={item.id}>{item.product} · {item.status} · {item.batch ?? "no lot"}</option>
+                  <option key={item.id} value={item.id}>
+                    {item.product} · {item.status} · {item.batch ?? "no lot"}
+                  </option>
                 ))}
               </select>
             </label>
             <label className="block text-sm">
               Manager's reason and physical-stock action
-              <textarea className="input w-full mt-1 min-h-20" maxLength={2000}
-                value={holdReason} onChange={(e) => setHoldReason(e.target.value)}
-                placeholder="Record segregation, affected inventory and why this action is necessary" />
+              <textarea
+                className="input w-full mt-1 min-h-20"
+                maxLength={2000}
+                value={holdReason}
+                onChange={(e) => setHoldReason(e.target.value)}
+                placeholder="Record segregation, affected inventory and why this action is necessary"
+              />
             </label>
             <div className="flex gap-3 flex-wrap">
               {batch.status === "available" ? (
-                <button className="btn-alert-solid text-sm px-4 py-2" disabled={saving || loading || !dataReady}
-                  onClick={() => void decideHold(true)}>Quarantine recorded lot</button>
+                <button
+                  className="btn-alert-solid text-sm px-4 py-2"
+                  disabled={saving || loading || !dataReady}
+                  onClick={() => void decideHold(true)}
+                >
+                  Quarantine recorded lot
+                </button>
               ) : (
-                <button className="rounded-lg border border-border px-4 py-2 text-sm" disabled={saving || loading || !dataReady}
-                  onClick={() => void decideHold(false)}>Manager release review</button>
+                <button
+                  className="rounded-lg border border-border px-4 py-2 text-sm"
+                  disabled={saving || loading || !dataReady}
+                  onClick={() => void decideHold(false)}
+                >
+                  Manager release review
+                </button>
               )}
-              <Link to="/app/recalls" className="underline text-sm self-center">View recall cases</Link>
+              <Link to="/app/recalls" className="underline text-sm self-center">
+                View recall cases
+              </Link>
             </div>
           </>
         )}
       </section>
 
       <p className="text-xs text-muted-foreground">
-        This investigation includes up to 200 recent registered lots and 500 manual allocations
-        for the selected premises. It is not a full order ledger, customer notification system,
-        supplier recall feed or verified physical withdrawal report. Reconcile external systems
-        and stock records before relying on its findings.
+        This investigation includes up to 200 recent registered lots and 500 manual allocations for
+        the selected premises. It is not a full order ledger, customer notification system, supplier
+        recall feed or verified physical withdrawal report. Reconcile external systems and stock
+        records before relying on its findings.
       </p>
     </main>
   );
@@ -547,8 +656,12 @@ function Field({
   return (
     <label className="block text-sm">
       {label}
-      <input className="input block w-full mt-1" type={type} value={value}
-        onChange={(event) => onChange(event.target.value)} />
+      <input
+        className="input block w-full mt-1"
+        type={type}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
     </label>
   );
 }

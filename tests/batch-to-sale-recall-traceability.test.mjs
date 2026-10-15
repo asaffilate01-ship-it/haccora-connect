@@ -5,7 +5,9 @@ import test from "node:test";
 const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
 
 test("batch identity is bound to a premises, supplier and accepted goods-in receipt", async () => {
-  const sql = await read("../supabase/migrations/20261016010000_batch_sale_recall_traceability.sql");
+  const sql = await read(
+    "../supabase/migrations/20261016010000_batch_sale_recall_traceability.sql",
+  );
   assert.match(sql, /create table public\.traceability_batches/);
   assert.match(sql, /foreign key \(ingredient_id, organization_id\)/);
   assert.match(sql, /foreign key \(organization_id, location_id\)/);
@@ -17,7 +19,9 @@ test("batch identity is bound to a premises, supplier and accepted goods-in rece
 });
 
 test("order attribution remains append-only, site-scoped, and explicitly manual", async () => {
-  const sql = await read("../supabase/migrations/20261016010000_batch_sale_recall_traceability.sql");
+  const sql = await read(
+    "../supabase/migrations/20261016010000_batch_sale_recall_traceability.sql",
+  );
   assert.match(sql, /create table public\.traceability_sale_allocations/);
   assert.match(sql, /check \(attribution = 'manual'\)/);
   assert.match(sql, /foreign key \(batch_id, organization_id, location_id\)/);
@@ -28,11 +32,16 @@ test("order attribution remains append-only, site-scoped, and explicitly manual"
 });
 
 test("quarantine is a privileged, reasoned, audited server transition", async () => {
-  const sql = await read("../supabase/migrations/20261016010000_batch_sale_recall_traceability.sql");
+  const sql = await read(
+    "../supabase/migrations/20261016010000_batch_sale_recall_traceability.sql",
+  );
   assert.match(sql, /create or replace function public\.set_traceability_batch_hold/);
   assert.match(sql, /security definer set search_path=public,pg_temp/);
   assert.match(sql, /public\.can_manage_organization\(v_batch\.organization_id\)/);
-  assert.match(sql, /public\.can_operate_record\(auth\.uid\(\), v_batch\.location_id, v_batch\.organization_id\)/);
+  assert.match(
+    sql,
+    /public\.can_operate_record\(auth\.uid\(\), v_batch\.location_id, v_batch\.organization_id\)/,
+  );
   assert.match(sql, /for update/);
   assert.match(sql, /traceability_batch_events/);
   assert.match(sql, /r\.status <> 'closed'/);

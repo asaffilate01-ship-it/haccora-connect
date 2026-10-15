@@ -94,7 +94,9 @@ function RecallsPage() {
           <div className="eyebrow">{"UK food safety · withdrawals and recalls"}</div>
           <h1 className="mt-1 text-3xl md:text-4xl">{"Recalls & quarantine"}</h1>
           <p className="text-muted-foreground mt-1">
-            {"Record withdrawal decisions and review manually linked ingredient batches. Customer notifications and regulator feeds are not automated."}
+            {
+              "Record withdrawal decisions and review manually linked ingredient batches. Customer notifications and regulator feeds are not automated."
+            }
           </p>
         </div>
         {canEdit && (
@@ -105,7 +107,9 @@ function RecallsPage() {
         )}
       </div>
 
-      <Link to="/app/traceability" className="inline-flex text-sm underline font-semibold">Investigate batch-to-sale traceability</Link>
+      <Link to="/app/traceability" className="inline-flex text-sm underline font-semibold">
+        Investigate batch-to-sale traceability
+      </Link>
       <div className="grid md:grid-cols-3 gap-4">
         <Kpi
           label={"Open recalls"}

@@ -20,6 +20,7 @@ The recall-impact list includes only the first 500 recent manually evidenced lot
 Haccora never automatically sends customer notices, suspends a delivery-platform menu, closes a food-safety incident or certifies a lot safe. Physical stock segregation, evidence from vendors, decision-making, external customer communications and UK regulatory requirements remain with the business and qualified personnel.
 
 The database enforces that:
+
 1. New lots are tied to the chosen authenticated actor, an accepted premises-matched goods-in record and a matching lot number.
 2. A lot and an order attribution cannot be associated across different organisations or premises.
 3. A manually attributed order must not be assigned to a currently quarantined lot or predate receipt.
