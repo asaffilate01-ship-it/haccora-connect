@@ -13,7 +13,10 @@ test("supplier specification changes require a manager and an immutable pending 
   assert.match(sql, /public\.can_manage_organization\(organization_id\)/);
   assert.match(sql, /requested_by = auth\.uid\(\)/);
   assert.match(sql, /grant select, insert on public\.ingredient_change_requests to authenticated/);
-  assert.doesNotMatch(sql, /grant (update|delete) on public\.ingredient_change_requests to authenticated/i);
+  assert.doesNotMatch(
+    sql,
+    /grant (update|delete) on public\.ingredient_change_requests to authenticated/i,
+  );
 });
 
 test("atomic review rechecks scope and ingredient versions before any approved mutation", async () => {

@@ -119,7 +119,9 @@ export function IngredientChangeReview({
       reference.trim().length < 8 ||
       reason.trim().length < 12
     ) {
-      setError("Enter a different supplier version, its full ingredient statement, an evidence reference and a reason.");
+      setError(
+        "Enter a different supplier version, its full ingredient statement, an evidence reference and a reason.",
+      );
       return;
     }
     setBusy(true);
@@ -150,9 +152,12 @@ export function IngredientChangeReview({
       setError("Select a pending request and record a review reason of at least 12 characters.");
       return;
     }
-    if (approve && !window.confirm(
-      "Approve the supplier specification? Existing PPDS labels may become out of date and must be checked before sale.",
-    )) {
+    if (
+      approve &&
+      !window.confirm(
+        "Approve the supplier specification? Existing PPDS labels may become out of date and must be checked before sale.",
+      )
+    ) {
       return;
     }
     setBusy(true);
@@ -193,8 +198,16 @@ export function IngredientChangeReview({
         </p>
       </header>
 
-      {error && <div role="alert" className="rounded-lg border border-destructive/40 p-3 text-sm">{error}</div>}
-      {notice && <div role="status" className="rounded-lg border border-border p-3 text-sm">{notice}</div>}
+      {error && (
+        <div role="alert" className="rounded-lg border border-destructive/40 p-3 text-sm">
+          {error}
+        </div>
+      )}
+      {notice && (
+        <div role="status" className="rounded-lg border border-border p-3 text-sm">
+          {notice}
+        </div>
+      )}
 
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="space-y-3">
@@ -210,7 +223,9 @@ export function IngredientChangeReview({
             >
               <option value="">Choose a current ingredient</option>
               {ingredients.map((ingredient) => (
-                <option key={ingredient.id} value={ingredient.id}>{ingredient.name}</option>
+                <option key={ingredient.id} value={ingredient.id}>
+                  {ingredient.name}
+                </option>
               ))}
             </select>
           </label>
@@ -220,27 +235,43 @@ export function IngredientChangeReview({
                 Current version: {selected.specification_version ?? "Not recorded"}
               </p>
               <p className="text-xs font-semibold">
-                {affectedRecipes(selected.id).length} linked recipes require re-verification after approval.
+                {affectedRecipes(selected.id).length} linked recipes require re-verification after
+                approval.
               </p>
               <label className="text-sm block">
                 New supplier version
-                <input className="input block w-full mt-1" maxLength={80} value={version}
-                  onChange={(event) => setVersion(event.target.value)} />
+                <input
+                  className="input block w-full mt-1"
+                  maxLength={80}
+                  value={version}
+                  onChange={(event) => setVersion(event.target.value)}
+                />
               </label>
               <label className="text-sm block">
                 Proposed full ingredient statement
-                <textarea className="input block w-full mt-1 min-h-24" maxLength={4000}
-                  value={statement} onChange={(event) => setStatement(event.target.value)} />
+                <textarea
+                  className="input block w-full mt-1 min-h-24"
+                  maxLength={4000}
+                  value={statement}
+                  onChange={(event) => setStatement(event.target.value)}
+                />
               </label>
               <div className="grid gap-3 sm:grid-cols-2">
                 <fieldset className="space-y-1">
                   <legend className="text-sm font-semibold mb-1">Contains allergens</legend>
                   {UK_ALLERGENS.map((allergen) => (
                     <label key={allergen} className="flex items-center gap-2 text-xs">
-                      <input type="checkbox" checked={contains.includes(allergen)}
-                        onChange={(event) => setContains((items) =>
-                          event.target.checked ? [...items, allergen] : items.filter((x) => x !== allergen),
-                        )} />
+                      <input
+                        type="checkbox"
+                        checked={contains.includes(allergen)}
+                        onChange={(event) =>
+                          setContains((items) =>
+                            event.target.checked
+                              ? [...items, allergen]
+                              : items.filter((x) => x !== allergen),
+                          )
+                        }
+                      />
                       {allergen}
                     </label>
                   ))}
@@ -249,10 +280,17 @@ export function IngredientChangeReview({
                   <legend className="text-sm font-semibold mb-1">May contain</legend>
                   {UK_ALLERGENS.map((allergen) => (
                     <label key={allergen} className="flex items-center gap-2 text-xs">
-                      <input type="checkbox" checked={mayContain.includes(allergen)}
-                        onChange={(event) => setMayContain((items) =>
-                          event.target.checked ? [...items, allergen] : items.filter((x) => x !== allergen),
-                        )} />
+                      <input
+                        type="checkbox"
+                        checked={mayContain.includes(allergen)}
+                        onChange={(event) =>
+                          setMayContain((items) =>
+                            event.target.checked
+                              ? [...items, allergen]
+                              : items.filter((x) => x !== allergen),
+                          )
+                        }
+                      />
                       {allergen}
                     </label>
                   ))}
@@ -260,16 +298,28 @@ export function IngredientChangeReview({
               </div>
               <label className="text-sm block">
                 Supplier document / product specification reference
-                <input className="input block w-full mt-1" maxLength={500} value={reference}
-                  onChange={(event) => setReference(event.target.value)} />
+                <input
+                  className="input block w-full mt-1"
+                  maxLength={500}
+                  value={reference}
+                  onChange={(event) => setReference(event.target.value)}
+                />
               </label>
               <label className="text-sm block">
                 Reason for revised specification
-                <textarea className="input block w-full mt-1 min-h-20" maxLength={1000}
-                  value={reason} onChange={(event) => setReason(event.target.value)} />
+                <textarea
+                  className="input block w-full mt-1 min-h-20"
+                  maxLength={1000}
+                  value={reason}
+                  onChange={(event) => setReason(event.target.value)}
+                />
               </label>
-              <button type="button" className="btn-primary px-4 py-2"
-                disabled={busy || loading} onClick={() => void submit()}>
+              <button
+                type="button"
+                className="btn-primary px-4 py-2"
+                disabled={busy || loading}
+                onClick={() => void submit()}
+              >
                 Save proposed change
               </button>
             </>
@@ -280,14 +330,24 @@ export function IngredientChangeReview({
           <h3 className="font-semibold flex items-center gap-2">
             <AlertTriangle size={17} /> Pending manager review
           </h3>
-          {loading ? <p className="text-sm"><Loader2 className="inline animate-spin" size={15} /> Loading…</p> : null}
-          {!loading && pending.length === 0 && <p className="text-sm text-muted-foreground">No supplier changes awaiting review.</p>}
+          {loading ? (
+            <p className="text-sm">
+              <Loader2 className="inline animate-spin" size={15} /> Loading…
+            </p>
+          ) : null}
+          {!loading && pending.length === 0 && (
+            <p className="text-sm text-muted-foreground">No supplier changes awaiting review.</p>
+          )}
           {pending.map((item) => {
             const active = item.id === reviewId;
             return (
-              <article key={item.id} className="rounded-lg border border-border p-3 space-y-2 text-sm">
+              <article
+                key={item.id}
+                className="rounded-lg border border-border p-3 space-y-2 text-sm"
+              >
                 <div className="font-semibold">
-                  {ingredients.find((ingredient) => ingredient.id === item.ingredient_id)?.name ?? "Ingredient"}
+                  {ingredients.find((ingredient) => ingredient.id === item.ingredient_id)?.name ??
+                    "Ingredient"}
                 </div>
                 <div className="text-xs text-muted-foreground">
                   {item.expected_version || "Unversioned"} → {item.proposed_version}
@@ -295,8 +355,9 @@ export function IngredientChangeReview({
                 <div className="text-xs">Source reference: {item.evidence_reference}</div>
                 <div className="rounded-md bg-secondary/60 p-2 text-xs">
                   Affects {affectedRecipes(item.ingredient_id).length} recorded recipes:{" "}
-                  {affectedRecipes(item.ingredient_id).map((recipe) => recipe.name).join(", ") ||
-                    "No linked recipes found"}
+                  {affectedRecipes(item.ingredient_id)
+                    .map((recipe) => recipe.name)
+                    .join(", ") || "No linked recipes found"}
                 </div>
                 <p className="text-xs">{item.reason}</p>
                 <p className="text-xs">
@@ -307,8 +368,13 @@ export function IngredientChangeReview({
                 </p>
                 <p className="text-xs">Proposed ingredients: {item.proposed_statement}</p>
                 <button
-                  type="button" className="rounded-md border px-3 py-1 text-xs"
-                  onClick={() => { setReviewId(active ? "" : item.id); setReviewNote(""); setError(""); }}
+                  type="button"
+                  className="rounded-md border px-3 py-1 text-xs"
+                  onClick={() => {
+                    setReviewId(active ? "" : item.id);
+                    setReviewNote("");
+                    setError("");
+                  }}
                 >
                   {active ? "Close review" : "Open review"}
                 </button>
@@ -316,23 +382,32 @@ export function IngredientChangeReview({
                   <div className="space-y-2">
                     <label className="block text-xs font-semibold">
                       Manager verification and reason
-                      <textarea className="input block w-full mt-1 min-h-20"
-                        maxLength={1000} value={reviewNote}
-                        onChange={(event) => setReviewNote(event.target.value)} />
+                      <textarea
+                        className="input block w-full mt-1 min-h-20"
+                        maxLength={1000}
+                        value={reviewNote}
+                        onChange={(event) => setReviewNote(event.target.value)}
+                      />
                     </label>
                     <p className="text-xs text-muted-foreground">
                       Approval records the new specification; it does not automatically approve
                       reprinting labels or releasing held stock.
                     </p>
                     <div className="flex gap-2 flex-wrap">
-                      <button type="button" className="btn-primary px-3 py-2 text-xs"
+                      <button
+                        type="button"
+                        className="btn-primary px-3 py-2 text-xs"
                         disabled={busy || reviewNote.trim().length < 12}
-                        onClick={() => void review(true)}>
+                        onClick={() => void review(true)}
+                      >
                         <CheckCircle2 size={14} className="inline mr-1" /> Approve
                       </button>
-                      <button type="button" className="rounded-md border px-3 py-2 text-xs"
+                      <button
+                        type="button"
+                        className="rounded-md border px-3 py-2 text-xs"
                         disabled={busy || reviewNote.trim().length < 12}
-                        onClick={() => void review(false)}>
+                        onClick={() => void review(false)}
+                      >
                         Reject
                       </button>
                     </div>
