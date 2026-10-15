@@ -33,6 +33,9 @@ interface Row {
   allergens: string[];
   cost_eur: number;
   price_eur: number;
+  price_gbp?: number | null;
+  cost_gbp?: number | null;
+  source_currency?: string | null;
   flagged: boolean;
 }
 
@@ -95,8 +98,10 @@ function RecipesPage() {
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {rows.map((r) => {
-            const margin =
-              r.price_eur > 0 ? (((r.price_eur - r.cost_eur) / r.price_eur) * 100).toFixed(0) : "—";
+            const price = r.source_currency === "GBP" ? Number(r.price_gbp ?? 0) : Number(r.price_eur ?? 0);
+            const cost = r.source_currency === "GBP" ? Number(r.cost_gbp ?? 0) : Number(r.cost_eur ?? 0);
+            const symbol = r.source_currency === "EUR" ? "€" : "£";
+            const margin = price > 0 ? (((price - cost) / price) * 100).toFixed(0) : "—";
             return (
               <div key={r.id} className="surface p-5 flex flex-col">
                 <div className="flex items-start justify-between gap-3">
@@ -149,9 +154,9 @@ function RecipesPage() {
                 <div className="mt-5 grid grid-cols-3 gap-2 text-xs">
                   <Cell
                     label={t("recipes.cost")}
-                    value={canCost ? `£${Number(r.cost_eur).toFixed(2)}` : "—"}
+                    value={canCost ? `${symbol}${cost.toFixed(2)}` : "—"}
                   />
-                  <Cell label={t("recipes.price")} value={`£${Number(r.price_eur).toFixed(2)}`} />
+                  <Cell label={t("recipes.price")} value={`${symbol}${price.toFixed(2)}`} />
                   <Cell label={t("recipes.margin")} value={canCost ? `${margin}%` : "—"} accent />
                 </div>
               </div>
@@ -218,8 +223,11 @@ function RecipeForm({
     } = await supabase.auth.getUser();
     await supabase.from("recipes").insert({
       name: name.trim(),
-      cost_eur: Number(cost) || 0,
-      price_eur: Number(price) || 0,
+      cost_eur: 0,
+      price_eur: 0,
+      source_currency: "GBP",
+      cost_gbp: Number(cost) || 0,
+      price_gbp: Number(price) || 0,
       allergens,
       created_by: user?.id,
     });
