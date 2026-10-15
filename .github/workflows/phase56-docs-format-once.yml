@@ -1,0 +1,28 @@
+name: Phase 56 one-time Markdown formatting
+on:
+  push:
+    branches: [feature/haccora-guided-safe-methods-ppds-v2]
+    paths: [.github/workflows/phase56-docs-format-once.yml]
+permissions:
+  contents: write
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx prettier --write docs/PHASE-56-UK-SAFE-METHODS-PPDS-ASSURANCE.md
+      - run: |
+          git config user.name 'Haccora CI Formatter'
+          git config user.email 'haccora-ci@users.noreply.github.com'
+          git add docs/PHASE-56-UK-SAFE-METHODS-PPDS-ASSURANCE.md
+          if ! git diff --cached --quiet; then
+            git commit -m 'style: format Haccora Phase 56 documentation'
+            git push origin HEAD:feature/haccora-guided-safe-methods-ppds-v2
+          fi
