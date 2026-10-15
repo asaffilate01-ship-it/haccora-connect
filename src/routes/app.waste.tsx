@@ -80,9 +80,12 @@ function WastePage() {
   const weekAgo = Date.now() - 7 * 86400000;
   const week = rows.filter((r) => new Date(r.logged_at).getTime() >= weekAgo);
   const weekCost = week.reduce(
-    (n, r) => n + (r.source_currency === "GBP" ? Number(r.cost_gbp ?? 0) : Number(r.cost_eur ?? 0)),
+    (sum, entry) => sum + (entry.source_currency === "GBP" ? Number(entry.cost_gbp ?? 0) : 0),
     0,
   );
+  const unknownCurrencyCount = week.filter(
+    (entry) => entry.source_currency !== "GBP" && entry.cost_eur != null,
+  ).length;
   const weekQty = week.reduce((n, r) => n + Number(r.qty ?? 0), 0);
 
   return (
@@ -103,9 +106,9 @@ function WastePage() {
 
       <div className="grid md:grid-cols-3 gap-4">
         <Kpi
-          label={"Cost loss (week)"}
+          label={"Verified GBP loss (week)"}
           value={`£${weekCost.toFixed(2)}`}
-          hint={`${week.length} ${"entries"}`}
+          hint={`${week.length} entries · ${unknownCurrencyCount} non-GBP or legacy excluded`}
         />
         <Kpi label={"Volume (week)"} value={`${weekQty.toFixed(1)} kg`} hint={"Target < 25 kg"} />
         <Kpi label={"Total (30d)"} value={String(rows.length)} hint={"entries"} />
@@ -201,7 +204,9 @@ function WastePage() {
                         ? `£${Number(e.cost_gbp).toFixed(2)}`
                         : "—"
                       : e.cost_eur != null
-                        ? `${e.source_currency === "EUR" ? "€" : "£"}${Number(e.cost_eur).toFixed(2)}`
+                        ? e.source_currency === "EUR"
+                          ? `€${Number(e.cost_eur).toFixed(2)}`
+                          : "Currency unverified"
                         : "—"}
                   </div>
                 </li>
