@@ -40,6 +40,13 @@ type Allocation = {
   evidence_note: string;
   occurred_at: string;
 };
+type BatchEvent = {
+  id: string;
+  batch_id: string;
+  event_type: "quarantined" | "released";
+  reason: string;
+  recorded_at: string;
+};
 type Recall = {
   id: string;
   product: string;
@@ -55,6 +62,7 @@ function TraceabilityPage() {
   const [batches, setBatches] = useState<Batch[]>([]);
   const [allocations, setAllocations] = useState<Allocation[]>([]);
   const [recalls, setRecalls] = useState<Recall[]>([]);
+  const [events, setEvents] = useState<BatchEvent[]>([]);
   const [selectedBatch, setSelectedBatch] = useState("");
   const [loading, setLoading] = useState(true);
   const [dataReady, setDataReady] = useState(false);
@@ -72,6 +80,7 @@ function TraceabilityPage() {
   const [orderItem, setOrderItem] = useState("");
   const [portions, setPortions] = useState("1");
   const [orderNote, setOrderNote] = useState("");
+  const [orderOccurredAt, setOrderOccurredAt] = useState("");
   const [holdReason, setHoldReason] = useState("");
   const [recallId, setRecallId] = useState("");
 
@@ -83,7 +92,7 @@ function TraceabilityPage() {
     }
     setLoading(true);
     setDataReady(false);
-    const [i, g, b, a, r] = await Promise.all([
+    const [i, g, b, a, r, e] = await Promise.all([
       supabase.from("ingredients").select("id,name").eq("organization_id", user.organizationId),
       supabase
         .from("goods_in_logs")
@@ -115,15 +124,23 @@ function TraceabilityPage() {
         .or(`location_id.eq.${user.locationId},location_id.is.null`)
         .order("initiated_at", { ascending: false })
         .limit(100),
+      (supabase as any)
+        .from("traceability_batch_events")
+        .select("id,batch_id,event_type,reason,recorded_at")
+        .eq("organization_id", user.organizationId)
+        .eq("location_id", user.locationId)
+        .order("recorded_at", { ascending: false })
+        .limit(500),
     ]);
     setLoading(false);
-    if (i.error || g.error || b.error || a.error || r.error) {
+    if (i.error || g.error || b.error || a.error || r.error || e.error) {
       setError("Traceability evidence is incomplete or unavailable. Do not rely on this screen for a release decision.");
       setIngredients([]);
       setReceipts([]);
       setBatches([]);
       setAllocations([]);
       setRecalls([]);
+      setEvents([]);
       return;
     }
     setError("");
@@ -133,6 +150,7 @@ function TraceabilityPage() {
     setBatches((b.data ?? []) as Batch[]);
     setAllocations((a.data ?? []) as Allocation[]);
     setRecalls((r.data ?? []) as Recall[]);
+    setEvents((e.data ?? []) as BatchEvent[]);
   }, [user?.organizationId, user?.locationId, canManage]);
 
   useEffect(() => {
@@ -225,7 +243,9 @@ function TraceabilityPage() {
       orderItem.trim().length < 2 ||
       orderNote.trim().length < 12 ||
       !Number.isSafeInteger(Number(portions)) ||
-      Number(portions) < 1
+      Number(portions) < 1 ||
+      !orderOccurredAt ||
+      !Number.isFinite(new Date(orderOccurredAt).getTime())
     ) {
       setError("Choose an available batch and provide an order reference, food item, portions and allocation evidence.");
       return;
@@ -243,7 +263,7 @@ function TraceabilityPage() {
         portions: Number(portions),
         evidence_note: orderNote.trim(),
         attribution: "manual",
-        occurred_at: new Date().toISOString(),
+        occurred_at: new Date(orderOccurredAt).toISOString(),
         captured_by: user.id,
       });
     setSaving(false);
@@ -256,6 +276,7 @@ function TraceabilityPage() {
     setOrderItem("");
     setOrderNote("");
     setPortions("1");
+    setOrderOccurredAt("");
     await load();
   };
 
@@ -404,6 +425,7 @@ function TraceabilityPage() {
             <Field label="Order reference" value={orderRef} onChange={setOrderRef} />
             <Field label="Food item" value={orderItem} onChange={setOrderItem} />
             <Field label="Portions" type="number" value={portions} onChange={setPortions} />
+            <Field label="Order date/time (local)" type="datetime-local" value={orderOccurredAt} onChange={setOrderOccurredAt} />
           </div>
           <label className="block text-sm">
             Why does this lot belong to this order?
@@ -461,6 +483,17 @@ function TraceabilityPage() {
                 </tbody>
               </table>
             </div>
+            <div className="rounded-lg border p-3 space-y-2">
+              <h3 className="font-bold text-sm">Lot hold/release history</h3>
+              {events.filter((entry) => entry.batch_id === batch.id).map((entry) => (
+                <p className="text-xs" key={entry.id}>
+                  <strong>{entry.event_type}</strong> · {new Date(entry.recorded_at).toLocaleString("en-GB")} · {entry.reason}
+                </p>
+              ))}
+              {!events.some((entry) => entry.batch_id === batch.id) && (
+                <p className="text-xs text-muted-foreground">No recorded decisions for this lot.</p>
+              )}
+            </div>
             <label className="block text-sm">
               Link to an existing recall (optional)
               <select className="input block w-full mt-1" value={recallId} onChange={(e) => setRecallId(e.target.value)}>
@@ -509,7 +542,7 @@ function Field({
   label: string;
   value: string;
   onChange: (value: string) => void;
-  type?: "text" | "number";
+  type?: "text" | "number" | "datetime-local";
 }) {
   return (
     <label className="block text-sm">
