@@ -23,7 +23,7 @@ const Timestamp = z.string().datetime({ offset: true });
 const Currency = z.enum(["GBP", "EUR"]);
 
 // Unrecognised events must never create an apparently completed HACCP record.
-const CompliancePayloads: Record<string, z.ZodTypeAny> = {
+const CompliancePayloads: Record<string, z.ZodType> = {
   "dishbee.compliance.checklist.completed": z.object({
     checklistName: z.string().trim().min(1),
     completedAt: Timestamp.optional(),
@@ -436,7 +436,7 @@ export const Route = createFileRoute("/api/integrations/dishbee")({
           if (!parsedPayload.success) {
             return Response.json({ error: "invalid_compliance_payload" }, { status: 422 });
           }
-          event.payload = parsedPayload.data;
+          event.payload = parsedPayload.data as Record<string, unknown>;
           if (!locationId) {
             return Response.json({ error: "dishbee_location_required" }, { status: 400 });
           }
