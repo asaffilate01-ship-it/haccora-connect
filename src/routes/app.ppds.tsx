@@ -372,6 +372,8 @@ function Ppds() {
         <IngredientChangeReview
           organizationId={user.organizationId}
           ingredients={ingredients}
+          recipes={recipes}
+          recipeLinks={links}
           canManage={canApprove}
           onApplied={() => void load()}
         />
