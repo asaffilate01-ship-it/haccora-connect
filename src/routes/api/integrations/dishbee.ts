@@ -5,15 +5,60 @@ const EventSchema = z.object({
   eventKey: z.string().min(3).max(240),
   eventType: z.string().min(3).max(160),
   dishbeeTenantId: z.string().uuid(),
-  dishbeeLocationId: z.string().uuid().nullable().optional(),
+  // Compliance evidence always requires an explicitly mapped premises.
+  dishbeeLocationId: z.string().uuid(),
   subjectType: z.string().min(1).max(80),
   subjectId: z.string().min(1).max(200),
-  occurredAt: z.string().datetime().optional(),
+  occurredAt: z.string().datetime({ offset: true }).optional(),
   payload: z.record(z.string(), z.unknown()).default({}),
 });
 
 type Event = z.infer<typeof EventSchema>;
 type Db = any;
+const NumberField = z.union([z.number(), z.string().trim().min(1)])
+  .transform((value) => Number(value)).pipe(z.number().finite());
+const PositiveNumber = NumberField.pipe(z.number().positive());
+const OptionalNumber = NumberField.optional().nullable();
+const Timestamp = z.string().datetime({ offset: true });
+const Currency = z.enum(["GBP", "EUR"]);
+
+// Unrecognised events must never create an apparently completed HACCP record.
+const CompliancePayloads: Record<string, z.ZodTypeAny> = {
+  "dishbee.compliance.checklist.completed": z.object({
+    checklistName: z.string().trim().min(1),
+    completedAt: Timestamp.optional(),
+  }).passthrough(),
+  "dishbee.compliance.waste.recorded": z.object({
+    quantity: PositiveNumber, costPence: OptionalNumber, currency: Currency.optional(),
+  }).passthrough(),
+  "dishbee.compliance.supplier.receipt": z.object({
+    supplierName: z.string().trim().min(1), deliveryTempC: OptionalNumber,
+    receivedAt: Timestamp.optional(),
+  }).passthrough(),
+  "dishbee.compliance.allergens.updated": z.object({
+    menuItemId: z.string().min(1), name: z.string().trim().min(1),
+    allergens: z.array(z.string().trim().min(1)).max(14),
+    pricePence: OptionalNumber, costPence: OptionalNumber, currency: Currency.optional(),
+  }).passthrough(),
+  "dishbee.compliance.temperature.recorded": z.object({
+    reading: NumberField, targetMin: OptionalNumber, targetMax: OptionalNumber,
+    loggedAt: Timestamp.optional(),
+  }).passthrough().refine(
+    (p) => p.targetMin == null || p.targetMax == null || p.targetMin <= p.targetMax,
+    "temperature_limits_reversed",
+  ),
+  "dishbee.compliance.incident.created": z.object({
+    title: z.string().trim().min(1), occurredAt: Timestamp.optional(),
+  }).passthrough(),
+  "dishbee.compliance.corrective_action.created": z.object({
+    description: z.string().trim().min(1), dueAt: Timestamp.optional(),
+  }).passthrough(),
+};
+
+function eventCurrency(payload: Record<string, unknown>): "GBP" | "EUR" {
+  // Dishbee's UK monetary payloads are in pence; EUR must be explicit.
+  return Currency.parse(payload["currency"] ?? "GBP");
+}
 
 async function sha256(value: string) {
   const bytes = new TextEncoder().encode(value);
@@ -32,14 +77,17 @@ function text(value: unknown, fallback = "") {
   return next || fallback;
 }
 function number(value: unknown, fallback = 0) {
+  if (value == null || value === "") return fallback;
   const next = Number(value);
-  return Number.isFinite(next) ? next : fallback;
+  if (!Number.isFinite(next)) throw new Error("invalid_numeric_evidence");
+  return next;
 }
 function date(value: unknown) {
   const raw = String(value ?? "").trim();
   if (!raw) return new Date().toISOString();
   const parsed = new Date(raw);
-  return Number.isNaN(parsed.getTime()) ? new Date().toISOString() : parsed.toISOString();
+  if (Number.isNaN(parsed.getTime())) throw new Error("invalid_evidence_timestamp");
+  return parsed.toISOString();
 }
 
 async function resolveLocation(db: Db, connectionId: string, dishbeeLocationId?: string | null) {
@@ -72,6 +120,7 @@ async function projectEvent(db: Db, connection: any, event: Event, locationId: s
   const actor = String(connection.actor_user_id);
   const org = String(connection.organization_id);
   const idempotency = "dishbee:" + event.eventKey;
+  const currency = eventCurrency(p);
 
   if (event.eventType === "dishbee.compliance.checklist.completed") {
     const mapped = await entityMap(
@@ -136,7 +185,9 @@ async function projectEvent(db: Db, connection: any, event: Event, locationId: s
         unit: text(p["unit"], "each"),
         reason: text(p["reason"], "waste"),
         note: text(p["note"]) || null,
-        cost_eur: p["costPence"] == null ? null : number(p["costPence"]) / 100,
+        cost_eur: p["costPence"] == null || currency !== "EUR" ? null : number(p["costPence"]) / 100,
+        cost_gbp: p["costPence"] == null || currency !== "GBP" ? null : number(p["costPence"]) / 100,
+        source_currency: currency,
         logged_at: date(p["createdAt"] ?? event.occurredAt),
         idempotency_key: idempotency,
       })
@@ -195,8 +246,11 @@ async function projectEvent(db: Db, connection: any, event: Event, locationId: s
       location_id: locationId,
       name: text(p["name"], "Dishbee menu item"),
       allergens: Array.isArray(p["allergens"]) ? p["allergens"].map(String) : [],
-      price_eur: number(p["pricePence"], 0) / 100,
-      cost_eur: number(p["costPence"], 0) / 100,
+      price_eur: currency === "EUR" ? number(p["pricePence"], 0) / 100 : 0,
+      cost_eur: currency === "EUR" ? number(p["costPence"], 0) / 100 : 0,
+      price_gbp: currency === "GBP" ? number(p["pricePence"], 0) / 100 : null,
+      cost_gbp: currency === "GBP" ? number(p["costPence"], 0) / 100 : null,
+      source_currency: currency,
       category: text(p["category"]) || null,
       notes: "Synced from Dishbee allergen controls",
       idempotency_key: key,
@@ -374,6 +428,18 @@ export const Route = createFileRoute("/api/integrations/dishbee")({
           if (!event.eventType.startsWith("dishbee.compliance.")) {
             return Response.json({ error: "unsupported_event_scope" }, { status: 400 });
           }
+          const payloadSchema = CompliancePayloads[event.eventType];
+          if (!payloadSchema) {
+            return Response.json({ error: "unsupported_event_type" }, { status: 422 });
+          }
+          const parsedPayload = payloadSchema.safeParse(event.payload);
+          if (!parsedPayload.success) {
+            return Response.json({ error: "invalid_compliance_payload" }, { status: 422 });
+          }
+          event.payload = parsedPayload.data;
+          if (!locationId) {
+            return Response.json({ error: "dishbee_location_required" }, { status: 400 });
+          }
           const { data: existing, error: existingError } = await db
             .from("dishbee_runtime_events")
             .select("id,status,target_table,target_id")
@@ -455,10 +521,8 @@ export const Route = createFileRoute("/api/integrations/dishbee")({
           console.error("[haccora-dishbee-runtime]", error);
           if (error instanceof z.ZodError)
             return Response.json({ error: "invalid_event" }, { status: 422 });
-          return Response.json(
-            { error: error instanceof Error ? error.message : "request_failed" },
-            { status: 400 },
-          );
+          // Errors can contain internal SQL; keep response generic and retryable.
+          return Response.json({ error: "request_failed" }, { status: 503 });
         }
       },
     },
