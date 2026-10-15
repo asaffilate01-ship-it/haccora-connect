@@ -77,7 +77,7 @@ for each row execute function public.block_safe_method_review_mutation();
 -- Fail closed at the database boundary; clients must not self-certify a
 -- blank or mismatched active method by bypassing the guided form.
 create or replace function public.validate_site_safe_method_activation()
-returns trigger language plpgsql security definer set search_path=public,pg_temp as $
+returns trigger language plpgsql security definer set search_path=public,pg_temp as $$
 declare
   v_prompts jsonb;
   v_version text;
@@ -125,7 +125,7 @@ begin
     end if;
   end loop;
   return new;
-end $;
+end $$;
 
 revoke all on function public.validate_site_safe_method_activation()
 from public, anon, authenticated;
