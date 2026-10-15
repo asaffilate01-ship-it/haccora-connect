@@ -80,12 +80,14 @@ create or replace function public.validate_traceability_batch()
 returns trigger language plpgsql security definer set search_path=public,pg_temp as $$
 declare v_receipt public.goods_in_logs%rowtype;
 begin
-  if new.status <> 'available' or new.captured_by is distinct from auth.uid() then
+  if new.status <> 'available' or new.captured_by is distinct from auth.uid()
+    or new.received_at > now() + interval '5 minutes' then
     raise exception 'A new batch must be attributed to its signed-in recorder';
   end if;
   if new.goods_in_id is not null then
     select * into v_receipt from public.goods_in_logs where id=new.goods_in_id;
-    if not found or v_receipt.organization_id is distinct from new.organization_id
+    if not found or v_receipt.received_at > now() + interval '5 minutes'
+      or v_receipt.organization_id is distinct from new.organization_id
       or v_receipt.location_id is distinct from new.location_id
       or v_receipt.status <> 'accepted'
       or nullif(btrim(coalesce(v_receipt.batch_lot,'')),'') is null
@@ -116,7 +118,7 @@ begin
     raise exception 'Cannot attribute a new sale to an unavailable or quarantined batch';
   end if;
   if new.occurred_at > now() + interval '5 minutes'
-    or new.occurred_at < v_batch.received_at - interval '1 day' then
+    or new.occurred_at < v_batch.received_at then
     raise exception 'Sale timestamp is outside the defensible batch timeline';
   end if;
   return new;
