@@ -120,6 +120,11 @@ function RotaPage() {
   }, [shifts]);
 
   const myOpen = clocks.find((c) => c.user_id === user?.id && !c.clock_out);
+  const plannedHours = shifts.reduce((sum, shift) => {
+    const [startHour, startMinute] = shift.start_time.split(":").map(Number);
+    const [endHour, endMinute] = shift.end_time.split(":").map(Number);
+    return sum + Math.max(0, (endHour * 60 + endMinute - startHour * 60 - startMinute) / 60);
+  }, 0);
 
   const clockIn = async () => {
     if (!user) return;
@@ -176,6 +181,9 @@ function RotaPage() {
         </div>
         <span className="text-sm text-muted-foreground">{fmtDate(weekStart)} – {fmtDate(weekEnd)}</span>
       </div>
+      <p className="text-sm text-muted-foreground" aria-live="polite">
+        {shifts.length} scheduled shifts · {plannedHours.toFixed(1)} planned staff hours this week
+      </p>
       <div className="inline-flex rounded-full border border-border bg-card p-1 text-sm">
         <button
           onClick={() => setTab("rota")}
@@ -407,12 +415,17 @@ function ShiftForm({
     rangeStart.setDate(rangeStart.getDate() - 1);
     const rangeEnd = new Date(endAt);
     rangeEnd.setDate(rangeEnd.getDate() + 1);
-    const { data: nearby } = await supabase
+    const { data: nearby, error: nearbyError } = await supabase
       .from("shifts")
       .select("shift_date,start_time,end_time")
       .eq("staff_name", staff)
-      .gte("shift_date", rangeStart.toISOString().slice(0, 10))
-      .lte("shift_date", rangeEnd.toISOString().slice(0, 10));
+      .gte("shift_date", fmtDate(rangeStart))
+      .lte("shift_date", fmtDate(rangeEnd));
+    if (nearbyError) {
+      setSaving(false);
+      setError("Could not verify rest periods. The shift has not been saved.");
+      return;
+    }
     const conflict = (nearby ?? []).some((shift) => {
       const existingStart = new Date(`${shift.shift_date}T${shift.start_time}`);
       const existingEnd = new Date(`${shift.shift_date}T${shift.end_time}`);
