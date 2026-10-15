@@ -1,4 +1,4 @@
-name: Phase 57 one-time formatting
+name: Phase 57 one-time formatting\n# Second pass after allergen and queue hardening
 on:
   push:
     branches: [feature/haccora-supplier-controls-mobile-security-oct2026]
