@@ -20,7 +20,9 @@ test("Dishbee only accepts known compliance events with finite readings and mapp
 
 test("Dishbee GBP figures never populate legacy EUR columns", async () => {
   const route = await read("../src/routes/api/integrations/dishbee.ts");
-  const migration = await read("../supabase/migrations/20261015211500_dishbee_gbp_compliance_evidence.sql");
+  const migration = await read(
+    "../supabase/migrations/20261015211500_dishbee_gbp_compliance_evidence.sql",
+  );
   for (const field of ["source_currency", "price_gbp", "cost_gbp"]) {
     assert.match(route, new RegExp(field));
     assert.match(migration, new RegExp(field));
