@@ -24,6 +24,31 @@ const OptionalNumber = NumberField.optional().nullable();
 const Timestamp = z.string().datetime({ offset: true });
 const Currency = z.enum(["GBP", "EUR"]);
 
+// The order adapter intentionally receives no customer identity, phone, address,
+// delivery instructions or payment details. It records source order lines only.
+const DishbeeHandedOver = z
+  .object({
+    orderId: z.string().trim().min(3).max(160),
+    items: z
+      .array(
+        z
+          .object({
+            lineId: z.string().trim().min(1).max(160),
+            menuItemId: z.string().trim().min(1).max(160).optional(),
+            name: z.string().trim().min(2).max(200),
+            quantity: z.number().int().min(1).max(9999),
+          })
+          .strict(),
+      )
+      .min(1)
+      .max(100),
+  })
+  .strict()
+  .refine(
+    (order) => new Set(order.items.map((line) => line.lineId)).size === order.items.length,
+    "duplicate_order_line_ids",
+  );
+
 // Unrecognised events must never create an apparently completed HACCP record.
 const CompliancePayloads: Record<string, z.ZodType> = {
   "dishbee.compliance.checklist.completed": z
@@ -457,6 +482,46 @@ export const Route = createFileRoute("/api/integrations/dishbee")({
               persisted: false,
               organizationId: connection.organization_id,
               haccoraLocationId: locationId,
+            });
+          }
+          if (event.eventType === "dishbee.order.handed_over") {
+            if (!event.occurredAt) {
+              return Response.json({ error: "order_timestamp_required" }, { status: 422 });
+            }
+            const parsedOrder = DishbeeHandedOver.safeParse(event.payload);
+            if (!parsedOrder.success) {
+              return Response.json({ error: "invalid_dishbee_order_contract" }, { status: 422 });
+            }
+            // Hash stable, schema-approved fields: arbitrary upstream metadata/PII
+            // is never persisted or included in the reconciliation contract.
+            const eventHash = await sha256(
+              JSON.stringify({
+                eventType: event.eventType,
+                eventKey: event.eventKey,
+                orderId: parsedOrder.data.orderId,
+                occurredAt: event.occurredAt,
+                items: parsedOrder.data.items,
+              }),
+            );
+            const { data: received, error: orderError } = await db.rpc(
+              "ingest_dishbee_trace_order",
+              {
+                p_connection: connection.id,
+                p_location: locationId,
+                p_event_key: event.eventKey,
+                p_order_reference: parsedOrder.data.orderId,
+                p_occurred_at: event.occurredAt,
+                p_event_hash: eventHash,
+                p_items: parsedOrder.data.items,
+              },
+            );
+            if (orderError) throw new Error("dishbee_order_ingestion_failed");
+            return Response.json({
+              ok: true,
+              traceOrderId: received?.orderId,
+              duplicate: received?.duplicate === true,
+              attribution: "unreviewed",
+              coverageComplete: false,
             });
           }
           if (!event.eventType.startsWith("dishbee.compliance.")) {

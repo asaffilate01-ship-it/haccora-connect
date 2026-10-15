@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { AlertTriangle, ClipboardList, Loader2, PackageCheck, ShieldAlert } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/haccora-client";
+import { DishbeeOrderReconciliation } from "@/components/traceability/DishbeeOrderReconciliation";
 
 export const Route = createFileRoute("/app/traceability")({ component: TraceabilityPage });
 
@@ -631,6 +632,15 @@ function TraceabilityPage() {
           </>
         )}
       </section>
+
+      {user?.organizationId && user.locationId && canManage && (
+        <DishbeeOrderReconciliation
+          organizationId={user.organizationId}
+          locationId={user.locationId}
+          lots={batches}
+          focusBatchId={selectedBatch}
+        />
+      )}
 
       <p className="text-xs text-muted-foreground">
         This investigation includes up to 200 recent registered lots and 500 manual allocations for
