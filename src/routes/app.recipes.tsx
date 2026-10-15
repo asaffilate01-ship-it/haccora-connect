@@ -98,8 +98,10 @@ function RecipesPage() {
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {rows.map((r) => {
-            const price = r.source_currency === "GBP" ? Number(r.price_gbp ?? 0) : Number(r.price_eur ?? 0);
-            const cost = r.source_currency === "GBP" ? Number(r.cost_gbp ?? 0) : Number(r.cost_eur ?? 0);
+            const price =
+              r.source_currency === "GBP" ? Number(r.price_gbp ?? 0) : Number(r.price_eur ?? 0);
+            const cost =
+              r.source_currency === "GBP" ? Number(r.cost_gbp ?? 0) : Number(r.cost_eur ?? 0);
             const symbol = r.source_currency === "EUR" ? "€" : "£";
             const margin = price > 0 ? (((price - cost) / price) * 100).toFixed(0) : "—";
             return (
