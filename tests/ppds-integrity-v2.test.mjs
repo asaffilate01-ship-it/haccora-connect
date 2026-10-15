@@ -106,6 +106,10 @@ test("site safe-method reviews are captured by an append-only server trigger", a
     "utf8",
   );
   assert.match(sql, /site_safe_method_review_events/);
+  assert.match(sql, /validate_site_safe_method_activation/);
+  assert.match(sql, /Premises-specific management review required/);
+  assert.match(sql, /new\.controls->>'managementConfirmed'/);
+  assert.match(sql, /Every safe method prompt requires an actual site procedure/);
   assert.match(sql, /security definer set search_path=public,pg_temp/);
   assert.match(sql, /after insert or update on public.site_safe_methods/);
   assert.match(sql, /to_jsonb\(old\), to_jsonb\(new\)/);
