@@ -65,8 +65,7 @@ const CompliancePayloads: Record<string, z.ZodType> = {
     })
     .passthrough()
     .refine(
-      (p) =>
-        p.targetMin == null || p.targetMax == null || p.targetMin <= p.targetMax,
+      (p) => p.targetMin == null || p.targetMax == null || p.targetMin <= p.targetMax,
       "temperature_limits_reversed",
     ),
   "dishbee.compliance.incident.created": z
