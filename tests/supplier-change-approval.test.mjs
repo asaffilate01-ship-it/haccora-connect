@@ -28,6 +28,8 @@ test("atomic review rechecks scope and ingredient versions before any approved m
   assert.match(sql, /v_request\.organization_id/);
   assert.match(sql, /v_request\.expected_version/);
   assert.match(sql, /raise exception 'Supplier specification changed since the proposal/);
+  assert.match(sql, /Only the 14 standard UK allergen declarations are accepted/);
+  assert.match(sql, /Approval or rejection choice is required/);
   assert.match(sql, /set ingredient_statement = btrim/);
   assert.match(sql, /reviewed_at = now\(\)/);
   assert.match(sql, /previous_snapshot = v_previous/);
@@ -43,6 +45,8 @@ test("supplier review UI shows impacted recipes and requires explicit decision n
   assert.match(source, /review_ingredient_change/);
   assert.match(source, /reviewNote\.trim\(\)\.length < 12/);
   assert.match(source, /affectedRecipes/);
+  assert.match(source, /standardiseAllergens/);
+  assert.match(source, /queueReady/);
   assert.match(source, /linked recipes require re-verification/);
   assert.match(source, /Existing PPDS labels may become out of date/);
   assert.match(ppds, /<IngredientChangeReview/);
