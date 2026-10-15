@@ -71,6 +71,18 @@ test("missing supplier evidence and historical incomplete snapshots fail closed"
   assert.equal(assess([ingredient], ["milk"], null).stale, true);
 });
 
+test("first-week setup is premises-scoped and checks real method attestations", async () => {
+  const route = await readFile(
+    new URL("../src/routes/app.get-started.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(route, /select\("location_id,jurisdiction"\)/);
+  assert.match(route, /\.eq\("location_id", user\.locationId\)/);
+  assert.match(route, /managementConfirmed === true/);
+  assert.match(route, /Progress unavailable/);
+  assert.doesNotMatch(route, /\.from\("site_compliance_profiles"\)\s*\.select\("id"/);
+});
+
 test("safe methods require on-premises documented management responses", async () => {
   const route = await readFile(
     new URL("../src/routes/app.safe-methods.tsx", import.meta.url),
