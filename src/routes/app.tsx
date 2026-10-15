@@ -133,6 +133,7 @@ const GROUPS: NavGroup[] = [
       { to: "/app/stock", icon: Boxes, key: "menu.stock", nav: "stock" },
       { to: "/app/waste", icon: Trash2, key: "menu.waste", nav: "waste" },
       { to: "/app/recalls", icon: PackageX, key: "menu.recalls", nav: "recalls" },
+      { to: "/app/traceability", icon: PackageCheck, key: "Batch traceability", nav: "recalls" },
       { to: "/app/chemicals", icon: FlaskConical, key: "menu.chemicals", nav: "chemicals" },
     ],
   },
