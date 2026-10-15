@@ -134,7 +134,6 @@ function SafeMethods() {
       !profile ||
       !user?.organizationId ||
       !user.locationId ||
-      error ||
       !selected.prompts.length
     ) {
       return;
