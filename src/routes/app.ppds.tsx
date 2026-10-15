@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/haccora-client";
 import { useAuth } from "@/lib/auth";
 import { UK_ALLERGENS } from "@/lib/uk-compliance";
 import { assessPpdsIntegrity, type PpdsLabelSnapshot } from "@/lib/ppds-integrity";
+import { IngredientChangeReview } from "@/components/ppds/IngredientChangeReview";
 
 export const Route = createFileRoute("/app/ppds")({ component: Ppds });
 type Ingredient = {
@@ -367,6 +368,16 @@ function Ppds() {
           </p>
         </section>
       </div>
+      {user?.organizationId && !loadError && (
+        <IngredientChangeReview
+          organizationId={user.organizationId}
+          ingredients={ingredients}
+          recipes={recipes}
+          recipeLinks={links}
+          canManage={canApprove}
+          onApplied={() => void load()}
+        />
+      )}
     </div>
   );
 }
