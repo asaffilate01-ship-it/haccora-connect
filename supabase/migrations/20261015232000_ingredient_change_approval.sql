@@ -57,7 +57,6 @@ with check (
   and reviewed_at is null
   and previous_snapshot is null
   and applied_snapshot is null
-  and reviewed_by is null
 );
 
 revoke all on public.ingredient_change_requests from public, anon, authenticated;
@@ -79,6 +78,9 @@ declare
   v_current jsonb;
   v_status text;
 begin
+  if p_approve is null then
+    raise exception 'Approval or rejection choice is required';
+  end if;
   if auth.uid() is null or length(btrim(coalesce(p_review_note, ''))) < 12 then
     raise exception 'Authenticated review with a reason of at least 12 characters required';
   end if;
@@ -112,6 +114,21 @@ begin
   );
 
   if p_approve then
+    if not (
+      v_request.proposed_allergens <@ array[
+        'Celery', 'Cereals containing gluten', 'Crustaceans', 'Eggs', 'Fish',
+        'Lupin', 'Milk', 'Molluscs', 'Mustard', 'Tree nuts', 'Peanuts',
+        'Sesame', 'Soya', 'Sulphur dioxide and sulphites'
+      ]::text[]
+    ) or not (
+      v_request.proposed_may_contain <@ array[
+        'Celery', 'Cereals containing gluten', 'Crustaceans', 'Eggs', 'Fish',
+        'Lupin', 'Milk', 'Molluscs', 'Mustard', 'Tree nuts', 'Peanuts',
+        'Sesame', 'Soya', 'Sulphur dioxide and sulphites'
+      ]::text[]
+    ) then
+      raise exception 'Only the 14 standard UK allergen declarations are accepted';
+    end if;
     if coalesce(v_ingredient.specification_version, '') <> v_request.expected_version then
       raise exception 'Supplier specification changed since the proposal; create a new review';
     end if;
