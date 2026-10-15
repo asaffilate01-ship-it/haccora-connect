@@ -47,7 +47,7 @@ test("UK screens display GBP sourced values and safeguard PPDS labels", async ()
   assert.match(waste, /source_currency: "GBP"/);
   assert.match(waste, /cost_gbp/);
   assert.match(ppds, /unverifiedIngredients/);
-  assert.match(ppds, /disabled=\{unverifiedIngredients\.length > 0\}/);
+  assert.match(ppds, /disabled=\{!canApprove \|\| Boolean\(loadError\) \|\| unverifiedIngredients\.length > 0\}/);
 });
 
 test("Daily and workforce screens handle DST, failure and actionable exceptions", async () => {
