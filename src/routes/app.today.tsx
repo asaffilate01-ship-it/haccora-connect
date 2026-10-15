@@ -1,6 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { AlertTriangle, CheckCircle2, ChevronRight, Loader2, RefreshCw, Sun, Sunset } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ChevronRight,
+  Loader2,
+  RefreshCw,
+  Sun,
+  Sunset,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/haccora-client";
 
 export const Route = createFileRoute("/app/today")({ component: Today });
@@ -68,7 +76,9 @@ function Today() {
       ]);
     const results = [checksDone, checksOpen, temperatures, exceptions, actionsOpen, incidentsOpen];
     if (results.some((result) => result.error)) {
-      setLoadError("Some compliance records could not be loaded. Refresh before making safety decisions.");
+      setLoadError(
+        "Some compliance records could not be loaded. Refresh before making safety decisions.",
+      );
       setLoading(false);
       return;
     }
@@ -94,15 +104,22 @@ function Today() {
   const nextAction = counts.exceptions
     ? { label: "Review temperature exceptions", to: "/app/temperature" }
     : counts.actionsOpen
-        ? { label: "Review corrective actions", to: "/app/control-centre" }
-        : counts.incidentsOpen
-          ? { label: "Review open incidents", to: "/app/incidents" }
-          : counts.checksOpen
-            ? { label: "Complete the next due check", to: "/app/checks" }
-            : { label: "Review closing routines", to: "/app/routines" };
+      ? { label: "Review corrective actions", to: "/app/control-centre" }
+      : counts.incidentsOpen
+        ? { label: "Review open incidents", to: "/app/incidents" }
+        : counts.checksOpen
+          ? { label: "Complete the next due check", to: "/app/checks" }
+          : { label: "Review closing routines", to: "/app/routines" };
   return (
     <div className="p-5 md:p-8 space-y-6">
-      {loadError && <div role="alert" className="surface border border-destructive/40 p-4 text-sm text-destructive">{loadError}</div>}
+      {loadError && (
+        <div
+          role="alert"
+          className="surface border border-destructive/40 p-4 text-sm text-destructive"
+        >
+          {loadError}
+        </div>
+      )}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <div className="eyebrow">TODAY'S SHIFT</div>
@@ -116,9 +133,28 @@ function Today() {
           <Loader2 className="animate-spin" size={18} />
         ) : (
           <div className="flex items-center gap-2">
-            <button type="button" onClick={() => void load()} aria-label="Refresh today summary" className="rounded-lg border border-border p-2"><RefreshCw size={17} /></button>
-            <div className={`surface px-4 py-3 text-sm font-semibold ${loadError ? "text-destructive" : needsAttention ? "text-warning-foreground" : "text-success"}`}>
-              {loadError ? "Summary unavailable" : needsAttention ? `${needsAttention} item(s) need attention` : "No open exceptions"}
+            <button
+              type="button"
+              onClick={() => void load()}
+              aria-label="Refresh today summary"
+              className="rounded-lg border border-border p-2"
+            >
+              <RefreshCw size={17} />
+            </button>
+            <div
+              className={`surface px-4 py-3 text-sm font-semibold ${
+                loadError
+                  ? "text-destructive"
+                  : needsAttention
+                    ? "text-warning-foreground"
+                    : "text-success"
+              }`}
+            >
+              {loadError
+                ? "Summary unavailable"
+                : needsAttention
+                  ? `${needsAttention} item(s) need attention`
+                  : "No open exceptions"}
             </div>
           </div>
         )}
