@@ -80,8 +80,7 @@ function WastePage() {
   const weekAgo = Date.now() - 7 * 86400000;
   const week = rows.filter((r) => new Date(r.logged_at).getTime() >= weekAgo);
   const weekCost = week.reduce(
-    (n, r) =>
-      n + (r.source_currency === "GBP" ? Number(r.cost_gbp ?? 0) : Number(r.cost_eur ?? 0)),
+    (n, r) => n + (r.source_currency === "GBP" ? Number(r.cost_gbp ?? 0) : Number(r.cost_eur ?? 0)),
     0,
   );
   const weekQty = week.reduce((n, r) => n + Number(r.qty ?? 0), 0);
