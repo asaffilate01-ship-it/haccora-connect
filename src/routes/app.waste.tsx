@@ -14,6 +14,8 @@ interface Row {
   unit: string;
   reason: string;
   cost_eur: number | null;
+  cost_gbp?: number | null;
+  source_currency?: string | null;
   logged_at: string;
   user_id: string;
 }
@@ -61,7 +63,9 @@ function WastePage() {
       qty: Number(form.qty),
       unit: form.unit,
       reason: form.reason,
-      cost_eur: form.cost ? Number(form.cost) : null,
+      cost_eur: null,
+      cost_gbp: form.cost ? Number(form.cost) : null,
+      source_currency: "GBP",
     });
     setBusy(false);
     if (error) {
@@ -75,7 +79,7 @@ function WastePage() {
 
   const weekAgo = Date.now() - 7 * 86400000;
   const week = rows.filter((r) => new Date(r.logged_at).getTime() >= weekAgo);
-  const weekCost = week.reduce((n, r) => n + (r.cost_eur ?? 0), 0);
+  const weekCost = week.reduce((n, r) => n + (r.source_currency === "GBP" ? Number(r.cost_gbp ?? 0) : Number(r.cost_eur ?? 0)), 0);
   const weekQty = week.reduce((n, r) => n + Number(r.qty ?? 0), 0);
 
   return (
@@ -189,7 +193,7 @@ function WastePage() {
                   </div>
                   <div className="col-span-3 text-xs">{e.reason}</div>
                   <div className="col-span-2 text-right font-mono text-xs">
-                    {e.cost_eur != null ? `£${Number(e.cost_eur).toFixed(2)}` : "—"}
+                    {e.source_currency === "GBP" ? (e.cost_gbp != null ? `£${Number(e.cost_gbp).toFixed(2)}` : "—") : e.cost_eur != null ? `${e.source_currency === "EUR" ? "€" : "£"}${Number(e.cost_eur).toFixed(2)}` : "—"}
                   </div>
                 </li>
               ))}
