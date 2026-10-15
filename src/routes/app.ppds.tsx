@@ -326,7 +326,7 @@ function Ppds() {
             >
               <strong>Controlled version {currentLabel.version}:</strong>{" "}
               {labelIsStale
-                ? "OUT OF DATE — do not use this label until it has been regenerated and checked."
+                ? "Out of date — do not use this label until it has been regenerated and checked."
                 : "Snapshot matches the recorded ingredient details; physical label approval is still required."}
             </div>
           )}
