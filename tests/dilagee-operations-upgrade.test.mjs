@@ -11,6 +11,10 @@ test("Dishbee only accepts known compliance events with finite readings and mapp
   assert.match(route, /NumberField/);
   assert.match(route, /\.pipe\(z\.number\(\)\.finite\(\)\)/);
   assert.match(route, /invalid_compliance_payload/);
+  assert.match(route, /temperature_target_range_required/);
+  assert.match(route, /p\["inRange"\] !== false/);
+  assert.match(route, /tempOk: z\.boolean\(\)/);
+  assert.doesNotMatch(route, /Boolean\(p\["inRange"\]\)/);
   assert.match(route, /unsupported_event_type/);
   assert.match(route, /dishbee_location_required/);
   assert.match(route, /invalid_evidence_timestamp/);
