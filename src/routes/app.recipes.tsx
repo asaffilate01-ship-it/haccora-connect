@@ -105,9 +105,7 @@ function RecipesPage() {
             const verifiedCurrency = r.source_currency === "EUR" || r.source_currency === "GBP";
             const symbol = r.source_currency === "EUR" ? "€" : "£";
             const margin =
-              verifiedCurrency && price > 0
-                ? (((price - cost) / price) * 100).toFixed(0)
-                : "—";
+              verifiedCurrency && price > 0 ? (((price - cost) / price) * 100).toFixed(0) : "—";
             return (
               <div key={r.id} className="surface p-5 flex flex-col">
                 <div className="flex items-start justify-between gap-3">
@@ -160,9 +158,14 @@ function RecipesPage() {
                 <div className="mt-5 grid grid-cols-3 gap-2 text-xs">
                   <Cell
                     label={t("recipes.cost")}
-                    value={canCost ? (verifiedCurrency ? `${symbol}${cost.toFixed(2)}` : "Review") : "—"}
+                    value={
+                      canCost ? (verifiedCurrency ? `${symbol}${cost.toFixed(2)}` : "Review") : "—"
+                    }
                   />
-                  <Cell label={t("recipes.price")} value={verifiedCurrency ? `${symbol}${price.toFixed(2)}` : "Review currency"} />
+                  <Cell
+                    label={t("recipes.price")}
+                    value={verifiedCurrency ? `${symbol}${price.toFixed(2)}` : "Review currency"}
+                  />
                   <Cell label={t("recipes.margin")} value={canCost ? `${margin}%` : "—"} accent />
                 </div>
               </div>
