@@ -60,22 +60,31 @@ export function DishbeeOrderReconciliation({
     setLoading(true);
     setReady(false);
     const [o, l, k] = await Promise.all([
-      db.from("dishbee_trace_orders")
+      db
+        .from("dishbee_trace_orders")
         .select("id,order_reference,occurred_at,received_at")
-        .eq("organization_id", organizationId).eq("location_id", locationId)
-        .order("occurred_at", { ascending: false }).limit(100),
-      db.from("dishbee_trace_order_lines")
+        .eq("organization_id", organizationId)
+        .eq("location_id", locationId)
+        .order("occurred_at", { ascending: false })
+        .limit(100),
+      db
+        .from("dishbee_trace_order_lines")
         .select("id,order_id,source_line_id,item_name,quantity")
-        .eq("organization_id", organizationId).eq("location_id", locationId)
+        .eq("organization_id", organizationId)
+        .eq("location_id", locationId)
         .limit(500),
-      db.from("dishbee_trace_batch_links")
+      db
+        .from("dishbee_trace_batch_links")
         .select("id,order_line_id,batch_id,evidence_note,reviewed_at")
-        .eq("organization_id", organizationId).eq("location_id", locationId)
+        .eq("organization_id", organizationId)
+        .eq("location_id", locationId)
         .limit(1000),
     ]);
     setLoading(false);
     if (o.error || l.error || k.error) {
-      setError("Dishbee order reconciliation is unavailable. Do not infer missing or zero exposure.");
+      setError(
+        "Dishbee order reconciliation is unavailable. Do not infer missing or zero exposure.",
+      );
       setOrders([]);
       setLines([]);
       setLinks([]);
@@ -96,19 +105,13 @@ export function DishbeeOrderReconciliation({
     void load();
   }, [load]);
 
-  const orderById = useMemo(
-    () => new Map(orders.map((order) => [order.id, order])),
-    [orders],
-  );
+  const orderById = useMemo(() => new Map(orders.map((order) => [order.id, order])), [orders]);
   // Only count lines belonging to orders in the selected 100-order window.
   const visibleLines = useMemo(
     () => lines.filter((line) => orderById.has(line.order_id)),
     [lines, orderById],
   );
-  const coveredLineIds = useMemo(
-    () => new Set(links.map((link) => link.order_line_id)),
-    [links],
-  );
+  const coveredLineIds = useMemo(() => new Set(links.map((link) => link.order_line_id)), [links]);
   const unresolved = visibleLines.filter((line) => !coveredLineIds.has(line.id));
   const selectedLine = visibleLines.find((line) => line.id === selectedLineId);
   const selectedOrder = selectedLine ? orderById.get(selectedLine.order_id) : null;
@@ -166,8 +169,13 @@ export function DishbeeOrderReconciliation({
             handed-over events. Ingredient lot attribution remains a separate manager review.
           </p>
         </div>
-        <button type="button" className="rounded-lg border p-2" disabled={loading || busy}
-          onClick={() => void load()} aria-label="Refresh imported order evidence">
+        <button
+          type="button"
+          className="rounded-lg border p-2"
+          disabled={loading || busy}
+          onClick={() => void load()}
+          aria-label="Refresh imported order evidence"
+        >
           <RefreshCw size={18} />
         </button>
       </header>
@@ -176,9 +184,21 @@ export function DishbeeOrderReconciliation({
         No automatic lot assignment, completeness certification, external customer alert or
         cross-platform sale reconciliation. Unknown batch links require further investigation.
       </div>
-      {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
-      {notice && <p role="status" className="text-sm">{notice}</p>}
-      {loading && <p className="text-sm"><Loader2 className="inline animate-spin" size={16} /> Loading source orders…</p>}
+      {error && (
+        <p role="alert" className="text-sm text-destructive">
+          {error}
+        </p>
+      )}
+      {notice && (
+        <p role="status" className="text-sm">
+          {notice}
+        </p>
+      )}
+      {loading && (
+        <p className="text-sm">
+          <Loader2 className="inline animate-spin" size={16} /> Loading source orders…
+        </p>
+      )}
 
       {ready && (
         <>
@@ -188,14 +208,14 @@ export function DishbeeOrderReconciliation({
             <Statistic label="Lines without recorded lot links" value={unresolved.length} />
           </div>
           <p className="text-xs text-muted-foreground">
-            Window limited to the latest 100 orders, 500 lines and 1,000 links per premises.
-            Linked lines may still be missing other ingredients. Neither this count nor
-            zero unmatched lines demonstrates full traceability.
+            Window limited to the latest 100 orders, 500 lines and 1,000 links per premises. Linked
+            lines may still be missing other ingredients. Neither this count nor zero unmatched
+            lines demonstrates full traceability.
           </p>
           {orders.length === 0 && (
             <p className="rounded-lg border p-3 text-sm">
-              No authenticated Dishbee handed-over events have been recorded in this window.
-              Confirm the outbound Dishbee webhook is configured before evaluating coverage.
+              No authenticated Dishbee handed-over events have been recorded in this window. Confirm
+              the outbound Dishbee webhook is configured before evaluating coverage.
             </p>
           )}
           <div className="overflow-x-auto rounded-lg border">
@@ -220,7 +240,8 @@ export function DishbeeOrderReconciliation({
                       <td className="p-3">
                         {count ? (
                           <span className="inline-flex items-center gap-1 text-xs">
-                            <CheckCircle2 size={14} /> {count} manager-reviewed link(s); not complete
+                            <CheckCircle2 size={14} /> {count} manager-reviewed link(s); not
+                            complete
                           </span>
                         ) : (
                           <span className="text-warning-foreground text-xs">No batch linked</span>
@@ -230,22 +251,31 @@ export function DishbeeOrderReconciliation({
                   );
                 })}
                 {visibleLines.length === 0 && (
-                  <tr><td colSpan={4} className="p-3 text-sm">No source order lines in the loaded window.</td></tr>
+                  <tr>
+                    <td colSpan={4} className="p-3 text-sm">
+                      No source order lines in the loaded window.
+                    </td>
+                  </tr>
                 )}
               </tbody>
             </table>
           </div>
 
           <div className="rounded-lg border p-4 space-y-3">
-            <h3 className="font-semibold">Manager review: attribute a source order item to a lot</h3>
+            <h3 className="font-semibold">
+              Manager review: attribute a source order item to a lot
+            </h3>
             <label className="block text-sm">
               Order line
-              <select className="input mt-1 block w-full" value={selectedLineId}
+              <select
+                className="input mt-1 block w-full"
+                value={selectedLineId}
                 onChange={(event) => {
                   setSelectedLineId(event.target.value);
                   setSelectedLotId("");
                   setError("");
-                }}>
+                }}
+              >
                 <option value="">Select an imported order line</option>
                 {visibleLines.map((line) => (
                   <option key={line.id} value={line.id}>
@@ -256,8 +286,11 @@ export function DishbeeOrderReconciliation({
             </label>
             <label className="block text-sm">
               Supplier lot (received before this order)
-              <select className="input mt-1 block w-full" value={selectedLotId}
-                onChange={(event) => setSelectedLotId(event.target.value)}>
+              <select
+                className="input mt-1 block w-full"
+                value={selectedLotId}
+                onChange={(event) => setSelectedLotId(event.target.value)}
+              >
                 <option value="">Select a traceable ingredient lot</option>
                 {eligibleLots.map((lot) => (
                   <option key={lot.id} value={lot.id}>
@@ -268,13 +301,22 @@ export function DishbeeOrderReconciliation({
             </label>
             <label className="block text-sm">
               Supporting production record / batch usage evidence
-              <textarea className="input mt-1 w-full min-h-20" maxLength={1000} value={reason}
+              <textarea
+                className="input mt-1 w-full min-h-20"
+                maxLength={1000}
+                value={reason}
                 onChange={(event) => setReason(event.target.value)}
-                placeholder="Explain the dated kitchen production log proving this lot was used" />
+                placeholder="Explain the dated kitchen production log proving this lot was used"
+              />
             </label>
-            <button type="button" className="btn-primary px-4 py-2 text-sm"
-              disabled={!ready || busy || !selectedLineId || !selectedLotId || reason.trim().length < 12}
-              onClick={() => void saveLink()}>
+            <button
+              type="button"
+              className="btn-primary px-4 py-2 text-sm"
+              disabled={
+                !ready || busy || !selectedLineId || !selectedLotId || reason.trim().length < 12
+              }
+              onClick={() => void saveLink()}
+            >
               {busy ? "Saving…" : "Record manager-reviewed lot link"}
             </button>
           </div>
