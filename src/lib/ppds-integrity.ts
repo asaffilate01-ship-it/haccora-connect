@@ -54,7 +54,9 @@ export function assessPpdsIntegrity(
   if (!snapshot?.ingredient_ids || !snapshot.specifications) {
     reasons.push("The last label lacks a complete source snapshot.");
   } else {
-    if (JSON.stringify([...snapshot.ingredient_ids].sort()) !== JSON.stringify([...uniqueIds].sort())) {
+    if (
+      JSON.stringify([...snapshot.ingredient_ids].sort()) !== JSON.stringify([...uniqueIds].sort())
+    ) {
       reasons.push("The recipe ingredient list has changed.");
     }
     for (const id of uniqueIds) {
@@ -72,9 +74,9 @@ export function assessPpdsIntegrity(
     }
   }
 
-  const current = uniqueIds.map((id) => byId.get(id)).filter(
-    (ingredient): ingredient is PpdsIngredient => Boolean(ingredient),
-  );
+  const current = uniqueIds
+    .map((id) => byId.get(id))
+    .filter((ingredient): ingredient is PpdsIngredient => Boolean(ingredient));
   const newContains = sorted(current.flatMap((ingredient) => ingredient.allergens));
   const newMayContain = sorted(current.flatMap((ingredient) => ingredient.may_contain));
   const currentStatement = current

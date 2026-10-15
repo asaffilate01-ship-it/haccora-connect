@@ -199,8 +199,16 @@ function Ppds() {
           labels require the food name, a full ingredients list and emphasised allergens.
         </p>
       </div>
-      {msg && <div role="status" className="surface p-3 text-sm">{msg}</div>}
-      {loadError && <div role="alert" className="surface p-3 text-sm">{loadError}</div>}
+      {msg && (
+        <div role="status" className="surface p-3 text-sm">
+          {msg}
+        </div>
+      )}
+      {loadError && (
+        <div role="alert" className="surface p-3 text-sm">
+          {loadError}
+        </div>
+      )}
       <div className="grid lg:grid-cols-2 gap-5">
         <section className="surface p-5 space-y-4">
           <h2 className="text-xl font-bold">New ingredient specification</h2>
@@ -331,8 +339,13 @@ function Ppds() {
             </div>
           )}
           {labelIsStale && (
-            <ul role="alert" className="rounded-lg border border-destructive/40 p-3 text-sm list-disc pl-7">
-              {integrity.reasons.map((reason) => <li key={reason}>{reason}</li>)}
+            <ul
+              role="alert"
+              className="rounded-lg border border-destructive/40 p-3 text-sm list-disc pl-7"
+            >
+              {integrity.reasons.map((reason) => (
+                <li key={reason}>{reason}</li>
+              ))}
             </ul>
           )}
           {unverifiedIngredients.length > 0 && (

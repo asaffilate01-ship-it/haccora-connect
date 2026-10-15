@@ -4,10 +4,7 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 
-const source = await readFile(
-  new URL("../src/lib/ppds-integrity.ts", import.meta.url),
-  "utf8",
-);
+const source = await readFile(new URL("../src/lib/ppds-integrity.ts", import.meta.url), "utf8");
 const js = ts.transpileModule(source, {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
 }).outputText;
@@ -30,9 +27,7 @@ const label = {
   source_snapshot: {
     ingredient_ids: ["milk"],
     may_contain: [],
-    specifications: [
-      { id: "milk", version: "2", reviewed_at: "2026-10-10T10:00:00.000Z" },
-    ],
+    specifications: [{ id: "milk", version: "2", reviewed_at: "2026-10-10T10:00:00.000Z" }],
   },
 };
 const assess = (ingredients = [ingredient], ids = ["milk"], snapshot = label) =>
@@ -61,7 +56,10 @@ test("supplier version, review date, allergens, and may-contain drift invalidate
   assert.equal(assess([{ ...ingredient, reviewed_at: "2026-10-15T10:00:00Z" }]).stale, true);
   assert.equal(assess([{ ...ingredient, allergens: ["Eggs", "Milk"] }]).stale, true);
   assert.equal(assess([{ ...ingredient, may_contain: ["Peanuts"] }]).stale, true);
-  assert.equal(assess([{ ...ingredient, ingredient_statement: "Skimmed milk powder" }]).stale, true);
+  assert.equal(
+    assess([{ ...ingredient, ingredient_statement: "Skimmed milk powder" }]).stale,
+    true,
+  );
 });
 
 test("missing supplier evidence and historical incomplete snapshots fail closed", () => {
@@ -115,6 +113,8 @@ test("site safe-method reviews are captured by an append-only server trigger", a
   assert.match(sql, /to_jsonb\(old\), to_jsonb\(new\)/);
   assert.match(sql, /before update or delete on public.site_safe_method_review_events/);
   assert.match(sql, /grant select on public.site_safe_method_review_events to authenticated/);
-  assert.doesNotMatch(sql, /grant (insert|update|delete) on public.site_safe_method_review_events/i);
+  assert.doesNotMatch(
+    sql,
+    /grant (insert|update|delete) on public.site_safe_method_review_events/i,
+  );
 });
-

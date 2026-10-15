@@ -239,7 +239,9 @@ function GetStarted() {
             <div className="h-full bg-success transition-all" style={{ width: `${progress}%` }} />
           </div>
           <p className="mt-3 text-xs text-muted-foreground">
-            {error ? "Progress unavailable" : `${completed} of ${steps.length} setup steps complete`}
+            {error
+              ? "Progress unavailable"
+              : `${completed} of ${steps.length} setup steps complete`}
           </p>
           {trialDays !== null && (
             <div className="mt-4 rounded-xl bg-secondary p-3 text-xs">

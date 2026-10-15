@@ -115,7 +115,9 @@ function SafeMethods() {
     if (method.prompts.some((_, index) => !current.controls?.answers?.[String(index)]?.trim())) {
       return true;
     }
-    return Boolean(current.review_due_at && current.review_due_at < new Date().toISOString().slice(0, 10));
+    return Boolean(
+      current.review_due_at && current.review_due_at < new Date().toISOString().slice(0, 10),
+    );
   };
 
   const open = (method: Method) => {
@@ -138,7 +140,9 @@ function SafeMethods() {
     ) {
       return;
     }
-    const complete = selected.prompts.every((_, index) => (answers[String(index)] ?? "").trim().length >= 12);
+    const complete = selected.prompts.every(
+      (_, index) => (answers[String(index)] ?? "").trim().length >= 12,
+    );
     if (!complete || !acknowledged) {
       setError("Explain each control in at least 12 characters and confirm the management review.");
       return;
@@ -197,25 +201,44 @@ function SafeMethods() {
           before it is marked adopted. These are internal records, not regulator approval.
         </p>
       </header>
-      {error && <div role="alert" className="surface border border-destructive/40 p-3 text-sm">{error}</div>}
-      {message && <div role="status" className="surface p-3 text-sm">{message}</div>}
+      {error && (
+        <div role="alert" className="surface border border-destructive/40 p-3 text-sm">
+          {error}
+        </div>
+      )}
+      {message && (
+        <div role="status" className="surface p-3 text-sm">
+          {message}
+        </div>
+      )}
       {!profile && !loading && (
         <div className="surface border border-warning/40 p-4 text-sm">
           Complete your UK jurisdiction and business profile first.{" "}
-          <Link to="/app/uk-compliance" className="underline font-semibold">Open compliance profile</Link>
+          <Link to="/app/uk-compliance" className="underline font-semibold">
+            Open compliance profile
+          </Link>
         </div>
       )}
       {profile && (
         <section className="surface p-4 flex items-center justify-between gap-3 flex-wrap">
           <div>
-            <div className="text-sm font-bold">{profile.business_type.replaceAll("_", " ")} · {profile.jurisdiction.replaceAll("_", " ")}</div>
-            <p className="text-xs text-muted-foreground">Prioritised for this premises; review cycles are internal planning reminders.</p>
+            <div className="text-sm font-bold">
+              {profile.business_type.replaceAll("_", " ")} ·{" "}
+              {profile.jurisdiction.replaceAll("_", " ")}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Prioritised for this premises; review cycles are internal planning reminders.
+            </p>
           </div>
-          <div className="text-sm font-semibold">{verifiedCount} of {methods.length} currently reviewed</div>
+          <div className="text-sm font-semibold">
+            {verifiedCount} of {methods.length} currently reviewed
+          </div>
         </section>
       )}
       {loading ? (
-        <div className="surface p-8 text-center"><Loader2 size={18} className="inline animate-spin" /> Loading methods…</div>
+        <div className="surface p-8 text-center">
+          <Loader2 size={18} className="inline animate-spin" /> Loading methods…
+        </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {ordered.map((method) => {
@@ -224,17 +247,24 @@ function SafeMethods() {
             return (
               <article key={method.id} className="surface p-5 flex flex-col gap-3">
                 <div className="flex justify-between items-center gap-2">
-                  <span className="text-xs uppercase text-muted-foreground font-bold">{method.category.replaceAll("_", " ")}</span>
+                  <span className="text-xs uppercase text-muted-foreground font-bold">
+                    {method.category.replaceAll("_", " ")}
+                  </span>
                   {attention ? (
-                    <span className="inline-flex gap-1 items-center text-xs text-warning-foreground"><AlertTriangle size={14} /> Needs review</span>
+                    <span className="inline-flex gap-1 items-center text-xs text-warning-foreground">
+                      <AlertTriangle size={14} /> Needs review
+                    </span>
                   ) : (
-                    <span className="inline-flex gap-1 items-center text-xs text-success"><CheckCircle2 size={14} /> Reviewed</span>
+                    <span className="inline-flex gap-1 items-center text-xs text-success">
+                      <CheckCircle2 size={14} /> Reviewed
+                    </span>
                   )}
                 </div>
                 <h2 className="font-bold text-lg">{method.title}</h2>
                 <p className="text-sm text-muted-foreground flex-1">{method.summary}</p>
                 <div className="text-xs text-muted-foreground">
-                  Template {method.version} · {current?.review_due_at ? `Next review ${current.review_due_at}` : "Not adopted"}
+                  Template {method.version} ·{" "}
+                  {current?.review_due_at ? `Next review ${current.review_due_at}` : "Not adopted"}
                 </div>
                 <div className="flex items-center gap-3">
                   {canManage && (
@@ -247,7 +277,12 @@ function SafeMethods() {
                       {current ? "Review method" : "Document method"}
                     </button>
                   )}
-                  <a href={method.official_source_url} target="_blank" rel="noreferrer" className="underline text-xs">
+                  <a
+                    href={method.official_source_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline text-xs"
+                  >
                     Official guidance
                   </a>
                 </div>
@@ -257,10 +292,17 @@ function SafeMethods() {
         </div>
       )}
       {selected && canManage && (
-        <section className="surface p-5 space-y-4 border border-primary/20" aria-labelledby="method-title">
+        <section
+          className="surface p-5 space-y-4 border border-primary/20"
+          aria-labelledby="method-title"
+        >
           <div className="flex items-center justify-between gap-3">
-            <h2 id="method-title" className="text-xl font-bold">{selected.title}</h2>
-            <button type="button" className="text-sm underline" onClick={() => setSelectedId(null)}>Close</button>
+            <h2 id="method-title" className="text-xl font-bold">
+              {selected.title}
+            </h2>
+            <button type="button" className="text-sm underline" onClick={() => setSelectedId(null)}>
+              Close
+            </button>
           </div>
           <p className="text-sm text-muted-foreground">
             Describe what staff do, who is responsible and how failures are escalated. Use your
@@ -281,8 +323,15 @@ function SafeMethods() {
             </label>
           ))}
           <label className="flex items-start gap-3 text-sm">
-            <input type="checkbox" checked={acknowledged} onChange={(event) => setAcknowledged(event.target.checked)} />
-            <span>I am authorised to review this premises' procedures and have checked these answers against actual practice.</span>
+            <input
+              type="checkbox"
+              checked={acknowledged}
+              onChange={(event) => setAcknowledged(event.target.checked)}
+            />
+            <span>
+              I am authorised to review this premises' procedures and have checked these answers
+              against actual practice.
+            </span>
           </label>
           <button
             type="button"
@@ -296,7 +345,8 @@ function SafeMethods() {
       )}
       <p className="text-xs text-muted-foreground">
         A template version change, UK jurisdiction change, missing procedure or passed review date
-        triggers another management review. Specialist validation and regulator requirements still apply.
+        triggers another management review. Specialist validation and regulator requirements still
+        apply.
       </p>
     </main>
   );
