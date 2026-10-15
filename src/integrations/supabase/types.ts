@@ -4622,6 +4622,7 @@ export type Database = {
           allergens: string[]
           category: string | null
           cost_eur: number
+          cost_gbp: number | null
           created_at: string
           created_by: string | null
           flagged: boolean
@@ -4632,12 +4633,15 @@ export type Database = {
           notes: string | null
           organization_id: string | null
           price_eur: number
+          price_gbp: number | null
+          source_currency: string | null
           updated_at: string
         }
         Insert: {
           allergens?: string[]
           category?: string | null
           cost_eur?: number
+          cost_gbp?: number | null
           created_at?: string
           created_by?: string | null
           flagged?: boolean
@@ -4648,12 +4652,15 @@ export type Database = {
           notes?: string | null
           organization_id?: string | null
           price_eur?: number
+          price_gbp?: number | null
+          source_currency?: string | null
           updated_at?: string
         }
         Update: {
           allergens?: string[]
           category?: string | null
           cost_eur?: number
+          cost_gbp?: number | null
           created_at?: string
           created_by?: string | null
           flagged?: boolean
@@ -4664,6 +4671,8 @@ export type Database = {
           notes?: string | null
           organization_id?: string | null
           price_eur?: number
+          price_gbp?: number | null
+          source_currency?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -6626,6 +6635,8 @@ export type Database = {
       waste_entries: {
         Row: {
           cost_eur: number | null
+          cost_gbp: number | null
+          source_currency: string | null
           created_at: string
           id: string
           idempotency_key: string | null
@@ -6641,6 +6652,8 @@ export type Database = {
         }
         Insert: {
           cost_eur?: number | null
+          cost_gbp?: number | null
+          source_currency?: string | null
           created_at?: string
           id?: string
           idempotency_key?: string | null
@@ -6656,6 +6669,8 @@ export type Database = {
         }
         Update: {
           cost_eur?: number | null
+          cost_gbp?: number | null
+          source_currency?: string | null
           created_at?: string
           id?: string
           idempotency_key?: string | null
