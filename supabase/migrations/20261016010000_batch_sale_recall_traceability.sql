@@ -91,7 +91,13 @@ begin
       or v_receipt.location_id is distinct from new.location_id
       or v_receipt.status <> 'accepted'
       or nullif(btrim(coalesce(v_receipt.batch_lot,'')),'') is null
-      or btrim(v_receipt.batch_lot) <> btrim(new.batch_code) then
+      or btrim(v_receipt.batch_lot) <> btrim(new.batch_code)
+      or btrim(v_receipt.supplier) <> btrim(new.supplier_name)
+      or btrim(v_receipt.product) <> btrim(new.product_name)
+      or v_receipt.received_at is distinct from new.received_at
+      or v_receipt.use_by is distinct from new.use_by
+      or btrim(coalesce(v_receipt.delivery_reference, v_receipt.id::text))
+         <> btrim(new.delivery_reference) then
       raise exception 'Goods-in receipt is not an accepted matching premises batch';
     end if;
   end if;
