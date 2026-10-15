@@ -55,14 +55,17 @@ const allergenAliases: Record<string, string> = {
   mollusc: "Molluscs",
 };
 function standardiseAllergens(values: string[]): string[] {
-  return [...new Set(values.map((value) => {
-    const canonical = UK_ALLERGENS.find(
-      (allergen) => allergen.toLowerCase() === value.toLowerCase(),
-    );
-    return canonical ?? allergenAliases[value.toLowerCase()] ?? value;
-  }))];
+  return [
+    ...new Set(
+      values.map((value) => {
+        const canonical = UK_ALLERGENS.find(
+          (allergen) => allergen.toLowerCase() === value.toLowerCase(),
+        );
+        return canonical ?? allergenAliases[value.toLowerCase()] ?? value;
+      }),
+    ),
+  ];
 }
-
 
 export function IngredientChangeReview({
   organizationId,
@@ -179,7 +182,14 @@ export function IngredientChangeReview({
   };
 
   const review = async (approve: boolean) => {
-    if (!canManage || !reviewId || busy || loading || !queueReady || reviewNote.trim().length < 12) {
+    if (
+      !canManage ||
+      !reviewId ||
+      busy ||
+      loading ||
+      !queueReady ||
+      reviewNote.trim().length < 12
+    ) {
       setError("Select a pending request and record a review reason of at least 12 characters.");
       return;
     }
@@ -400,7 +410,9 @@ export function IngredientChangeReview({
                 <p className="text-xs">Proposed ingredients: {item.proposed_statement}</p>
                 <p className="text-xs text-muted-foreground">
                   Current contains:{" "}
-                  {ingredients.find((ingredient) => ingredient.id === item.ingredient_id)?.allergens.join(", ") || "None recorded"}
+                  {ingredients
+                    .find((ingredient) => ingredient.id === item.ingredient_id)
+                    ?.allergens.join(", ") || "None recorded"}
                 </p>
                 <button
                   type="button"
