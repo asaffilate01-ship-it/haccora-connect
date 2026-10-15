@@ -6,7 +6,7 @@ Implemented as stacked PR #59, based on the PR #55 feature branch. **Not product
 
 - Site-specific Safe Methods screen retrieves the current UK premises profile and displays six existing versioned control templates.
 - Owner/manager must document an answer to each template prompt (at least 12 characters) and explicitly confirm they reviewed procedures against actual operations.
-- Saved `site_safe_methods.controls` includes answers, template version, jurisdiction, business type, author and review timestamp; a six-month *internal review reminder* is recorded.
+- Saved `site_safe_methods.controls` includes answers, template version, jurisdiction, business type, author and review timestamp; a six-month _internal review reminder_ is recorded.
 - Previously adopted methods are marked for further management review when version, jurisdiction, prompt coverage or review date is inconsistent.
 - Append-only `site_safe_method_review_events` history is recorded by a database trigger after every insertion or update, with actor and before/after snapshots. Users cannot directly insert, update or delete historical events.
 - PPDS labels are compared against the complete ingredient IDs, supplier specification versions and dates, ingredient statement, allergens and may-contain information; missing linked ingredients fail closed.
