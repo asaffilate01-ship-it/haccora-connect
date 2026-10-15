@@ -1,65 +1,57 @@
-# Phase 59 — Dishbee source-order ingestion and batch reconciliation
+# Phase 59 — Dishbee order reconciliation
 
-**Implementation branch:** `feature/haccora-dishbee-order-reconciliation-oct2026`  
-**Parent dependency:** PR #61 (itself stacked on #60, #59 and #55).  
-**Environment:** Code committed for review; not production-connected or deployed.
+Implementation: Haccora UK, stacked on Phase 58 (PR #61). This code is not
+production-connected or deployed.
 
-## Newly implemented
+## Implemented
 
-Haccora's existing authenticated `POST /api/integrations/dishbee` route now accepts **one additional exact event family**, `dishbee.order.handed_over`. It uses the existing SHA-256 bearer-token connection lookup, tenant UUID verification, active Dishbee-to-Haccora premises mapping, request-size limit and read-only validation probe.
+- Existing Dishbee HTTP receiver accepts only the new `dishbee.order.handed_over` event type for order tracing.
+- The receiver authenticates the existing hashed bearer secret and confirms the mapped tenant and premises.
+- A strict schema accepts order reference, occurrence time and up to 100 order lines, without customer names, addresses, phones, payment details or other unsolicited fields.
+- Service-role-only database ingestion atomically records immutable orders and lines, checks the event hash, and rejects conflicting event-key or order-reference replays.
+- The Traceability page lists authenticated source order references, unresolved lines and reviewed lot links.
+- Managers can attach a lot to an imported order line using real production evidence. Database checks enforce the same premises and ensure the lot existed at the order time.
+- Read-only audit data and explicit uncertainty indicators support investigations. A linked line is not certified as complete.
 
-Each accepted event is passed to the **service-role-only** `ingest_dishbee_trace_order` database function. The function locks data transactionally, checks connection/site activity, validates a bounded recent timestamp and up to 100 line items, persists an order and its lines without personal information, and rejects an event-key or order-reference replay whose canonical payload hash does not match the original.
+## Incoming contract
 
-The new manager dashboard inside `/app/traceability` lists recent imported orders, which lines have no recorded batch link and manually reviewed lot links. It offers a tenant/site-scoped `link_dishbee_trace_batch` RPC. The manager must provide at least 12 characters of production evidence, and the referenced lot must have been received before the recorded order time. A quarantined lot may be linked retrospectively for investigation, not released.
+The supported event type is `dishbee.order.handed_over`. Use the existing
+`POST /api/integrations/dishbee` endpoint with its bearer token. The envelope
+requires `eventKey`, `eventType`, `dishbeeTenantId`, `dishbeeLocationId`,
+`subjectType`, `subjectId`, `occurredAt` and `payload`.
 
-## Example source event (contract; NOT proof that Dishbee emits it yet)
+The payload requires `orderId` and a nonempty `items` array. Each item
+requires `lineId`, `name` and a positive integer `quantity`. An optional
+`menuItemId` is accepted. Duplicate line IDs and unexpected properties are
+rejected. Event timestamps must fall within the configured recent window.
 
-```json
-{
-  "eventKey": "fulfilled-order-14923-v1",
-  "eventType": "dishbee.order.handed_over",
-  "dishbeeTenantId": "c0000000-0000-4000-8000-000000000001",
-  "dishbeeLocationId": "c0000000-0000-4000-8000-000000000002",
-  "subjectType": "order",
-  "subjectId": "order-14923",
-  "occurredAt": "2026-10-15T20:10:00+01:00",
-  "payload": {
-    "orderId": "order-14923",
-    "items": [
-      {
-        "lineId": "item-1",
-        "menuItemId": "burger-42",
-        "name": "Chicken burger",
-        "quantity": 2
-      }
-    ]
-  }
-}
-```
+A received order does not prove which supplier lots were consumed. Lot linkage
+requires a separate manager review and cannot be inferred from recipe names or
+stock records alone.
 
-Required request header: `Authorization: Bearer <a unique secret with at least 32 characters>`. Never log, embed or store the plaintext token in the repository.
+## Limits and responsibilities
 
-**Rejected and not persisted:** arbitrary payload keys, customer addresses, phones, names, emails, card details, unsolicited statuses, empty item lists, repeated item IDs, invalid premises UUIDs, unsupported order lifecycle event types, and stale or future event timestamps. Never bypass the tenant/premises mapping.
+- The receiving adapter is implemented, but an outbound Dishbee producer has not been verified or connected in this pull request.
+- A selected `dishbee` order is a source event from the configured integration, not independent fulfilment or payment verification.
+- A manager-reviewed batch link does not prove that every ingredient or preparation lot was used or accounted for.
+- The dashboard loads at most 100 recent orders, 500 lines and 1,000 links per premises. Its counts describe that limited window only.
+- No missing lot link or affected order result may be interpreted as zero recall exposure.
+- No customer notifications, delivery-platform menu suspension, stock write-down, recall closure or regulatory submissions run automatically.
+- All linked tenant and premises permissions, privacy controls and operational policies must be independently checked before rollout.
 
-## Evidence provenance and limits
+## Acceptance requirements
 
-- Incoming order lines are **received from an authenticated Dishbee-tenant integration**, not independently verified by Haccora against provider settlement, inventory consumption or customer fulfilment.
-- A lot association is **manually reviewed** and recorded as `manager_reviewed_not_complete`. The existence of one lot link does **not** prove that all ingredients, preparation batches, cross-brand kitchens or external partner transactions were accounted for.
-- Screens currently load at most 100 recent orders, 500 lines and 1,000 reviewed lot links per site; all counts are explicitly limited to the loaded window. Do not derive total coverage percentages from this partial dataset.
-- An event with no batch evidence remains **unreviewed**. A lack of matching orders for a recalled lot is **unknown exposure**, not proof of zero exposure.
-- No automatic customer messaging, recall notification, payment integration, menu suspension, inventory deduction or authority report is performed.
-- No PII is ingested: this phase stores order references and menu item names/quantities only.
+- Merge parent pull requests in order: #55, #59, #60, #61, then review this stacked PR.
+- Apply `20261016020000_dishbee_order_reconciliation.sql` in a fresh isolated staging database, not directly in production.
+- Validate fresh database migrations, role/RLS isolation, CodeQL, web/mobile builds and browser end-to-end tests against the final commit.
+- Reconcile duplicate webhook delivery, changed payload, concurrent events, cross-tenant tokens, cross-site mapping, unknown item IDs and stale timestamps.
+- Confirm that the exact event contract is emitted by a Dishbee producer using real end-to-end test credentials and an authorised tenant.
+- Verify captured order lines, manager evidence notes, blocked cross-location lot associations and real recalled-batch investigations.
+- Obtain appropriate specialist UK food-safety, security, privacy and release approvals.
 
-## Deployment and certification blockers
+## Remaining development
 
-1. All parent PRs (#55 → #59 → #60 → #61) must be reviewed and safely merged, with current-commit CI passing, before this feature is eligible for merge.
-2. Execute fresh staging migrations for `20261016020000_dishbee_order_reconciliation.sql`, confirm RLS/role privileges and deterministic replay/idempotency with two unrelated tenant identities and two premises.
-3. Implement and **verify a compatible outbound event producer in Dishbee**. The current connection validates *incoming* events only; there is no evidenced production order publisher in this PR. Do not declare a live integration until end-to-end provider testing.
-4. Verify order changes, cancellations, returned items, multiple brands, shared production kitchens, order timestamps, replay attacks, tenant mismatch, multiple simultaneous item records and secure secret rotation.
-5. Prove manager-only batch linkage, cross-location denial and no direct browser inserts, updates or deletes on the protected source order tables.
-6. Verify iOS/Android and browser QA, failed/offline replays, GDPR data-retention policy, penetration assessment and a qualified UK food-safety specialist's review.
-7. Separately validate actual printed PPDS labels, physical recall stock holds and real customer/authority notification workflows when needed.
-
-## Further phases
-
-A proper **Dishbee outbound order event publisher**, multi-brand per-item kitchen attribution, deterministic ingredient/stock usage and completeness reconciliation are still outstanding. They should be treated as independent workstreams, not as features that have been implicitly certified by this receiving endpoint.
+The outbound Dishbee event publisher, multi-kitchen production usage, complete
+batch consumption, all-sales coverage reconciliation and authorised recall
+notifications remain separate unimplemented workstreams. Never mark them live
+based only on this incoming adapter.
