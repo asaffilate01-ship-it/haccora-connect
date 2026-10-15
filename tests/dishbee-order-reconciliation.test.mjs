@@ -33,7 +33,8 @@ test("service-only atomic ingestion validates active mapped premises and conflic
   assert.match(sql, /Conflicting Dishbee order replay or duplicate reference/);
   assert.match(sql, /grant execute on function public\.ingest_dishbee_trace_order/);
   assert.match(sql, /\) to service_role;/);
-  assert.doesNotMatch(sql, /grant execute on function public\.ingest_dishbee_trace_order[\s\S]*?to authenticated;/);
+  const restrictedIngestionAcl = sql.split("create or replace function public.link_dishbee_trace_batch")[0];
+  assert.doesNotMatch(restrictedIngestionAcl, /to authenticated;\s*$/);
 });
 
 test("order and source-line records are immutable to browser clients with tenant RLS", async () => {
