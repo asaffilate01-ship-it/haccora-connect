@@ -43,6 +43,10 @@ const CompliancePayloads: Record<string, z.ZodType> = {
     .object({
       supplierName: z.string().trim().min(1),
       deliveryTempC: OptionalNumber,
+      tempOk: z.boolean().nullable().optional(),
+      conditionOk: z.boolean().nullable().optional(),
+      packagingOk: z.boolean().nullable().optional(),
+      allergenLabelOk: z.boolean().nullable().optional(),
       receivedAt: Timestamp.optional(),
     })
     .passthrough(),
@@ -61,12 +65,17 @@ const CompliancePayloads: Record<string, z.ZodType> = {
       reading: NumberField,
       targetMin: OptionalNumber,
       targetMax: OptionalNumber,
+      inRange: z.boolean().optional(),
       loggedAt: Timestamp.optional(),
     })
     .passthrough()
     .refine(
       (p) => p.targetMin == null || p.targetMax == null || p.targetMin <= p.targetMax,
       "temperature_limits_reversed",
+    )
+    .refine(
+      (p) => p.targetMin != null || p.targetMax != null,
+      "temperature_target_range_required",
     ),
   "dishbee.compliance.incident.created": z
     .object({
@@ -299,10 +308,11 @@ async function projectEvent(db: Db, connection: any, event: Event, locationId: s
     const reading = number(p["reading"]);
     const min = p["targetMin"] == null ? null : number(p["targetMin"]);
     const max = p["targetMax"] == null ? null : number(p["targetMax"]);
+    // A client-supplied "inRange: true" cannot override recorded unsafe readings.
     const inRange =
-      p["inRange"] == null
-        ? (min == null || reading >= min) && (max == null || reading <= max)
-        : Boolean(p["inRange"]);
+      (min == null || reading >= min) &&
+      (max == null || reading <= max) &&
+      p["inRange"] !== false;
     const { data, error } = await db
       .from("temperature_logs")
       .insert({
