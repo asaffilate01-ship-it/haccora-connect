@@ -525,6 +525,18 @@ export const Route = createFileRoute("/api/integrations/dishbee")({
               },
             );
             if (orderError) throw new Error("dishbee_order_ingestion_failed");
+            // Keep integration health current for valid order receipts as well as
+            // compliance evidence. A failed telemetry write is retryable because
+            // ingest_dishbee_trace_order is idempotent.
+            const { error: telemetryError } = await db
+              .from("dishbee_runtime_connections")
+              .update({
+                last_event_at: new Date().toISOString(),
+                last_error: null,
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", connection.id);
+            if (telemetryError) throw new Error("dishbee_order_health_update_failed");
             return Response.json({
               ok: true,
               traceOrderId: received?.orderId,
