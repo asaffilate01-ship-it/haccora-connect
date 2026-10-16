@@ -55,44 +55,82 @@ export function DishbeeOrderReconciliation({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [windowIncomplete, setWindowIncomplete] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     setReady(false);
-    const [o, l, k] = await Promise.all([
-      db
-        .from("dishbee_trace_orders")
-        .select("id,order_reference,occurred_at,received_at")
-        .eq("organization_id", organizationId)
-        .eq("location_id", locationId)
-        .order("occurred_at", { ascending: false })
-        .limit(100),
-      db
-        .from("dishbee_trace_order_lines")
-        .select("id,order_id,source_line_id,item_name,quantity")
-        .eq("organization_id", organizationId)
-        .eq("location_id", locationId)
-        .limit(500),
-      db
-        .from("dishbee_trace_batch_links")
-        .select("id,order_line_id,batch_id,evidence_note,reviewed_at")
-        .eq("organization_id", organizationId)
-        .eq("location_id", locationId)
-        .limit(1000),
-    ]);
-    setLoading(false);
-    if (o.error || l.error || k.error) {
-      setError(
-        "Dishbee order reconciliation is unavailable. Do not infer missing or zero exposure.",
-      );
+    setWindowIncomplete(false);
+    // Query source orders first. The old parallel queries loaded unrelated
+    // lines/links and could falsely mark recent orders as unlinked.
+    const o = await db
+      .from("dishbee_trace_orders")
+      .select("id,order_reference,occurred_at,received_at", { count: "exact" })
+      .eq("organization_id", organizationId)
+      .eq("location_id", locationId)
+      .order("occurred_at", { ascending: false })
+      .limit(100);
+    if (o.error) {
+      setLoading(false);
+      setError("Dishbee order evidence is unavailable. Exposure must be investigated externally.");
       setOrders([]);
       setLines([]);
       setLinks([]);
       return;
     }
-    setOrders((o.data ?? []) as ImportedOrder[]);
-    setLines((l.data ?? []) as ImportedLine[]);
-    setLinks((k.data ?? []) as BatchLink[]);
+
+    const importedOrders = (o.data ?? []) as ImportedOrder[];
+    const orderIds = importedOrders.map((order) => order.id);
+    const l = orderIds.length
+      ? await db
+          .from("dishbee_trace_order_lines")
+          .select("id,order_id,source_line_id,item_name,quantity", { count: "exact" })
+          .eq("organization_id", organizationId)
+          .eq("location_id", locationId)
+          .in("order_id", orderIds)
+          .order("source_line_id")
+          .limit(500)
+      : { data: [] as ImportedLine[], error: null, count: 0 };
+    if (l.error) {
+      setLoading(false);
+      setError("Imported line evidence could not be loaded. A zero count is not reliable.");
+      setOrders([]);
+      setLines([]);
+      setLinks([]);
+      return;
+    }
+    const importedLines = (l.data ?? []) as ImportedLine[];
+    const lineIds = importedLines.map((line) => line.id);
+    // Bound URL/query lengths. Each lookup uses only the line IDs already
+    // returned for the selected 100-order window.
+    const linkQueries = await Promise.all(
+      Array.from({ length: Math.ceil(lineIds.length / 60) }, (_, index) =>
+        db
+          .from("dishbee_trace_batch_links")
+          .select("id,order_line_id,batch_id,evidence_note,reviewed_at", { count: "exact" })
+          .eq("organization_id", organizationId)
+          .eq("location_id", locationId)
+          .in("order_line_id", lineIds.slice(index * 60, index * 60 + 60))
+          .limit(1000),
+      ),
+    );
+    setLoading(false);
+    if (linkQueries.some((result) => result.error)) {
+      setError("Lot-link evidence is incomplete. Verify batches against source records.");
+      setOrders([]);
+      setLines([]);
+      setLinks([]);
+      return;
+    }
+    const importedLinks = linkQueries.flatMap((result) => (result.data ?? []) as BatchLink[]);
+    setWindowIncomplete(
+      Number(o.count ?? 0) > importedOrders.length ||
+        Number(l.count ?? 0) > importedLines.length ||
+        linkQueries.some((result) => Number(result.count ?? 0) > (result.data ?? []).length),
+    );
+    setOrders(importedOrders);
+    setLines(importedLines);
+    setLinks(importedLinks);
     setReady(true);
     setError("");
   }, [organizationId, locationId]);
@@ -208,10 +246,17 @@ export function DishbeeOrderReconciliation({
             <Statistic label="Lines without recorded lot links" value={unresolved.length} />
           </div>
           <p className="text-xs text-muted-foreground">
-            Window limited to the latest 100 orders, 500 lines and 1,000 links per premises. Linked
-            lines may still be missing other ingredients. Neither this count nor zero unmatched
-            lines demonstrates full traceability.
+            This view is scoped to the latest 100 orders and up to 500 corresponding lines;
+            batch-link queries are scoped to those lines. A recorded link does not establish
+            that every ingredient was accounted for or that all orders reached the receiver.
           </p>
+          {windowIncomplete && (
+            <p role="alert" className="rounded-lg border border-destructive/40 p-3 text-sm">
+              Partial reconciliation window: some orders, lines or batch links could not fit
+              in the query limits. Missing links and zero exposure cannot be determined here.
+              Use source exports and a full premises investigation.
+            </p>
+          )}
           {orders.length === 0 && (
             <p className="rounded-lg border p-3 text-sm">
               No authenticated Dishbee handed-over events have been recorded in this window. Confirm
