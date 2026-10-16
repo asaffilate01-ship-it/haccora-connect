@@ -247,14 +247,14 @@ export function DishbeeOrderReconciliation({
           </div>
           <p className="text-xs text-muted-foreground">
             This view is scoped to the latest 100 orders and up to 500 corresponding lines;
-            batch-link queries are scoped to those lines. A recorded link does not establish
-            that every ingredient was accounted for or that all orders reached the receiver.
+            batch-link queries are scoped to those lines. A recorded link does not establish that
+            every ingredient was accounted for or that all orders reached the receiver.
           </p>
           {windowIncomplete && (
             <p role="alert" className="rounded-lg border border-destructive/40 p-3 text-sm">
-              Partial reconciliation window: some orders, lines or batch links could not fit
-              in the query limits. Missing links and zero exposure cannot be determined here.
-              Use source exports and a full premises investigation.
+              Partial reconciliation window: some orders, lines or batch links could not fit in the
+              query limits. Missing links and zero exposure cannot be determined here. Use source
+              exports and a full premises investigation.
             </p>
           )}
           {orders.length === 0 && (
