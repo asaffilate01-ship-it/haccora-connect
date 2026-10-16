@@ -492,6 +492,15 @@ export const Route = createFileRoute("/api/integrations/dishbee")({
             if (!parsedOrder.success) {
               return Response.json({ error: "invalid_dishbee_order_contract" }, { status: 422 });
             }
+            // The source identity must match the stable Dishbee order key.
+            // Fail closed rather than accepting an order under a different subject.
+            if (
+              event.subjectType !== "order" ||
+              event.subjectId !== parsedOrder.data.orderId ||
+              event.eventKey !== "haccora-order-handover:" + parsedOrder.data.orderId
+            ) {
+              return Response.json({ error: "dishbee_order_identity_mismatch" }, { status: 422 });
+            }
             // Hash stable, schema-approved fields: arbitrary upstream metadata/PII
             // is never persisted or included in the reconciliation contract.
             const eventHash = await sha256(
@@ -516,6 +525,18 @@ export const Route = createFileRoute("/api/integrations/dishbee")({
               },
             );
             if (orderError) throw new Error("dishbee_order_ingestion_failed");
+            // Keep integration health current for valid order receipts as well as
+            // compliance evidence. A failed telemetry write is retryable because
+            // ingest_dishbee_trace_order is idempotent.
+            const { error: telemetryError } = await db
+              .from("dishbee_runtime_connections")
+              .update({
+                last_event_at: new Date().toISOString(),
+                last_error: null,
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", connection.id);
+            if (telemetryError) throw new Error("dishbee_order_health_update_failed");
             return Response.json({
               ok: true,
               traceOrderId: received?.orderId,
