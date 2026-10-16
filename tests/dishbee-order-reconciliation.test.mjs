@@ -77,7 +77,8 @@ test("reconciliation dashboard shows unknown coverage, window caps, and selected
   assert.match(ui, /dishbee_trace_batch_links/);
   assert.match(ui, /link_dishbee_trace_batch/);
   assert.match(ui, /No automatic lot assignment/);
-  assert.match(ui, /Neither this count nor/);
+  assert.match(ui, /A recorded link does not establish/);
+  assert.match(ui, /Partial reconciliation window/);
   assert.match(ui, /No imported orders have been manually linked to this lot/);
   assert.match(ui, /Exposure remains unknown, not zero/);
   assert.match(ui, /\.eq\("location_id", locationId\)/);
