@@ -16,6 +16,14 @@
       "severity": "high",
       "expiresOn": "2026-10-18",
       "rationale": "Expo CLI/code-signing build-time dependency; node-forge 1.4.0 remains the latest npm release as of 2026-10-04. Reassess before expiry."
+    },
+    {
+      "scope": "mobile",
+      "package": "deepmerge",
+      "advisory": "GHSA-GCQX-W48M-W2H4",
+      "severity": "low",
+      "expiresOn": "2026-11-11",
+      "rationale": "No patched release as of 2026-10-28. Used only by Expo config modification/plugin configuration at build time; no imports in app, lib, components or web runtime. Build only reviewed repository configuration and trusted plugins. Reassess before expiry."
     }
   ]
 }

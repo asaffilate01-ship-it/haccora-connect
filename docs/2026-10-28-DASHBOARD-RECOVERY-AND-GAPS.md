@@ -36,3 +36,9 @@ A repository merge does not establish a production migration, deployment, succes
 | 3        | Operational release                     | Provider configuration, monitoring, backups/restore rehearsal and specialist review with recorded acceptance; governed Omniqora execution remains gated by integration evidence.                                         |
 
 Unrelated major-version dependency PRs and historical overlapping implementation PRs need independent compatibility/redundancy review. They are not evidence that the above phases are production-ready.
+
+## Dependency repair discovered by fresh CI
+
+Pinned patched Vite 8.2.4 and Zod 4.6.7; Germany also moves to the UK-compatible patched TanStack versions and accepts unknown errors at the router boundary. Regenerated web, native and Edge Function lockfiles. Native transitive patches remove high/critical findings; Metro 0.84.5 replaces Germany's vulnerable image-size dependency. Expo CLI's two Zod schema consumers were inspected and their schemas exercised against the pinned override; native exports are rechecked.
+
+UK retains one new, exact, low-severity build-tool exception for deepmerge (GHSA-GCQX-W48M-W2H4), expiring 11 November 2026: no upstream patch exists, and the located usage is Expo configuration/plugin merging, not Haccora application imports. Use only reviewed build configuration/plugins. The high/critical gate remains in place; expired high-severity exceptions are not extended. Germany's existing policy permits low/moderate findings.

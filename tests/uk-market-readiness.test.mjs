@@ -36,7 +36,7 @@ test("dependency manifest and lock use compatible Zod major", () => {
   const p = JSON.parse(read("package.json"));
   const l = JSON.parse(read("package-lock.json"));
   // TanStack Start v1 requires Zod v4 in this project.
-  assert.match(p.dependencies.zod, /\^4/);
+  assert.match(p.dependencies.zod, /^\^?4\./);
   assert.match(l.packages["node_modules/zod"].version, /^4\./);
 });
 test("all deployable Edge Functions are declared in Supabase config", () => {
@@ -363,6 +363,42 @@ test("Phase 15 protects UK fitness-to-work reports and manager clearance", () =>
   assert.match(migration, /clear_health_exclusion/);
   assert.match(migration, /cleared_by = auth\.uid\(\)/);
   assert.match(migration, /cleared_at = now\(\)/);
+});
+
+test("Phase 15 wires native sickness reporting and private manager alerts", () => {
+  const native = read("mobile/app/fitness-to-work.tsx");
+  const dispatch = read("supabase/functions/notification-dispatch/index.ts");
+  const layout = read("mobile/app/_layout.tsx") + read("mobile/lib/push.ts");
+  assert.match(native, /from\("health_register"\)\.insert/);
+  assert.match(native, /clear_health_exclusion/);
+  assert.match(native, /Do not handle food/);
+  assert.match(dispatch, /fitness_to_work_review/);
+  assert.doesNotMatch(dispatch, /fitness_to_work_review[\s\S]{0,500}symptoms/);
+  assert.match(layout, /fitness-to-work/);
+});
+
+test("Phase 16 makes goods-in evidence attributable and immutable", () => {
+  const migration = read("supabase/migrations/20260806006000_uk_goods_in_acceptance.sql");
+  assert.match(migration, /goods_in_insert_attributed/);
+  assert.match(migration, /user_id = auth\.uid\(\)/);
+  assert.match(migration, /goods_in_corrective_action_required/);
+  assert.match(migration, /revoke update, delete on public\.goods_in_logs from authenticated/);
+  for (const field of [
+    "condition_ok",
+    "allergen_label_ok",
+    "use_by",
+    "delivery_reference",
+    "corrective_action",
+  ])
+    assert.match(migration, new RegExp(field));
+});
+
+test("Phase 16 wires compact offline delivery checks and manager alerts", () => {
+  const native = read("mobile/app/goods-in.tsx");
+  const web = read("src/routes/app.goodsin.tsx");
+  const queue = read("mobile/lib/offline-queue.ts");
+  const dispatch = read("supabase/functions/notification-dispatch/index.ts");
+  ass, /cleared_at = now\(\)/);
 });
 
 test("Phase 15 wires native sickness reporting and private manager alerts", () => {
