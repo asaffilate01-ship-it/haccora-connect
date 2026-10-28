@@ -38,7 +38,8 @@ test("native client queues idempotent offline writes", async () => {
   assert.match(queue, /idempotency_key/);
   assert.match(queue, /NetInfo\.fetch/);
   assert.match(queue, /SecureStore\.setItemAsync/);
-  assert.doesNotMatch(queue, /attempts\s*<\s*\d+/);
+  // Negative-count validation is allowed; positive retry caps must not discard evidence.
+  assert.doesNotMatch(queue, /attempts\s*<\s*[1-9]\d*/);
   assert.match(temperature, /organization_id: organizationId/);
 });
 

@@ -300,3 +300,82 @@ test("cleaning and equipment evidence use their own author fields", async () => 
   );
   assert.equal((await h.api.getQueueStatus()).pending, 2);
 });
+
+test("recovery summaries expose only current-account metadata", async () => {
+  const h = queueHarness();
+  await h.api.enqueue("checks", { ...evidence("A"), note: "private evidence" });
+  await h.api.flush();
+  const [item] = await h.api.listQueuedEvidence();
+  assert.equal(item.id, "job-1");
+  assert.equal(item.state, "pending");
+  assert.equal(item.payload, undefined);
+  assert.equal(item.note, undefined);
+  h.setUser("B");
+  assert.equal((await h.api.listQueuedEvidence()).length, 0);
+});
+test("duplicate or malformed index data fails closed without rewriting storage", async () => {
+  for (const value of ['["job-1","job-1"]', "{}", "[null]", "broken", ""]) {
+    const h = queueHarness();
+    h.index.set("haccora-offline-queue-v1", value);
+    await assert.rejects(h.api.listQueuedEvidence());
+    await assert.rejects(h.api.enqueue("checks", evidence("A")));
+    assert.equal(h.index.get("haccora-offline-queue-v1"), value);
+  }
+});
+test("damaged or mismatched secure records cannot be uploaded or discarded", async () => {
+  for (const mutate of [
+    (job) => {
+      job.payload.idempotency_key = "other";
+    },
+    (job) => {
+      job.table = "users";
+    },
+    (job) => {
+      job.attempts = -1;
+    },
+    (job) => {
+      job.queuedAt = "invalid";
+    },
+  ]) {
+    const h = queueHarness();
+    await h.api.enqueue("checks", evidence("A"));
+    await h.api.flush();
+    const key = "haccora-offline-job-job-1";
+    const job = JSON.parse(h.secure.get(key));
+    mutate(job);
+    const damaged = JSON.stringify(job);
+    h.secure.set(key, damaged);
+    h.online();
+    await assert.rejects(h.api.flush());
+    assert.equal(h.inserted.length, 0);
+    assert.equal(h.secure.get(key), damaged);
+    assert.equal(h.index.get("haccora-offline-queue-v1"), '["job-1"]');
+  }
+});
+test("conflict summaries use a safe state instead of raw provider error text", async () => {
+  const h = queueHarness();
+  await h.api.enqueue("checks", evidence("A"));
+  await h.api.flush();
+  h.online();
+  h.upload(async () => ({ error: { code: "23505", message: "sensitive backend context" } }));
+  await h.api.flush();
+  const [item] = await h.api.listQueuedEvidence();
+  assert.equal(item.state, "conflict");
+  assert.equal(item.attempts, 1);
+  assert.doesNotMatch(JSON.stringify(item), /sensitive|lastError/);
+});
+
+test("large retry counts never discard failed evidence", async () => {
+  const h = queueHarness();
+  await h.api.enqueue("checks", evidence("A"));
+  await h.api.flush();
+  const key = "haccora-offline-job-job-1";
+  const job = JSON.parse(h.secure.get(key));
+  job.attempts = 10000;
+  h.secure.set(key, JSON.stringify(job));
+  h.online();
+  h.upload(async () => ({ error: { code: "network" } }));
+  await h.api.flush();
+  assert.equal((await h.api.listQueuedEvidence())[0].attempts, 10001);
+  assert.equal((await h.api.getQueueStatus()).pending, 1);
+});
