@@ -1,6 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { AlertTriangle, CheckCircle2, ChevronRight, Loader2, Sun, Sunset } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ChevronRight,
+  Loader2,
+  RefreshCw,
+  Sun,
+  Sunset,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/haccora-client";
 
 export const Route = createFileRoute("/app/today")({ component: Today });
@@ -26,9 +34,13 @@ const emptyCounts: ShiftCounts = {
 function Today() {
   const [counts, setCounts] = useState(emptyCounts);
   const [loading, setLoading] = useState(true);
-  const start = new Date();
-  start.setHours(0, 0, 0, 0);
-  const since = start.toISOString();
+  const [loadError, setLoadError] = useState("");
+  // Stabilise this value: regenerating it on every render retriggers the fetch effect.
+  const [since] = useState(() => {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    return start.toISOString();
+  });
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -51,7 +63,7 @@ function Today() {
         supabase
           .from("temperature_logs")
           .select("id", { count: "exact", head: true })
-          .eq("status", "out_of_range")
+          .in("status", ["out_of_range", "alert"])
           .gte("logged_at", since),
         supabase
           .from("corrective_actions")
@@ -62,6 +74,15 @@ function Today() {
           .select("id", { count: "exact", head: true })
           .neq("status", "closed"),
       ]);
+    const results = [checksDone, checksOpen, temperatures, exceptions, actionsOpen, incidentsOpen];
+    if (results.some((result) => result.error)) {
+      setLoadError(
+        "Some compliance records could not be loaded. Refresh before making safety decisions.",
+      );
+      setLoading(false);
+      return;
+    }
+    setLoadError("");
     setCounts({
       checksDone: checksDone.count ?? 0,
       checksOpen: checksOpen.count ?? 0,
@@ -80,17 +101,25 @@ function Today() {
   const needsAttention = counts.exceptions + counts.actionsOpen + counts.incidentsOpen;
   const totalChecks = counts.checksDone + counts.checksOpen;
   const completion = totalChecks ? Math.round((counts.checksDone / totalChecks) * 100) : 0;
-  const nextAction = counts.checksOpen
-    ? { label: "Complete the next due check", to: "/app/checks" }
-    : counts.exceptions
-      ? { label: "Resolve temperature exceptions", to: "/app/temperature" }
-      : counts.actionsOpen
-        ? { label: "Review corrective actions", to: "/app/control-centre" }
-        : counts.incidentsOpen
-          ? { label: "Review open incidents", to: "/app/incidents" }
+  const nextAction = counts.exceptions
+    ? { label: "Review temperature exceptions", to: "/app/temperature" }
+    : counts.actionsOpen
+      ? { label: "Review corrective actions", to: "/app/control-centre" }
+      : counts.incidentsOpen
+        ? { label: "Review open incidents", to: "/app/incidents" }
+        : counts.checksOpen
+          ? { label: "Complete the next due check", to: "/app/checks" }
           : { label: "Review closing routines", to: "/app/routines" };
   return (
     <div className="p-5 md:p-8 space-y-6">
+      {loadError && (
+        <div
+          role="alert"
+          className="surface border border-destructive/40 p-4 text-sm text-destructive"
+        >
+          {loadError}
+        </div>
+      )}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <div className="eyebrow">TODAY'S SHIFT</div>
@@ -103,10 +132,30 @@ function Today() {
         {loading ? (
           <Loader2 className="animate-spin" size={18} />
         ) : (
-          <div
-            className={`surface px-4 py-3 text-sm font-semibold ${needsAttention ? "text-warning-foreground" : "text-success"}`}
-          >
-            {needsAttention ? `${needsAttention} item(s) need attention` : "No open exceptions"}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => void load()}
+              aria-label="Refresh today summary"
+              className="rounded-lg border border-border p-2"
+            >
+              <RefreshCw size={17} />
+            </button>
+            <div
+              className={`surface px-4 py-3 text-sm font-semibold ${
+                loadError
+                  ? "text-destructive"
+                  : needsAttention
+                    ? "text-warning-foreground"
+                    : "text-success"
+              }`}
+            >
+              {loadError
+                ? "Summary unavailable"
+                : needsAttention
+                  ? `${needsAttention} item(s) need attention`
+                  : "No open exceptions"}
+            </div>
           </div>
         )}
       </div>

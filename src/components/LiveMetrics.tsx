@@ -17,51 +17,63 @@ export function LiveMetrics() {
   const [error, setError] = useState("");
   const t = (_legacy: string, english: string) => english;
 
+  const [refreshKey, setRefreshKey] = useState(0);
   useEffect(() => {
     let mounted = true;
+    let version = 0;
     const load = async () => {
-      const [inc, incH, temp, tempA, alerts, checks] = await Promise.all([
-        supabase
-          .from("incidents")
-          .select("id", { count: "exact", head: true })
-          .neq("status", "closed"),
-        supabase
-          .from("incidents")
-          .select("id", { count: "exact", head: true })
-          .eq("severity", "high")
-          .neq("status", "closed"),
-        supabase
-          .from("temperature_logs")
-          .select("id", { count: "exact", head: true })
-          .gte("logged_at", new Date(Date.now() - 86400000).toISOString()),
-        supabase
-          .from("temperature_logs")
-          .select("id", { count: "exact", head: true })
-          .eq("status", "out_of_range")
-          .gte("logged_at", new Date(Date.now() - 7 * 86400000).toISOString()),
-        supabase.from("alerts").select("id", { count: "exact", head: true }).is("read_at", null),
-        supabase
-          .from("checks")
-          .select("id", { count: "exact", head: true })
-          .eq("status", "completed")
-          .gte("completed_at", new Date(new Date().setHours(0, 0, 0, 0)).toISOString()),
-      ]);
-      if (!mounted) return;
-      if ([inc, incH, temp, tempA, alerts, checks].some((result) => result.error)) {
-        setError(
-          "Live metrics are unavailable. No incident, temperature, alert or check has been assumed clear.",
-        );
-        return;
+      const current = ++version;
+      try {
+        const [inc, incH, temp, tempA, alerts, checks] = await Promise.all([
+          supabase
+            .from("incidents")
+            .select("id", { count: "exact", head: true })
+            .neq("status", "closed"),
+          supabase
+            .from("incidents")
+            .select("id", { count: "exact", head: true })
+            .eq("severity", "high")
+            .neq("status", "closed"),
+          supabase
+            .from("temperature_logs")
+            .select("id", { count: "exact", head: true })
+            .gte("logged_at", new Date(Date.now() - 86400000).toISOString()),
+          supabase
+            .from("temperature_logs")
+            .select("id", { count: "exact", head: true })
+            .eq("status", "out_of_range")
+            .gte("logged_at", new Date(Date.now() - 7 * 86400000).toISOString()),
+          supabase.from("alerts").select("id", { count: "exact", head: true }).is("read_at", null),
+          supabase
+            .from("checks")
+            .select("id", { count: "exact", head: true })
+            .eq("status", "completed")
+            .gte("completed_at", new Date(new Date().setHours(0, 0, 0, 0)).toISOString()),
+        ]);
+        if (!mounted || current !== version) return;
+        if (
+          [inc, incH, temp, tempA, alerts, checks].some(
+            (result) => result.error || result.count === null,
+          )
+        ) {
+          setError(
+            "Live metrics are unavailable. No incident, temperature, alert or check has been assumed clear.",
+          );
+          return;
+        }
+        setError("");
+        setC({
+          incidents: inc.count ?? 0,
+          incidentsHigh: incH.count ?? 0,
+          temp: temp.count ?? 0,
+          tempAlert: tempA.count ?? 0,
+          alerts: alerts.count ?? 0,
+          checksDone: checks.count ?? 0,
+        });
+      } catch {
+        if (mounted && current === version)
+          setError("Live metrics are unavailable. Missing data does not mean everything is clear.");
       }
-      setError("");
-      setC({
-        incidents: inc.count ?? 0,
-        incidentsHigh: incH.count ?? 0,
-        temp: temp.count ?? 0,
-        tempAlert: tempA.count ?? 0,
-        alerts: alerts.count ?? 0,
-        checksDone: checks.count ?? 0,
-      });
     };
     load();
     const iv = setInterval(load, 30000);
@@ -77,18 +89,35 @@ export function LiveMetrics() {
       clearInterval(iv);
       supabase.removeChannel(ch);
     };
-  }, []);
+  }, [refreshKey]);
 
   if (error)
     return (
       <div role="alert" className="surface flex items-start gap-2 p-5 text-sm text-destructive">
-        <AlertOctagon size={16} className="mt-0.5 shrink-0" /> {error}
+        <AlertOctagon size={16} aria-hidden="true" className="mt-0.5 shrink-0" />
+        <div>
+          <p>{error}</p>
+          <button
+            type="button"
+            onClick={() => {
+              setError("");
+              setC(null);
+              setRefreshKey((key) => key + 1);
+            }}
+            className="mt-3 min-h-11 rounded-lg border px-4 font-semibold"
+          >
+            Try again
+          </button>
+        </div>
       </div>
     );
 
   if (!c)
     return (
-      <div className="surface p-5 flex items-center gap-2 text-sm text-muted-foreground">
+      <div
+        role="status"
+        className="surface p-5 flex items-center gap-2 text-sm text-muted-foreground"
+      >
         <Loader2 size={14} className="animate-spin" /> {"Loading live data…"}
       </div>
     );
@@ -113,7 +142,7 @@ export function LiveMetrics() {
         accent={c.tempAlert > 0 ? "warn" : "neutral"}
         hint={
           c.tempAlert > 0
-            ? t(`${c.tempAlert} ausser Toleranz`, `${c.tempAlert} out of range`)
+            ? t(`${c.tempAlert} außer Toleranz · 7 Tage`, `${c.tempAlert} out of range · 7 days`)
             : undefined
         }
       />
@@ -160,12 +189,11 @@ function Tile({
           : "text-foreground";
   return (
     <Link to={to} className="surface p-4 hover:shadow-lg transition group">
-      <div className="flex items-center justify-between text-[10px] uppercase tracking-widest text-muted-foreground">
-        <span className="inline-flex items-center gap-1.5">
+      <div className="flex items-center justify-between text-xs text-muted-foreground">
+        <span className="inline-flex items-center gap-1.5 min-w-0">
           {icon}
           {label}
         </span>
-        <span className="text-[9px] font-bold text-success animate-pulse">● LIVE</span>
       </div>
       <div className={`font-display text-3xl mt-1 ${color}`}>{value}</div>
       {hint && <div className="text-xs text-muted-foreground mt-0.5">{hint}</div>}

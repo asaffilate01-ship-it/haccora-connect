@@ -366,7 +366,8 @@ test("v2 native offline UX distinguishes queued writes from server confirmation"
   const dashboard = await readFile("mobile/app/dashboard.tsx", "utf8");
   const queue = await readFile("mobile/lib/offline-queue.ts", "utf8");
   assert.match(dashboard, /securely queued/);
-  assert.match(dashboard, /server confirmed/);
+  assert.match(dashboard, /no changes queued on this device/i);
+  assert.doesNotMatch(dashboard, /server confirmed/i);
   assert.match(queue, /getQueueStatus/);
   assert.match(queue, /Evidence is never discarded/);
 });
@@ -383,7 +384,7 @@ test("current Deno toolchain uses a pinned import map instead of inline dependen
   const deno = await readFile("supabase/functions/deno.json", "utf8");
   const billing = await readFile("supabase/functions/billing/index.ts", "utf8");
   const shared = await readFile("supabase/functions/_shared/supabase.ts", "utf8");
-  assert.match(deno, /"zod": "npm:zod@3\.24\.2"/);
+  assert.match(deno, /"zod": "npm:zod@4\.6\.7"/);
   assert.match(deno, /"@supabase\/supabase-js"/);
   assert.doesNotMatch(billing, /from "npm:/);
   assert.doesNotMatch(shared, /from "npm:/);
@@ -445,7 +446,7 @@ test("native and Edge manifests declare every imported production dependency", a
   }
   assert.equal(edge.dependencies["@supabase/supabase-js"], "2.110.7");
   assert.equal(edge.dependencies["pdf-lib"], "1.17.1");
-  assert.equal(edge.dependencies.zod, "3.24.2");
+  assert.equal(edge.dependencies.zod, "4.6.7");
 });
 
 test("production preflight blocks placeholders, missing approvals and incomplete native setup", async () => {

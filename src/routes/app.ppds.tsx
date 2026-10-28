@@ -3,6 +3,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/haccora-client";
 import { useAuth } from "@/lib/auth";
 import { UK_ALLERGENS } from "@/lib/uk-compliance";
+import { assessPpdsIntegrity, type PpdsLabelSnapshot } from "@/lib/ppds-integrity";
+import { IngredientChangeReview } from "@/components/ppds/IngredientChangeReview";
 
 export const Route = createFileRoute("/app/ppds")({ component: Ppds });
 type Ingredient = {
@@ -21,12 +23,14 @@ type LabelVersion = {
   recipe_id: string;
   version: number;
   generated_at: string;
-  source_snapshot: {
-    specifications?: Array<{ id: string; version: string | null; reviewed_at: string | null }>;
-  } | null;
+  source_snapshot: PpdsLabelSnapshot | null;
+  allergens: string[];
+  ingredient_statement: string;
 };
 function Ppds() {
   const { user } = useAuth();
+  const canApprove = user?.role === "owner" || user?.role === "manager";
+  const [loadError, setLoadError] = useState("");
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [links, setLinks] = useState<Link[]>([]);
@@ -39,26 +43,43 @@ function Ppds() {
   const [ingredientId, setIngredientId] = useState("");
   const [msg, setMsg] = useState("");
   const load = useCallback(async () => {
+    if (!user?.organizationId || !user.locationId) return;
     const [a, b, c, d] = await Promise.all([
       supabase
         .from("ingredients")
         .select(
           "id,name,ingredient_statement,allergens,may_contain,specification_version,reviewed_at",
         )
+        .eq("organization_id", user.organizationId)
         .order("name"),
-      supabase.from("recipes").select("id,name").order("name"),
-      supabase.from("recipe_ingredients").select("recipe_id,ingredient_id,quantity,unit"),
+      supabase
+        .from("recipes")
+        .select("id,name")
+        .eq("organization_id", user.organizationId)
+        .or(`location_id.eq.${user.locationId},location_id.is.null`)
+        .order("name"),
+      supabase
+        .from("recipe_ingredients")
+        .select("recipe_id,ingredient_id,quantity,unit")
+        .eq("organization_id", user.organizationId),
       supabase
         .from("ppds_label_versions")
-        .select("id,recipe_id,version,generated_at,source_snapshot")
+        .select("id,recipe_id,version,generated_at,source_snapshot,allergens,ingredient_statement")
+        .eq("organization_id", user.organizationId)
+        .eq("location_id", user.locationId)
         .order("generated_at", { ascending: false }),
     ]);
+    if (a.error || b.error || c.error || d.error) {
+      setLoadError("Ingredient, recipe or label evidence is unavailable. Do not generate labels.");
+      return;
+    }
+    setLoadError("");
     setIngredients((a.data ?? []) as Ingredient[]);
     setRecipes((b.data ?? []) as Recipe[]);
     setLinks((c.data ?? []) as Link[]);
     setLabels((d.data ?? []) as unknown as LabelVersion[]);
     if (!recipeId && b.data?.[0]) setRecipeId(b.data[0].id);
-  }, [recipeId]);
+  }, [recipeId, user?.organizationId, user?.locationId]);
   useEffect(() => {
     void load();
   }, [load]);
@@ -73,18 +94,16 @@ function Ppds() {
   const derivedAllergens = [...new Set(selected.flatMap((i) => i.allergens))].sort();
   const derivedMayContain = [...new Set(selected.flatMap((i) => i.may_contain))].sort();
   const derivedStatement = selected.map((i) => i.ingredient_statement || i.name).join(", ");
-  const currentLabel = labels.find((label) => label.recipe_id === recipeId);
-  const labelIsStale = Boolean(
-    currentLabel &&
-    selected.some((ingredient) => {
-      const captured = currentLabel.source_snapshot?.specifications?.find(
-        (specification) => specification.id === ingredient.id,
-      );
-      return !captured || captured.version !== ingredient.specification_version;
-    }),
-  );
+  const currentLabel = labels.find((label) => label.recipe_id === recipeId) ?? null;
+  const recipeIngredientIds = links
+    .filter((link) => link.recipe_id === recipeId)
+    .map((link) => link.ingredient_id);
+  const integrity = assessPpdsIntegrity(selected, recipeIngredientIds, currentLabel);
+  const labelIsStale = integrity.stale;
   const add = async () => {
-    if (!user?.organizationId || !name.trim() || !statement.trim()) return;
+    if (!canApprove || !user?.organizationId || loadError || !name.trim() || !statement.trim()) {
+      return;
+    }
     const { error } = await supabase.from("ingredients").insert({
       organization_id: user.organizationId,
       name: name.trim(),
@@ -103,7 +122,18 @@ function Ppds() {
       void load();
     }
   };
+  const unverifiedIngredients = integrity.missing;
   const generate = async () => {
+    if (!canApprove || loadError) {
+      setMsg("Only an authorised manager can generate a label with available source evidence.");
+      return;
+    }
+    if (unverifiedIngredients.length) {
+      setMsg(
+        "Cannot generate: review and version every ingredient specification against its current supplier information first.",
+      );
+      return;
+    }
     if (!user?.organizationId || !user.locationId || !recipeId || !selected.length) {
       setMsg("Add recipe ingredients before generating a PPDS label.");
       return;
@@ -113,6 +143,8 @@ function Ppds() {
       .from("ppds_label_versions")
       .select("version")
       .eq("recipe_id", recipeId)
+      .eq("organization_id", user.organizationId)
+      .eq("location_id", user.locationId)
       .order("version", { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -135,10 +167,16 @@ function Ppds() {
       version: (last?.version ?? 0) + 1,
       generated_by: user.id,
     });
-    setMsg(error?.message ?? "Traceable PPDS label version generated.");
+    setMsg(
+      error?.message ??
+        "Traceable PPDS label version generated; verify the printed output before use.",
+    );
+    if (!error) void load();
   };
   const attachIngredient = async () => {
-    if (!user?.organizationId || !recipeId || !ingredientId) return;
+    if (!canApprove || !user?.organizationId || loadError || !recipeId || !ingredientId) {
+      return;
+    }
     const { error } = await supabase.from("recipe_ingredients").upsert(
       {
         organization_id: user.organizationId,
@@ -162,7 +200,16 @@ function Ppds() {
           labels require the food name, a full ingredients list and emphasised allergens.
         </p>
       </div>
-      {msg && <div className="surface p-3 text-sm">{msg}</div>}
+      {msg && (
+        <div role="status" className="surface p-3 text-sm">
+          {msg}
+        </div>
+      )}
+      {loadError && (
+        <div role="alert" className="surface p-3 text-sm">
+          {loadError}
+        </div>
+      )}
       <div className="grid lg:grid-cols-2 gap-5">
         <section className="surface p-5 space-y-4">
           <h2 className="text-xl font-bold">New ingredient specification</h2>
@@ -219,7 +266,11 @@ function Ppds() {
               ))}
             </div>
           </div>
-          <button className="btn-primary px-4 py-2" onClick={() => void add()}>
+          <button
+            className="btn-primary px-4 py-2"
+            disabled={!canApprove || Boolean(loadError)}
+            onClick={() => void add()}
+          >
             Save specification
           </button>
         </section>
@@ -284,11 +335,31 @@ function Ppds() {
             >
               <strong>Controlled version {currentLabel.version}:</strong>{" "}
               {labelIsStale
-                ? "Out of date — an ingredient specification changed. Generate and verify a new label before sale."
-                : "Matches the current ingredient specification versions."}
+                ? "Out of date — do not use this label until it has been regenerated and checked."
+                : "Snapshot matches the recorded ingredient details; physical label approval is still required."}
             </div>
           )}
-          <button className="btn-primary px-4 py-2" onClick={() => void generate()}>
+          {labelIsStale && (
+            <ul
+              role="alert"
+              className="rounded-lg border border-destructive/40 p-3 text-sm list-disc pl-7"
+            >
+              {integrity.reasons.map((reason) => (
+                <li key={reason}>{reason}</li>
+              ))}
+            </ul>
+          )}
+          {unverifiedIngredients.length > 0 && (
+            <div role="alert" className="rounded-lg border border-warning/40 p-3 text-sm">
+              {unverifiedIngredients.length} ingredient specification(s) need a reviewed statement
+              and version before label generation.
+            </div>
+          )}
+          <button
+            className="btn-primary px-4 py-2"
+            disabled={!canApprove || Boolean(loadError) || unverifiedIngredients.length > 0}
+            onClick={() => void generate()}
+          >
             Generate controlled version
           </button>
           <p className="text-xs text-muted-foreground">
@@ -297,6 +368,16 @@ function Ppds() {
           </p>
         </section>
       </div>
+      {user?.organizationId && !loadError && (
+        <IngredientChangeReview
+          organizationId={user.organizationId}
+          ingredients={ingredients}
+          recipes={recipes}
+          recipeLinks={links}
+          canManage={canApprove}
+          onApplied={() => void load()}
+        />
+      )}
     </div>
   );
 }

@@ -9,7 +9,7 @@ const source = await readFile(
 
 test("the authenticated premises probe is read-only and explicitly reports non-persistence", () => {
   const start = source.indexOf('if (new URL(request.url).searchParams.get("probe") === "1")');
-  const end = source.indexOf("const { data: existing, error: existingError }", start);
+  const end = source.indexOf('if (event.eventType === "dishbee.order.handed_over")', start);
   assert(start > source.indexOf("tenant_mismatch"));
   assert(end > start);
   const probe = source.slice(start, end);

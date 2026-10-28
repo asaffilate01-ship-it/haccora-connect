@@ -154,6 +154,13 @@ test("Phase 26 CI enforces the governed audit and all deployable Edge Functions"
         severity: "high",
         expiresOn: "2026-10-18",
       },
+      {
+        scope: "mobile",
+        package: "deepmerge",
+        advisory: "GHSA-GCQX-W48M-W2H4",
+        severity: "low",
+        expiresOn: "2026-11-11",
+      },
     ],
   );
   assert(exceptions.every((entry) => entry.rationale.length >= 40));

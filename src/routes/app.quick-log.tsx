@@ -8,6 +8,9 @@ import {
   Sparkles,
   Thermometer,
   Truck,
+  CalendarDays,
+  PackageX,
+  Wheat,
   type LucideIcon,
 } from "lucide-react";
 import { canAccess, useAuth, type NavKey } from "@/lib/auth";
@@ -70,6 +73,27 @@ const QUICK_ACTIONS: QuickAction[] = [
     nav: "incidents",
     icon: AlertTriangle,
     action: "incidents.report",
+  },
+  {
+    title: "Current allergens & PPDS",
+    body: "Review recipe information and controlled label versions",
+    to: "/app/ppds",
+    nav: "recipes",
+    icon: Wheat,
+  },
+  {
+    title: "Product recall",
+    body: "Review quarantined batches and recall actions",
+    to: "/app/recalls",
+    nav: "recalls",
+    icon: PackageX,
+  },
+  {
+    title: "My shift",
+    body: "Review rota and record clock-in or clock-out",
+    to: "/app/rota",
+    nav: "rota",
+    icon: CalendarDays,
   },
   {
     title: "Scan equipment",

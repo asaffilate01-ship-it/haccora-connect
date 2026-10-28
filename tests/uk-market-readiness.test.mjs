@@ -36,7 +36,7 @@ test("dependency manifest and lock use compatible Zod major", () => {
   const p = JSON.parse(read("package.json"));
   const l = JSON.parse(read("package-lock.json"));
   // TanStack Start v1 requires Zod v4 in this project.
-  assert.match(p.dependencies.zod, /\^4/);
+  assert.match(p.dependencies.zod, /^\^?4\./);
   assert.match(l.packages["node_modules/zod"].version, /^4\./);
 });
 test("all deployable Edge Functions are declared in Supabase config", () => {
@@ -184,7 +184,7 @@ test("web and native Today surfaces present one persisted next action", () => {
     assert.match(source, /checks/);
   }
   assert.match(web, /saved to\s+your site workspace/i);
-  assert.match(native, /saved to your workspace/i);
+  assert.match(native, /check records to verify saving/i);
 });
 test("native navigation keeps five high-frequency destinations visible", () => {
   const nav = read("mobile/components/bottom-nav.tsx");
