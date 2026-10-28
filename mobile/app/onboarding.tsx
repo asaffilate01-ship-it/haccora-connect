@@ -1,69 +1,77 @@
-import { Redirect, router } from "expo-router";
-import { useState } from "react";
-import { Alert, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Redirect } from "expo-router";
+import { useRef, useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSession } from "@/lib/session";
 import { supabase } from "@/lib/supabase";
 
 export default function Onboarding() {
-  const { session, workspaceReady, loading, refreshWorkspace } = useSession();
-  const [business, setBusiness] = useState("");
-  const [location, setLocation] = useState("");
+  const { session, workspaceReady, workspaceError, loading, refreshWorkspace } = useSession();
+  const [error, setError] = useState(false);
   const [busy, setBusy] = useState(false);
-
-  const createWorkspace = async () => {
-    if (business.trim().length < 2 || !location.trim()) {
-      Alert.alert("Complete the form", "Business and location names are required.");
-      return;
-    }
+  const pending = useRef(false);
+  const signOut = async () => {
+    if (pending.current) return;
+    pending.current = true;
     setBusy(true);
-    const { error } = await supabase.rpc("bootstrap_my_organization", {
-      p_name: business.trim(),
-      p_location_name: location.trim(),
-    });
-    setBusy(false);
-    if (error) {
-      Alert.alert("Setup failed", error.message);
-      return;
+    setError(false);
+    try {
+      const result = await supabase.auth.signOut();
+      if (result.error) throw result.error;
+    } catch {
+      setError(true);
+    } finally {
+      pending.current = false;
+      setBusy(false);
     }
-    await refreshWorkspace();
-    router.replace("/dashboard");
   };
-
-  if (loading) return null;
+  if (loading)
+    return (
+      <View style={styles.page}>
+        <Text>Checking workspace access…</Text>
+      </View>
+    );
   if (!session) return <Redirect href="/login" />;
   if (workspaceReady) return <Redirect href="/dashboard" />;
   return (
     <View style={styles.page}>
-      <Text style={styles.title}>Create your protected workspace</Text>
-      <Text style={styles.body}>
-        The first account becomes the owner. Additional roles are invitation-only.
+      <Text style={styles.title}>
+        {workspaceError ? "Workspace unavailable" : "Approval-only access"}
       </Text>
-      <TextInput
-        value={business}
-        onChangeText={setBusiness}
-        maxLength={160}
-        placeholder="Business name"
-        style={styles.input}
-      />
-      <TextInput
-        value={location}
-        onChangeText={setLocation}
-        maxLength={160}
-        placeholder="Main location"
-        style={styles.input}
-      />
-      <Pressable disabled={busy} onPress={createWorkspace} style={styles.button}>
-        <Text style={styles.buttonText}>{busy ? "Creating…" : "Create workspace"}</Text>
+      <Text accessibilityRole={workspaceError ? "alert" : undefined} style={styles.body}>
+        {workspaceError
+          ? "We could not check your workspace. Reconnect and retry; your account has not been treated as a new workspace."
+          : "Your login is not attached to an approved tenant yet. Ask your Haccora operator for owner approval, or your approved owner for a role and premises invitation."}
+      </Text>
+      <Pressable
+        accessibilityRole="button"
+        style={styles.button}
+        onPress={() => void refreshWorkspace()}
+      >
+        <Text style={styles.buttonText}>Check access again</Text>
+      </Pressable>
+      {error && <Text accessibilityRole="alert">Sign out failed. Please try again.</Text>}
+      <Pressable
+        accessibilityRole="button"
+        style={styles.button}
+        disabled={busy}
+        accessibilityState={{ disabled: busy, busy }}
+        onPress={signOut}
+      >
+        <Text style={styles.buttonText}>{busy ? "Signing out…" : "Sign out"}</Text>
       </Pressable>
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   page: { flex: 1, justifyContent: "center", padding: 24, gap: 14, backgroundColor: "#fff" },
   title: { fontSize: 24, fontWeight: "800", color: "#111" },
-  body: { color: "#666", lineHeight: 21, marginBottom: 8 },
-  input: { borderWidth: 1, borderColor: "#d8d8d8", borderRadius: 12, padding: 14 },
-  button: { backgroundColor: "#e43f2c", borderRadius: 24, padding: 15, alignItems: "center" },
+  body: { color: "#555", lineHeight: 21 },
+  button: {
+    backgroundColor: "#bd2b1b",
+    minHeight: 48,
+    borderRadius: 24,
+    padding: 15,
+    alignItems: "center",
+  },
   buttonText: { color: "#fff", fontWeight: "800" },
 });
