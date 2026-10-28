@@ -23,6 +23,12 @@ type Job = {
   lastError?: string;
 };
 
+function ownerOf(job: Pick<Job, "table" | "payload">): unknown {
+  if (job.table === "cleaning_completions") return job.payload.completed_by;
+  if (job.table === "asset_events") return job.payload.recorded_by;
+  return job.payload.user_id;
+}
+
 let operation: Promise<void> = Promise.resolve();
 
 function withQueueLock<T>(work: () => Promise<T>): Promise<T> {
@@ -66,6 +72,9 @@ async function write(jobs: Job[]) {
 export async function enqueue(table: Table, payload: Record<string, unknown>) {
   const id = Crypto.randomUUID();
   await withQueueLock(async () => {
+    const { data, error } = await supabase.auth.getSession();
+    if (error || !data.session || ownerOf({ table, payload }) !== data.session.user.id)
+      throw new Error("Sign in with the account recording this evidence");
     const jobs = await read();
     jobs.push({
       id,
@@ -76,7 +85,9 @@ export async function enqueue(table: Table, payload: Record<string, unknown>) {
     });
     await write(jobs);
   });
-  await flush();
+  // Durable local storage is the save boundary. A failed network attempt must
+  // not tell the caller to create the same evidence again.
+  void flush().catch(() => undefined);
   return id;
 }
 
@@ -87,12 +98,30 @@ export async function flush() {
     const jobs = await read();
     const remaining: Job[] = [];
     for (const job of jobs) {
-      const { error } = await supabase.from(job.table).insert(job.payload);
-      if (error && error.code !== "23505") {
+      try {
+        // Recheck for each item; an account can change while a batch is running.
+        const { data, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError || !data.session || ownerOf(job) !== data.session.user.id) {
+          remaining.push(job);
+          continue;
+        }
+        const { error } = await supabase.from(job.table).insert(job.payload);
+        if (error) {
+          // A uniqueness conflict is not proof that this exact evidence exists.
+          remaining.push({
+            ...job,
+            attempts: job.attempts + 1,
+            lastError:
+              error.code === "23505"
+                ? "Conflict requires record verification"
+                : "Upload failed; evidence retained",
+          });
+        }
+      } catch {
         remaining.push({
           ...job,
           attempts: job.attempts + 1,
-          lastError: error.message.slice(0, 300),
+          lastError: "Connection failed; evidence retained",
         });
       }
     }
@@ -103,15 +132,21 @@ export async function flush() {
 
 export function startOfflineSync() {
   return NetInfo.addEventListener((state) => {
-    if (state.isConnected) void flush();
+    if (state.isConnected) void flush().catch(() => undefined);
   });
 }
 
 export async function getQueueStatus() {
-  const jobs = await read();
-  return {
-    pending: jobs.length,
-    failed: jobs.filter((job) => job.lastError).length,
-    oldestQueuedAt: jobs[0]?.queuedAt ?? null,
-  };
+  return withQueueLock(async () => {
+    const { data, error } = await supabase.auth.getSession();
+    if (error) throw error;
+    const jobs = (await read()).filter(
+      (job) => data.session && ownerOf(job) === data.session.user.id,
+    );
+    return {
+      pending: jobs.length,
+      failed: jobs.filter((job) => job.lastError).length,
+      oldestQueuedAt: jobs[0]?.queuedAt ?? null,
+    };
+  });
 }
