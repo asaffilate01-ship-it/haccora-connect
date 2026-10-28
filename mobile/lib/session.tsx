@@ -225,7 +225,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
         await loadWorkspace(data.session);
         if (!active || authChanged) return;
         if (data.session) {
-          void flush();
+          void flush().catch(() => undefined);
           void syncPushNotifications().catch(() => undefined);
         }
       })
@@ -237,7 +237,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
       setSession(next);
       void loadWorkspace(next).then(() => {
         if (active && next && activeUser.current === next.user.id) {
-          void flush();
+          void flush().catch(() => undefined);
           void syncPushNotifications().catch(() => undefined);
         }
       });

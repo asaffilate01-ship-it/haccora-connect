@@ -87,6 +87,7 @@ export default function Dashboard() {
     loading,
   } = useSession();
   const network = useNetInfo();
+  const [failedUploads, setFailedUploads] = useState(0);
   const [pending, setPending] = useState<number | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [dataState, setDataState] = useState<"loading" | "ready" | "error">("loading");
@@ -100,13 +101,21 @@ export default function Dashboard() {
 
   useEffect(() => {
     let active = true;
+    setPending(null);
+    setFailedUploads(0);
     const refresh = () =>
       getQueueStatus()
         .then((status) => {
-          if (active) setPending(status.pending);
+          if (active) {
+            setPending(status.pending);
+            setFailedUploads(status.failed);
+          }
         })
         .catch(() => {
-          if (active) setPending(null);
+          if (active) {
+            setPending(null);
+            setFailedUploads(0);
+          }
         });
     void refresh();
     const timer = setInterval(() => void refresh(), 5000);
@@ -114,7 +123,7 @@ export default function Dashboard() {
       active = false;
       clearInterval(timer);
     };
-  }, [network.isConnected]);
+  }, [network.isConnected, session?.user.id]);
 
   useEffect(() => {
     if (!session || !workspaceReady) return;
@@ -301,6 +310,11 @@ export default function Dashboard() {
                     ? "Changes awaiting sync"
                     : "Device queue empty"}
           </Text>
+          {failedUploads > 0 && (
+            <Text accessibilityRole="alert" style={styles.syncBody}>
+              {failedUploads} upload(s) failed. Verify source records before re-entering evidence.
+            </Text>
+          )}
           <Text style={styles.syncBody}>
             {pending === null
               ? "Open the source records to verify saved changes."

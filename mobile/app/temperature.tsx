@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { decimalInput } from "@/lib/evidence-input";
+import { useRef, useState } from "react";
 import { Redirect } from "expo-router";
 import { Alert, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { enqueue } from "@/lib/offline-queue";
-import { supabase } from "@/lib/supabase";
 import { useSession } from "@/lib/session";
 
 export default function Temperature() {
@@ -12,16 +12,20 @@ export default function Temperature() {
   const [targetMax, setTargetMax] = useState("7");
   const [busy, setBusy] = useState(false);
   const { session, workspaceReady, organizationId, locationId, role, loading } = useSession();
+  const pending = useRef(false);
   const save = async () => {
-    const value = Number(reading.replace(",", "."));
-    const min = Number(targetMin.replace(",", "."));
-    const max = Number(targetMax.replace(",", "."));
+    if (pending.current || role === "inspector") return;
+    const value = decimalInput(reading);
+    const min = decimalInput(targetMin);
+    const max = decimalInput(targetMax);
     if (
+      !session ||
+      !workspaceReady ||
       !organizationId ||
       !location.trim() ||
-      !Number.isFinite(value) ||
-      !Number.isFinite(min) ||
-      !Number.isFinite(max) ||
+      value === null ||
+      min === null ||
+      max === null ||
       value < -100 ||
       value > 300 ||
       min < -100 ||
@@ -32,15 +36,11 @@ export default function Temperature() {
         "Check the values",
         "Location, reading and valid minimum/maximum limits are required.",
       );
+    pending.current = true;
     setBusy(true);
-    const { data } = await supabase.auth.getUser();
-    if (!data.user) {
-      setBusy(false);
-      return;
-    }
     try {
       await enqueue("temperature_logs", {
-        user_id: data.user.id,
+        user_id: session.user.id,
         organization_id: organizationId,
         location_id: locationId,
         location: location.trim(),
@@ -50,10 +50,17 @@ export default function Temperature() {
         logged_at: new Date().toISOString(),
       });
       setReading("");
-      Alert.alert("Saved", "The reading is stored or safely queued for sync.");
+      Alert.alert(
+        "Queued on this device",
+        "Server sync is not yet confirmed. Do not enter the same reading again.",
+      );
     } catch {
-      Alert.alert("Not saved", "The encrypted app storage was unavailable. Please try again.");
+      Alert.alert(
+        "Not saved",
+        "Check your account and device storage, then retry. Your entries have been kept.",
+      );
     } finally {
+      pending.current = false;
       setBusy(false);
     }
   };
@@ -65,6 +72,8 @@ export default function Temperature() {
     <View style={styles.page}>
       <Text style={styles.label}>UNIT / LOCATION</Text>
       <TextInput
+        editable={!busy}
+        accessibilityLabel="Unit or location"
         value={location}
         onChangeText={setLocation}
         maxLength={160}
@@ -75,6 +84,8 @@ export default function Temperature() {
         <View style={styles.limit}>
           <Text style={styles.label}>MINIMUM °C</Text>
           <TextInput
+            editable={!busy}
+            accessibilityLabel="Minimum in degrees Celsius"
             value={targetMin}
             onChangeText={setTargetMin}
             keyboardType="decimal-pad"
@@ -85,6 +96,8 @@ export default function Temperature() {
         <View style={styles.limit}>
           <Text style={styles.label}>MAXIMUM °C</Text>
           <TextInput
+            editable={!busy}
+            accessibilityLabel="Maximum in degrees Celsius"
             value={targetMax}
             onChangeText={setTargetMax}
             keyboardType="decimal-pad"
@@ -95,13 +108,21 @@ export default function Temperature() {
       </View>
       <Text style={styles.label}>READING °C</Text>
       <TextInput
+        editable={!busy}
+        accessibilityLabel="Reading in degrees Celsius"
         value={reading}
         onChangeText={setReading}
         keyboardType="decimal-pad"
         placeholder="4.2"
         style={styles.input}
       />
-      <Pressable disabled={busy} onPress={save} style={styles.button}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ disabled: busy, busy }}
+        disabled={busy}
+        onPress={save}
+        style={styles.button}
+      >
         <Text style={styles.buttonText}>{busy ? "Saving…" : "Save reading"}</Text>
       </Pressable>
     </View>
@@ -120,7 +141,8 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 18,
-    backgroundColor: "#e43f2c",
+    backgroundColor: "#bd2b1b",
+    minHeight: 48,
     borderRadius: 24,
     padding: 15,
     alignItems: "center",

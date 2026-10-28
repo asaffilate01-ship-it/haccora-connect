@@ -1,20 +1,23 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Redirect } from "expo-router";
 import { Alert, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { enqueue } from "@/lib/offline-queue";
-import { supabase } from "@/lib/supabase";
 import { useSession } from "@/lib/session";
 
 export default function Checks() {
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
   const { session, workspaceReady, organizationId, locationId, role, loading } = useSession();
+  const pending = useRef(false);
   const save = async () => {
-    const { data } = await supabase.auth.getUser();
-    if (!data.user || !organizationId || !title.trim()) return;
+    if (pending.current || role === "inspector") return;
+    if (!session || !workspaceReady || !organizationId || !title.trim()) return;
+    pending.current = true;
+    setBusy(true);
     try {
       await enqueue("checks", {
-        user_id: data.user.id,
+        user_id: session.user.id,
         organization_id: organizationId,
         location_id: locationId,
         kind: "daily",
@@ -25,9 +28,18 @@ export default function Checks() {
       });
       setTitle("");
       setNote("");
-      Alert.alert("Saved", "The check is stored or queued for sync.");
+      Alert.alert(
+        "Queued on this device",
+        "Server sync is not yet confirmed. Do not enter the same check again.",
+      );
     } catch {
-      Alert.alert("Not saved", "The encrypted app storage was unavailable. Please try again.");
+      Alert.alert(
+        "Not saved",
+        "Check your account and device storage, then retry. Your entries have been kept.",
+      );
+    } finally {
+      pending.current = false;
+      setBusy(false);
     }
   };
   if (loading) return null;
@@ -38,6 +50,8 @@ export default function Checks() {
     <View style={styles.page}>
       <Text style={styles.label}>CHECK</Text>
       <TextInput
+        editable={!busy}
+        accessibilityLabel="Check title"
         value={title}
         onChangeText={setTitle}
         maxLength={160}
@@ -46,6 +60,8 @@ export default function Checks() {
       />
       <Text style={styles.label}>NOTE</Text>
       <TextInput
+        editable={!busy}
+        accessibilityLabel="Evidence note"
         value={note}
         onChangeText={setNote}
         maxLength={500}
@@ -53,8 +69,14 @@ export default function Checks() {
         placeholder="Optional evidence note"
         style={[styles.input, { minHeight: 100 }]}
       />
-      <Pressable onPress={save} style={styles.button}>
-        <Text style={styles.buttonText}>Complete check</Text>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ disabled: busy || !title.trim(), busy }}
+        disabled={busy || !title.trim()}
+        onPress={save}
+        style={styles.button}
+      >
+        <Text style={styles.buttonText}>{busy ? "Saving…" : "Complete check"}</Text>
       </Pressable>
     </View>
   );
@@ -72,7 +94,8 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 18,
-    backgroundColor: "#e43f2c",
+    backgroundColor: "#bd2b1b",
+    minHeight: 48,
     borderRadius: 24,
     padding: 15,
     alignItems: "center",
