@@ -34,6 +34,7 @@ export default function RootLayout() {
               options={{ title: "Account status", headerBackVisible: false }}
             />
             <Stack.Screen name="dashboard" options={{ title: "Today", headerBackVisible: false }} />
+            <Stack.Screen name="sync" options={{ title: "Sync recovery" }} />
             <Stack.Screen name="temperature" options={{ title: "Temperature check" }} />
             <Stack.Screen name="checks" options={{ title: "Daily check" }} />
             <Stack.Screen name="diary" options={{ title: "Daily diary" }} />

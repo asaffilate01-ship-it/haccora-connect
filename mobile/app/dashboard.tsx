@@ -315,6 +315,13 @@ export default function Dashboard() {
               {failedUploads} upload(s) failed. Verify source records before re-entering evidence.
             </Text>
           )}
+          <Pressable
+            accessibilityRole="button"
+            style={{ minHeight: 48, justifyContent: "center" }}
+            onPress={() => router.push("/sync")}
+          >
+            <Text style={styles.syncTitle}>Review queued evidence</Text>
+          </Pressable>
           <Text style={styles.syncBody}>
             {pending === null
               ? "Open the source records to verify saved changes."

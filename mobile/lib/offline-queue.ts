@@ -40,18 +40,60 @@ function withQueueLock<T>(work: () => Promise<T>): Promise<T> {
   return run;
 }
 
+function queueIds(raw: string | null): string[] {
+  const ids: unknown = raw !== null ? JSON.parse(raw) : [];
+  if (
+    !Array.isArray(ids) ||
+    ids.some((id) => typeof id !== "string" || !/^[A-Za-z0-9._-]{1,160}$/.test(id)) ||
+    new Set(ids).size !== ids.length
+  )
+    throw new Error("Offline queue index requires recovery");
+  return ids;
+}
+
+function decodeJob(raw: string | null, id: string): Job {
+  const job = raw ? JSON.parse(raw) : null;
+  if (
+    !job ||
+    job.id !== id ||
+    ![
+      "checks",
+      "temperature_logs",
+      "haccp_flow_runs",
+      "goods_in_logs",
+      "cleaning_completions",
+      "asset_events",
+    ].includes(job.table) ||
+    !job.payload ||
+    typeof job.payload !== "object" ||
+    Array.isArray(job.payload) ||
+    job.payload.idempotency_key !== id ||
+    typeof job.payload.organization_id !== "string" ||
+    !job.payload.organization_id ||
+    typeof ownerOf(job) !== "string" ||
+    !ownerOf(job) ||
+    typeof job.queuedAt !== "string" ||
+    !Number.isFinite(Date.parse(job.queuedAt)) ||
+    !Number.isSafeInteger(job.attempts) ||
+    job.attempts < 0 ||
+    (job.lastError !== undefined && typeof job.lastError !== "string")
+  )
+    throw new Error("Offline evidence requires recovery");
+  return job;
+}
+
 async function read(): Promise<Job[]> {
   if (Platform.OS === "web") throw new Error("Secure offline evidence requires iOS or Android");
   const value = await AsyncStorage.getItem(KEY);
-  const ids = value ? (JSON.parse(value) as string[]) : [];
+  const ids = queueIds(value);
   const values = await Promise.all(ids.map((id) => SecureStore.getItemAsync(jobKey(id))));
   if (values.some((job) => job === null)) throw new Error("Offline queue integrity check failed");
-  return values.map((job) => JSON.parse(job as string) as Job);
+  return values.map((job, index) => decodeJob(job, ids[index]));
 }
 
 async function write(jobs: Job[]) {
   const previousValue = await AsyncStorage.getItem(KEY);
-  const previousIds = previousValue ? (JSON.parse(previousValue) as string[]) : [];
+  const previousIds = queueIds(previousValue);
   await Promise.all(
     jobs.map((job) =>
       SecureStore.setItemAsync(jobKey(job.id), JSON.stringify(job), {
@@ -148,5 +190,37 @@ export async function getQueueStatus() {
       failed: jobs.filter((job) => job.lastError).length,
       oldestQueuedAt: jobs[0]?.queuedAt ?? null,
     };
+  });
+}
+
+export type QueuedEvidenceSummary = {
+  id: string;
+  table: Table;
+  queuedAt: string;
+  attempts: number;
+  state: "pending" | "failed" | "conflict";
+};
+
+/** Metadata only: no evidence payloads or raw provider errors leave the queue. */
+export async function listQueuedEvidence(): Promise<QueuedEvidenceSummary[]> {
+  return withQueueLock(async () => {
+    const { data, error } = await supabase.auth.getSession();
+    if (error) throw error;
+    if (!data.session) return [];
+    const userId = data.session.user.id;
+    return (await read())
+      .filter((job) => ownerOf(job) === userId)
+      .map((job) => ({
+        id: job.id,
+        table: job.table,
+        queuedAt: job.queuedAt,
+        attempts: job.attempts,
+        state:
+          job.lastError === "Conflict requires record verification"
+            ? "conflict"
+            : job.lastError
+              ? "failed"
+              : "pending",
+      }));
   });
 }
