@@ -366,7 +366,8 @@ test("v2 native offline UX distinguishes queued writes from server confirmation"
   const dashboard = await readFile("mobile/app/dashboard.tsx", "utf8");
   const queue = await readFile("mobile/lib/offline-queue.ts", "utf8");
   assert.match(dashboard, /securely queued/);
-  assert.match(dashboard, /server confirmed/);
+  assert.match(dashboard, /no changes queued on this device/i);
+  assert.doesNotMatch(dashboard, /server confirmed/i);
   assert.match(queue, /getQueueStatus/);
   assert.match(queue, /Evidence is never discarded/);
 });

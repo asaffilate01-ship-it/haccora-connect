@@ -22,7 +22,7 @@ import {
   ClipboardList,
   Loader2,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export const Route = createFileRoute("/app/")({
   component: Dashboard,
@@ -107,150 +107,167 @@ function Dashboard() {
     shiftEnd: null,
   });
 
+  const requestVersion = useRef(0);
   const load = useCallback(async () => {
     if (!user) return;
-    setLoading(true);
-    setLoadError("");
-    const since = new Date();
-    since.setHours(0, 0, 0, 0);
-    const in7 = new Date(Date.now() + 7 * 86400000).toISOString();
-    let q = supabase
-      .from("checks")
-      .select("id, title, kind, status, completed_at, created_at, user_id")
-      .gte("created_at", since.toISOString())
-      .order("created_at", { ascending: true })
-      .limit(20);
-    if (user.role === "staff") q = q.eq("user_id", user.id);
-    const { data, error: taskError } = await q;
-    const now = Date.now();
-    const userIds = Array.from(new Set((data ?? []).map((r: any) => r.user_id).filter(Boolean)));
-    const { data: profs } = userIds.length
-      ? await supabase.from("profiles").select("id, full_name").in("id", userIds)
-      : { data: [] as { id: string; full_name: string | null }[] };
-    const nameById = new Map((profs ?? []).map((p: any) => [p.id, p.full_name]));
-    const rows: Task[] = (data ?? []).map((r: any) => {
-      const created = new Date(r.created_at);
-      const status: Task["status"] =
-        r.status === "completed"
-          ? "done"
-          : now - created.getTime() > 6 * 3600_000
-            ? "overdue"
-            : "pending";
-      return {
-        id: r.id,
-        title: r.title,
-        kind: r.kind,
-        time: created.toLocaleTimeString("en-GB", {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        status,
-        who: (nameById.get(r.user_id) ?? "").split(" ")[0] || "—",
-      };
-    });
-    setTasks(rows);
+    const version = ++requestVersion.current;
+    try {
+      setLoading(true);
+      setLoadError("");
+      const since = new Date();
+      since.setHours(0, 0, 0, 0);
+      const in7 = new Date(Date.now() + 7 * 86400000).toISOString();
+      let q = supabase
+        .from("checks")
+        .select("id, title, kind, status, completed_at, created_at, user_id")
+        .gte("created_at", since.toISOString())
+        .order("created_at", { ascending: true })
+        .limit(20);
+      if (user.role === "staff") q = q.eq("user_id", user.id);
+      const { data, error: taskError } = await q;
+      const now = Date.now();
+      const userIds = Array.from(new Set((data ?? []).map((r: any) => r.user_id).filter(Boolean)));
+      const { data: profs } = userIds.length
+        ? await supabase.from("profiles").select("id, full_name").in("id", userIds)
+        : { data: [] as { id: string; full_name: string | null }[] };
+      const nameById = new Map((profs ?? []).map((p: any) => [p.id, p.full_name]));
+      const rows: Task[] = (data ?? []).map((r: any) => {
+        const created = new Date(r.created_at);
+        const status: Task["status"] =
+          r.status === "completed"
+            ? "done"
+            : now - created.getTime() > 6 * 3600_000
+              ? "overdue"
+              : "pending";
+        return {
+          id: r.id,
+          title: r.title,
+          kind: r.kind,
+          time: created.toLocaleTimeString("en-GB", {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          status,
+          who: (nameById.get(r.user_id) ?? "").split(" ")[0] || "—",
+        };
+      });
+      if (version !== requestVersion.current) return;
+      setTasks(rows);
 
-    // Live aggregate counts for role dashboards
-    const [
-      alertsQ,
-      incHighQ,
-      tempOutQ,
-      tempOkQ,
-      recipesQ,
-      brigadeQ,
-      expiringQ,
-      supQ,
-      poOpenQ,
-      trainingDueQ,
-      locationsQ,
-      shiftsQ,
-    ] = await Promise.all([
-      supabase.from("alerts").select("id", { count: "exact", head: true }).is("read_at", null),
-      supabase
-        .from("incidents")
-        .select("id", { count: "exact", head: true })
-        .eq("severity", "high")
-        .neq("status", "closed"),
-      supabase
-        .from("temperature_logs")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "out_of_range")
-        .gte("logged_at", since.toISOString()),
-      supabase
-        .from("temperature_logs")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "in_range")
-        .gte("logged_at", since.toISOString()),
-      supabase.from("recipes").select("id", { count: "exact", head: true }),
-      supabase
-        .from("organization_memberships" as any)
-        .select("user_id", { count: "exact", head: true })
-        .eq("status", "active")
-        .in("role", ["chef", "staff"]),
-      supabase
-        .from("expiry_items")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "active")
-        .lte("expires_on", in7),
-      supabase.from("suppliers").select("id", { count: "exact", head: true }),
-      supabase
-        .from("purchase_orders")
-        .select("id", { count: "exact", head: true })
-        .in("status", ["draft", "sent"]),
-      supabase
-        .from("training_records")
-        .select("id", { count: "exact", head: true })
-        .is("completed_at", null),
-      supabase.from("locations").select("id", { count: "exact", head: true }).eq("is_active", true),
-      supabase
-        .from("shifts")
-        .select("start_time,end_time")
-        .eq("shift_date", londonDateISO())
-        .order("start_time", { ascending: true }),
-    ]);
-    const aggregateResults = [
-      alertsQ,
-      incHighQ,
-      tempOutQ,
-      tempOkQ,
-      recipesQ,
-      brigadeQ,
-      expiringQ,
-      supQ,
-      poOpenQ,
-      trainingDueQ,
-      locationsQ,
-      shiftsQ,
-    ];
-    if (taskError || aggregateResults.some((result) => result.error)) {
-      setLoadError(
-        "Some dashboard data could not be loaded. Zero values are not confirmation that everything is clear.",
-      );
+      // Live aggregate counts for role dashboards
+      const [
+        alertsQ,
+        incHighQ,
+        tempOutQ,
+        tempOkQ,
+        recipesQ,
+        brigadeQ,
+        expiringQ,
+        supQ,
+        poOpenQ,
+        trainingDueQ,
+        locationsQ,
+        shiftsQ,
+      ] = await Promise.all([
+        supabase.from("alerts").select("id", { count: "exact", head: true }).is("read_at", null),
+        supabase
+          .from("incidents")
+          .select("id", { count: "exact", head: true })
+          .eq("severity", "high")
+          .neq("status", "closed"),
+        supabase
+          .from("temperature_logs")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "out_of_range")
+          .gte("logged_at", since.toISOString()),
+        supabase
+          .from("temperature_logs")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "in_range")
+          .gte("logged_at", since.toISOString()),
+        supabase.from("recipes").select("id", { count: "exact", head: true }),
+        supabase
+          .from("organization_memberships" as any)
+          .select("user_id", { count: "exact", head: true })
+          .eq("status", "active")
+          .in("role", ["chef", "staff"]),
+        supabase
+          .from("expiry_items")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "active")
+          .lte("expires_on", in7),
+        supabase.from("suppliers").select("id", { count: "exact", head: true }),
+        supabase
+          .from("purchase_orders")
+          .select("id", { count: "exact", head: true })
+          .in("status", ["draft", "sent"]),
+        supabase
+          .from("training_records")
+          .select("id", { count: "exact", head: true })
+          .is("completed_at", null),
+        supabase
+          .from("locations")
+          .select("id", { count: "exact", head: true })
+          .eq("is_active", true),
+        supabase
+          .from("shifts")
+          .select("start_time,end_time")
+          .eq("shift_date", londonDateISO())
+          .order("start_time", { ascending: true }),
+      ]);
+      if (version !== requestVersion.current) return;
+      const aggregateResults = [
+        alertsQ,
+        incHighQ,
+        tempOutQ,
+        tempOkQ,
+        recipesQ,
+        brigadeQ,
+        expiringQ,
+        supQ,
+        poOpenQ,
+        trainingDueQ,
+        locationsQ,
+        shiftsQ,
+      ];
+      if (taskError || aggregateResults.some((result) => result.error)) {
+        setLoadError(
+          "Some dashboard data could not be loaded. Zero values are not confirmation that everything is clear.",
+        );
+      }
+      const shifts = (shiftsQ.data ?? []) as Array<{ start_time: string; end_time: string }>;
+      const tempOk = tempOkQ.count ?? 0;
+      const tempOut = tempOutQ.count ?? 0;
+      setCounts({
+        alerts: alertsQ.count ?? 0,
+        incidentsHigh: incHighQ.count ?? 0,
+        tempOut,
+        tempOk,
+        tempTotal: tempOk + tempOut,
+        trainingDue: trainingDueQ.count ?? 0,
+        recipes: recipesQ.count ?? 0,
+        brigade: brigadeQ.count ?? 0,
+        expiring: expiringQ.count ?? 0,
+        suppliers: supQ.count ?? 0,
+        poOpen: poOpenQ.count ?? 0,
+        locations: locationsQ.count ?? 0,
+        shiftsToday: shifts.length,
+        shiftStart: shifts[0]?.start_time?.slice(0, 5) ?? null,
+        shiftEnd: shifts.at(-1)?.end_time?.slice(0, 5) ?? null,
+      });
+      setLoading(false);
+    } catch {
+      if (version === requestVersion.current)
+        setLoadError(
+          "Dashboard data is unavailable. Please retry; missing records do not mean everything is clear.",
+        );
+    } finally {
+      if (version === requestVersion.current) setLoading(false);
     }
-    const shifts = (shiftsQ.data ?? []) as Array<{ start_time: string; end_time: string }>;
-    const tempOk = tempOkQ.count ?? 0;
-    const tempOut = tempOutQ.count ?? 0;
-    setCounts({
-      alerts: alertsQ.count ?? 0,
-      incidentsHigh: incHighQ.count ?? 0,
-      tempOut,
-      tempOk,
-      tempTotal: tempOk + tempOut,
-      trainingDue: trainingDueQ.count ?? 0,
-      recipes: recipesQ.count ?? 0,
-      brigade: brigadeQ.count ?? 0,
-      expiring: expiringQ.count ?? 0,
-      suppliers: supQ.count ?? 0,
-      poOpen: poOpenQ.count ?? 0,
-      locations: locationsQ.count ?? 0,
-      shiftsToday: shifts.length,
-      shiftStart: shifts[0]?.start_time?.slice(0, 5) ?? null,
-      shiftEnd: shifts.at(-1)?.end_time?.slice(0, 5) ?? null,
-    });
-    setLoading(false);
   }, [user]);
 
   useEffect(() => {
+    const requests = requestVersion;
     load();
     const ch = supabase
       .channel("dash-checks")
@@ -260,20 +277,29 @@ function Dashboard() {
       .on("postgres_changes", { event: "*", schema: "public", table: "temperature_logs" }, load)
       .subscribe();
     return () => {
+      requests.current++;
       supabase.removeChannel(ch);
     };
   }, [load]);
 
+  const saving = useRef(new Set<string>());
   const done = async (id: string) => {
-    const { error } = await supabase
-      .from("checks")
-      .update({ status: "completed", completed_at: new Date().toISOString() })
-      .eq("id", id);
-    if (error) {
-      setLoadError(`The check could not be completed: ${error.message}`);
-      return;
+    if (saving.current.has(id)) return;
+    saving.current.add(id);
+    try {
+      const { data, error } = await supabase
+        .from("checks")
+        .update({ status: "completed", completed_at: new Date().toISOString() })
+        .eq("id", id)
+        .select("id")
+        .single();
+      if (error || !data) throw new Error("Check not saved");
+      await load();
+    } catch {
+      setLoadError("The check could not be saved. Please try again.");
+    } finally {
+      saving.current.delete(id);
     }
-    load();
   };
 
   if (!user) return null;
@@ -302,18 +328,26 @@ function Dashboard() {
       <LiveMetrics />
 
       {loading && (
-        <div className="text-xs text-muted-foreground inline-flex items-center gap-2">
+        <div role="status" className="text-sm text-muted-foreground inline-flex items-center gap-2">
           <Loader2 size={12} className="animate-spin" /> {t("common.loading") || "…"}
         </div>
       )}
 
       {loadError && (
         <div role="alert" className="rounded-xl bg-destructive/10 p-4 text-sm text-destructive">
-          {loadError}
+          <p>{loadError}</p>
+          <button
+            type="button"
+            onClick={() => void load()}
+            disabled={loading}
+            className="mt-3 min-h-11 rounded-lg border px-4 font-semibold disabled:opacity-50"
+          >
+            Try again
+          </button>
         </div>
       )}
 
-      {user.role === "owner" && (
+      {!loading && !loadError && user.role === "owner" && (
         <OwnerView
           pending={pending}
           overdue={overdue}
@@ -323,7 +357,7 @@ function Dashboard() {
           dataAvailable={!loadError}
         />
       )}
-      {user.role === "manager" && (
+      {!loading && !loadError && user.role === "manager" && (
         <ManagerView
           pending={pending}
           overdue={overdue}
@@ -333,7 +367,7 @@ function Dashboard() {
           dataAvailable={!loadError}
         />
       )}
-      {user.role === "chef" && (
+      {!loading && !loadError && user.role === "chef" && (
         <ChefView
           pending={pending}
           overdue={overdue}
@@ -343,7 +377,7 @@ function Dashboard() {
           dataAvailable={!loadError}
         />
       )}
-      {user.role === "staff" && (
+      {!loading && !loadError && user.role === "staff" && (
         <StaffView tasks={visibleTasks} done={done} dataAvailable={!loadError} />
       )}
       {user.role === "inspector" && <InspectorView />}
@@ -884,13 +918,19 @@ function TasksCard({
     <div className="surface p-6">
       <div className="flex items-center justify-between">
         <h2 className="font-display text-xl">{t("dash.today")}</h2>
-        <Link to="/app/checks" className="text-xs text-primary hover:underline">
+        <Link
+          to="/app/checks"
+          className="inline-flex min-h-11 items-center text-sm text-primary hover:underline"
+        >
           {t("dash.allTasks")} →
         </Link>
       </div>
       <div className="mt-4 divide-y divide-border">
         {tasks.map((task) => (
-          <div key={task.id} className={`${big ? "py-4" : "py-3"} flex items-center gap-3`}>
+          <div
+            key={task.id}
+            className={`${big ? "py-4" : "py-3"} flex flex-wrap sm:flex-nowrap items-center gap-3`}
+          >
             <StatusPill status={task.status} />
             <div className="flex-1 min-w-0">
               <div
@@ -905,7 +945,7 @@ function TasksCard({
             {task.status !== "done" ? (
               <button
                 onClick={() => done(task.id)}
-                className="text-xs font-semibold px-3 py-1.5 rounded-full bg-primary text-primary-foreground hover:brightness-110"
+                className="min-h-11 shrink-0 text-sm font-semibold px-3 py-1.5 rounded-full bg-primary text-primary-foreground hover:brightness-110"
               >
                 {t("dash.complete")}
               </button>
@@ -926,34 +966,51 @@ function ActionsCard() {
   const [items, setItems] = useState<LiveAction[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const [failed, setFailed] = useState(false);
+  const requestVersion = useRef(0);
   const load = useCallback(async () => {
-    const { data } = await supabase
-      .from("alerts")
-      .select("id, title, kind, severity, created_at")
-      .is("read_at", null)
-      .order("created_at", { ascending: false })
-      .limit(5);
-    setItems(
-      (data ?? []).map((r: any) => ({
-        id: r.id,
-        title: r.title,
-        source: r.kind || "system",
-        severity: (["high", "medium", "low"].includes(r.severity)
-          ? r.severity
-          : "medium") as LiveAction["severity"],
-        created_at: r.created_at,
-      })),
-    );
-    setLoading(false);
+    const version = ++requestVersion.current;
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("alerts")
+        .select("id, title, kind, severity, created_at")
+        .is("read_at", null)
+        .order("created_at", { ascending: false })
+        .limit(5);
+      if (version !== requestVersion.current) return;
+      if (error) throw error;
+      setFailed(false);
+      setItems(
+        (data ?? []).map((r: any) => ({
+          id: r.id,
+          title: r.title,
+          source: r.kind || "system",
+          severity: (["high", "medium", "low"].includes(r.severity)
+            ? r.severity
+            : "medium") as LiveAction["severity"],
+          created_at: r.created_at,
+        })),
+      );
+    } catch {
+      if (version === requestVersion.current) {
+        setFailed(true);
+        setItems([]);
+      }
+    } finally {
+      if (version === requestVersion.current) setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
+    const requests = requestVersion;
     load();
     const ch = supabase
       .channel("dash-alerts")
       .on("postgres_changes", { event: "*", schema: "public", table: "alerts" }, load)
       .subscribe();
     return () => {
+      requests.current++;
       supabase.removeChannel(ch);
     };
   }, [load]);
@@ -972,13 +1029,33 @@ function ActionsCard() {
     <div className="surface p-6">
       <div className="flex items-center justify-between">
         <h2 className="font-display text-xl">{t("dash.actions")}</h2>
-        <Link to="/app/alerts" className="text-xs text-primary hover:underline">
+        <Link
+          to="/app/alerts"
+          className="inline-flex min-h-11 items-center text-sm text-primary hover:underline"
+        >
           {t("dash.allTasks")} →
         </Link>
       </div>
       <div className="mt-3 space-y-2">
-        {loading && <div className="text-xs text-muted-foreground">…</div>}
-        {!loading && items.length === 0 && (
+        {failed && (
+          <div role="alert" className="rounded-lg border border-destructive/30 p-3 text-sm">
+            <p>Alerts could not be loaded. Check the source records.</p>
+            <button
+              type="button"
+              onClick={() => void load()}
+              disabled={loading}
+              className="mt-2 min-h-11 rounded-lg border px-4 font-semibold disabled:opacity-50"
+            >
+              Try again
+            </button>
+          </div>
+        )}
+        {loading && (
+          <div role="status" className="text-sm text-muted-foreground">
+            {t("common.loading")}
+          </div>
+        )}
+        {!loading && !failed && items.length === 0 && (
           <div className="text-xs text-muted-foreground py-6 text-center inline-flex items-center gap-2 w-full justify-center">
             <CheckCircle2 size={14} className="text-success" />
             {"No open alerts"}

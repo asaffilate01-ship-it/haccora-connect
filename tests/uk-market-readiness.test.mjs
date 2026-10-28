@@ -184,7 +184,7 @@ test("web and native Today surfaces present one persisted next action", () => {
     assert.match(source, /checks/);
   }
   assert.match(web, /saved to\s+your site workspace/i);
-  assert.match(native, /saved to your workspace/i);
+  assert.match(native, /check records to verify saving/i);
 });
 test("native navigation keeps five high-frequency destinations visible", () => {
   const nav = read("mobile/components/bottom-nav.tsx");

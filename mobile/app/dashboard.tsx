@@ -86,7 +86,8 @@ export default function Dashboard() {
     loading,
   } = useSession();
   const network = useNetInfo();
-  const [pending, setPending] = useState(0);
+  const [pending, setPending] = useState<number | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [dataState, setDataState] = useState<"loading" | "ready" | "error">("loading");
   const [today, setToday] = useState<Today>({
     done: 0,
@@ -97,11 +98,26 @@ export default function Dashboard() {
   });
 
   useEffect(() => {
-    void getQueueStatus().then((status) => setPending(status.pending));
+    let active = true;
+    const refresh = () =>
+      getQueueStatus()
+        .then((status) => {
+          if (active) setPending(status.pending);
+        })
+        .catch(() => {
+          if (active) setPending(null);
+        });
+    void refresh();
+    const timer = setInterval(() => void refresh(), 5000);
+    return () => {
+      active = false;
+      clearInterval(timer);
+    };
   }, [network.isConnected]);
 
   useEffect(() => {
     if (!session || !workspaceReady) return;
+    let active = true;
     setDataState("loading");
     const start = new Date();
     start.setHours(0, 0, 0, 0);
@@ -127,21 +143,29 @@ export default function Dashboard() {
         .select("id", { count: "exact", head: true })
         .eq("status", "active")
         .lte("expires_on", inSevenDays),
-    ]).then(([done, open, actions, alerts, expiring]) => {
-      if ([done, open, actions, alerts, expiring].some((result) => result.error)) {
-        setDataState("error");
-        return;
-      }
-      setToday({
-        done: done.count ?? 0,
-        open: open.count ?? 0,
-        actions: actions.count ?? 0,
-        alerts: alerts.count ?? 0,
-        expiring: expiring.count ?? 0,
+    ])
+      .then(([done, open, actions, alerts, expiring]) => {
+        if (!active) return;
+        if ([done, open, actions, alerts, expiring].some((result) => result.error)) {
+          setDataState("error");
+          return;
+        }
+        setToday({
+          done: done.count ?? 0,
+          open: open.count ?? 0,
+          actions: actions.count ?? 0,
+          alerts: alerts.count ?? 0,
+          expiring: expiring.count ?? 0,
+        });
+        setDataState("ready");
+      })
+      .catch(() => {
+        if (active) setDataState("error");
       });
-      setDataState("ready");
-    });
-  }, [session, workspaceReady]);
+    return () => {
+      active = false;
+    };
+  }, [session, workspaceReady, network.isConnected, refreshKey]);
 
   const progress = useMemo(() => {
     const total = today.done + today.open;
@@ -258,18 +282,24 @@ export default function Dashboard() {
         )}
         <View style={styles.flex}>
           <Text style={styles.syncTitle}>
-            {network.isConnected === false
-              ? "Working offline"
-              : pending
-                ? "Syncing securely"
-                : "Up to date"}
+            {pending === null
+              ? "Sync status unavailable"
+              : network.isConnected === null
+                ? "Checking connection"
+                : network.isConnected === false
+                  ? "Working offline"
+                  : pending
+                    ? "Changes awaiting sync"
+                    : "Device queue empty"}
           </Text>
           <Text style={styles.syncBody}>
-            {network.isConnected === false
-              ? `${pending} change${pending === 1 ? "" : "s"} securely queued on this device`
-              : pending
-                ? `${pending} queued change${pending === 1 ? "" : "s"} being sent`
-                : "server confirmed · saved to your workspace"}
+            {pending === null
+              ? "Open the source records to verify saved changes."
+              : network.isConnected === false
+                ? `${pending} change${pending === 1 ? "" : "s"} securely queued on this device`
+                : pending
+                  ? `${pending} queued change${pending === 1 ? "" : "s"} awaiting confirmation`
+                  : "No changes queued on this device; check records to verify saving"}
           </Text>
         </View>
       </View>
@@ -279,6 +309,13 @@ export default function Dashboard() {
           <AlertTriangle color={colours.danger} size={19} />
           <View style={styles.flex}>
             <Text style={styles.dataErrorTitle}>Dashboard data is unavailable</Text>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setRefreshKey((key) => key + 1)}
+              style={{ minHeight: 48, justifyContent: "center" }}
+            >
+              <Text style={styles.dataErrorTitle}>Try again</Text>
+            </Pressable>
             <Text style={styles.dataErrorBody}>
               No routine, alert or corrective action has been assumed clear. Check the source
               records when the connection is restored.
