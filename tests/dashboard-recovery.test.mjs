@@ -4,6 +4,15 @@ import { test } from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 
+const dayModule = {};
+vm.runInNewContext(
+  ts.transpileModule(
+    readFileSync(new URL("../src/lib/operational-day.ts", import.meta.url), "utf8"),
+    { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } },
+  ).outputText,
+  { exports: dayModule, Date, Intl },
+);
+
 // Exercise the actual components' async transitions without live credentials.
 // JSX remains a tree so no browser or auth bypass is added to the application.
 function harness(file, component, respond) {
@@ -74,6 +83,7 @@ function harness(file, component, respond) {
     },
   }).outputText;
   const mockRequire = (name) => {
+    if (name === "@/lib/operational-day") return dayModule;
     if (name === "react") return react;
     if (name === "react/jsx-runtime") return { jsx, jsxs: jsx };
     if (name.includes("/supabase/")) return { supabase };
@@ -202,4 +212,27 @@ test("an alerts response arriving after unmount cannot overwrite state", async (
   resolve(success());
   await settle();
   assert.doesNotMatch(text(h.render()), /No open alerts/);
+});
+
+test("capped dashboard tasks disclose the server total and link to all checks", async () => {
+  const rows = Array.from({ length: 20 }, (_, i) => ({
+    id: String(i),
+    title: "Check " + i,
+    kind: "opening",
+    status: "pending",
+    created_at: new Date().toISOString(),
+    user_id: "staff-fixture",
+  }));
+  const h = harness("src/routes/app.index.tsx", "Dashboard", (request) =>
+    request.table === "checks" ? { data: rows, count: 35, error: null } : success(),
+  );
+  await settle();
+  const tree = h.render();
+  assert.match(text(tree), /Showing 20 of 35 checks created today/);
+  assert.ok(
+    nodes(tree).some(
+      (node) => node.props?.to === "/app/checks" && text(node).includes("Open all checks"),
+    ),
+  );
+  h.cleanup();
 });
