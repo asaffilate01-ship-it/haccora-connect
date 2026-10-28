@@ -12,7 +12,7 @@ test("tenant dashboards use live premises and rota data without fabricated comme
 
   assert.match(dashboard, /\.from\("locations"\)/);
   assert.match(dashboard, /\.from\("shifts"\)/);
-  assert.match(dashboard, /londonDateISO\(\)/);
+  assert.match(dashboard, /operationalDay\(nowDate, "Europe\/London"\)/);
   assert.match(dashboard, /Open purchase orders/);
   assert.doesNotMatch(dashboard, /\.select\("total_eur"\)/);
   assert.doesNotMatch(dashboard, /t\("dash\.manager\.shiftBody"\)/);

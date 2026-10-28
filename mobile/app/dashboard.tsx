@@ -1,3 +1,4 @@
+import { operationalDay, operationalDate } from "@/lib/operational-day";
 import { Redirect, router } from "expo-router";
 import { useNetInfo } from "@react-native-community/netinfo";
 import {
@@ -119,20 +120,22 @@ export default function Dashboard() {
     if (!session || !workspaceReady) return;
     let active = true;
     setDataState("loading");
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
-    const inSevenDays = new Date(Date.now() + 7 * 86_400_000).toISOString().slice(0, 10);
+    const now = new Date();
+    const day = operationalDay(now, "Europe/London");
+    const inSevenDays = operationalDate(now, "Europe/London", 7);
     void Promise.all([
       supabase
         .from("checks")
         .select("id", { count: "exact", head: true })
         .eq("status", "completed")
-        .gte("completed_at", start.toISOString()),
+        .gte("created_at", day.start)
+        .lt("created_at", day.end),
       supabase
         .from("checks")
         .select("id", { count: "exact", head: true })
         .neq("status", "completed")
-        .gte("created_at", start.toISOString()),
+        .gte("created_at", day.start)
+        .lt("created_at", day.end),
       supabase
         .from("corrective_actions")
         .select("id", { count: "exact", head: true })
@@ -162,8 +165,13 @@ export default function Dashboard() {
       .catch(() => {
         if (active) setDataState("error");
       });
+    const dayTimer = setInterval(() => {
+      if (operationalDate(new Date(), "Europe/London") !== day.date)
+        setRefreshKey((key) => key + 1);
+    }, 60000);
     return () => {
       active = false;
+      clearInterval(dayTimer);
     };
   }, [session, workspaceReady, network.isConnected, refreshKey]);
 
@@ -180,6 +188,7 @@ export default function Dashboard() {
 
   const firstName = displayName?.trim().split(/\s+/)[0] || "team";
   const date = new Date().toLocaleDateString("en-GB", {
+    timeZone: "Europe/London",
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -347,9 +356,12 @@ export default function Dashboard() {
           <View style={styles.progressTrack}>
             <View style={[styles.progressFill, { width: `${progress}%` }]} />
           </View>
+          <Text style={styles.progressMeta}>Checks created today · Europe/London</Text>
           <Text style={styles.progressMeta}>
-            {today.open ? `${today.open} still due` : "No due routine is waiting"} · {today.actions}{" "}
-            open action
+            {today.open
+              ? `${today.open} recorded checks open`
+              : "No open checks in today’s records"}{" "}
+            · {today.actions} open action
             {today.actions === 1 ? "" : "s"}
           </Text>
         </View>
