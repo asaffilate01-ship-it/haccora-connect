@@ -50,3 +50,9 @@ No production migration, live tenant activation, deployment, payment setup or si
 - New regression coverage: exact duplicate replay, field/type/tenant/author/idempotency mismatch, denied/missing/failed reads, account change during verification, PostgreSQL timestamp precision, and sample-print permission/evidence boundary.
 - Local Playwright browser installation: BLOCKED by browser-download failure. No claim of fresh local browser acceptance. Hosted browser/database/security workflows must be checked on the PR head.
 - Public UK health release match: FAIL as recorded above. Authenticated hosted role journeys, fresh database/RLS execution, provider acceptance and physical devices were not run locally.
+
+## Fresh CI dependency follow-up
+
+Initial PR CI passed fresh-database/RLS, CodeQL and Edge checks in both editions, but production dependency gates identified existing Seroval advisories GHSA-F86P-H4J2-7QGJ/GHSA-9WX9-5PV9-3349 and decode-uri-component advisory GHSA-QR28-FPJM-WQ7F. Pin Seroval 1.6.11 in both web trees and decode-uri-component 0.5.1 in both native trees. Align Germany query-string to the existing UK 9.5.0 override. Regenerate lockfiles using npm 10.9.4; no security exceptions are added or broadened. The pre-existing low-severity Expo deepmerge exception remains separate.
+
+Both editions completed local all-platform native exports. Re-run quality, native exports and dependency policy checks after these dependency changes, then require fresh hosted checks on the new head. The initial green database/security results do not substitute for final-head verification.
