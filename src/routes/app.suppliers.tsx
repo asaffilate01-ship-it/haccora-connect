@@ -1,3 +1,4 @@
+import { SupplierDocumentReview } from "@/components/SupplierDocumentReview";
 import { BusinessServicePrompt } from "@/components/BusinessServicePrompt";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
@@ -62,7 +63,7 @@ function SuppliersPage() {
       email: form.email || null,
       phone: form.phone || null,
       cert_expires_on: form.cert_expires_on || null,
-      status: "approved",
+      status: "pending",
     });
     setBusy(false);
     if (error) {
@@ -97,6 +98,8 @@ function SuppliersPage() {
           </button>
         )}
       </div>
+
+      <SupplierDocumentReview key={`${user?.id}:${user?.organizationId}:${user?.locationId}`} />
 
       {open && canManage && (
         <div className="surface p-5 grid md:grid-cols-6 gap-3">
