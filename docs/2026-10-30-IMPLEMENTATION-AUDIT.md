@@ -60,3 +60,7 @@ Both editions completed local all-platform native exports. Re-run quality, nativ
 ## Recipe-label follow-up
 
 The subsequent recipe-label phase replaces the sample catalogue with live, tenant-scoped recipe drafts, explicit dates and source revalidation. See `2026-10-30-RECIPE-LABEL-DRAFTS.md` for current behaviour and remaining approval/printing gaps. Historical sample findings above describe the audited baseline, not the new draft workflow.
+
+## Recipe register recovery follow-up
+
+Recipe read/save/delete failures now surface explicitly, uncertain saves retain inputs, and retries verify the original submission. See `2026-10-30-RECIPE-SAVE-RECOVERY.md` for implementation, coverage and remaining limits.
