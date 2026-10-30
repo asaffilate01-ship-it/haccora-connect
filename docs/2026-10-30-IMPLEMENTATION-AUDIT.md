@@ -56,3 +56,7 @@ No production migration, live tenant activation, deployment, payment setup or si
 Initial PR CI passed fresh-database/RLS, CodeQL and Edge checks in both editions, but production dependency gates identified existing Seroval advisories GHSA-F86P-H4J2-7QGJ/GHSA-9WX9-5PV9-3349 and decode-uri-component advisory GHSA-QR28-FPJM-WQ7F. Pin Seroval 1.6.11 in both web trees and decode-uri-component 0.5.1 in both native trees. Align Germany query-string to the existing UK 9.5.0 override. Regenerate lockfiles using npm 10.9.4; no security exceptions are added or broadened. The pre-existing low-severity Expo deepmerge exception remains separate.
 
 Both editions completed local all-platform native exports. Re-run quality, native exports and dependency policy checks after these dependency changes, then require fresh hosted checks on the new head. The initial green database/security results do not substitute for final-head verification.
+
+## Recipe-label follow-up
+
+The subsequent recipe-label phase replaces the sample catalogue with live, tenant-scoped recipe drafts, explicit dates and source revalidation. See `2026-10-30-RECIPE-LABEL-DRAFTS.md` for current behaviour and remaining approval/printing gaps. Historical sample findings above describe the audited baseline, not the new draft workflow.

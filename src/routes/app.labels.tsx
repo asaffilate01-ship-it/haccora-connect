@@ -1,253 +1,285 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
-import { useI18n } from "@/lib/i18n";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { can } from "@/lib/permissions";
 import { supabase } from "@/integrations/supabase/haccora-client";
-import { Printer, Tag, Snowflake, AlertTriangle, ChefHat, History } from "lucide-react";
+import {
+  readyLabelRecipe,
+  sameLabelRecipe,
+  validLabelDates,
+  renderLabelDocument,
+  type LabelRecipe,
+} from "@/lib/label-draft";
 
-export const Route = createFileRoute("/app/labels")({
-  component: LabelsPage,
-});
-
-type LabelKind = "prep" | "useby" | "allergen" | "defrost";
-
-const CATALOG: Array<{
-  id: string;
-  en: string;
-  shelfDays: number;
-  allergens: string[];
-}> = [
-  {
-    id: "l1",
-    en: "House bolognese",
-    shelfDays: 3,
-    allergens: ["Gluten", "Celery"],
-  },
-  {
-    id: "l2",
-    en: "Caesar dressing",
-    shelfDays: 2,
-    allergens: ["Egg", "Fish", "Milk"],
-  },
-  { id: "l3", en: "Grilled chicken", shelfDays: 2, allergens: [] },
-  {
-    id: "l4",
-    en: "Vegan bowl base",
-    shelfDays: 4,
-    allergens: ["Soya", "Sesame"],
-  },
-  { id: "l5", en: "Mashed potato", shelfDays: 2, allergens: ["Milk"] },
-];
+export const Route = createFileRoute("/app/labels")({ component: LabelsPage });
 
 function LabelsPage() {
-  const { lang } = useI18n();
   const { user } = useAuth();
-  const t = (_legacy: string, english: string) => english;
-  const [kind, setKind] = useState<LabelKind>("prep");
-  const [sel, setSel] = useState(CATALOG[0]);
+  const organizationId = user?.organizationId;
+  const identity = `${user?.id ?? ""}:${organizationId ?? ""}`;
+  const account = useRef(identity);
+  account.current = identity;
+  const request = useRef(0);
+  const pending = useRef(false);
+  const [recipes, setRecipes] = useState<LabelRecipe[]>([]);
+  const [page, setPage] = useState(0);
+  const [selectedId, setSelectedId] = useState("");
+  const [prepared, setPrepared] = useState("");
+  const [useBy, setUseBy] = useState("");
+  const [reviewed, setReviewed] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<"changed" | "error" | "opened" | null>(null);
   const canPrint = user ? can(user.role, "labels.print", user.actionPermissions) : false;
-
-  const [history, setHistory] = useState<
-    Array<{
-      id: string;
-      kind: string;
-      product_name: string;
-      use_by: string | null;
-      created_at: string;
-      printed_by: string | null;
-    }>
-  >([]);
-  const loadHistory = useCallback(async () => {
-    const { data } = await supabase
-      .from("label_prints")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(15);
-    setHistory((data ?? []) as any);
-  }, []);
+  const printPermission = useRef(canPrint);
+  printPermission.current = canPrint;
+  const selected = recipes.find((r) => r.id === selectedId);
+  const load = useCallback(async () => {
+    const version = ++request.current;
+    setLoading(true);
+    setFailed(false);
+    setRecipes([]);
+    setSelectedId("");
+    setReviewed(false);
+    setMessage(null);
+    if (!organizationId) {
+      setLoading(false);
+      return;
+    }
+    try {
+      const { data, error } = await supabase
+        .from("recipes")
+        .select("id,name,allergens,flagged,updated_at,organization_id")
+        .eq("organization_id", organizationId)
+        .order("name")
+        .range(page * 100, page * 100 + 99);
+      if (version !== request.current || account.current !== identity) return;
+      if (error || !Array.isArray(data)) throw Error("Recipe lookup failed");
+      setRecipes(data as LabelRecipe[]);
+    } catch {
+      if (version === request.current && account.current === identity) setFailed(true);
+    } finally {
+      if (version === request.current && account.current === identity) setLoading(false);
+    }
+  }, [organizationId, identity, page]);
   useEffect(() => {
-    loadHistory();
-  }, [loadHistory]);
+    setPage(0);
+  }, [identity]);
+  useEffect(() => {
+    setPrepared("");
+    setUseBy("");
+    request.current += 1;
+    void load();
+    return () => {
+      request.current += 1;
+    };
+  }, [load]);
+  const ready =
+    !loading &&
+    !failed &&
+    !!organizationId &&
+    !!selected &&
+    readyLabelRecipe(selected, organizationId) &&
+    validLabelDates(prepared, useBy) &&
+    reviewed &&
+    canPrint;
 
-  // This catalogue is illustrative. Never persist a sample as operational evidence.
-  const doPrint = () => {
-    if (!canPrint || !user) return;
-    window.print();
-  };
-
-  const today = new Date();
-  const useBy = new Date(today.getTime() + sel.shelfDays * 86400000);
-  const fmt = (d: Date) =>
-    d.toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-
-  const kindMeta: Record<LabelKind, { enL: string; icon: typeof Tag; color: string }> = {
-    prep: { enL: "Prep", icon: ChefHat, color: "bg-emerald-600" },
-    useby: {
-      enL: "Use-by",
-      icon: Tag,
-      color: "bg-[color:var(--color-alert-red)]",
-    },
-    allergen: { enL: "Allergen", icon: AlertTriangle, color: "bg-amber-500" },
-    defrost: { enL: "Defrost", icon: Snowflake, color: "bg-sky-600" },
+  const printDraft = async () => {
+    if (pending.current || !ready || !selected || !organizationId) return;
+    pending.current = true;
+    setBusy(true);
+    setMessage(null);
+    const version = request.current;
+    // Open synchronously from the click so popup blockers do not reject a later async open.
+    const preview = window.open("", "_blank", "width=520,height=650");
+    if (!preview) {
+      pending.current = false;
+      setBusy(false);
+      setMessage("error");
+      return;
+    }
+    preview.opener = null;
+    try {
+      const { data, error } = await supabase
+        .from("recipes")
+        .select("id,name,allergens,flagged,updated_at,organization_id")
+        .eq("organization_id", organizationId)
+        .eq("id", selected.id)
+        .maybeSingle();
+      if (version !== request.current || account.current !== identity || !printPermission.current) {
+        preview.close();
+        return;
+      }
+      if (error) throw error;
+      if (!readyLabelRecipe(data, organizationId) || !sameLabelRecipe(selected, data)) {
+        preview.close();
+        await load();
+        setMessage("changed");
+        return;
+      }
+      renderLabelDocument(preview.document, [
+        "DRAFT — NOT FOR FOOD USE",
+        data.name,
+        `${"Prepared"}: ${prepared}`,
+        `${"Proposed use-by"}: ${useBy}`,
+        `${"Recorded allergens"}: ${data.allergens.length ? data.allergens.join(", ") : "None recorded — this is not an allergen-free claim"}`,
+        `${"Recipe reference"}: ${data.id}`,
+        "For internal review. No shelf life is calculated. Not a PPDS or retail label.",
+      ]);
+      preview.focus();
+      preview.print();
+      setMessage("opened");
+    } catch {
+      preview.close();
+      if (version === request.current && account.current === identity) setMessage("error");
+    } finally {
+      pending.current = false;
+      if (account.current === identity) setBusy(false);
+    }
   };
 
   return (
-    <div className="p-6 md:p-10 space-y-8">
-      <div>
-        <div className="eyebrow">{"Kitchen labels"}</div>
-        <h1 className="mt-1 text-3xl md:text-4xl">{"Print labels"}</h1>
-        <p className="text-muted-foreground mt-1 max-w-2xl">
-          {"Prep, use-by, allergen and defrost labels — review operational details before use."}
-        </p>
-      </div>
-
-      <p role="note" className="rounded-lg border border-amber-500 p-4 font-semibold">
-        {t(
-          "Musteretiketten – nicht für Lebensmittel verwenden. Produkte, Allergene und Haltbarkeit sind Beispiele. Für betriebliche Etiketten sind geprüfte Rezeptdaten und freigegebene Verbrauchsdaten erforderlich.",
-          "Sample labels — do not use on food. Products, allergens and shelf lives are examples. Operational labels require verified recipe data and approved use-by dates.",
-        )}
+    <div className="p-6 md:p-10 space-y-6 max-w-4xl">
+      <h1 className="text-3xl">{"Recipe label drafts"}</h1>
+      <p>
+        {
+          "Prepare a draft from your recipe register. Enter dates approved for your process; Haccora does not calculate shelf life. Final approval, printer confirmation and label withdrawal are not yet available."
+        }
       </p>
-
-      {/* Kind selector */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {(Object.keys(kindMeta) as LabelKind[]).map((k) => {
-          const m = kindMeta[k];
-          const active = kind === k;
-          return (
-            <button
-              key={k}
-              onClick={() => setKind(k)}
-              className={`surface p-4 text-left transition ${active ? "ring-2 ring-primary" : "hover:shadow-md"}`}
+      <button onClick={() => void load()} disabled={busy} className="btn-alert-solid">
+        {"Refresh recipes"}
+      </button>
+      {loading ? (
+        <p role="status">{"Loading recipes…"}</p>
+      ) : failed ? (
+        <p role="alert">{"Recipes could not be loaded. Retry before preparing a label."}</p>
+      ) : !organizationId ? (
+        <p>{"Select an approved workspace first."}</p>
+      ) : recipes.length === 0 ? (
+        <p>{"No recipes found. Add and review a recipe in the recipe register first."}</p>
+      ) : (
+        <>
+          <label className="block space-y-2">
+            <span>{"Recipe"}</span>
+            <select
+              className="block w-full border rounded p-3 bg-background"
+              value={selectedId}
+              disabled={busy}
+              onChange={(e) => {
+                setSelectedId(e.target.value);
+                setReviewed(false);
+                setMessage(null);
+              }}
             >
-              <span className={`h-9 w-9 rounded-lg grid place-items-center text-white ${m.color}`}>
-                <m.icon size={16} />
-              </span>
-              <div className="mt-3 font-display text-lg">{m.enL}</div>
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* Item picker */}
-        <div className="surface p-5">
-          <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3">
-            {"Select product"}
-          </div>
-          <ul className="space-y-1">
-            {CATALOG.map((c) => (
-              <li key={c.id}>
-                <button
-                  onClick={() => setSel(c)}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-sm transition ${sel.id === c.id ? "bg-primary text-primary-foreground" : "hover:bg-secondary"}`}
-                >
-                  <div className="font-medium">{c.en}</div>
-                  <div
-                    className={`text-xs ${sel.id === c.id ? "text-primary-foreground/80" : "text-muted-foreground"}`}
-                  >
-                    {"Shelf"}: {c.shelfDays} {"days"}
-                  </div>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Label preview */}
-        <div className="space-y-4">
-          <div className="rounded-2xl border-2 border-dashed border-border bg-white p-6 shadow-inner">
-            <p className="font-bold text-red-700 border-b-2 border-red-700 pb-2">
-              {t("MUSTER – NICHT FÜR LEBENSMITTEL", "SAMPLE — NOT FOR FOOD USE")}
-            </p>
-            <div
-              className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[10px] font-black uppercase tracking-widest text-white ${kindMeta[kind].color}`}
-            >
-              {kindMeta[kind].enL}
-            </div>
-            <div className="mt-3 font-display text-2xl leading-tight">{sel.en}</div>
-            <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
-              <div>
-                <div className="text-muted-foreground uppercase tracking-widest">{"Prepared"}</div>
-                <div className="font-mono font-bold text-sm">{fmt(today)}</div>
-              </div>
-              <div>
-                <div className="text-muted-foreground uppercase tracking-widest">{"Use by"}</div>
-                <div className="font-mono font-bold text-sm text-[color:var(--color-alert-red)]">
-                  {fmt(useBy)}
-                </div>
-              </div>
-              <div className="col-span-2">
-                <div className="text-muted-foreground uppercase tracking-widest">
-                  {"Prepared by"}
-                </div>
-                <div className="font-medium text-sm">{user?.name ?? "—"}</div>
-              </div>
-              {kind === "allergen" && (
-                <div className="col-span-2">
-                  <div className="text-muted-foreground uppercase tracking-widest">
-                    {"Allergens"}
-                  </div>
-                  <div className="mt-1 flex flex-wrap gap-1">
-                    {sel.allergens.length === 0 ? (
-                      <span className="text-xs text-success">{"none declared"}</span>
-                    ) : (
-                      sel.allergens.map((a) => (
-                        <span
-                          key={a}
-                          className="rounded-full bg-amber-100 text-amber-800 px-2 py-0.5 text-[10px] font-bold uppercase"
-                        >
-                          {a}
-                        </span>
-                      ))
-                    )}
-                  </div>
-                </div>
+              <option value="">{"Choose a recipe"}</option>
+              {recipes.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.name}
+                  {r.flagged ? " — review required" : ""}
+                </option>
+              ))}
+            </select>
+          </label>
+          {selected && (
+            <section className="surface p-5 space-y-3" aria-label={"Recipe review"}>
+              <h2 className="text-xl">{selected.name}</h2>
+              <p>
+                {"Recorded allergens"}:{" "}
+                {selected.allergens?.length
+                  ? selected.allergens.join(", ")
+                  : "None recorded — verify ingredients and cross-contact"}
+              </p>
+              {!readyLabelRecipe(selected, organizationId) && (
+                <p role="alert">{"This recipe needs review before a draft can be printed."}</p>
               )}
-            </div>
-            <div className="mt-5 pt-3 border-t border-dashed border-border font-mono text-[10px] text-muted-foreground">
-              GS-{sel.id.toUpperCase()}-{today.getTime().toString(36).slice(-6)}
-            </div>
-          </div>
-
+              <div className="grid sm:grid-cols-2 gap-4">
+                <label>
+                  {"Prepared date"}
+                  <input
+                    type="date"
+                    value={prepared}
+                    disabled={busy}
+                    onChange={(e) => {
+                      setPrepared(e.target.value);
+                      setReviewed(false);
+                    }}
+                    className="block border rounded p-3 w-full"
+                  />
+                </label>
+                <label>
+                  {"Proposed use-by date"}
+                  <input
+                    type="date"
+                    min={prepared || undefined}
+                    value={useBy}
+                    disabled={busy}
+                    onChange={(e) => {
+                      setUseBy(e.target.value);
+                      setReviewed(false);
+                    }}
+                    className="block border rounded p-3 w-full"
+                  />
+                </label>
+              </div>
+              {prepared && useBy && !validLabelDates(prepared, useBy) && (
+                <p role="alert">{"Use-by must be a valid date on or after preparation."}</p>
+              )}
+              <label className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  checked={reviewed}
+                  disabled={busy}
+                  onChange={(e) => setReviewed(e.target.checked)}
+                />
+                <span>
+                  {
+                    "I have reviewed the recipe, recorded allergens and proposed dates for this draft."
+                  }
+                </span>
+              </label>
+            </section>
+          )}
           <button
-            disabled={!canPrint}
-            onClick={doPrint}
-            className="btn-alert-solid w-full disabled:opacity-40 disabled:cursor-not-allowed"
+            onClick={() => void printDraft()}
+            disabled={!ready || busy}
+            className="btn-alert-solid disabled:opacity-40"
           >
-            <Printer size={16} className="inline mr-2" />
-            {canPrint ? "Print sample" : "No permission"}
+            {busy ? "Checking recipe…" : "Print review draft"}
+          </button>
+        </>
+      )}
+      {organizationId && !loading && !failed && (
+        <div className="flex gap-3 items-center">
+          <button
+            className="border rounded p-3 disabled:opacity-40"
+            disabled={busy || page === 0}
+            onClick={() => setPage(page - 1)}
+          >
+            {"Previous recipes"}
+          </button>
+          <span>
+            {"Page"} {page + 1}
+          </span>
+          <button
+            className="border rounded p-3 disabled:opacity-40"
+            disabled={busy || recipes.length < 100}
+            onClick={() => setPage(page + 1)}
+          >
+            {"Next recipes"}
           </button>
         </div>
-      </div>
-
-      <div className="surface overflow-hidden">
-        <div className="px-5 py-3 border-b border-border bg-secondary/50 flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
-          <History size={14} /> {"Print history"}
-        </div>
-        {history.length === 0 ? (
-          <div className="p-6 text-center text-sm text-muted-foreground">{"No prints yet."}</div>
-        ) : (
-          <ul className="divide-y divide-border">
-            {history.map((h) => (
-              <li key={h.id} className="grid grid-cols-12 items-center px-5 py-2.5 text-sm">
-                <div className="col-span-5 font-medium">{h.product_name}</div>
-                <div className="col-span-2 text-xs uppercase tracking-widest text-muted-foreground">
-                  {h.kind}
-                </div>
-                <div className="col-span-3 text-xs font-mono">{h.use_by ?? "—"}</div>
-                <div className="col-span-2 text-xs text-muted-foreground text-right">
-                  {new Date(h.created_at).toLocaleString("en-GB")}
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      )}
+      {!canPrint && <p>{"Your role cannot print label drafts."}</p>}
+      {message && (
+        <p role={message === "opened" ? "status" : "alert"}>
+          {message === "changed"
+            ? "The recipe changed or is no longer available. Select it again and repeat the review."
+            : message === "error"
+              ? "The draft could not be opened or verified. Allow popups and retry. No print record was created."
+              : "Draft opened for printing. This does not confirm a physical print; no operational print record was created."}
+        </p>
+      )}
     </div>
   );
 }
