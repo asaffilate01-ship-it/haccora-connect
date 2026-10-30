@@ -70,16 +70,9 @@ function LabelsPage() {
     loadHistory();
   }, [loadHistory]);
 
-  const doPrint = async () => {
+  // This catalogue is illustrative. Never persist a sample as operational evidence.
+  const doPrint = () => {
     if (!canPrint || !user) return;
-    await supabase.from("label_prints").insert({
-      kind,
-      product_name: sel.en,
-      use_by: useBy.toISOString().slice(0, 10),
-      allergens: kind === "allergen" ? sel.allergens : [],
-      printed_by: user.id,
-    });
-    loadHistory();
     window.print();
   };
 
@@ -112,6 +105,13 @@ function LabelsPage() {
           {"Prep, use-by, allergen and defrost labels — review operational details before use."}
         </p>
       </div>
+
+      <p role="note" className="rounded-lg border border-amber-500 p-4 font-semibold">
+        {t(
+          "Musteretiketten – nicht für Lebensmittel verwenden. Produkte, Allergene und Haltbarkeit sind Beispiele. Für betriebliche Etiketten sind geprüfte Rezeptdaten und freigegebene Verbrauchsdaten erforderlich.",
+          "Sample labels — do not use on food. Products, allergens and shelf lives are examples. Operational labels require verified recipe data and approved use-by dates.",
+        )}
+      </p>
 
       {/* Kind selector */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -161,6 +161,9 @@ function LabelsPage() {
         {/* Label preview */}
         <div className="space-y-4">
           <div className="rounded-2xl border-2 border-dashed border-border bg-white p-6 shadow-inner">
+            <p className="font-bold text-red-700 border-b-2 border-red-700 pb-2">
+              {t("MUSTER – NICHT FÜR LEBENSMITTEL", "SAMPLE — NOT FOR FOOD USE")}
+            </p>
             <div
               className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[10px] font-black uppercase tracking-widest text-white ${kindMeta[kind].color}`}
             >
@@ -217,7 +220,7 @@ function LabelsPage() {
             className="btn-alert-solid w-full disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Printer size={16} className="inline mr-2" />
-            {canPrint ? "Print label" : "No permission"}
+            {canPrint ? "Print sample" : "No permission"}
           </button>
         </div>
       </div>

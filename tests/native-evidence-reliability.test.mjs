@@ -27,6 +27,9 @@ function queueHarness() {
     networkFailure = false,
     storageFailure = false;
   let upload = async () => ({ error: null });
+  let lookup = async () => ({ data: null, error: null });
+  const filters = [];
+
   const modules = {
     "@react-native-async-storage/async-storage": {
       default: {
@@ -65,6 +68,16 @@ function queueHarness() {
           }),
         },
         from: (table) => ({
+          select: () => {
+            const query = {
+              eq: (key, value) => {
+                filters.push([key, value]);
+                return query;
+              },
+              maybeSingle: () => lookup(),
+            };
+            return query;
+          },
           insert: async (payload) => {
             inserted.push({ table, payload });
             return upload(payload);
@@ -79,6 +92,10 @@ function queueHarness() {
     index,
     secure,
     inserted,
+    filters,
+    lookup: (fn) => {
+      lookup = fn;
+    },
     setUser: (v) => {
       user = v;
     },
@@ -173,6 +190,78 @@ test("an account change during a batch prevents the next account-mismatched uplo
   });
   await h.api.flush();
   assert.equal(h.inserted.length, 1);
+  h.setUser("A");
+  assert.equal((await h.api.getQueueStatus()).pending, 1);
+});
+
+test("lost-response replay clears only after a scoped exact server match", async () => {
+  const h = queueHarness();
+  await h.api.enqueue("checks", { ...evidence("A"), answers: { b: [1, null], a: true } });
+  await h.api.flush();
+  h.online();
+  h.upload(async () => ({ error: { code: "23505" } }));
+  h.lookup(async () => ({
+    data: { ...h.inserted.at(-1).payload, id: "server-id", answers: { a: true, b: [1, null] } },
+    error: null,
+  }));
+  await h.api.flush();
+  assert.equal((await h.api.getQueueStatus()).pending, 0);
+  assert.equal(h.secure.size, 0);
+  assert.deepEqual(h.filters, [
+    ["idempotency_key", "job-1"],
+    ["organization_id", "org-A"],
+    ["user_id", "A"],
+  ]);
+});
+
+test("mismatched, missing, inaccessible and failed lookups retain conflicts", async () => {
+  for (const scenario of [
+    "changed",
+    "missing",
+    "forbidden",
+    "throws",
+    "wrong-org",
+    "wrong-user",
+    "wrong-key",
+    "missing-field",
+    "type-changed",
+  ]) {
+    const h = queueHarness();
+    await h.api.enqueue("checks", { ...evidence("A"), value: 4 });
+    await h.api.flush();
+    h.online();
+    h.upload(async () => ({ error: { code: "23505" } }));
+    h.lookup(async () => {
+      if (scenario === "throws") throw Error("network");
+      const data = { ...h.inserted.at(-1).payload };
+      if (scenario === "changed") data.title = "Different evidence";
+      if (scenario === "wrong-org") data.organization_id = "org-B";
+      if (scenario === "wrong-user") data.user_id = "B";
+      if (scenario === "wrong-key") data.idempotency_key = "other";
+      if (scenario === "missing-field") delete data.title;
+      if (scenario === "type-changed") data.value = "4";
+      return {
+        data: scenario === "missing" ? null : data,
+        error: scenario === "forbidden" ? { code: "42501" } : null,
+      };
+    });
+    await h.api.flush();
+    assert.equal((await h.api.listQueuedEvidence())[0].state, "conflict", scenario);
+    assert.equal(h.secure.size, 1, scenario);
+  }
+});
+
+test("account change during verification cannot acknowledge evidence", async () => {
+  const h = queueHarness();
+  await h.api.enqueue("checks", evidence("A"));
+  await h.api.flush();
+  h.online();
+  h.upload(async () => ({ error: { code: "23505" } }));
+  h.lookup(async () => {
+    h.setUser("B");
+    return { data: h.inserted.at(-1).payload, error: null };
+  });
+  await h.api.flush();
   h.setUser("A");
   assert.equal((await h.api.getQueueStatus()).pending, 1);
 });
@@ -378,4 +467,26 @@ test("large retry counts never discard failed evidence", async () => {
   await h.api.flush();
   assert.equal((await h.api.listQueuedEvidence())[0].attempts, 10001);
   assert.equal((await h.api.getQueueStatus()).pending, 1);
+});
+
+test("Postgres UTC formatting confirms the same instant without truncating precision", async () => {
+  for (const [actual, pending] of [
+    ["2026-10-30T12:00:00.12+00:00", 0],
+    ["2026-10-30T12:00:00.120001+00:00", 1],
+  ]) {
+    const h = queueHarness();
+    await h.api.enqueue("temperature_logs", {
+      ...evidence("A"),
+      logged_at: "2026-10-30T12:00:00.120Z",
+    });
+    await h.api.flush();
+    h.online();
+    h.upload(async () => ({ error: { code: "23505" } }));
+    h.lookup(async () => ({
+      data: { ...h.inserted.at(-1).payload, logged_at: actual },
+      error: null,
+    }));
+    await h.api.flush();
+    assert.equal((await h.api.getQueueStatus()).pending, pending);
+  }
 });

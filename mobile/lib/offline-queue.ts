@@ -23,10 +23,77 @@ type Job = {
   lastError?: string;
 };
 
+function ownerColumn(table: Table): string {
+  if (table === "cleaning_completions") return "completed_by";
+  if (table === "asset_events") return "recorded_by";
+  return "user_id";
+}
+
 function ownerOf(job: Pick<Job, "table" | "payload">): unknown {
-  if (job.table === "cleaning_completions") return job.payload.completed_by;
-  if (job.table === "asset_events") return job.payload.recorded_by;
-  return job.payload.user_id;
+  return job.payload[ownerColumn(job.table)];
+}
+
+// Compare JSON values without treating object key order as evidence differences.
+// Deliberately do not coerce strings/numbers or ignore missing fields.
+function sameValue(expected: unknown, actual: unknown): boolean {
+  if (expected === actual) return true;
+  if (!expected || !actual || typeof expected !== "object" || typeof actual !== "object")
+    return false;
+  if (Array.isArray(expected))
+    return (
+      Array.isArray(actual) &&
+      expected.length === actual.length &&
+      expected.every((value, index) => sameValue(value, actual[index]))
+    );
+  if (Array.isArray(actual)) return false;
+  const entries = Object.entries(expected);
+  return (
+    entries.length === Object.keys(actual).length &&
+    entries.every(
+      ([key, value]) =>
+        Object.hasOwn(actual, key) && sameValue(value, (actual as Record<string, unknown>)[key]),
+    )
+  );
+}
+
+// Postgres serializes UTC as +00:00 and may omit trailing fractional zeros.
+// Preserve sub-millisecond precision; Date.parse would silently truncate it.
+function sameField(key: string, expected: unknown, actual: unknown): boolean {
+  if (
+    ["completed_at", "logged_at", "received_at"].includes(key) &&
+    typeof expected === "string" &&
+    typeof actual === "string"
+  ) {
+    const canonical = (value: string) =>
+      value
+        .replace(/\+00:00$/, "Z")
+        .replace(/(\.\d*?)0+Z$/, "$1Z")
+        .replace(/\.Z$/, "Z");
+    return canonical(expected) === canonical(actual);
+  }
+  return sameValue(expected, actual);
+}
+
+async function isConfirmedReplay(job: Job): Promise<boolean> {
+  try {
+    const before = await supabase.auth.getSession();
+    if (before.error || before.data.session?.user.id !== ownerOf(job)) return false;
+    const { data, error } = await supabase
+      .from(job.table)
+      .select("*")
+      .eq("idempotency_key", job.id)
+      .eq("organization_id", job.payload.organization_id as string)
+      .eq(ownerColumn(job.table), ownerOf(job) as string)
+      .maybeSingle();
+    const after = await supabase.auth.getSession();
+    if (error || !data || after.error || after.data.session?.user.id !== ownerOf(job)) return false;
+    // Server defaults may add fields; every submitted field must still match.
+    return Object.entries(job.payload).every(
+      ([key, value]) => Object.hasOwn(data, key) && sameField(key, value, data[key]),
+    );
+  } catch {
+    return false;
+  }
 }
 
 let operation: Promise<void> = Promise.resolve();
@@ -149,7 +216,9 @@ export async function flush() {
         }
         const { error } = await supabase.from(job.table).insert(job.payload);
         if (error) {
-          // A uniqueness conflict is not proof that this exact evidence exists.
+          // Only a readable, scoped, field-for-field match confirms a lost-response replay.
+          if (error.code === "23505" && (await isConfirmedReplay(job))) continue;
+          // Missing, changed, inaccessible or unverifiable records stay on device.
           remaining.push({
             ...job,
             attempts: job.attempts + 1,

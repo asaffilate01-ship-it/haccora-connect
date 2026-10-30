@@ -14,7 +14,7 @@ Behavioural tests cover current-account-only summaries, safe conflict states, ma
 
 ## Remaining gaps
 
-1. Add server-side record comparison and an audited conflict-resolution decision. The new screen supports inspection and retry; it does not assert that every uniqueness conflict is a successful replay.
+1. Exact replay verification was added on 30 October: see `2026-10-30-IMPLEMENTATION-AUDIT.md`. An audited manual resolution workflow for genuinely different or unverifiable records remains outstanding; a uniqueness error alone is never confirmation.
 2. Implement a support-reviewed recovery process for damaged local storage, with physical-device termination/restart tests. Do not clear app data or re-enter evidence merely because a recovery error appears.
 3. Complete German actions/incidents/documents/settings translation and device keyboard, large-text and screen-reader review.
 4. Rehearse connected staging integrations and scheduled-work totals; produce signed native releases after physical-device acceptance.
