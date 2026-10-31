@@ -162,7 +162,12 @@ test("rejected metrics requests expose recovery instead of an endless spinner", 
   const tree = h.render();
   assert.equal(tree.props.role, "alert");
   assert.match(text(tree), /Live metrics are unavailable/);
-  assert.ok(nodes(tree).some((node) => node.type === "button"));
+  const retry = nodes(tree).find(
+    (node) => node.type === "button" || node.type === "ActionButton",
+  );
+  assert.ok(retry, "The failure state must expose a retry action");
+  assert.equal(retry.props.type, "button");
+  assert.equal(typeof retry.props.onClick, "function");
   h.cleanup();
 });
 
