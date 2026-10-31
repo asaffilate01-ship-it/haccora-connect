@@ -1,14 +1,7 @@
 import { BusinessServicePrompt } from "@/components/BusinessServicePrompt";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  AlertTriangle,
-  Clock3,
-  Loader2,
-  RefreshCw,
-  ShieldAlert,
-  WifiOff,
-} from "lucide-react";
+import { AlertTriangle, Clock3, Loader2, RefreshCw, ShieldAlert, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/haccora-client";
 import { useAuth } from "@/lib/auth";
@@ -190,7 +183,12 @@ function ControlCentrePage() {
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[
-          [ShieldAlert, filter === "open" ? "Open items" : "Items shown", items.length, "text-red-700"],
+          [
+            ShieldAlert,
+            filter === "open" ? "Open items" : "Items shown",
+            items.length,
+            "text-red-700",
+          ],
           [AlertTriangle, "Critical", critical, "text-orange-700"],
           [Clock3, "Overdue", overdue, "text-amber-700"],
           [WifiOff, "Sensors offline", offline, "text-slate-700"],
@@ -240,7 +238,9 @@ function ControlCentrePage() {
             <ShieldAlert className="mx-auto text-muted-foreground" size={28} aria-hidden="true" />
             <div className="mt-3 font-display text-xl">{"No items in this view"}</div>
             <p className="mt-1 text-sm text-muted-foreground">
-              {"No records were returned for this filter. This is not a food-safety compliance assessment."}
+              {
+                "No records were returned for this filter. This is not a food-safety compliance assessment."
+              }
             </p>
           </div>
         ) : (
