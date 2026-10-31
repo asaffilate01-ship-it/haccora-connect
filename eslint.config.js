@@ -57,4 +57,10 @@ export default tseslint.config(
     },
   },
   eslintPluginPrettier,
+  // Copy-and-own portfolio UI source is formatted at its upstream package.
+  // Keep all TypeScript/safety rules enabled; suppress only duplicate formatting errors.
+  {
+    files: ["src/components/portfolio-ui/**/*.{ts,tsx}"],
+    rules: { "prettier/prettier": "off" },
+  },
 );
