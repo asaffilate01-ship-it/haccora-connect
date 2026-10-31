@@ -1,15 +1,7 @@
 import { BusinessServicePrompt } from "@/components/BusinessServicePrompt";
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  AlertTriangle,
-  CheckCircle2,
-  Clock3,
-  Loader2,
-  RefreshCw,
-  ShieldAlert,
-  WifiOff,
-} from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AlertTriangle, Clock3, Loader2, RefreshCw, ShieldAlert, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/haccora-client";
 import { useAuth } from "@/lib/auth";
@@ -51,36 +43,55 @@ function ControlCentrePage() {
   const [items, setItems] = useState<InboxItem[]>([]);
   const [actions, setActions] = useState<CorrectiveAction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const requestId = useRef(0);
   const [busy, setBusy] = useState<string | null>(null);
   const [filter, setFilter] = useState<"open" | "all">("open");
 
   const load = useCallback(async () => {
+    const request = ++requestId.current;
     setLoading(true);
-    const inboxQuery = (supabase as any)
-      .from("unified_inbox_items")
-      .select("id,item_type,source_id,title,summary,severity,status,due_at,created_at")
-      .order("created_at", { ascending: false })
-      .limit(150);
-    if (filter === "open") inboxQuery.in("status", ["open", "acknowledged"]);
-    const [inbox, corrective] = await Promise.all([
-      inboxQuery,
-      (supabase as any)
-        .from("corrective_actions")
-        .select("id,description,status,severity,owner_id,due_at,evidence")
-        .in("status", ["open", "in_progress", "verified"])
-        .order("due_at", { ascending: true })
-        .limit(150),
-    ]);
-    if (inbox.error || corrective.error) {
-      toast.error("Control centre could not load.");
+    setLoadError("");
+    try {
+      const inboxQuery = (supabase as any)
+        .from("unified_inbox_items")
+        .select("id,item_type,source_id,title,summary,severity,status,due_at,created_at")
+        .order("created_at", { ascending: false })
+        .limit(150);
+      if (filter === "open") inboxQuery.in("status", ["open", "acknowledged"]);
+      const [inbox, corrective] = await Promise.all([
+        inboxQuery,
+        (supabase as any)
+          .from("corrective_actions")
+          .select("id,description,status,severity,owner_id,due_at,evidence")
+          .in("status", ["open", "in_progress", "verified"])
+          .order("due_at", { ascending: true })
+          .limit(150),
+      ]);
+      if (request !== requestId.current) return;
+      if (inbox.error || corrective.error) {
+        setItems([]);
+        setActions([]);
+        setLoadError("Live operational data could not be loaded. Please retry.");
+        return;
+      }
+      setItems((inbox.data ?? []) as InboxItem[]);
+      setActions((corrective.data ?? []) as CorrectiveAction[]);
+    } catch {
+      if (request !== requestId.current) return;
+      setItems([]);
+      setActions([]);
+      setLoadError("Live operational data could not be loaded. Please retry.");
+    } finally {
+      if (request === requestId.current) setLoading(false);
     }
-    setItems((inbox.data ?? []) as InboxItem[]);
-    setActions((corrective.data ?? []) as CorrectiveAction[]);
-    setLoading(false);
   }, [filter]);
 
   useEffect(() => {
     void load();
+    return () => {
+      requestId.current += 1;
+    };
   }, [load]);
 
   useEffect(() => {
@@ -102,6 +113,7 @@ function ControlCentrePage() {
   const overdue = items.filter((item) => item.due_at && new Date(item.due_at) < new Date()).length;
   const critical = items.filter((item) => item.severity === "critical").length;
   const offline = items.filter((item) => item.item_type === "sensor_offline").length;
+  const isCapped = items.length >= 150 || actions.length >= 150;
 
   const acknowledge = async (item: InboxItem) => {
     setBusy(item.id);
@@ -171,7 +183,12 @@ function ControlCentrePage() {
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[
-          [ShieldAlert, "Open items", items.length, "text-red-700"],
+          [
+            ShieldAlert,
+            filter === "open" ? "Open items" : "Items shown",
+            items.length,
+            "text-red-700",
+          ],
           [AlertTriangle, "Critical", critical, "text-orange-700"],
           [Clock3, "Overdue", overdue, "text-amber-700"],
           [WifiOff, "Sensors offline", offline, "text-slate-700"],
@@ -180,24 +197,50 @@ function ControlCentrePage() {
           return (
             <div key={String(label)} className="surface p-4">
               <MetricIcon size={18} className={String(colour)} />
-              <div className="mt-3 text-3xl font-display">{String(value)}</div>
+              <div className="mt-3 text-3xl font-display">
+                {loading || loadError ? "—" : String(value)}
+              </div>
               <div className="text-xs text-muted-foreground">{String(label)}</div>
             </div>
           );
         })}
       </div>
 
-      <div className="surface overflow-hidden">
+      {!loading && !loadError && isCapped && (
+        <p role="status" className="rounded-xl border border-border bg-muted px-4 py-3 text-sm">
+          {"This view shows up to 150 records per list. The figures may be incomplete."}
+        </p>
+      )}
+
+      <div className="surface overflow-hidden" aria-busy={loading}>
         {loading ? (
           <div className="p-12 text-center text-sm text-muted-foreground">
             <Loader2 className="mr-2 inline animate-spin" size={16} /> {"Loading…"}
           </div>
+        ) : loadError ? (
+          <div role="alert" className="p-8 md:p-12">
+            <AlertTriangle className="text-destructive" size={28} aria-hidden="true" />
+            <h2 className="mt-3 font-display text-xl">{"Operational data unavailable"}</h2>
+            <p className="mt-2 max-w-xl text-sm text-muted-foreground">
+              {loadError} {"Exceptions cannot be assumed cleared until this view loads."}
+            </p>
+            <button
+              type="button"
+              className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              onClick={() => void load()}
+            >
+              <RefreshCw size={16} aria-hidden="true" />
+              {"Try again"}
+            </button>
+          </div>
         ) : items.length === 0 ? (
           <div className="p-12 text-center">
-            <CheckCircle2 className="mx-auto text-success" size={28} />
-            <div className="mt-3 font-display text-xl">{"All clear"}</div>
+            <ShieldAlert className="mx-auto text-muted-foreground" size={28} aria-hidden="true" />
+            <div className="mt-3 font-display text-xl">{"No items in this view"}</div>
             <p className="mt-1 text-sm text-muted-foreground">
-              {"There are no open operational exceptions."}
+              {
+                "No records were returned for this filter. This is not a food-safety compliance assessment."
+              }
             </p>
           </div>
         ) : (
