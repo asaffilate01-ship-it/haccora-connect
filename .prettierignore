@@ -16,3 +16,6 @@ AGENTS.md
 
 public/downloads/
 src/integrations/supabase/previewAuthStorage.ts
+
+# Copied verbatim from the separately maintained portfolio UI source.
+src/components/portfolio-ui/

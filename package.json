@@ -134,6 +134,8 @@
     "vite": "8.2.4"
   },
   "overrides": {
-    "nanoid": "3.3.18"
+    "nanoid": "3.3.18",
+    "seroval": "1.7.3",
+    "seroval-plugins": "1.7.3"
   }
 }

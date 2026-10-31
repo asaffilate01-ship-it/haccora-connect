@@ -1,4 +1,5 @@
 import { operationalDay } from "@/lib/operational-day";
+import { ActionButton } from "./portfolio-ui";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/haccora-client";
 import { AlertOctagon, Thermometer, Bell, ClipboardCheck, Loader2 } from "lucide-react";
@@ -100,17 +101,19 @@ export function LiveMetrics() {
         <AlertOctagon size={16} aria-hidden="true" className="mt-0.5 shrink-0" />
         <div>
           <p>{error}</p>
-          <button
+          <ActionButton
             type="button"
+            tone="secondary"
+            density="comfortable"
+            className="mt-3"
             onClick={() => {
               setError("");
               setC(null);
               setRefreshKey((key) => key + 1);
             }}
-            className="mt-3 min-h-11 rounded-lg border px-4 font-semibold"
           >
             Try again
-          </button>
+          </ActionButton>
         </div>
       </div>
     );
