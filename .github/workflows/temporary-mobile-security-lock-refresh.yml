@@ -1,0 +1,66 @@
+name: Temporary Haccora mobile security lock refresh
+
+# One-off maintenance on the existing security-fix feature branch ONLY.
+# Remove this workflow after the reviewed lockfile update lands.
+on:
+  push:
+    branches:
+      - feat/kitchen-ui-pilot-haccora-20261031
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mobile-security-lock-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  refresh-lock:
+    if: github.repository == 'asaffilate01-ship-it/haccora-connect'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6 pinned
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6 pinned
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - name: Regenerate lockfile from npm registry with package override verification
+        working-directory: mobile
+        run: |
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+          node --input-type=module -e '
+          import lock from "./package-lock.json" with {type:"json"};
+          for (const [name, expected] of Object.entries({"decode-uri-component":"0.5.1","glob":"14.0.2","minimatch":"11.0.1"})) {
+            const item=lock.packages["node_modules/"+name];
+            if(!item || item.version!==expected || !item.integrity?.startsWith("sha512-"))throw Error("Unsafe lock resolution: "+name+" "+item?.version);
+            console.log(name+"@" +item.version+" verified with integrity");
+          }'
+      - name: Install and typecheck with new lock
+        working-directory: mobile
+        run: |
+          npm ci --no-audit --no-fund
+          npm run typecheck
+      - name: Expo export compatibility verification
+        working-directory: mobile
+        env:
+          EXPO_NO_TELEMETRY: "1"
+          EXPO_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+          EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+          EXPO_PUBLIC_WEB_APP_URL: https://ci.haccora.invalid
+        run: npm run export:check
+      - name: Commit generated lockfile only to the feature branch
+        shell: bash
+        run: |
+          git add mobile/package-lock.json
+          if git diff --cached --quiet; then
+            echo "Verified lockfile already current"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "fix(mobile): regenerate trusted lockfile for security patches"
+            git push origin HEAD:feat/kitchen-ui-pilot-haccora-20261031
+          fi
