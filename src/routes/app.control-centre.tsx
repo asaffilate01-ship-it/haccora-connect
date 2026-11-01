@@ -46,6 +46,7 @@ function ControlCentrePage() {
   const [loadError, setLoadError] = useState("");
   const requestId = useRef(0);
   const [busy, setBusy] = useState<string | null>(null);
+  const mutating = useRef(false);
   const [filter, setFilter] = useState<"open" | "all">("open");
 
   const load = useCallback(async () => {
@@ -115,44 +116,85 @@ function ControlCentrePage() {
   const offline = items.filter((item) => item.item_type === "sensor_offline").length;
   const isCapped = items.length >= 150 || actions.length >= 150;
 
-  const acknowledge = async (item: InboxItem) => {
-    setBusy(item.id);
-    const { error } = await (supabase as any)
+  const saveAcknowledgement = async (item: InboxItem): Promise<boolean> => {
+    const { data, error } = await (supabase as any)
       .from("unified_inbox_items")
       .update({
         status: "acknowledged",
         owner_id: user?.id,
         acknowledged_at: new Date().toISOString(),
       })
-      .eq("id", item.id);
-    setBusy(null);
-    if (error) toast.error(error.message);
-    else void load();
+      .eq("id", item.id)
+      .in("status", ["open", "acknowledged"])
+      .select("id")
+      .maybeSingle();
+    return !error && Boolean(data?.id);
+  };
+
+  const acknowledge = async (item: InboxItem) => {
+    if (!user?.id || user.role === "inspector" || mutating.current) return;
+    mutating.current = true;
+    setBusy(item.id);
+    try {
+      const saved = await saveAcknowledgement(item);
+      if (!saved) {
+        toast.error("Ownership could not be confirmed.");
+      } else {
+        await load();
+      }
+    } catch {
+      toast.error("Ownership could not be confirmed.");
+    } finally {
+      mutating.current = false;
+      setBusy(null);
+    }
   };
 
   const progressAction = async (item: InboxItem) => {
+    if (
+      !user?.id ||
+      user.role === "inspector" ||
+      mutating.current ||
+      item.status === "resolved" ||
+      item.status === "dismissed"
+    ) return;
     const action = byId.get(item.source_id);
-    if (!action) return acknowledge(item);
-    setBusy(item.id);
-    const { error } = await (supabase as any).rpc("transition_corrective_action", {
-      p_action_id: action.id,
-      p_status: "in_progress",
-      p_note: "Claimed in control centre",
-      p_evidence: [],
-    });
-    if (!error) {
-      await (supabase as any)
-        .from("unified_inbox_items")
-        .update({
-          status: "acknowledged",
-          owner_id: user?.id,
-          acknowledged_at: new Date().toISOString(),
-        })
-        .eq("id", item.id);
+    if (!action) {
+      await acknowledge(item);
+      return;
     }
-    setBusy(null);
-    if (error) toast.error(error.message);
-    else void load();
+    if (action.status !== "open" && action.status !== "in_progress") {
+      toast.error("Ownership could not be confirmed.");
+      return;
+    }
+    mutating.current = true;
+    setBusy(item.id);
+    let progressed = action.status === "in_progress";
+    try {
+      if (!progressed) {
+        const { error } = await (supabase as any).rpc("transition_corrective_action", {
+          p_action_id: action.id,
+          p_status: "in_progress",
+          p_note: "Claimed in control centre",
+          p_evidence: [],
+        });
+        if (error) {
+          toast.error("Ownership could not be confirmed.");
+          return;
+        }
+        progressed = true;
+      }
+      const saved = await saveAcknowledgement(item);
+      if (!saved) {
+        toast.error("Corrective action may have advanced, but inbox acknowledgement failed. Review the state.");
+      }
+    } catch {
+      toast.error(progressed ? "Corrective action may have advanced, but inbox acknowledgement failed. Review the state." : "Ownership could not be confirmed.");
+    } finally {
+      mutating.current = false;
+      setBusy(null);
+      if (progressed) void load();
+    }
   };
 
   return (
@@ -270,17 +312,25 @@ function ControlCentrePage() {
                       {action ? ` · ${action.status.replace("_", " ")}` : ""}
                     </div>
                   </div>
-                  <button
-                    disabled={busy === item.id}
-                    onClick={() => void progressAction(item)}
-                    className="min-h-11 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground disabled:opacity-50"
-                  >
+                  {user?.role !== "inspector" &&
+                    item.status !== "resolved" &&
+                    item.status !== "dismissed" ? (
+                    <button
+                      disabled={Boolean(busy)}
+                      onClick={() => void progressAction(item)}
+                      className="min-h-11 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground disabled:opacity-50"
+                    >
                     {busy === item.id ? (
                       <Loader2 className="inline animate-spin" size={15} />
                     ) : (
                       "Take ownership"
                     )}
-                  </button>
+                    </button>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">
+                      {"Read-only"}
+                    </span>
+                  )}
                 </li>
               );
             })}
