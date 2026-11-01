@@ -201,13 +201,14 @@ function LabelsPage() {
         );
         return;
       }
+      const verifiedRecipe = current.data;
       const finalBlockers = labelBlockers({
         organizationId: orgId,
         locationId: siteId,
         canPrint,
         active: accountActive,
         evidenceAvailable: true,
-        recipe: current.data,
+        recipe: verifiedRecipe,
         kind,
         useBy,
         reviewed,
@@ -224,7 +225,7 @@ function LabelsPage() {
           location_id: siteId,
           printed_by: user.id,
           kind,
-          product_name: current.data.name,
+          product_name: verifiedRecipe.name,
           use_by: useBy,
           allergens: [],
           idempotency_key: crypto.randomUUID(),
@@ -244,7 +245,7 @@ function LabelsPage() {
       setReady({
         id: data.id,
         kind,
-        name: current.data.name,
+        name: verifiedRecipe.name,
         useBy,
         operator: user.name,
         requestedAt,
@@ -254,7 +255,7 @@ function LabelsPage() {
           {
             id: data.id,
             kind,
-            product_name: current.data.name,
+            product_name: verifiedRecipe.name,
             use_by: useBy,
             created_at: new Date(requestedAt).toISOString(),
           },
