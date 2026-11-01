@@ -41,8 +41,13 @@ const normalise = (value: string) =>
   aliases[value.toLowerCase().trim()] || value.toLowerCase().trim();
 
 export default function Allergens() {
-  const { session, loading: sessionLoading, workspaceReady, organizationId, locationId } =
-    useSession();
+  const {
+    session,
+    loading: sessionLoading,
+    workspaceReady,
+    organizationId,
+    locationId,
+  } = useSession();
   const userId = session?.user.id;
   const [rows, setRows] = useState<Recipe[]>([]);
   const [query, setQuery] = useState("");
@@ -173,8 +178,9 @@ export default function Allergens() {
         <Text style={styles.empty}>No matching live menu items.</Text>
       )}
       <Text style={styles.disclaimer}>
-        Saved recipe data is not an allergen approval. Allergen information must be kept current and verified. Ask about recipe changes,
-        substitutions and cross-contamination controls before advising a customer.
+        Saved recipe data is not an allergen approval. Allergen information must be kept current and
+        verified. Ask about recipe changes, substitutions and cross-contamination controls before
+        advising a customer.
       </Text>
     </ScrollView>
   );

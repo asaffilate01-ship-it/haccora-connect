@@ -35,13 +35,22 @@ const valid = {
 
 test("real recipe, scoped operator and reviewed future date can prepare operational label", () => {
   assert.deepEqual(Array.from(labelBlockers(valid)), []);
-  assert.deepEqual(Array.from(labelBlockers({ ...valid, recipe: { ...recipe, location_id: null } })), []);
+  assert.deepEqual(
+    Array.from(labelBlockers({ ...valid, recipe: { ...recipe, location_id: null } })),
+    [],
+  );
 });
 
 test("arbitrary demo products, cross-premises records and flagged recipes cannot print", () => {
   assert.ok(labelBlockers({ ...valid, recipe: null }).includes("product"));
-  assert.ok(labelBlockers({ ...valid, recipe: { ...recipe, organization_id: "other" } }).includes("product"));
-  assert.ok(labelBlockers({ ...valid, recipe: { ...recipe, location_id: "other" } }).includes("product"));
+  assert.ok(
+    labelBlockers({ ...valid, recipe: { ...recipe, organization_id: "other" } }).includes(
+      "product",
+    ),
+  );
+  assert.ok(
+    labelBlockers({ ...valid, recipe: { ...recipe, location_id: "other" } }).includes("product"),
+  );
   assert.ok(labelBlockers({ ...valid, recipe: { ...recipe, flagged: true } }).includes("product"));
   assert.ok(labelBlockers({ ...valid, recipe: { ...recipe, updated_at: "" } }).includes("product"));
 });

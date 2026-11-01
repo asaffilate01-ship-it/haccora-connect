@@ -14,8 +14,13 @@ type Label = {
 };
 
 export default function Ppds() {
-  const { session, loading: sessionLoading, workspaceReady, organizationId, locationId } =
-    useSession();
+  const {
+    session,
+    loading: sessionLoading,
+    workspaceReady,
+    organizationId,
+    locationId,
+  } = useSession();
   const userId = session?.user.id;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);

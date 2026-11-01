@@ -1,6 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AlertTriangle, ClipboardCheck, History, Loader2, Printer, RefreshCw, Tag } from "lucide-react";
+import {
+  AlertTriangle,
+  ClipboardCheck,
+  History,
+  Loader2,
+  Printer,
+  RefreshCw,
+  Tag,
+} from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { can } from "@/lib/permissions";
@@ -334,11 +342,16 @@ function LabelsPage() {
           "Interne Kennzeichnung, kein verifiziertes Allergenetikett. Physische Etiketten und Haltbarkeitsangaben müssen vor Verwendung geprüft werden.",
           "Internal identification only, not a verified allergen or PPDS declaration. Check the physical print and use-by date before use.",
         )}
-        <Link to="/app/ppds" className="ml-2 font-bold underline">{t("PPDS-Prüfung öffnen", "Open controlled PPDS review")}</Link>
+        <Link to="/app/ppds" className="ml-2 font-bold underline">
+          {t("PPDS-Prüfung öffnen", "Open controlled PPDS review")}
+        </Link>
       </div>
 
       {loadError && (
-        <div className="rounded-xl border border-destructive/30 p-4 text-sm text-destructive" role="alert">
+        <div
+          className="rounded-xl border border-destructive/30 p-4 text-sm text-destructive"
+          role="alert"
+        >
           {t(
             "Rezepte oder Druckhistorie nicht verfügbar. Der Druck ist gesperrt.",
             "Recipe or print history evidence unavailable. Printing is blocked.",
@@ -375,7 +388,11 @@ function LabelsPage() {
                 )}
               </p>
             )}
-            {loading && <p className="mt-2 text-sm" role="status">{t("Lädt…", "Loading…")}</p>}
+            {loading && (
+              <p className="mt-2 text-sm" role="status">
+                {t("Lädt…", "Loading…")}
+              </p>
+            )}
             {!loading && !loadError && recipes.length === 0 && (
               <p className="mt-2 text-sm">
                 {t("Keine Betriebsrezepte vorhanden.", "No real recipes found for this premises.")}
@@ -384,10 +401,9 @@ function LabelsPage() {
             {selected && (
               <p className="mt-2 text-xs text-muted-foreground">
                 {t("Quelle zuletzt aktualisiert", "Source last updated")}:{" "}
-                {new Date(selected.updated_at).toLocaleString(
-                  lang === "de" ? "de-DE" : "en-GB",
-                  { timeZone },
-                )}
+                {new Date(selected.updated_at).toLocaleString(lang === "de" ? "de-DE" : "en-GB", {
+                  timeZone,
+                })}
               </p>
             )}
           </div>
@@ -403,7 +419,9 @@ function LabelsPage() {
                   disabled={busy}
                   className={
                     "min-h-11 rounded-lg border px-4 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 " +
-                    (kind === item.id ? "border-primary bg-primary text-primary-foreground" : "border-border")
+                    (kind === item.id
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border")
                   }
                 >
                   {t(item.de, item.en)}
@@ -463,7 +481,11 @@ function LabelsPage() {
               </ul>
             </div>
           )}
-          {actionError && <p role="alert" className="text-sm text-destructive">{actionError}</p>}
+          {actionError && (
+            <p role="alert" className="text-sm text-destructive">
+              {actionError}
+            </p>
+          )}
           <button
             type="button"
             disabled={busy || blockers.length > 0}
@@ -494,10 +516,12 @@ function LabelsPage() {
                 <dl className="mt-4 space-y-2 text-sm">
                   <div className="flex justify-between gap-3">
                     <dt>{t("Art", "Type")}</dt>
-                    <dd>{t(
-                      kinds.find((item) => item.id === ready.kind)?.de ?? "",
-                      kinds.find((item) => item.id === ready.kind)?.en ?? "",
-                    )}</dd>
+                    <dd>
+                      {t(
+                        kinds.find((item) => item.id === ready.kind)?.de ?? "",
+                        kinds.find((item) => item.id === ready.kind)?.en ?? "",
+                      )}
+                    </dd>
                   </div>
                   <div className="flex justify-between gap-3">
                     <dt>{t("Verbrauchen bis", "Use by")}</dt>
@@ -535,7 +559,10 @@ function LabelsPage() {
         </div>
       </section>
 
-      <section className="surface overflow-hidden" aria-label={t("Druckaufträge", "Print requests")}>
+      <section
+        className="surface overflow-hidden"
+        aria-label={t("Druckaufträge", "Print requests")}
+      >
         <h2 className="flex items-center gap-2 border-b border-border p-4 text-lg font-bold">
           <History size={17} aria-hidden="true" />
           {t("Gespeicherte Druckaufträge", "Saved print requests")}
@@ -552,10 +579,9 @@ function LabelsPage() {
                 <span className="text-muted-foreground">{item.kind}</span>
                 <span>{item.use_by ?? "—"}</span>
                 <time className="ml-auto text-xs text-muted-foreground" dateTime={item.created_at}>
-                  {new Date(item.created_at).toLocaleString(
-                    lang === "de" ? "de-DE" : "en-GB",
-                    { timeZone },
-                  )}
+                  {new Date(item.created_at).toLocaleString(lang === "de" ? "de-DE" : "en-GB", {
+                    timeZone,
+                  })}
                 </time>
               </li>
             ))}

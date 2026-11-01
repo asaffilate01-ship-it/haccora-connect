@@ -152,12 +152,8 @@ function ControlCentrePage() {
   };
 
   const progressAction = async (item: InboxItem) => {
-    if (
-      !user?.id ||
-      user.role === "inspector" ||
-      mutating.current ||
-      item.status !== "open"
-    ) return;
+    if (!user?.id || user.role === "inspector" || mutating.current || item.status !== "open")
+      return;
     const action = byId.get(item.source_id);
     if (!action) {
       await acknowledge(item);
@@ -186,10 +182,16 @@ function ControlCentrePage() {
       }
       const saved = await saveAcknowledgement(item);
       if (!saved) {
-        toast.error("Corrective action may have advanced, but inbox acknowledgement failed. Review the state.");
+        toast.error(
+          "Corrective action may have advanced, but inbox acknowledgement failed. Review the state.",
+        );
       }
     } catch {
-      toast.error(progressed ? "Corrective action may have advanced, but inbox acknowledgement failed. Review the state." : "Ownership could not be confirmed.");
+      toast.error(
+        progressed
+          ? "Corrective action may have advanced, but inbox acknowledgement failed. Review the state."
+          : "Ownership could not be confirmed.",
+      );
     } finally {
       mutating.current = false;
       setBusy(null);
@@ -312,23 +314,20 @@ function ControlCentrePage() {
                       {action ? ` · ${action.status.replace("_", " ")}` : ""}
                     </div>
                   </div>
-                  {user?.role !== "inspector" &&
-                    item.status === "open" ? (
+                  {user?.role !== "inspector" && item.status === "open" ? (
                     <button
                       disabled={Boolean(busy)}
                       onClick={() => void progressAction(item)}
                       className="min-h-11 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground disabled:opacity-50"
                     >
-                    {busy === item.id ? (
-                      <Loader2 className="inline animate-spin" size={15} />
-                    ) : (
-                      "Take ownership"
-                    )}
+                      {busy === item.id ? (
+                        <Loader2 className="inline animate-spin" size={15} />
+                      ) : (
+                        "Take ownership"
+                      )}
                     </button>
                   ) : (
-                    <span className="text-xs text-muted-foreground">
-                      {"Read-only"}
-                    </span>
+                    <span className="text-xs text-muted-foreground">{"Read-only"}</span>
                   )}
                 </li>
               );
