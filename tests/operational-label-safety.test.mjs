@@ -76,10 +76,10 @@ test("print screen has no demo catalogue or invented shelf life and must persist
   const page = await readFile(new URL("../src/routes/app.labels.tsx", import.meta.url), "utf8");
   assert.doesNotMatch(page, /CATALOG|shelfDays|House bolognese|Caesar dressing|none declared/);
   assert.match(page, /\.from\("recipes"\)/);
-  assert.match(page, /\.from\("label_prints"\)\.insert\(/);
-  assert.match(page, /\.eq\("organization_id", user\.organizationId\)/);
+  assert.match(page, /\.from\("label_prints"\)\s*\.insert\(/);
+  assert.match(page, /\.eq\("organization_id", orgId\)/);
   assert.match(page, /labelBlockers\(/);
   assert.match(page, /reviewed/);
   assert.match(page, /window\.print\(\)/);
-  assert.match(page, /\.select\("id"\)\.single\(\)/);
+  assert.match(page, /\.select\("id"\)\s*\.single\(\)/);
 });
