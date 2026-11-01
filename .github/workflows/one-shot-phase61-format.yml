@@ -1,0 +1,35 @@
+name: One-time Haccora Phase 61 formatter
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/one-shot-phase61-format.yml"
+permissions:
+  contents: write
+jobs:
+  format:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'fix/control-centre-trust-20261031'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.head_ref }}
+          persist-credentials: true
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Format only reviewed Phase 61 paths
+        run: npx prettier --write "src/routes/app.labels.tsx" "src/routes/app.control-centre.tsx" "src/lib/operational-label.ts" "src/styles.css" "tests/operational-label-safety.test.mjs" "tests/control-centre-claim-integrity.test.mjs" "tests/native-allergen-evidence.test.mjs" "mobile/app/allergens.tsx" "mobile/app/ppds.tsx" "docs/2026-11-01-PHASE-61-LABEL-SAFETY.md"
+      - name: Commit formatted source to the same review branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "src/routes/app.labels.tsx" "src/routes/app.control-centre.tsx" "src/lib/operational-label.ts" "src/styles.css" "tests/operational-label-safety.test.mjs" "tests/control-centre-claim-integrity.test.mjs" "tests/native-allergen-evidence.test.mjs" "mobile/app/allergens.tsx" "mobile/app/ppds.tsx" "docs/2026-11-01-PHASE-61-LABEL-SAFETY.md"
+          if git diff --cached --quiet; then
+            echo "Everything already formatted"
+            exit 0
+          fi
+          git commit -m "style: format Phase 61 source for quality gate"
+          git push origin "HEAD:$GITHUB_HEAD_REF"
