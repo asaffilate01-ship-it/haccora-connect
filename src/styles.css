@@ -830,3 +830,31 @@ html[data-lang-changing="true"] * {
     font-size: max(16px, 1rem);
   }
 }
+
+/* Operational labels use isolated print output, never the surrounding app shell. */
+@media print {
+  body:has(.haccora-label-print-sheet) * {
+    visibility: hidden !important;
+  }
+
+  body:has(.haccora-label-print-sheet) .haccora-label-print-sheet,
+  body:has(.haccora-label-print-sheet) .haccora-label-print-sheet * {
+    visibility: visible !important;
+  }
+
+  body:has(.haccora-label-print-sheet) .haccora-label-print-sheet {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: 85mm;
+    max-width: 85mm;
+    padding: 5mm;
+    border: 1px solid #111 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: #fff !important;
+    color: #111 !important;
+    font-family: Arial, sans-serif !important;
+    break-inside: avoid;
+  }
+}
