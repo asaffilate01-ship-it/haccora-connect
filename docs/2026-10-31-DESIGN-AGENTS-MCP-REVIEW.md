@@ -24,7 +24,7 @@ Existing React/TanStack/Expo app has Supabase RLS, UK jurisdiction-specific work
 - Taste Skill — https://github.com/Leonxlnx/taste-skill — audit-first typography, layout, measured motion; use design rules, not an unreviewed dependency.
 - Impeccable — https://github.com/pbakaus/impeccable — critique, harden, adapt and anti-pattern detection.
 - Awesome DESIGN.md — https://github.com/VoltAgent/awesome-design-md — reference for documenting Haccora's own tokens; do not clone another brand's identity.
-- Radix UI and shadcn/ui — https://github.com/radix-ui/primitives and https://github.com/shadcn-ui/ui — *already represented* in current code; improve shared components rather than replacing the UI stack.
+- Radix UI and shadcn/ui — https://github.com/radix-ui/primitives and https://github.com/shadcn-ui/ui — _already represented_ in current code; improve shared components rather than replacing the UI stack.
 - Playwright MCP — https://github.com/microsoft/playwright-mcp — isolated staging role/mobile/browser verification, never production mutation.
 - OpenFGA — https://github.com/openfga/openfga — evaluate only if current Supabase RLS and scoped inspector grants prove insufficient.
 - Langfuse — https://github.com/langfuse/langfuse — optional redacted AI run traces and human-review evaluation.

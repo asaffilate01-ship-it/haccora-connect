@@ -2,7 +2,7 @@
 
 ## Design intent
 
-Confident, accessible, operational and evidence-led rather than decorative. Prioritise *what needs attention now*, the current premises, accountable owner and next safe action. Design guidance is informed by Taste Skill, Impeccable and Awesome DESIGN.md, but Haccora's implementation remains its own.
+Confident, accessible, operational and evidence-led rather than decorative. Prioritise _what needs attention now_, the current premises, accountable owner and next safe action. Design guidance is informed by Taste Skill, Impeccable and Awesome DESIGN.md, but Haccora's implementation remains its own.
 
 ## Authority: existing UI tokens and components
 
