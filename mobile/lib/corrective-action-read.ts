@@ -49,5 +49,5 @@ export function classifyCorrectiveActionRead(data: unknown, error: unknown): Cor
 }
 
 export function canChangeCorrectiveAction(role: string | null): boolean {
-  return role !== null && role !== "inspector";
+  return role === "owner" || role === "manager" || role === "chef" || role === "staff";
 }
