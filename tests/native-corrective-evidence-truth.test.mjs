@@ -77,7 +77,7 @@ test("native page guards stale reads and distinguishes evidence states", () => {
   assert.match(page, /readState === "ready"/);
   assert.match(page, /No safety clearance can be inferred/);
   assert.match(page, /Retry records/);
-  assert.match(page, /\{canEdit && <View style=\{styles\.actions\}>/);
+  assert.match(page, /\{canEdit && \(\s*<View style=\{styles\.actions\}>/);
   assert.match(page, /Photo uploaded; action not updated/);
   assert.doesNotMatch(page, /All clear/);
 });
