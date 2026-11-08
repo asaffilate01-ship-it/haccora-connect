@@ -9,6 +9,18 @@ const helper = readFileSync(
   "utf8",
 );
 const page = readFileSync(new URL("../mobile/app/actions.tsx", import.meta.url), "utf8");
+const parsedPage = ts.transpileModule(page, {
+  fileName: "actions.tsx",
+  compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.ESNext },
+  reportDiagnostics: true,
+});
+assert.equal(
+  (parsedPage.diagnostics ?? []).filter(
+    (diagnostic) => diagnostic.category === ts.DiagnosticCategory.Error,
+  ).length,
+  0,
+);
+
 const output = ts.transpileModule(helper, {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   reportDiagnostics: true,
