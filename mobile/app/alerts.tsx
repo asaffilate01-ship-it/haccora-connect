@@ -92,7 +92,10 @@ export default function Alerts() {
       if (error || !data?.id) throw new Error("No confirmed update");
       void load();
     } catch {
-      Alert.alert("Read status not confirmed", "Check your connection and refresh the alert inbox.");
+      Alert.alert(
+        "Read status not confirmed",
+        "Check your connection and refresh the alert inbox.",
+      );
     }
   };
   const markAllRead = async () => {
@@ -104,7 +107,10 @@ export default function Alerts() {
       if (error) throw error;
       void load();
     } catch {
-      Alert.alert("Read status not confirmed", "Some alerts may still be unread. Refresh and retry.");
+      Alert.alert(
+        "Read status not confirmed",
+        "Some alerts may still be unread. Refresh and retry.",
+      );
     }
   };
   const open = async (row: AlertRow) => {
@@ -155,8 +161,12 @@ export default function Alerts() {
       )}
       {readState === "unavailable" && (
         <View style={styles.empty}>
-          <Text style={styles.emptyTitle} accessibilityRole="alert">Alert records unavailable</Text>
-          <Text style={styles.intro}>No all-clear conclusion can be drawn from unavailable records.</Text>
+          <Text style={styles.emptyTitle} accessibilityRole="alert">
+            Alert records unavailable
+          </Text>
+          <Text style={styles.intro}>
+            No all-clear conclusion can be drawn from unavailable records.
+          </Text>
           <Pressable accessibilityRole="button" style={styles.readAll} onPress={() => void load()}>
             <Text style={styles.readAllText}>Retry alert records</Text>
           </Pressable>
@@ -194,7 +204,9 @@ export default function Alerts() {
       {readState === "ready" && visible.length === 0 && (
         <View style={styles.empty}>
           <Text style={styles.emptyTitle}>No alerts recorded in this view</Text>
-          <Text style={styles.intro}>This is not a food-safety clearance. The latest 100 records were checked.</Text>
+          <Text style={styles.intro}>
+            This is not a food-safety clearance. The latest 100 records were checked.
+          </Text>
         </View>
       )}
     </ScrollView>
