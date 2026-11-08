@@ -5,7 +5,10 @@ import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } 
 import { uploadEvidence } from "@/lib/evidence-upload";
 import { useSession } from "@/lib/session";
 import { supabase } from "@/lib/supabase";
-import { canChangeCorrectiveAction, classifyCorrectiveActionRead } from "@/lib/corrective-action-read";
+import {
+  canChangeCorrectiveAction,
+  classifyCorrectiveActionRead,
+} from "@/lib/corrective-action-read";
 
 type Action = {
   id: string;
@@ -17,8 +20,14 @@ type Action = {
 };
 
 export default function Actions() {
-  const { session, workspaceReady, organizationId, locationId, role, loading: sessionLoading } =
-    useSession();
+  const {
+    session,
+    workspaceReady,
+    organizationId,
+    locationId,
+    role,
+    loading: sessionLoading,
+  } = useSession();
   const userId = session?.user.id ?? null;
   const canEdit = canChangeCorrectiveAction(role);
   const [rows, setRows] = useState<Action[]>([]);
@@ -90,7 +99,10 @@ export default function Actions() {
       return true;
     } catch {
       if (showFailure) {
-        Alert.alert("Update not confirmed", "The action was not confirmed as updated. Retry or ask your manager.");
+        Alert.alert(
+          "Update not confirmed",
+          "The action was not confirmed as updated. Retry or ask your manager.",
+        );
       }
       return false;
     } finally {
@@ -134,7 +146,10 @@ export default function Actions() {
         );
       }
     } catch {
-      Alert.alert("Evidence upload failed", "Check connectivity and try again. Verify existing uploads first.");
+      Alert.alert(
+        "Evidence upload failed",
+        "Check connectivity and try again. Verify existing uploads first.",
+      );
     } finally {
       setBusy(null);
     }
@@ -167,9 +182,15 @@ export default function Actions() {
       )}
       {readState === "unavailable" && (
         <View style={styles.empty}>
-          <Text accessibilityRole="alert" style={styles.emptyTitle}>Action records unavailable</Text>
+          <Text accessibilityRole="alert" style={styles.emptyTitle}>
+            Action records unavailable
+          </Text>
           <Text>These records could not be verified. No safety clearance can be inferred.</Text>
-          <Pressable accessibilityRole="button" style={styles.secondary} onPress={() => void load()}>
+          <Pressable
+            accessibilityRole="button"
+            style={styles.secondary}
+            onPress={() => void load()}
+          >
             <Text style={styles.secondaryText}>Retry records</Text>
           </Pressable>
         </View>
@@ -180,7 +201,8 @@ export default function Actions() {
           <Text>This describes returned records only; it is not a food-safety approval.</Text>
         </View>
       )}
-      {readState === "ready" && rows.map((action) => (
+      {readState === "ready" &&
+        rows.map((action) => (
         <View key={action.id} style={styles.card}>
           <View style={styles.row}>
             <Text style={[styles.badge, action.severity === "critical" && styles.critical]}>
@@ -193,7 +215,8 @@ export default function Actions() {
             <Text style={styles.meta}>Due {new Date(action.due_at).toLocaleString()}</Text>
           )}
           <Text style={styles.meta}>{action.evidence?.length ?? 0} evidence item(s)</Text>
-          {canEdit && <View style={styles.actions}>
+          {canEdit && (
+            <View style={styles.actions}>
             {action.status === "open" && (
               <Pressable
                 disabled={busy !== null}
@@ -221,7 +244,8 @@ export default function Actions() {
                 <Text style={styles.verifyText}>Verify</Text>
               </Pressable>
             )}
-          </View>}
+            </View>
+          )}
         </View>
       ))}
     </ScrollView>
