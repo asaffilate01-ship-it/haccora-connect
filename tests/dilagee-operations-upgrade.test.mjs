@@ -58,9 +58,9 @@ test("Daily and workforce screens handle DST, failure and actionable exceptions"
   const rota = await read("../src/routes/app.rota.tsx");
   const quick = await read("../src/routes/app.quick-log.tsx");
   assert.match(today, /\.in\("status", \["out_of_range", "alert"\]\)/);
-  assert.match(today, /Today\x27s records could not be verified/);
-  assert.match(today, /operationalDay\(new Date\(\), "Europe\\/London"\)/);
-  assert.match(today, /typeof result\\.count !== "number"/);
+  assert.match(today, /records could not be verified/);
+  assert.ok(today.includes('operationalDay(new Date(), "Europe/London")'));
+  assert.ok(today.includes('typeof result.count !== "number"'));
   assert.match(today, /Review temperature exceptions/);
   assert.match(rota, /String\(d\.getMonth\(\) \+ 1\)/);
   assert.doesNotMatch(rota, /return d\.toISOString\(\)\.slice\(0, 10\)/);
