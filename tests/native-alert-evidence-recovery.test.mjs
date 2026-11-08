@@ -4,6 +4,10 @@ import test from "node:test";
 import ts from "typescript";
 
 const page = readFileSync(new URL("../mobile/app/alerts.tsx", import.meta.url), "utf8");
+const readiness = readFileSync(
+  new URL("../mobile/app/inspection-readiness.tsx", import.meta.url),
+  "utf8",
+);
 
 test("native alert inbox parses as TSX", () => {
   const output = ts.transpileModule(page, {
@@ -35,4 +39,24 @@ test("native alert acknowledgements require a server-confirmed record or a refre
   assert.match(page, /Read status not confirmed/);
   assert.match(page, /latest 100 records/);
   assert.match(page, /food-safety clearance/);
+});
+
+test("inspection readiness refuses missing counts and explicitly scopes evidence reads", () => {
+  const parsed = ts.transpileModule(readiness, {
+    fileName: "inspection-readiness.tsx",
+    compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.ESNext },
+    reportDiagnostics: true,
+  });
+  assert.equal(
+    (parsed.diagnostics ?? []).filter(
+      (diagnostic) => diagnostic.category === ts.DiagnosticCategory.Error,
+    ).length,
+    0,
+  );
+  assert.match(readiness, /requestVersion\.current/);
+  assert.match(readiness, /typeof result\.count !== "number"/);
+  assert.match(readiness, /organization_id/);
+  assert.match(readiness, /Retry evidence counts/);
+  assert.match(readiness, /Missing records must not be treated as zero/);
+  assert.match(readiness, /not an FHRS prediction/);
 });
