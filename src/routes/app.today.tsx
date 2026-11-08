@@ -130,7 +130,9 @@ function Today() {
     return (
       <div className="p-5 md:p-8">
         <div className="surface space-y-4 border border-destructive/40 p-5">
-          <p role="alert" className="text-sm text-destructive">{loadError}</p>
+          <p role="alert" className="text-sm text-destructive">
+            {loadError}
+          </p>
           <p className="text-sm text-muted-foreground">
             No zero counts or all-clear status can be inferred from unavailable evidence.
           </p>
