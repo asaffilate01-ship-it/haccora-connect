@@ -4,7 +4,7 @@ import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/haccora-client";
 import { BrandLogoImage } from "@/components/BrandLogo";
 import { ExperienceController } from "@/components/ExperienceController";
-import { useAuth, canAccess, homeFor, type NavKey } from "@/lib/auth";
+import { useAuth, canAccess, homeFor, type NavKey, type Role } from "@/lib/auth";
 import {
   LayoutDashboard,
   ShieldCheck,
@@ -190,6 +190,16 @@ const GROUPS: NavGroup[] = [
 
 const ALL_ITEMS: NavItem[] = GROUPS.flatMap((g) => g.items);
 
+// Inspector permissions can grant evidence viewing, but never operational logging.
+const INSPECTOR_OPERATIONAL_PATHS = new Set(["/app/today", "/app/quick-log"]);
+
+function isVisibleForRole(item: NavItem, user: { role: Role; inspectorScopes: string[] }) {
+  return (
+    (user.role !== "inspector" || !INSPECTOR_OPERATIONAL_PATHS.has(item.to)) &&
+    canAccess(user.role, item.nav, user.inspectorScopes)
+  );
+}
+
 function AppShell() {
   const { t, lang } = useI18n();
   const { user, signOut, hydrated } = useAuth();
@@ -238,6 +248,15 @@ function AppShell() {
   // Enforce role gating on direct URL entry.
   useEffect(() => {
     if (!user) return;
+    if (
+      user.role === "inspector" &&
+      [...INSPECTOR_OPERATIONAL_PATHS].some(
+        (path) => pathname === path || pathname.startsWith(path + "/"),
+      )
+    ) {
+      navigate({ to: "/app/inspection", replace: true });
+      return;
+    }
     const PATH_KEY: Array<{ prefix: string; nav: NavKey }> = [
       { prefix: "/app/today", nav: "checks" },
       { prefix: "/app/quick-log", nav: "checks" },
@@ -319,12 +338,12 @@ function AppShell() {
     if (!user) return [];
     return GROUPS.map((g) => ({
       ...g,
-      items: g.items.filter((i) => canAccess(user.role, i.nav, user.inspectorScopes)),
+      items: g.items.filter((i) => isVisibleForRole(i, user)),
     })).filter((g) => g.items.length > 0);
   }, [user]);
 
   const visibleFlat = useMemo(
-    () => (user ? ALL_ITEMS.filter((i) => canAccess(user.role, i.nav, user.inspectorScopes)) : []),
+    () => (user ? ALL_ITEMS.filter((i) => isVisibleForRole(i, user)) : []),
     [user],
   );
 
@@ -447,7 +466,9 @@ function AppShell() {
 
   // Command palette matches over role-allowed items.
   const q = paletteQ.trim().toLowerCase();
-  const paletteResults = visibleFlat.filter((i) => !q || t(i.key).toLowerCase().includes(q));
+  const paletteResults = visibleFlat.filter(
+    (i) => !q || (t(i.key) || i.key).toLowerCase().includes(q),
+  );
 
   return (
     <div className="app-shell min-h-screen bg-secondary/40 flex flex-col">
@@ -563,7 +584,7 @@ function AppShell() {
                                 size={16}
                                 className={active ? "" : "opacity-70 group-hover:opacity-100"}
                               />
-                              <span className="flex-1 truncate">{t(key)}</span>
+                              <span className="flex-1 truncate">{t(key) || key}</span>
                               {active && (
                                 <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground/80" />
                               )}
@@ -632,7 +653,7 @@ function AppShell() {
                 {current && (
                   <>
                     <ChevronRight size={14} className="text-muted-foreground/60 shrink-0" />
-                    <span className="font-semibold truncate">{t(current.key)}</span>
+                    <span className="font-semibold truncate">{t(current.key) || current.key}</span>
                   </>
                 )}
               </nav>
@@ -822,6 +843,7 @@ function AppShell() {
           </main>
 
           <MobileBottomNav
+            role={user.role}
             visibleFlat={visibleFlat}
             visibleGroups={visibleGroups}
             pathname={pathname}
@@ -870,7 +892,7 @@ function AppShell() {
                   className="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-secondary transition"
                 >
                   <Icon size={16} className="text-muted-foreground" />
-                  <span className="flex-1 text-left">{t(key)}</span>
+                  <span className="flex-1 text-left">{t(key) || key}</span>
                   <ChevronRight size={14} className="text-muted-foreground/60" />
                 </button>
               ))}
@@ -883,11 +905,13 @@ function AppShell() {
 }
 
 function MobileBottomNav({
+  role,
   visibleFlat,
   visibleGroups,
   pathname,
   t,
 }: {
+  role: Role;
   visibleFlat: NavItem[];
   visibleGroups: NavGroup[];
   pathname: string;
@@ -896,7 +920,10 @@ function MobileBottomNav({
   const [moreOpen, setMoreOpen] = useState(false);
 
   // Preferred order for the 4 pinned tabs; fall back to whatever the role has.
-  const PREFERRED = ["/app", "/app/today", "/app/quick-log", "/app/alerts", "/app/inspection"];
+  const PREFERRED =
+    role === "inspector"
+      ? ["/app/inspection", "/app/documents", "/app/audits", "/app/assets"]
+      : ["/app/today", "/app/quick-log", "/app/alerts", "/app"];
   const pinned: NavItem[] = [];
   for (const p of PREFERRED) {
     const item = visibleFlat.find((i) => i.to === p);
@@ -943,7 +970,7 @@ function MobileBottomNav({
               >
                 <Icon size={primary ? 22 : 19} strokeWidth={active || primary ? 2.5 : 2} />
               </span>
-              <span className="w-full truncate text-center">{t(key)}</span>
+              <span className="w-full truncate text-center">{t(key) || key}</span>
             </Link>
           );
         })}
@@ -986,7 +1013,7 @@ function MobileBottomNav({
                 <div className="font-display text-lg">{t("nav.more")}</div>
                 <button
                   onClick={() => setMoreOpen(false)}
-                  className="rounded-full border border-border px-3 py-1.5 text-xs font-bold uppercase tracking-widest text-muted-foreground active:scale-95 transition"
+                  className="min-h-11 rounded-full border border-border px-4 py-2 text-xs font-bold uppercase tracking-widest text-muted-foreground active:scale-95 transition"
                 >
                   Close
                 </button>
@@ -1014,7 +1041,7 @@ function MobileBottomNav({
                           }`}
                         >
                           <Icon size={16} className="shrink-0" />
-                          <span className="truncate">{t(key)}</span>
+                          <span className="truncate">{t(key) || key}</span>
                         </Link>
                       );
                     })}
