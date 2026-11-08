@@ -1,6 +1,6 @@
 import { Redirect, router } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSession } from "@/lib/session";
 import { supabase } from "@/lib/supabase";
 
@@ -30,27 +30,48 @@ export default function Alerts() {
   const [rows, setRows] = useState<AlertRow[]>([]);
   const [filter, setFilter] = useState<"unread" | "all" | "critical">("unread");
   const [refreshing, setRefreshing] = useState(false);
+  const [readState, setReadState] = useState<"loading" | "ready" | "unavailable">("loading");
+  const requestVersion = useRef(0);
   const load = useCallback(async () => {
+    const current = ++requestVersion.current;
+    setReadState("loading");
     setRefreshing(true);
-    const { data } = await supabase
-      .from("alerts")
-      .select("id,kind,severity,title,message,read_at,created_at")
-      .order("created_at", { ascending: false })
-      .limit(100);
-    setRows((data ?? []) as AlertRow[]);
-    setRefreshing(false);
+    try {
+      const { data, error } = await supabase
+        .from("alerts")
+        .select("id,kind,severity,title,message,read_at,created_at")
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (current !== requestVersion.current) return;
+      if (error || !Array.isArray(data)) throw new Error("Alert records unavailable");
+      setRows(data as AlertRow[]);
+      setReadState("ready");
+    } catch {
+      if (current === requestVersion.current) {
+        setRows([]);
+        setReadState("unavailable");
+      }
+    } finally {
+      if (current === requestVersion.current) setRefreshing(false);
+    }
   }, []);
+  const accountId = session?.user.id;
   useEffect(() => {
-    if (!session) return;
+    if (!accountId) return;
+    let active = true;
     void load();
     const channel = supabase
       .channel("native-alert-inbox")
-      .on("postgres_changes", { event: "*", schema: "public", table: "alerts" }, () => void load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "alerts" }, () => {
+        if (active) void load();
+      })
       .subscribe();
     return () => {
+      active = false;
+      requestVersion.current += 1;
       void supabase.removeChannel(channel);
     };
-  }, [load, session]);
+  }, [accountId, load]);
   const visible = useMemo(
     () =>
       rows.filter((row) =>
@@ -61,20 +82,30 @@ export default function Alerts() {
   if (loading) return null;
   if (!session) return <Redirect href="/login" />;
   const markRead = async (id: string) => {
-    const { error } = await supabase
-      .from("alerts")
-      .update({ read_at: new Date().toISOString() })
-      .eq("id", id);
-    if (!error)
-      setRows((current) =>
-        current.map((row) => (row.id === id ? { ...row, read_at: new Date().toISOString() } : row)),
-      );
+    try {
+      const { data, error } = await supabase
+        .from("alerts")
+        .update({ read_at: new Date().toISOString() })
+        .eq("id", id)
+        .select("id")
+        .maybeSingle();
+      if (error || !data?.id) throw new Error("No confirmed update");
+      void load();
+    } catch {
+      Alert.alert("Read status not confirmed", "Check your connection and refresh the alert inbox.");
+    }
   };
   const markAllRead = async () => {
-    const readAt = new Date().toISOString();
-    const { error } = await supabase.from("alerts").update({ read_at: readAt }).is("read_at", null);
-    if (!error)
-      setRows((current) => current.map((row) => ({ ...row, read_at: row.read_at || readAt })));
+    try {
+      const { error } = await supabase
+        .from("alerts")
+        .update({ read_at: new Date().toISOString() })
+        .is("read_at", null);
+      if (error) throw error;
+      void load();
+    } catch {
+      Alert.alert("Read status not confirmed", "Some alerts may still be unread. Refresh and retry.");
+    }
   };
   const open = async (row: AlertRow) => {
     if (!row.read_at) await markRead(row.id);
@@ -90,9 +121,15 @@ export default function Alerts() {
         <View style={styles.flex}>
           <Text style={styles.eyebrow}>ACTION INBOX</Text>
           <Text style={styles.title}>Alerts</Text>
-          <Text style={styles.intro}>{unread} unread · updates appear automatically</Text>
+          <Text style={styles.intro}>
+            {readState === "ready"
+              ? `${unread} unread · latest 100 records · refresh to verify`
+              : readState === "loading"
+                ? "Loading alert records…"
+                : "Alert records unavailable"}
+          </Text>
         </View>
-        {unread > 0 && (
+        {readState === "ready" && unread > 0 && (
           <Pressable style={styles.readAll} onPress={() => void markAllRead()}>
             <Text style={styles.readAllText}>Read all</Text>
           </Pressable>
@@ -111,7 +148,21 @@ export default function Alerts() {
           </Pressable>
         ))}
       </View>
-      {visible.map((row) => {
+      {readState === "loading" && (
+        <View style={styles.empty} accessibilityLiveRegion="polite">
+          <Text style={styles.intro}>Checking the current alert inbox…</Text>
+        </View>
+      )}
+      {readState === "unavailable" && (
+        <View style={styles.empty}>
+          <Text style={styles.emptyTitle} accessibilityRole="alert">Alert records unavailable</Text>
+          <Text style={styles.intro}>No all-clear conclusion can be drawn from unavailable records.</Text>
+          <Pressable accessibilityRole="button" style={styles.readAll} onPress={() => void load()}>
+            <Text style={styles.readAllText}>Retry alert records</Text>
+          </Pressable>
+        </View>
+      )}
+      {readState === "ready" && visible.map((row) => {
         const colour =
           row.severity === "critical"
             ? styles.critical
@@ -140,10 +191,10 @@ export default function Alerts() {
           </Pressable>
         );
       })}
-      {!refreshing && visible.length === 0 && (
+      {readState === "ready" && visible.length === 0 && (
         <View style={styles.empty}>
-          <Text style={styles.emptyTitle}>All clear</Text>
-          <Text style={styles.intro}>There are no alerts in this view.</Text>
+          <Text style={styles.emptyTitle}>No alerts recorded in this view</Text>
+          <Text style={styles.intro}>This is not a food-safety clearance. The latest 100 records were checked.</Text>
         </View>
       )}
     </ScrollView>
