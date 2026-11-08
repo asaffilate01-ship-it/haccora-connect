@@ -75,6 +75,7 @@ test("valid actions retain attributable evidence without asserting compliance", 
 test("inspector and unresolved roles cannot change corrective actions", () => {
   assert.equal(canChangeCorrectiveAction("inspector"), false);
   assert.equal(canChangeCorrectiveAction(null), false);
+  assert.equal(canChangeCorrectiveAction("platform_auditor"), false);
   assert.equal(canChangeCorrectiveAction("staff"), true);
   assert.equal(canChangeCorrectiveAction("manager"), true);
 });
