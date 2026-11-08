@@ -178,7 +178,7 @@ export default function Allergens() {
         <Text style={styles.empty}>No matching live menu items.</Text>
       )}
       <Text style={styles.disclaimer}>
-        Saved recipe data is not an allergen approval. Allergen information must be kept current and
+        This is not a guarantee of absence. Saved recipe data is not an allergen approval. Allergen information must be kept current and
         verified. Ask about recipe changes, substitutions and cross-contamination controls before
         advising a customer.
       </Text>
