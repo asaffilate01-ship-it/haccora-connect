@@ -127,7 +127,10 @@ function QuickLog() {
         <p className="text-sm text-muted-foreground">
           This workspace is read-only for inspectors. Open your approved evidence scope instead.
         </p>
-        <Link to="/app/inspection" className="btn-primary inline-flex min-h-12 items-center px-5 py-3">
+        <Link
+          to="/app/inspection"
+          className="btn-primary inline-flex min-h-12 items-center px-5 py-3"
+        >
           View inspection evidence
         </Link>
       </div>
@@ -158,8 +161,8 @@ function QuickLog() {
         <div className="eyebrow">Quick log</div>
         <h1>What would you like to do?</h1>
         <p className="text-sm text-muted-foreground">
-          Premises: <strong className="text-foreground">{user.location}</strong>. Choose an authorised
-          workflow. A record is complete only when its destination confirms saving.
+          Premises: <strong className="text-foreground">{user.location}</strong>. Choose an
+          authorised workflow. A record is complete only when its destination confirms saving.
         </p>
       </header>
 
@@ -196,9 +199,15 @@ function QuickLog() {
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block text-sm font-bold">{title}</span>
-                      <span className="mt-1 block text-xs leading-4 text-muted-foreground">{body}</span>
+                      <span className="mt-1 block text-xs leading-4 text-muted-foreground">
+                        {body}
+                      </span>
                     </span>
-                    <ChevronRight size={18} aria-hidden="true" className="shrink-0 text-muted-foreground" />
+                    <ChevronRight
+                      size={18}
+                      aria-hidden="true"
+                      className="shrink-0 text-muted-foreground"
+                    />
                   </Link>
                 );
               })}
