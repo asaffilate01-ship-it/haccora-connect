@@ -9,7 +9,6 @@ import {
   RefreshCw,
   Tag,
 } from "lucide-react";
-import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { can } from "@/lib/permissions";
 import { supabase } from "@/integrations/supabase/haccora-client";
@@ -46,9 +45,8 @@ const kinds: Array<{ id: OperationalLabelKind; de: string; en: string }> = [
 ];
 
 function LabelsPage() {
-  const { lang } = useI18n();
   const { user } = useAuth();
-  const t = (de: string, en: string) => (lang === "de" ? de : en);
+  const t = (_de: string, en: string) => en;
   const orgId = user?.organizationId;
   const siteId = user?.locationId;
   const canPrint = Boolean(user && can(user.role, "labels.print", user.actionPermissions));
@@ -300,7 +298,7 @@ function LabelsPage() {
   };
 
   const format = (value: string) =>
-    new Date(value + "T12:00:00.000Z").toLocaleDateString(lang === "de" ? "de-DE" : "en-GB", {
+    new Date(value + "T12:00:00.000Z").toLocaleDateString("en-GB", {
       timeZone: "UTC",
       day: "2-digit",
       month: "2-digit",
@@ -401,7 +399,7 @@ function LabelsPage() {
             {selected && (
               <p className="mt-2 text-xs text-muted-foreground">
                 {t("Quelle zuletzt aktualisiert", "Source last updated")}:{" "}
-                {new Date(selected.updated_at).toLocaleString(lang === "de" ? "de-DE" : "en-GB", {
+                {new Date(selected.updated_at).toLocaleString("en-GB", {
                   timeZone,
                 })}
               </p>
@@ -579,7 +577,7 @@ function LabelsPage() {
                 <span className="text-muted-foreground">{item.kind}</span>
                 <span>{item.use_by ?? "—"}</span>
                 <time className="ml-auto text-xs text-muted-foreground" dateTime={item.created_at}>
-                  {new Date(item.created_at).toLocaleString(lang === "de" ? "de-DE" : "en-GB", {
+                  {new Date(item.created_at).toLocaleString("en-GB", {
                     timeZone,
                   })}
                 </time>
