@@ -8,8 +8,8 @@ test("Today uses the UK premises operational day rather than the viewer's midnig
   assert.match(page, /operationalDay\(new Date\(\), "Europe\/London"\)/);
   assert.doesNotMatch(page, /setHours\(0, 0, 0, 0\)/);
   for (const column of ["completed_at", "created_at", "logged_at"]) {
-    assert.match(page, new RegExp('\\.gte\\("' + column + '", day\\.start\\)'));
-    assert.match(page, new RegExp('\\.lt\\("' + column + '", day\\.end\\)'));
+    assert.ok(page.includes(`.gte("${column}", day.start)`));
+    assert.ok(page.includes(`.lt("${column}", day.end)`));
   }
 });
 
