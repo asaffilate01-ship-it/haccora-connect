@@ -197,7 +197,7 @@ function Today() {
                   ? "text-destructive"
                   : needsAttention
                     ? "text-warning-foreground"
-                    : "text-success"
+                    : "text-muted-foreground"
               }`}
             >
               {loadError
