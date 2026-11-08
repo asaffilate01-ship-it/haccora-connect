@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { ComplianceCard, CompliancePage, complianceStyles } from "@/components/compliance-list";
 import { useSession } from "@/lib/session";
 import { supabase } from "@/lib/supabase";
@@ -109,7 +109,7 @@ export default function InspectionReadiness() {
               title={item.label}
               status={
                 <Text
-                  style={[complianceStyles.badge, item.count === 0 && complianceStyles.warning]}
+                  style={[complianceStyles.badge, styles.countBadge]}
                 >
                   {item.count}
                 </Text>
@@ -126,3 +126,7 @@ export default function InspectionReadiness() {
     </CompliancePage>
   );
 }
+ 
+const styles = StyleSheet.create({
+  countBadge: { backgroundColor: "#f0f0f0", color: "#252525" },
+});
