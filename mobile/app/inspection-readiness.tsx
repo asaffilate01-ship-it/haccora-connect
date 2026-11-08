@@ -126,7 +126,7 @@ export default function InspectionReadiness() {
     </CompliancePage>
   );
 }
- 
+
 const styles = StyleSheet.create({
   countBadge: { backgroundColor: "#f0f0f0", color: "#252525" },
 });
