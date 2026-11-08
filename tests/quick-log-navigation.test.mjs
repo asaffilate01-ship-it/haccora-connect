@@ -1,10 +1,23 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import ts from "typescript";
 
 const read = (file) => readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
 const shell = read("src/routes/app.tsx");
 const launcher = read("src/routes/app.quick-log.tsx");
+
+test("operational shell and Quick Log parse as TSX", () => {
+  for (const [name, source] of [["app.tsx", shell], ["app.quick-log.tsx", launcher]]) {
+    const diagnostics = ts.transpileModule(source, {
+      fileName: name,
+      compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.ESNext },
+      reportDiagnostics: true,
+    }).diagnostics ?? [];
+    const errors = diagnostics.filter((entry) => entry.category === ts.DiagnosticCategory.Error);
+    assert.equal(errors.length, 0, errors.map((entry) => entry.messageText).join("\n"));
+  }
+});
 
 test("inspector read-only scopes never expose or render operational Quick Log", () => {
   assert.match(shell, /INSPECTOR_OPERATIONAL_PATHS/);
