@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -10,6 +10,7 @@ import {
   Sunset,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/haccora-client";
+import { operationalDay } from "@/lib/operational-day";
 
 export const Route = createFileRoute("/app/today")({ component: Today });
 
@@ -35,68 +36,124 @@ function Today() {
   const [counts, setCounts] = useState(emptyCounts);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
-  // Stabilise this value: regenerating it on every render retriggers the fetch effect.
-  const [since] = useState(() => {
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
-    return start.toISOString();
-  });
+  const requestVersion = useRef(0);
 
   const load = useCallback(async () => {
+    const current = ++requestVersion.current;
+    const day = operationalDay(new Date(), "Europe/London");
     setLoading(true);
-    const [checksDone, checksOpen, temperatures, exceptions, actionsOpen, incidentsOpen] =
-      await Promise.all([
-        supabase
-          .from("checks")
-          .select("id", { count: "exact", head: true })
-          .eq("status", "completed")
-          .gte("completed_at", since),
-        supabase
-          .from("checks")
-          .select("id", { count: "exact", head: true })
-          .neq("status", "completed")
-          .gte("created_at", since),
-        supabase
-          .from("temperature_logs")
-          .select("id", { count: "exact", head: true })
-          .gte("logged_at", since),
-        supabase
-          .from("temperature_logs")
-          .select("id", { count: "exact", head: true })
-          .in("status", ["out_of_range", "alert"])
-          .gte("logged_at", since),
-        supabase
-          .from("corrective_actions")
-          .select("id", { count: "exact", head: true })
-          .neq("status", "closed"),
-        supabase
-          .from("incidents")
-          .select("id", { count: "exact", head: true })
-          .neq("status", "closed"),
-      ]);
-    const results = [checksDone, checksOpen, temperatures, exceptions, actionsOpen, incidentsOpen];
-    if (results.some((result) => result.error)) {
-      setLoadError(
-        "Some compliance records could not be loaded. Refresh before making safety decisions.",
-      );
-      setLoading(false);
-      return;
-    }
     setLoadError("");
-    setCounts({
-      checksDone: checksDone.count ?? 0,
-      checksOpen: checksOpen.count ?? 0,
-      temperatures: temperatures.count ?? 0,
-      exceptions: exceptions.count ?? 0,
-      actionsOpen: actionsOpen.count ?? 0,
-      incidentsOpen: incidentsOpen.count ?? 0,
-    });
-    setLoading(false);
-  }, [since]);
+    try {
+      const [checksDone, checksOpen, temperatures, exceptions, actionsOpen, incidentsOpen] =
+        await Promise.all([
+          supabase
+            .from("checks")
+            .select("id", { count: "exact", head: true })
+            .eq("status", "completed")
+            .gte("completed_at", day.start)
+            .lt("completed_at", day.end),
+          supabase
+            .from("checks")
+            .select("id", { count: "exact", head: true })
+            .neq("status", "completed")
+            .gte("created_at", day.start)
+            .lt("created_at", day.end),
+          supabase
+            .from("temperature_logs")
+            .select("id", { count: "exact", head: true })
+            .gte("logged_at", day.start)
+            .lt("logged_at", day.end),
+          supabase
+            .from("temperature_logs")
+            .select("id", { count: "exact", head: true })
+            .in("status", ["out_of_range", "alert"])
+            .gte("logged_at", day.start)
+            .lt("logged_at", day.end),
+          supabase
+            .from("corrective_actions")
+            .select("id", { count: "exact", head: true })
+            .neq("status", "closed"),
+          supabase
+            .from("incidents")
+            .select("id", { count: "exact", head: true })
+            .neq("status", "closed"),
+        ]);
+      if (current !== requestVersion.current) return;
+
+      const results = [
+        checksDone,
+        checksOpen,
+        temperatures,
+        exceptions,
+        actionsOpen,
+        incidentsOpen,
+      ];
+      if (results.some((result) => result.error || typeof result.count !== "number")) {
+        setLoadError(
+          "Today's records could not be verified. Refresh before making food-safety decisions.",
+        );
+        return;
+      }
+      setCounts({
+        checksDone: checksDone.count ?? 0,
+        checksOpen: checksOpen.count ?? 0,
+        temperatures: temperatures.count ?? 0,
+        exceptions: exceptions.count ?? 0,
+        actionsOpen: actionsOpen.count ?? 0,
+        incidentsOpen: incidentsOpen.count ?? 0,
+      });
+    } catch {
+      if (current === requestVersion.current) {
+        setLoadError(
+          "Today's records could not be verified. Refresh before making food-safety decisions.",
+        );
+      }
+    } finally {
+      if (current === requestVersion.current) setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     void load();
+    return () => {
+      requestVersion.current += 1;
+    };
   }, [load]);
+
+  // Do not show the previous snapshot, zero counters, or next-action claims
+  // while this premises-day evidence is loading or unavailable.
+  if (loading) {
+    return (
+      <div className="p-5 md:p-8" role="status" aria-live="polite">
+        <div className="surface flex items-center gap-3 p-5 text-sm text-muted-foreground">
+          <Loader2 size={18} className="animate-spin" aria-hidden="true" />
+          Loading today's premises records…
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="p-5 md:p-8">
+        <div className="surface space-y-4 border border-destructive/40 p-5">
+          <p role="alert" className="text-sm text-destructive">
+            {loadError}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            No zero counts or all-clear status can be inferred from unavailable evidence.
+          </p>
+          <button
+            type="button"
+            onClick={() => void load()}
+            className="btn-primary inline-flex min-h-12 items-center gap-2 px-5 py-3 text-sm"
+          >
+            <RefreshCw size={18} aria-hidden="true" /> Retry today's records
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const needsAttention = counts.exceptions + counts.actionsOpen + counts.incidentsOpen;
   const totalChecks = counts.checksDone + counts.checksOpen;
@@ -147,14 +204,14 @@ function Today() {
                   ? "text-destructive"
                   : needsAttention
                     ? "text-warning-foreground"
-                    : "text-success"
+                    : "text-muted-foreground"
               }`}
             >
               {loadError
                 ? "Summary unavailable"
                 : needsAttention
                   ? `${needsAttention} item(s) need attention`
-                  : "No open exceptions"}
+                  : "No open exceptions recorded"}
             </div>
           </div>
         )}
