@@ -4,14 +4,19 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 
-const helper = readFileSync(new URL("../mobile/lib/corrective-action-read.ts", import.meta.url), "utf8");
+const helper = readFileSync(
+  new URL("../mobile/lib/corrective-action-read.ts", import.meta.url),
+  "utf8",
+);
 const page = readFileSync(new URL("../mobile/app/actions.tsx", import.meta.url), "utf8");
 const output = ts.transpileModule(helper, {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   reportDiagnostics: true,
 });
 assert.deepEqual(
-  (output.diagnostics ?? []).filter((diagnostic) => diagnostic.category === ts.DiagnosticCategory.Error),
+  (output.diagnostics ?? []).filter(
+    (diagnostic) => diagnostic.category === ts.DiagnosticCategory.Error,
+  ),
   [],
 );
 const exports = {};
@@ -26,8 +31,14 @@ const action = {
   evidence: [],
 };
 
-test("failed, missing and malformed responses never become an empty corrective-action queue", () => {
-  for (const [data, error] of [[null, null], [[], { message: "network" }], [undefined, null], [[null], null], [[{ id: "a1" }], null]]) {
+test("failed and malformed reads cannot be mistaken for an empty queue", () => {
+  for (const [data, error] of [
+    [null, null],
+    [[], { message: "network" }],
+    [undefined, null],
+    [[null], null],
+    [[{ id: "a1" }], null],
+  ]) {
     const result = classifyCorrectiveActionRead(data, error);
     assert.equal(result.kind, "unavailable");
     assert.equal(result.actions.length, 0);
@@ -56,7 +67,7 @@ test("inspector and unresolved roles cannot change corrective actions", () => {
   assert.equal(canChangeCorrectiveAction("manager"), true);
 });
 
-test("native page uses site-authorised reads, stale-response protection and evidence-aware states", () => {
+test("native page guards stale reads and distinguishes evidence states", () => {
   assert.match(page, /requestVersion\.current/);
   assert.match(page, /\.eq\("organization_id", organizationId\)/);
   assert.match(page, /classifyCorrectiveActionRead\(data, error\)/);
