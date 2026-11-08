@@ -80,7 +80,14 @@ function Today() {
         ]);
       if (current !== requestVersion.current) return;
 
-      const results = [checksDone, checksOpen, temperatures, exceptions, actionsOpen, incidentsOpen];
+      const results = [
+        checksDone,
+        checksOpen,
+        temperatures,
+        exceptions,
+        actionsOpen,
+        incidentsOpen,
+      ];
       if (results.some((result) => result.error || typeof result.count !== "number")) {
         setLoadError(
           "Today's records could not be verified. Refresh before making food-safety decisions.",
