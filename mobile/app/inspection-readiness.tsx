@@ -108,7 +108,9 @@ export default function InspectionReadiness() {
               key={item.label}
               title={item.label}
               status={
-                <Text style={[complianceStyles.badge, item.count === 0 && complianceStyles.warning]}>
+                <Text
+                  style={[complianceStyles.badge, item.count === 0 && complianceStyles.warning]}
+                >
                   {item.count}
                 </Text>
               }
