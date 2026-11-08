@@ -59,4 +59,6 @@ test("inspection readiness refuses missing counts and explicitly scopes evidence
   assert.match(readiness, /Retry evidence counts/);
   assert.match(readiness, /Missing records must not be treated as zero/);
   assert.match(readiness, /not an FHRS prediction/);
+  assert.match(readiness, /styles\.countBadge/);
+  assert.doesNotMatch(readiness, /item\.count === 0 && complianceStyles\.warning/);
 });
