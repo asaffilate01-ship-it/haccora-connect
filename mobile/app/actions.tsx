@@ -203,51 +203,51 @@ export default function Actions() {
       )}
       {readState === "ready" &&
         rows.map((action) => (
-        <View key={action.id} style={styles.card}>
-          <View style={styles.row}>
-            <Text style={[styles.badge, action.severity === "critical" && styles.critical]}>
-              {action.severity.toUpperCase()}
-            </Text>
-            <Text style={styles.status}>{action.status.replace("_", " ")}</Text>
-          </View>
-          <Text style={styles.cardTitle}>{action.description}</Text>
-          {action.due_at && (
-            <Text style={styles.meta}>Due {new Date(action.due_at).toLocaleString()}</Text>
-          )}
-          <Text style={styles.meta}>{action.evidence?.length ?? 0} evidence item(s)</Text>
-          {canEdit && (
-            <View style={styles.actions}>
-            {action.status === "open" && (
-              <Pressable
-                disabled={busy !== null}
-                style={styles.secondary}
-                onPress={() => void transition(action, "in_progress")}
-              >
-                <Text style={styles.secondaryText}>Start</Text>
-              </Pressable>
-            )}
-            <Pressable
-              disabled={busy !== null}
-              style={styles.primary}
-              onPress={() => void addPhoto(action)}
-            >
-              <Text style={styles.primaryText}>
-                {busy === action.id ? "Working…" : "Add photo"}
+          <View key={action.id} style={styles.card}>
+            <View style={styles.row}>
+              <Text style={[styles.badge, action.severity === "critical" && styles.critical]}>
+                {action.severity.toUpperCase()}
               </Text>
-            </Pressable>
-            {canVerify && action.evidence?.length > 0 && action.status === "in_progress" && (
-              <Pressable
-                disabled={busy !== null}
-                style={styles.verify}
-                onPress={() => void transition(action, "verified")}
-              >
-                <Text style={styles.verifyText}>Verify</Text>
-              </Pressable>
-            )}
+              <Text style={styles.status}>{action.status.replace("_", " ")}</Text>
             </View>
-          )}
-        </View>
-      ))}
+            <Text style={styles.cardTitle}>{action.description}</Text>
+            {action.due_at && (
+              <Text style={styles.meta}>Due {new Date(action.due_at).toLocaleString()}</Text>
+            )}
+            <Text style={styles.meta}>{action.evidence?.length ?? 0} evidence item(s)</Text>
+            {canEdit && (
+              <View style={styles.actions}>
+                {action.status === "open" && (
+                  <Pressable
+                    disabled={busy !== null}
+                    style={styles.secondary}
+                    onPress={() => void transition(action, "in_progress")}
+                  >
+                    <Text style={styles.secondaryText}>Start</Text>
+                  </Pressable>
+                )}
+                <Pressable
+                  disabled={busy !== null}
+                  style={styles.primary}
+                  onPress={() => void addPhoto(action)}
+                >
+                  <Text style={styles.primaryText}>
+                    {busy === action.id ? "Working…" : "Add photo"}
+                  </Text>
+                </Pressable>
+                {canVerify && action.evidence?.length > 0 && action.status === "in_progress" && (
+                  <Pressable
+                    disabled={busy !== null}
+                    style={styles.verify}
+                    onPress={() => void transition(action, "verified")}
+                  >
+                    <Text style={styles.verifyText}>Verify</Text>
+                  </Pressable>
+                )}
+              </View>
+            )}
+          </View>
+        ))}
     </ScrollView>
   );
 }
