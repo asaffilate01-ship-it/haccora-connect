@@ -8,13 +8,19 @@ const shell = read("src/routes/app.tsx");
 const launcher = read("src/routes/app.quick-log.tsx");
 
 test("operational shell and Quick Log parse as TSX", () => {
-  for (const [name, source] of [["app.tsx", shell], ["app.quick-log.tsx", launcher]]) {
-    const diagnostics = ts.transpileModule(source, {
-      fileName: name,
-      compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.ESNext },
-      reportDiagnostics: true,
-    }).diagnostics ?? [];
-    const errors = diagnostics.filter((entry) => entry.category === ts.DiagnosticCategory.Error);
+  for (const [name, source] of [
+    ["app.tsx", shell],
+    ["app.quick-log.tsx", launcher],
+  ]) {
+    const diagnostics =
+      ts.transpileModule(source, {
+        fileName: name,
+        compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.ESNext },
+        reportDiagnostics: true,
+      }).diagnostics ?? [];
+    const errors = diagnostics.filter(
+      (entry) => entry.category === ts.DiagnosticCategory.Error,
+    );
     assert.equal(errors.length, 0, errors.map((entry) => entry.messageText).join("\n"));
   }
 });
