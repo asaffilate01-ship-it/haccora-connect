@@ -46,9 +46,9 @@ Deno.serve(async (request) => {
       equipment,
     ] = await Promise.all([
       client.rpc("get_my_context"),
-      client.from("organizations").select("name,country_code,timezone").limit(
-        1,
-      ),
+      client.from("organizations").select("name,country_code", {
+        count: "exact",
+      }).limit(1),
       client.from("locations").select("name,address,is_active").order("name")
         .limit(25),
       client
@@ -56,6 +56,8 @@ Deno.serve(async (request) => {
         .select("location,reading,status,logged_at", { count: "exact" })
         .gte("logged_at", period.start)
         .lt("logged_at", period.endExclusive)
+        .order("logged_at", { ascending: false })
+        .order("id", { ascending: false })
         .limit(1000),
       client
         .from("temperature_logs")
@@ -69,6 +71,8 @@ Deno.serve(async (request) => {
         .eq("status", "completed")
         .gte("completed_at", period.start)
         .lt("completed_at", period.endExclusive)
+        .order("completed_at", { ascending: false })
+        .order("id", { ascending: false })
         .limit(1000),
       client
         .from("audits")
@@ -77,6 +81,8 @@ Deno.serve(async (request) => {
         })
         .gte("performed_at", period.start)
         .lt("performed_at", period.endExclusive)
+        .order("performed_at", { ascending: false })
+        .order("id", { ascending: false })
         .limit(300),
       client
         .from("recalls")
@@ -86,6 +92,8 @@ Deno.serve(async (request) => {
         .neq("status", "closed")
         .gte("initiated_at", period.start)
         .lt("initiated_at", period.endExclusive)
+        .order("initiated_at", { ascending: false })
+        .order("id", { ascending: false })
         .limit(300),
       client
         .from("training_records")
@@ -93,6 +101,8 @@ Deno.serve(async (request) => {
         .not("verified_at", "is", null)
         .gte("verified_at", period.start)
         .lt("verified_at", period.endExclusive)
+        .order("verified_at", { ascending: false })
+        .order("id", { ascending: false })
         .limit(1000),
       client
         .from("health_register")
@@ -106,6 +116,8 @@ Deno.serve(async (request) => {
         })
         .gte("recorded_at", period.start)
         .lt("recorded_at", period.endExclusive)
+        .order("recorded_at", { ascending: false })
+        .order("id", { ascending: false })
         .limit(1000),
     ]);
     for (
@@ -126,25 +138,36 @@ Deno.serve(async (request) => {
       if (result.error) throw result.error;
     }
 
+    if ([
+      organizations,
+      temperatures,
+      outOfRangeTemperatures,
+      checks,
+      audits,
+      recalls,
+      training,
+      fitness,
+      equipment,
+    ].some((result) => result.count === null)) {
+      throw new Error("Incomplete inspection evidence counts");
+    }
+
     const { error: auditError } = await client.rpc("record_evidence_export", {
       p_from: period.from,
       p_to: period.to,
     });
     if (auditError) throw auditError;
 
-    const context = contextResult.data;
-    const ctx =
-      context && typeof context === "object" && !Array.isArray(context)
-        ? (context as Record<string, unknown>)
-        : {};
     const ascii = (value: unknown) =>
       String(value ?? "")
         .normalize("NFKD")
         .replace(/[^\x20-\x7E]/g, "?")
         .slice(0, 150);
-    const organization = organizations.data?.[0] ?? null;
+    const organization = organizations.count === 1
+      ? organizations.data?.[0] ?? null
+      : null;
     const tenantName = String(
-      organization?.name ?? ctx.organization_name ?? "Haccora workspace",
+      organization?.name ?? "Authorised Haccora workspaces",
     );
     const siteRows = (locations.data ?? []).filter((row) =>
       row.is_active !== false
@@ -153,7 +176,7 @@ Deno.serve(async (request) => {
       ? "Records across authorised locations"
       : "Records visible to the signed-in account";
     const lines: string[] = [
-      `Business: ${tenantName}`,
+      `Business scope: ${tenantName}`,
       `Scope: all records visible to the signed-in account`,
       ...(organization?.country_code
         ? [`Country: ${String(organization.country_code)}`]
@@ -172,9 +195,11 @@ Deno.serve(async (request) => {
       `Verified training records: ${training.count ?? 0}`,
       `Fitness-to-work records visible to this user: ${fitness.count ?? 0}`,
       `Equipment history records: ${equipment.count ?? 0}`,
-      "Detailed sections include bounded record samples; totals above are exact for the selected period.",
+      "Detailed sections show the most recent bounded samples; totals are exact for the selected period.",
+      "This is an evidence summary, not a food hygiene rating or compliance certificate.",
       "",
       "TEMPERATURE RECORDS",
+      `Showing ${Math.min(temperatures.data?.length ?? 0, 250)} of ${temperatures.count} records`,
       ...(temperatures.data ?? [])
         .slice(0, 250)
         .map(
@@ -185,6 +210,7 @@ Deno.serve(async (request) => {
         ),
       "",
       "COMPLETED CHECKS",
+      `Showing ${Math.min(checks.data?.length ?? 0, 250)} of ${checks.count} records`,
       ...(checks.data ?? [])
         .slice(0, 250)
         .map(
@@ -197,6 +223,7 @@ Deno.serve(async (request) => {
         ),
       "",
       "AUDITS",
+      `Showing ${Math.min(audits.data?.length ?? 0, 150)} of ${audits.count} records`,
       ...(audits.data ?? [])
         .slice(0, 150)
         .map(
@@ -209,6 +236,7 @@ Deno.serve(async (request) => {
         ),
       "",
       "RECALLS",
+      `Showing ${Math.min(recalls.data?.length ?? 0, 150)} of ${recalls.count} records`,
       ...(recalls.data ?? [])
         .slice(0, 150)
         .map(
@@ -221,6 +249,7 @@ Deno.serve(async (request) => {
         ),
       "",
       "TRAINING",
+      `Showing ${Math.min(training.data?.length ?? 0, 250)} of ${training.count} records`,
       ...(training.data ?? [])
         .slice(0, 250)
         .map(
@@ -233,6 +262,7 @@ Deno.serve(async (request) => {
         ),
       "",
       "EQUIPMENT, MAINTENANCE AND CHECKS",
+      `Showing ${Math.min(equipment.data?.length ?? 0, 250)} of ${equipment.count} records`,
       ...(equipment.data ?? [])
         .slice(0, 250)
         .map(
@@ -320,7 +350,8 @@ Deno.serve(async (request) => {
       headers: {
         ...corsHeaders(request),
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="haccora-evidence-${period.to}.pdf"`,
+        "Content-Disposition":
+          `attachment; filename="haccora-evidence-${period.to}.pdf"`,
         "Cache-Control": "no-store",
         "X-Content-Type-Options": "nosniff",
       },

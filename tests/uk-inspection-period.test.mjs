@@ -54,3 +54,24 @@ test("preview and export share the same end-exclusive period and evidence timest
   assert.match(edge, /p_to: period\.to/);
   assert.doesNotMatch(edge, /\.lte\(/);
 });
+
+test("report previews reset with account scope and do not display unknown counts as zero", () => {
+  const ui = readFileSync(new URL("../src/routes/app.inspection.tsx", import.meta.url), "utf8");
+  assert.match(ui, /<InspectionEvidence key=\{scopeKey\} user=\{user\}/);
+  assert.match(ui, /request !== requestId\.current/);
+  assert.match(ui, /exportLock\.current/);
+  assert.match(ui, /value \?\? "—"/);
+  assert.match(ui, /Retry evidence loading/);
+});
+
+test("PDF evidence samples disclose their bounds and avoid ambiguous organisation names", () => {
+  const edge = readFileSync(
+    new URL("../supabase/functions/inspection-export/index.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(edge, /organizations\.count === 1/);
+  assert.match(edge, /Incomplete inspection evidence counts/);
+  assert.match(edge, /\.order\("verified_at", \{ ascending: false \}\)/);
+  assert.match(edge, /Showing \$\{Math\.min/);
+  assert.match(edge, /not a food hygiene rating or compliance certificate/);
+});

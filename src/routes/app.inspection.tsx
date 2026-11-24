@@ -3,8 +3,11 @@ import { useI18n } from "@/lib/i18n";
 import { Gavel, Download, FileCheck2, Lock, Loader2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/haccora-client";
-import { useAuth } from "@/lib/auth";
-import { inspectionDate, inspectionPeriod } from "../../supabase/functions/_shared/inspection-period";
+import { useAuth, type AuthUser } from "@/lib/auth";
+import {
+  inspectionDate,
+  inspectionPeriod,
+} from "../../supabase/functions/_shared/inspection-period";
 
 export const Route = createFileRoute("/app/inspection")({
   component: InspectionPage,
@@ -16,8 +19,20 @@ type EvidenceKey =
 type Row = { key: EvidenceKey; count: number; status: "ok" | "warn" | "empty" };
 
 function InspectionPage() {
-  const { t } = useI18n();
   const { user } = useAuth();
+  if (!user) return <p className="p-5 text-sm">Sign in to view inspection evidence.</p>;
+  const scopeKey = [
+    user.id,
+    user.organizationId,
+    user.locationId,
+    user.role,
+    ...user.inspectorScopes,
+  ].join(":");
+  return <InspectionEvidence key={scopeKey} user={user} />;
+}
+
+function InspectionEvidence({ user }: { user: AuthUser }) {
+  const { t } = useI18n();
   const [from, setFrom] = useState(() => inspectionDate(new Date(), -180));
   const [to, setTo] = useState(() => inspectionDate(new Date()));
   const [ready, setReady] = useState(false);
@@ -29,10 +44,12 @@ function InspectionPage() {
   const [totals, setTotals] = useState({ evidence: 0, incidents: 0, incidentsOpen: 0 });
 
   const requestId = useRef(0);
+  const exportLock = useRef(false);
 
   const load = useCallback(async () => {
     const request = ++requestId.current;
     setReady(false);
+    setExportError(null);
     setRows([]);
     setTotals({ evidence: 0, incidents: 0, incidentsOpen: 0 });
     setLoading(true);
@@ -166,15 +183,7 @@ function InspectionPage() {
       incidentsOpen: c(incOpen),
     });
     setLoading(false);
-  }, [
-    from,
-    to,
-    user?.id,
-    user?.organizationId,
-    user?.locationId,
-    user?.inspectorScopes,
-    user?.role,
-  ]);
+  }, [from, to, user?.inspectorScopes, user?.role]);
 
   useEffect(() => {
     void load();
@@ -184,13 +193,16 @@ function InspectionPage() {
   }, [load]);
 
   const downloadEvidence = async () => {
-    if (!ready || loading || loadError || exporting) return;
+    if (!ready || loading || loadError || exportLock.current) return;
+    const request = requestId.current;
+    exportLock.current = true;
     setExporting(true);
     setExportError(null);
     try {
       const { data, error } = await supabase.functions.invoke("inspection-export", {
         body: { from, to },
       });
+      if (request !== requestId.current) return;
       if (error || !(data instanceof Blob)) throw new Error("Export failed");
       const url = URL.createObjectURL(data);
       const anchor = document.createElement("a");
@@ -199,8 +211,11 @@ function InspectionPage() {
       anchor.click();
       window.setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch {
-      setExportError("The evidence pack could not be downloaded. Please try again.");
+      if (request === requestId.current) {
+        setExportError("The evidence pack could not be downloaded. Please try again.");
+      }
     } finally {
+      exportLock.current = false;
       setExporting(false);
     }
   };
@@ -221,6 +236,14 @@ function InspectionPage() {
       {loadError && (
         <div role="alert" className="rounded-xl bg-destructive/10 p-4 text-sm text-destructive">
           {loadError}
+          <button
+            type="button"
+            className="btn-secondary mt-3 block px-3 py-2"
+            onClick={() => void load()}
+            disabled={loading || exporting}
+          >
+            Retry evidence loading
+          </button>
         </div>
       )}
 
@@ -239,18 +262,20 @@ function InspectionPage() {
           >
             <Stat
               label={t("inspection.stat.evidence") || "Evidence records"}
-              value={totals.evidence}
+              value={loading || loadError ? null : totals.evidence}
             />
             {(user?.role !== "inspector" || user.inspectorScopes.includes("incidents")) && (
               <>
                 <Stat
                   label={t("inspection.stat.incidents") || "Incidents"}
-                  value={totals.incidents}
+                  value={loading || loadError ? null : totals.incidents}
                 />
                 <Stat
                   label={t("inspection.stat.open") || "Still open"}
-                  value={totals.incidentsOpen}
-                  accent={totals.incidentsOpen > 0 ? "warn" : "ok"}
+                  value={loading || loadError ? null : totals.incidentsOpen}
+                  accent={
+                    loading || loadError ? undefined : totals.incidentsOpen > 0 ? "warn" : "ok"
+                  }
                 />
               </>
             )}
@@ -293,6 +318,7 @@ function InspectionPage() {
               <input
                 type="date"
                 value={from}
+                disabled={exporting}
                 onChange={(e) => {
                   setFrom(e.target.value);
                   setReady(false);
@@ -305,6 +331,7 @@ function InspectionPage() {
               <input
                 type="date"
                 value={to}
+                disabled={exporting}
                 onChange={(e) => {
                   setTo(e.target.value);
                   setReady(false);
@@ -316,7 +343,7 @@ function InspectionPage() {
           <button
             onClick={() => setReady(true)}
             className="btn-primary w-full mt-5"
-            disabled={loading || !!loadError}
+            disabled={loading || !!loadError || exporting}
           >
             <Gavel size={16} /> {t("common.generate")}
           </button>
@@ -330,7 +357,7 @@ function InspectionPage() {
                 {t("inspection.pack")} · {from} → {to}
               </div>
               <div className="text-xs opacity-80 mt-1">
-                {totals.evidence} records · {totals.incidents} incidents
+                Preview: {totals.evidence} records · {totals.incidents} incidents
               </div>
               <button
                 disabled={exporting || loading || !!loadError}
@@ -357,7 +384,15 @@ function InspectionPage() {
   );
 }
 
-function Stat({ label, value, accent }: { label: string; value: number; accent?: "ok" | "warn" }) {
+function Stat({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: number | null;
+  accent?: "ok" | "warn";
+}) {
   const color =
     accent === "warn"
       ? "text-[color:var(--color-alert-red)]"
@@ -367,7 +402,7 @@ function Stat({ label, value, accent }: { label: string; value: number; accent?:
   return (
     <div className="rounded-xl border border-border bg-card p-3">
       <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</div>
-      <div className={`font-display text-2xl mt-0.5 ${color}`}>{value}</div>
+      <div className={`font-display text-2xl mt-0.5 ${color}`}>{value ?? "—"}</div>
     </div>
   );
 }
