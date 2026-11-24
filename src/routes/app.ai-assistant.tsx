@@ -81,7 +81,10 @@ function AiEvidenceAssistant() {
   const [run, setRun] = useState<RunPayload | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [refreshError, setRefreshError] = useState("");
   const starting = useRef(false);
+  const currentRunId = useRef("");
+  const readingRun = useRef("");
   const runStatus = run?.run?.status ?? "";
   const activeRun = ["queued", "running"].includes(runStatus);
 
@@ -99,20 +102,33 @@ function AiEvidenceAssistant() {
   }, []);
 
   const readRun = useCallback(async (id: string) => {
-    if (!id) return;
-    const result = await supabase.functions.invoke("omniqora-platform", {
-      body: { action: "ai_status", runId: id },
-    });
-    if (result.error) {
-      setError("The AI run could not be refreshed.");
-      return;
+    if (!id || currentRunId.current !== id || readingRun.current === id) return;
+    readingRun.current = id;
+    try {
+      const result = await supabase.functions.invoke("omniqora-platform", {
+        body: { action: "ai_status", runId: id },
+      });
+      if (currentRunId.current !== id) return;
+      if (result.error) throw result.error;
+      const payload = result.data as RunPayload | null;
+      if (!payload?.run?.status || (payload.run.id && payload.run.id !== id)) {
+        throw new Error("Invalid run status");
+      }
+      setRun(payload);
+      setRefreshError("");
+    } catch {
+      if (currentRunId.current === id) {
+        setRefreshError("Review status could not be refreshed. Try Refresh again.");
+      }
+    } finally {
+      if (readingRun.current === id) readingRun.current = "";
     }
-    setRun(result.data as RunPayload);
   }, []);
 
   async function start() {
     if (
       question.trim().length < 10 ||
+      question.trim().length > 3000 ||
       starting.current ||
       activeRun ||
       !bridge?.connected ||
@@ -123,6 +139,8 @@ function AiEvidenceAssistant() {
     starting.current = true;
     setBusy(true);
     setError("");
+    setRefreshError("");
+    currentRunId.current = "";
     setRunId("");
     setRun(null);
     try {
@@ -133,8 +151,10 @@ function AiEvidenceAssistant() {
       const id = String((result.data as { runId?: unknown } | null)?.runId ?? "");
       if (!id) throw new Error("No run id");
       const status = String((result.data as { status?: unknown } | null)?.status ?? "queued");
+      currentRunId.current = id;
       setRunId(id);
       setRun({ run: { id, status }, reviewRequired: true });
+      void readRun(id);
     } catch {
       setError(
         "The AI request was not started. Check the Haccora AI entitlement and Omniqora provider configuration.",
@@ -241,9 +261,13 @@ function AiEvidenceAssistant() {
           <textarea
             className="mt-1 min-h-32 w-full rounded-lg border border-border bg-background p-3 font-normal"
             value={question}
+            maxLength={3000}
             onChange={(event) => setQuestion(event.target.value)}
             placeholder="For example: What evidence gaps should I review before an inspection, based on the records currently available?"
           />
+          <span className="mt-1 block text-xs font-normal text-muted-foreground">
+            {question.length} / 3000 characters
+          </span>
         </label>
 
         <button
@@ -253,7 +277,8 @@ function AiEvidenceAssistant() {
             activeRun ||
             !bridge?.connected ||
             !enabled("haccora.ai-copilot") ||
-            question.trim().length < 10
+            question.trim().length < 10 ||
+            question.trim().length > 3000
           }
           onClick={() => void start()}
         >
@@ -267,12 +292,20 @@ function AiEvidenceAssistant() {
           <div className="flex justify-between gap-3">
             <div>
               <div className="text-xs uppercase text-muted-foreground">Run {runId.slice(0, 8)}</div>
-              <h2 className="text-lg">Status: {runStatus || "queued"}</h2>
+              <h2 className="text-lg" role="status">
+                Status: {runStatus || "queued"}
+              </h2>
             </div>
             <button className="btn-secondary px-3 py-2 text-sm" onClick={() => void readRun(runId)}>
               Refresh
             </button>
           </div>
+
+          {refreshError && (
+            <p role="alert" className="text-sm text-muted-foreground">
+              {refreshError}
+            </p>
+          )}
 
           {answer && (
             <div className="rounded-xl border border-border bg-muted/30 p-4">
