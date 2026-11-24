@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { Gavel, Download, FileCheck2, Lock, Loader2 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/haccora-client";
 import { useAuth } from "@/lib/auth";
+import { inspectionDate, inspectionPeriod } from "../../supabase/functions/_shared/inspection-period";
 
 export const Route = createFileRoute("/app/inspection")({
   component: InspectionPage,
@@ -14,27 +15,11 @@ type EvidenceKey =
 
 type Row = { key: EvidenceKey; count: number; status: "ok" | "warn" | "empty" };
 
-function todayISO(date = new Date()) {
-  const parts = new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Europe/London",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(date);
-  const value = Object.fromEntries(parts.map((part) => [part.type, part.value]));
-  return `${value.year}-${value.month}-${value.day}`;
-}
-function isoDaysAgo(n: number) {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  return todayISO(d);
-}
-
 function InspectionPage() {
   const { t } = useI18n();
   const { user } = useAuth();
-  const [from, setFrom] = useState(isoDaysAgo(180));
-  const [to, setTo] = useState(todayISO());
+  const [from, setFrom] = useState(() => inspectionDate(new Date(), -180));
+  const [to, setTo] = useState(() => inspectionDate(new Date()));
   const [ready, setReady] = useState(false);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
@@ -43,71 +28,82 @@ function InspectionPage() {
   const [rows, setRows] = useState<Row[]>([]);
   const [totals, setTotals] = useState({ evidence: 0, incidents: 0, incidentsOpen: 0 });
 
+  const requestId = useRef(0);
+
   const load = useCallback(async () => {
+    const request = ++requestId.current;
+    setReady(false);
+    setRows([]);
+    setTotals({ evidence: 0, incidents: 0, incidentsOpen: 0 });
     setLoading(true);
     setLoadError(null);
-    const fromDate = new Date(from);
-    const toDate = new Date(to);
-    if (
-      !Number.isFinite(fromDate.getTime()) ||
-      !Number.isFinite(toDate.getTime()) ||
-      toDate < fromDate
-    ) {
-      setLoadError("Choose a valid date range before generating inspection evidence.");
+    let period: ReturnType<typeof inspectionPeriod>;
+    try {
+      period = inspectionPeriod(from, to);
+    } catch {
+      setLoadError("Choose a valid date range of up to 366 calendar days.");
       setLoading(false);
       return;
     }
-    const fromIso = fromDate.toISOString();
-    const toIso = new Date(toDate.getTime() + 86400000).toISOString();
+    const fromIso = period.start;
+    const toIso = period.endExclusive;
     const headRange = (table: string, col: string) =>
       supabase
         .from(table as any)
         .select("id", { count: "exact", head: true })
         .gte(col, fromIso)
-        .lte(col, toIso);
+        .lt(col, toIso);
 
+    const result = await Promise.all([
+      headRange("temperature_logs", "logged_at"),
+      supabase
+        .from("checks")
+        .select("id", { count: "exact", head: true })
+        .eq("kind", "cleaning")
+        .eq("status", "completed")
+        .gte("completed_at", fromIso)
+        .lt("completed_at", toIso),
+      supabase
+        .from("pest_sightings")
+        .select("id", { count: "exact", head: true })
+        .gte("observed_at", fromIso)
+        .lt("observed_at", toIso),
+      supabase.from("recipes").select("id", { count: "exact", head: true }),
+      supabase
+        .from("health_register")
+        .select("id", { count: "exact", head: true })
+        .gte("created_at", fromIso)
+        .lt("created_at", toIso),
+      supabase
+        .from("training_records")
+        .select("id", { count: "exact", head: true })
+        .not("verified_at", "is", null)
+        .gte("verified_at", fromIso)
+        .lt("verified_at", toIso),
+      supabase
+        .from("goods_in_logs")
+        .select("id", { count: "exact", head: true })
+        .gte("received_at", fromIso)
+        .lt("received_at", toIso),
+      headRange("audits", "performed_at"),
+      headRange("haccp_hazards", "created_at"),
+      headRange("incidents", "created_at"),
+      supabase
+        .from("incidents")
+        .select("id", { count: "exact", head: true })
+        .neq("status", "closed")
+        .gte("created_at", fromIso)
+        .lt("created_at", toIso),
+    ] as const).catch(() => null);
+
+    if (request !== requestId.current) return;
+    if (!result) {
+      setLoadError("Inspection evidence could not be loaded. Please try again.");
+      setLoading(false);
+      return;
+    }
     const [temp, clean, pest, allerg, fitness, training, trace, audit, haccp, incAll, incOpen] =
-      await Promise.all([
-        headRange("temperature_logs", "logged_at"),
-        supabase
-          .from("checks")
-          .select("id", { count: "exact", head: true })
-          .eq("kind", "cleaning")
-          .eq("status", "completed")
-          .gte("completed_at", fromIso)
-          .lte("completed_at", toIso),
-        supabase
-          .from("pest_sightings")
-          .select("id", { count: "exact", head: true })
-          .gte("observed_at", fromIso)
-          .lte("observed_at", toIso),
-        supabase.from("recipes").select("id", { count: "exact", head: true }),
-        supabase
-          .from("health_register")
-          .select("id", { count: "exact", head: true })
-          .gte("created_at", fromIso)
-          .lte("created_at", toIso),
-        supabase
-          .from("training_records")
-          .select("id", { count: "exact", head: true })
-          .not("verified_at", "is", null)
-          .gte("verified_at", fromIso)
-          .lte("verified_at", toIso),
-        supabase
-          .from("goods_in_logs")
-          .select("id", { count: "exact", head: true })
-          .gte("received_at", fromIso)
-          .lte("received_at", toIso),
-        headRange("audits", "created_at"),
-        headRange("haccp_hazards", "created_at"),
-        headRange("incidents", "created_at"),
-        supabase
-          .from("incidents")
-          .select("id", { count: "exact", head: true })
-          .neq("status", "closed")
-          .gte("created_at", fromIso)
-          .lte("created_at", toIso),
-      ]);
+      result;
 
     const results = [
       temp,
@@ -122,10 +118,12 @@ function InspectionPage() {
       incAll,
       incOpen,
     ];
-    if (results.some((result) => result.error)) {
+    if (results.some((result) => result.error || result.count === null)) {
       setLoadError(
         "Some inspection evidence could not be loaded. Missing values are not being treated as compliant.",
       );
+      setLoading(false);
+      return;
     }
 
     const c = (r: any) => r.count ?? 0;
@@ -168,29 +166,43 @@ function InspectionPage() {
       incidentsOpen: c(incOpen),
     });
     setLoading(false);
-  }, [from, to, user?.inspectorScopes, user?.role]);
+  }, [
+    from,
+    to,
+    user?.id,
+    user?.organizationId,
+    user?.locationId,
+    user?.inspectorScopes,
+    user?.role,
+  ]);
 
   useEffect(() => {
-    load();
+    void load();
+    return () => {
+      requestId.current += 1;
+    };
   }, [load]);
 
   const downloadEvidence = async () => {
+    if (!ready || loading || loadError || exporting) return;
     setExporting(true);
     setExportError(null);
-    const { data, error } = await supabase.functions.invoke("inspection-export", {
-      body: { from, to },
-    });
-    setExporting(false);
-    if (error || !(data instanceof Blob)) {
-      setExportError(error?.message ?? "Export failed");
-      return;
+    try {
+      const { data, error } = await supabase.functions.invoke("inspection-export", {
+        body: { from, to },
+      });
+      if (error || !(data instanceof Blob)) throw new Error("Export failed");
+      const url = URL.createObjectURL(data);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `haccora-evidence-${to}.pdf`;
+      anchor.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch {
+      setExportError("The evidence pack could not be downloaded. Please try again.");
+    } finally {
+      setExporting(false);
     }
-    const url = URL.createObjectURL(data);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = `haccora-evidence-${to}.pdf`;
-    anchor.click();
-    URL.revokeObjectURL(url);
   };
 
   return (
@@ -271,6 +283,10 @@ function InspectionPage() {
         <div className="surface p-6 h-fit">
           <h2 className="font-display text-xl">{t("inspection.generate")}</h2>
           <p className="text-xs text-muted-foreground mt-1">{t("inspection.desc")}</p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Dates are inclusive in UK time. Evidence covers records your account is authorised to
+            access, which may span multiple sites.
+          </p>
           <div className="mt-4 space-y-3">
             <label className="block">
               <span className="text-xs text-muted-foreground">{t("inspection.from")}</span>
@@ -305,7 +321,7 @@ function InspectionPage() {
             <Gavel size={16} /> {t("common.generate")}
           </button>
 
-          {ready && (
+          {ready && !loading && !loadError && (
             <div className="mt-4 rounded-lg bg-forest-deep text-primary-foreground p-4">
               <div className="text-xs opacity-70 uppercase tracking-widest">
                 {t("common.ready")}
@@ -317,7 +333,7 @@ function InspectionPage() {
                 {totals.evidence} records · {totals.incidents} incidents
               </div>
               <button
-                disabled={exporting}
+                disabled={exporting || loading || !!loadError}
                 onClick={downloadEvidence}
                 className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-accent text-accent-foreground px-3 py-1.5 text-xs font-semibold disabled:opacity-60"
               >
