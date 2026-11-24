@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertTriangle,
   BookOpenCheck,
@@ -81,6 +81,9 @@ function AiEvidenceAssistant() {
   const [run, setRun] = useState<RunPayload | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const starting = useRef(false);
+  const runStatus = run?.run?.status ?? "";
+  const activeRun = ["queued", "running"].includes(runStatus);
 
   const loadStatus = useCallback(async () => {
     setError("");
@@ -108,9 +111,19 @@ function AiEvidenceAssistant() {
   }, []);
 
   async function start() {
-    if (question.trim().length < 10 || busy) return;
+    if (
+      question.trim().length < 10 ||
+      starting.current ||
+      activeRun ||
+      !bridge?.connected ||
+      bridge.entitlements?.["haccora.ai-copilot"]?.enabled !== true
+    ) {
+      return;
+    }
+    starting.current = true;
     setBusy(true);
     setError("");
+    setRunId("");
     setRun(null);
     try {
       const result = await supabase.functions.invoke("omniqora-platform", {
@@ -127,6 +140,7 @@ function AiEvidenceAssistant() {
         "The AI request was not started. Check the Haccora AI entitlement and Omniqora provider configuration.",
       );
     } finally {
+      starting.current = false;
       setBusy(false);
     }
   }
@@ -135,7 +149,6 @@ function AiEvidenceAssistant() {
     void loadStatus();
   }, [loadStatus]);
 
-  const runStatus = run?.run?.status ?? "";
   useEffect(() => {
     if (!runId || !["queued", "running"].includes(runStatus)) return;
     const timer = window.setInterval(() => void readRun(runId), 3500);
@@ -237,14 +250,15 @@ function AiEvidenceAssistant() {
           className="btn-primary px-4 py-2 text-sm inline-flex items-center gap-2"
           disabled={
             busy ||
+            activeRun ||
             !bridge?.connected ||
             !enabled("haccora.ai-copilot") ||
             question.trim().length < 10
           }
           onClick={() => void start()}
         >
-          {busy ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />} Start
-          governed review
+          {busy ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
+          {activeRun ? "Review in progress" : "Start governed review"}
         </button>
       </section>
 
