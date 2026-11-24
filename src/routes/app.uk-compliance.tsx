@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/haccora-client";
 import { useAuth } from "@/lib/auth";
+import { operationalDate } from "@/lib/operational-day";
 import { UK_COMPLIANCE_VERSION, UK_PRODUCT_DISCLAIMER } from "@/lib/uk-compliance";
 import { UK_AUTHORITY_PROFILES, isUkJurisdiction, type UkJurisdiction } from "@/lib/uk-authorities";
 import { ExternalLink } from "lucide-react";
@@ -16,56 +17,116 @@ const NATIONS = [
 
 function UkCompliance() {
   const { user } = useAuth();
+  if (!user?.organizationId || !user.locationId) {
+    return (
+      <p className="p-5 text-sm">Select a business location to review its compliance profile.</p>
+    );
+  }
+  return (
+    <ComplianceProfile
+      key={`${user.id}:${user.organizationId}:${user.locationId}`}
+      organizationId={user.organizationId}
+      locationId={user.locationId}
+      userId={user.id}
+    />
+  );
+}
+
+function ComplianceProfile({
+  organizationId,
+  locationId,
+  userId,
+}: {
+  organizationId: string;
+  locationId: string;
+  userId: string;
+}) {
   const [jurisdiction, setJurisdiction] = useState<UkJurisdiction>("england");
   const [businessType, setBusinessType] = useState("caterer");
   const [localAuthority, setLocalAuthority] = useState("");
   const [registrationReference, setRegistrationReference] = useState("");
   const [registrationConfirmed, setRegistrationConfirmed] = useState(false);
+  const [confirmationDate, setConfirmationDate] = useState<string | null>(null);
   const [ppds, setPpds] = useState(false);
   const [vulnerable, setVulnerable] = useState(false);
   const [message, setMessage] = useState("");
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
+  const [reload, setReload] = useState(0);
+  const [saving, setSaving] = useState(false);
+  const saveLock = useRef(false);
+
   useEffect(() => {
-    if (!user?.organizationId || !user.locationId) return;
-    void supabase
-      .from("site_compliance_profiles")
-      .select("*")
-      .eq("organization_id", user.organizationId)
-      .eq("location_id", user.locationId)
-      .maybeSingle()
-      .then(({ data }) => {
+    let cancelled = false;
+    async function load() {
+      try {
+        const { data, error } = await supabase
+          .from("site_compliance_profiles")
+          .select("*")
+          .eq("organization_id", organizationId)
+          .eq("location_id", locationId)
+          .maybeSingle();
+        if (cancelled) return;
+        if (error) throw error;
         if (data) {
           if (isUkJurisdiction(data.jurisdiction)) setJurisdiction(data.jurisdiction);
           setBusinessType(data.business_type);
           setLocalAuthority(data.local_authority_name ?? "");
           setRegistrationReference(data.registration_reference ?? "");
           setRegistrationConfirmed(Boolean(data.registration_confirmed_at));
+          setConfirmationDate(data.registration_confirmed_at ?? null);
           setPpds(data.serves_ppds);
           setVulnerable(data.serves_vulnerable_groups);
         }
-      });
-  }, [user]);
+        setLoadState("ready");
+      } catch {
+        if (!cancelled) setLoadState("error");
+      }
+    }
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, [organizationId, locationId, reload]);
+
   const save = async () => {
-    if (!user?.organizationId || !user.locationId) return;
-    const { error } = await supabase.from("site_compliance_profiles").upsert(
-      {
-        organization_id: user.organizationId,
-        location_id: user.locationId,
-        jurisdiction,
-        business_type: businessType,
-        local_authority_name: localAuthority.trim() || null,
-        registration_reference: registrationReference.trim() || null,
-        registration_confirmed_at: registrationConfirmed
-          ? new Date().toISOString().slice(0, 10)
-          : null,
-        serves_ppds: ppds,
-        serves_vulnerable_groups: vulnerable,
-        approved_content_version: UK_COMPLIANCE_VERSION,
-        reviewed_at: new Date().toISOString(),
-        reviewed_by: user.id,
-      },
-      { onConflict: "organization_id,location_id" },
-    );
-    setMessage(error?.message ?? "UK compliance profile reviewed and saved.");
+    if (loadState !== "ready" || saveLock.current) return;
+    saveLock.current = true;
+    setSaving(true);
+    setMessage("");
+    const date = registrationConfirmed
+      ? (confirmationDate ?? operationalDate(new Date(), "Europe/London"))
+      : null;
+    try {
+      const { data, error } = await supabase
+        .from("site_compliance_profiles")
+        .upsert(
+          {
+            organization_id: organizationId,
+            location_id: locationId,
+            jurisdiction,
+            business_type: businessType,
+            local_authority_name: localAuthority.trim() || null,
+            registration_reference: registrationReference.trim() || null,
+            registration_confirmed_at: date,
+            serves_ppds: ppds,
+            serves_vulnerable_groups: vulnerable,
+            approved_content_version: UK_COMPLIANCE_VERSION,
+            reviewed_at: new Date().toISOString(),
+            reviewed_by: userId,
+          },
+          { onConflict: "organization_id,location_id" },
+        )
+        .select("registration_confirmed_at")
+        .single();
+      if (error || !data) throw new Error("Profile not saved");
+      setConfirmationDate(data.registration_confirmed_at ?? null);
+      setMessage("UK compliance profile reviewed and saved.");
+    } catch {
+      setMessage("The compliance profile was not saved. Please check access and try again.");
+    } finally {
+      saveLock.current = false;
+      setSaving(false);
+    }
   };
   const authority = UK_AUTHORITY_PROFILES[jurisdiction];
   return (
@@ -78,14 +139,38 @@ function UkCompliance() {
           Wales, Scotland and Northern Ireland guidance is versioned separately.
         </p>
       </div>
-      <div className="surface p-5 grid md:grid-cols-2 gap-5">
+      {loadState === "loading" && <p role="status">Loading compliance profile…</p>}
+      {loadState === "error" && (
+        <div role="alert" className="surface p-4 text-sm">
+          The existing profile could not be loaded. Editing is disabled to protect your records.
+          <button
+            type="button"
+            className="btn-secondary mt-3 block px-3 py-2"
+            onClick={() => {
+              setLoadState("loading");
+              setReload((value) => value + 1);
+            }}
+          >
+            Retry loading
+          </button>
+        </div>
+      )}
+      <fieldset
+        disabled={loadState !== "ready" || saving}
+        className="surface p-5 grid md:grid-cols-2 gap-5 min-w-0"
+      >
+        <legend className="sr-only">Location compliance details</legend>
         <label className="text-sm font-bold">
           UK nation
           <select
             className="input block w-full mt-2"
             value={jurisdiction}
             onChange={(e) => {
-              if (isUkJurisdiction(e.target.value)) setJurisdiction(e.target.value);
+              if (isUkJurisdiction(e.target.value)) {
+                setJurisdiction(e.target.value);
+                setRegistrationConfirmed(false);
+                setConfirmationDate(null);
+              }
             }}
           >
             {NATIONS.map(([v, l]) => (
@@ -100,7 +185,11 @@ function UkCompliance() {
           <input
             className="input block w-full mt-2"
             value={localAuthority}
-            onChange={(event) => setLocalAuthority(event.target.value)}
+            onChange={(event) => {
+              setLocalAuthority(event.target.value);
+              setRegistrationConfirmed(false);
+              setConfirmationDate(null);
+            }}
             placeholder={authority.authorityLabel}
             maxLength={160}
           />
@@ -114,7 +203,11 @@ function UkCompliance() {
           <input
             className="input block w-full mt-2"
             value={registrationReference}
-            onChange={(event) => setRegistrationReference(event.target.value)}
+            onChange={(event) => {
+              setRegistrationReference(event.target.value);
+              setRegistrationConfirmed(false);
+              setConfirmationDate(null);
+            }}
             placeholder="Your internal reference or document number"
             maxLength={160}
           />
@@ -137,13 +230,16 @@ function UkCompliance() {
           <input
             type="checkbox"
             checked={registrationConfirmed}
-            onChange={(event) => setRegistrationConfirmed(event.target.checked)}
+            onChange={(event) => {
+              setRegistrationConfirmed(event.target.checked);
+              setConfirmationDate(null);
+            }}
           />
           <span>
             <strong className="block">Food-business registration evidence checked</strong>
             <span className="text-sm text-muted-foreground">
-              Records today as the confirmation date. This is your internal record and is not
-              authority verification.
+              Preserves the original confirmation date unless you reconfirm the evidence. This is
+              your internal record and is not authority verification.
             </span>
           </span>
         </label>
@@ -171,11 +267,15 @@ function UkCompliance() {
         </label>
         <div className="md:col-span-2">
           <button className="btn-primary px-5 py-2" onClick={() => void save()}>
-            Review and save
+            {saving ? "Saving…" : "Review and save"}
           </button>
-          {message && <p className="text-sm mt-3">{message}</p>}
+          {message && (
+            <p role="status" className="text-sm mt-3">
+              {message}
+            </p>
+          )}
         </div>
-      </div>
+      </fieldset>
       <section className="surface p-5" aria-labelledby="authority-context-title">
         <div className="eyebrow">AUTHORITY CONTEXT</div>
         <h2 id="authority-context-title" className="mt-2 text-xl">
