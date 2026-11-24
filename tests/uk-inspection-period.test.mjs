@@ -72,6 +72,6 @@ test("PDF evidence samples disclose their bounds and avoid ambiguous organisatio
   assert.match(edge, /organizations\.count === 1/);
   assert.match(edge, /Incomplete inspection evidence counts/);
   assert.match(edge, /\.order\("verified_at", \{ ascending: false \}\)/);
-  assert.match(edge, /Showing \$\{Math\.min/);
+  assert.match(edge, /Showing \$\{\s*Math\.min/);
   assert.match(edge, /not a food hygiene rating or compliance certificate/);
 });

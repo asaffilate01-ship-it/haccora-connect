@@ -138,17 +138,19 @@ Deno.serve(async (request) => {
       if (result.error) throw result.error;
     }
 
-    if ([
-      organizations,
-      temperatures,
-      outOfRangeTemperatures,
-      checks,
-      audits,
-      recalls,
-      training,
-      fitness,
-      equipment,
-    ].some((result) => result.count === null)) {
+    if (
+      [
+        organizations,
+        temperatures,
+        outOfRangeTemperatures,
+        checks,
+        audits,
+        recalls,
+        training,
+        fitness,
+        equipment,
+      ].some((result) => result.count === null)
+    ) {
       throw new Error("Incomplete inspection evidence counts");
     }
 
@@ -199,7 +201,9 @@ Deno.serve(async (request) => {
       "This is an evidence summary, not a food hygiene rating or compliance certificate.",
       "",
       "TEMPERATURE RECORDS",
-      `Showing ${Math.min(temperatures.data?.length ?? 0, 250)} of ${temperatures.count} records`,
+      `Showing ${
+        Math.min(temperatures.data?.length ?? 0, 250)
+      } of ${temperatures.count} records`,
       ...(temperatures.data ?? [])
         .slice(0, 250)
         .map(
@@ -210,7 +214,9 @@ Deno.serve(async (request) => {
         ),
       "",
       "COMPLETED CHECKS",
-      `Showing ${Math.min(checks.data?.length ?? 0, 250)} of ${checks.count} records`,
+      `Showing ${
+        Math.min(checks.data?.length ?? 0, 250)
+      } of ${checks.count} records`,
       ...(checks.data ?? [])
         .slice(0, 250)
         .map(
@@ -223,7 +229,9 @@ Deno.serve(async (request) => {
         ),
       "",
       "AUDITS",
-      `Showing ${Math.min(audits.data?.length ?? 0, 150)} of ${audits.count} records`,
+      `Showing ${
+        Math.min(audits.data?.length ?? 0, 150)
+      } of ${audits.count} records`,
       ...(audits.data ?? [])
         .slice(0, 150)
         .map(
@@ -236,7 +244,9 @@ Deno.serve(async (request) => {
         ),
       "",
       "RECALLS",
-      `Showing ${Math.min(recalls.data?.length ?? 0, 150)} of ${recalls.count} records`,
+      `Showing ${
+        Math.min(recalls.data?.length ?? 0, 150)
+      } of ${recalls.count} records`,
       ...(recalls.data ?? [])
         .slice(0, 150)
         .map(
@@ -249,7 +259,9 @@ Deno.serve(async (request) => {
         ),
       "",
       "TRAINING",
-      `Showing ${Math.min(training.data?.length ?? 0, 250)} of ${training.count} records`,
+      `Showing ${
+        Math.min(training.data?.length ?? 0, 250)
+      } of ${training.count} records`,
       ...(training.data ?? [])
         .slice(0, 250)
         .map(
@@ -262,7 +274,9 @@ Deno.serve(async (request) => {
         ),
       "",
       "EQUIPMENT, MAINTENANCE AND CHECKS",
-      `Showing ${Math.min(equipment.data?.length ?? 0, 250)} of ${equipment.count} records`,
+      `Showing ${
+        Math.min(equipment.data?.length ?? 0, 250)
+      } of ${equipment.count} records`,
       ...(equipment.data ?? [])
         .slice(0, 250)
         .map(
