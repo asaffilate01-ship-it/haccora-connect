@@ -36,12 +36,22 @@ function Ppds() {
     <PpdsWorkspace
       key={`${user.id}:${user.organizationId}:${user.locationId}:${user.role}`}
       user={user}
+      organizationId={user.organizationId}
+      locationId={user.locationId}
     />
   );
 }
 
-function PpdsWorkspace({ user }: { user: AuthUser }) {
-  const canApprove = user?.role === "owner" || user?.role === "manager";
+function PpdsWorkspace({
+  user,
+  organizationId,
+  locationId,
+}: {
+  user: AuthUser;
+  organizationId: string;
+  locationId: string;
+}) {
+  const canApprove = user.role === "owner" || user.role === "manager";
   const [loadError, setLoadError] = useState("");
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -60,7 +70,6 @@ function PpdsWorkspace({ user }: { user: AuthUser }) {
   const [ingredientId, setIngredientId] = useState("");
   const [msg, setMsg] = useState("");
   const load = useCallback(async () => {
-    if (!user.organizationId || !user.locationId) return null;
     const request = ++requestId.current;
     loadingEvidence.current = true;
     setLoading(true);
@@ -73,26 +82,26 @@ function PpdsWorkspace({ user }: { user: AuthUser }) {
             "id,name,ingredient_statement,allergens,may_contain,specification_version,reviewed_at",
             { count: "exact" },
           )
-          .eq("organization_id", user.organizationId)
+          .eq("organization_id", organizationId)
           .order("name"),
         supabase
           .from("recipes")
           .select("id,name", { count: "exact" })
-          .eq("organization_id", user.organizationId)
-          .or(`location_id.eq.${user.locationId},location_id.is.null`)
+          .eq("organization_id", organizationId)
+          .or(`location_id.eq.${locationId},location_id.is.null`)
           .order("name"),
         supabase
           .from("recipe_ingredients")
           .select("recipe_id,ingredient_id,quantity,unit", { count: "exact" })
-          .eq("organization_id", user.organizationId),
+          .eq("organization_id", organizationId),
         supabase
           .from("ppds_label_versions")
           .select(
             "id,recipe_id,version,generated_at,source_snapshot,allergens,ingredient_statement",
             { count: "exact" },
           )
-          .eq("organization_id", user.organizationId)
-          .eq("location_id", user.locationId)
+          .eq("organization_id", organizationId)
+          .eq("location_id", locationId)
           .order("generated_at", { ascending: false }),
       ]);
       if (request !== requestId.current) return null;
@@ -130,7 +139,7 @@ function PpdsWorkspace({ user }: { user: AuthUser }) {
         setLoading(false);
       }
     }
-  }, [user.organizationId, user.locationId]);
+  }, [organizationId, locationId]);
 
   useEffect(() => {
     void load();
@@ -172,12 +181,12 @@ function PpdsWorkspace({ user }: { user: AuthUser }) {
   const integrity = assessPpdsIntegrity(selected, recipeIngredientIds, currentLabel);
   const labelIsStale = integrity.stale;
   const add = async () => {
-    if (!user.organizationId || !name.trim() || !statement.trim()) return;
+    if (!name.trim() || !statement.trim()) return;
     await perform(async () => {
       const { data, error } = await supabase
         .from("ingredients")
         .insert({
-          organization_id: user.organizationId,
+          organization_id: organizationId,
           name: name.trim(),
           ingredient_statement: statement.trim(),
           allergens,
@@ -199,7 +208,7 @@ function PpdsWorkspace({ user }: { user: AuthUser }) {
 
   const unverifiedIngredients = integrity.missing;
   const generate = async () => {
-    if (!user.organizationId || !user.locationId || !recipeId) return;
+    if (!recipeId) return;
     await perform(async () => {
       const evidence = await load();
       if (!evidence) return;
@@ -220,8 +229,8 @@ function PpdsWorkspace({ user }: { user: AuthUser }) {
         .from("ppds_label_versions")
         .select("version")
         .eq("recipe_id", recipeId)
-        .eq("organization_id", user.organizationId)
-        .eq("location_id", user.locationId)
+        .eq("organization_id", organizationId)
+        .eq("location_id", locationId)
         .order("version", { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -233,8 +242,8 @@ function PpdsWorkspace({ user }: { user: AuthUser }) {
       const { data, error } = await supabase
         .from("ppds_label_versions")
         .insert({
-          organization_id: user.organizationId,
-          location_id: user.locationId,
+          organization_id: organizationId,
+          location_id: locationId,
           recipe_id: recipeId,
           product_name: recipe.name,
           ingredient_statement: current.map((i) => i.ingredient_statement || i.name).join(", "),
@@ -260,7 +269,7 @@ function PpdsWorkspace({ user }: { user: AuthUser }) {
   };
 
   const attachIngredient = async () => {
-    if (!user.organizationId || !recipeId || !ingredientId) return;
+    if (!recipeId || !ingredientId) return;
     await perform(async () => {
       if (
         !recipes.some((recipe) => recipe.id === recipeId) ||
@@ -276,7 +285,7 @@ function PpdsWorkspace({ user }: { user: AuthUser }) {
       const { data, error } = await supabase
         .from("recipe_ingredients")
         .insert({
-          organization_id: user.organizationId,
+          organization_id: organizationId,
           recipe_id: recipeId,
           ingredient_id: ingredientId,
           quantity: 1,
@@ -487,9 +496,9 @@ function PpdsWorkspace({ user }: { user: AuthUser }) {
           </p>
         </section>
       </div>
-      {user?.organizationId && !unavailable && !busy && (
+      {!unavailable && !busy && (
         <IngredientChangeReview
-          organizationId={user.organizationId}
+          organizationId={organizationId}
           ingredients={ingredients}
           recipes={recipes}
           recipeLinks={links}
