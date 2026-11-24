@@ -47,9 +47,11 @@ test("UK screens display GBP sourced values and safeguard PPDS labels", async ()
   assert.match(waste, /source_currency: "GBP"/);
   assert.match(waste, /cost_gbp/);
   assert.match(ppds, /unverifiedIngredients/);
+  assert.match(ppds, /const unavailable = loading \|\| !!loadError/);
+  assert.match(ppds, /const mutationDisabled = !canApprove \|\| unavailable \|\| busy/);
   assert.match(
     ppds,
-    /disabled=\{!canApprove \|\| Boolean\(loadError\) \|\| unverifiedIngredients\.length > 0\}/,
+    /disabled=\{\s*mutationDisabled \|\| !recipeId \|\| !selected\.length \|\| unverifiedIngredients\.length > 0\s*\}/,
   );
 });
 
