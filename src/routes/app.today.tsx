@@ -179,8 +179,8 @@ function SiteToday({ organizationId, locationId }: { organizationId: string; loc
           <div className="eyebrow">TODAY'S SHIFT</div>
           <h1 className="text-3xl mt-1">Open, monitor and close</h1>
           <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
-            A focused view of records visible at the selected site, using UK calendar days.
-            Complete the work in each linked record so evidence is saved to your site workspace.
+            A focused view of records visible at the selected site, using UK calendar days. Complete
+            the work in each linked record so evidence is saved to your site workspace.
           </p>
         </div>
         {loading ? (
