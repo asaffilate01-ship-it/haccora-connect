@@ -13,6 +13,7 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/haccora-client";
 import { useAuth } from "@/lib/auth";
+import { createRefreshQueue } from "@/lib/refresh-queue";
 
 export const Route = createFileRoute("/app/control-centre")({ component: ControlCentrePage });
 
@@ -78,6 +79,10 @@ function ControlCentre({
   const [loadError, setLoadError] = useState("");
   const [total, setTotal] = useState(0);
   const [loadedFilter, setLoadedFilter] = useState("");
+  const [liveStatus, setLiveStatus] = useState<"connecting" | "connected" | "unavailable">(
+    "connecting",
+  );
+  const refreshQueue = useRef<ReturnType<typeof createRefreshQueue> | null>(null);
   const requestId = useRef(0);
   const writeLock = useRef(false);
   const available = !loading && !loadError && loadedFilter === filter;
@@ -143,21 +148,30 @@ function ControlCentre({
   }, [filter, organizationId, locationId]);
 
   useEffect(() => {
-    void load();
+    const queue = createRefreshQueue(load);
+    refreshQueue.current = queue;
+    void queue.request();
     return () => {
+      queue.dispose();
+      refreshQueue.current = null;
       requestId.current += 1;
     };
   }, [load]);
 
   useEffect(() => {
+    let active = true;
     let timer: ReturnType<typeof setTimeout> | undefined;
     const scheduleRefresh = () => {
-      if (timer !== undefined) return;
+      if (!active || timer !== undefined) return;
       timer = setTimeout(() => {
         timer = undefined;
-        void load();
+        if (active) void refreshQueue.current?.request();
       }, 500);
     };
+    const offline = () => setLiveStatus("unavailable");
+    window.addEventListener("focus", scheduleRefresh);
+    window.addEventListener("online", scheduleRefresh);
+    window.addEventListener("offline", offline);
     const channel = supabase
       .channel(`control-centre-${organizationId}`)
       .on(
@@ -170,12 +184,24 @@ function ControlCentre({
         },
         scheduleRefresh,
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (!active) return;
+        if (status === "SUBSCRIBED") {
+          setLiveStatus("connected");
+          scheduleRefresh();
+        } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+          setLiveStatus("unavailable");
+        }
+      });
     return () => {
+      active = false;
       if (timer !== undefined) clearTimeout(timer);
+      window.removeEventListener("focus", scheduleRefresh);
+      window.removeEventListener("online", scheduleRefresh);
+      window.removeEventListener("offline", offline);
       void supabase.removeChannel(channel);
     };
-  }, [load, organizationId]);
+  }, [organizationId]);
 
   const byId = useMemo(() => new Map(actions.map((action) => [action.id, action])), [actions]);
   const openItems = items.filter(
@@ -241,7 +267,7 @@ function ControlCentre({
           : "The change could not be confirmed. Review the refreshed queue.",
       );
     } finally {
-      await load();
+      await refreshQueue.current?.request();
       writeLock.current = false;
       setBusy(null);
     }
@@ -269,7 +295,7 @@ function ControlCentre({
           <button
             className="rounded-full bg-foreground px-3 py-2 text-xs font-bold text-background"
             disabled={loading || !!busy}
-            onClick={() => void load()}
+            onClick={() => void refreshQueue.current?.request()}
           >
             <RefreshCw size={13} className="mr-1 inline" /> {"Refresh"}
           </button>
@@ -294,6 +320,13 @@ function ControlCentre({
         })}
       </div>
 
+      <p role="status" className="text-xs text-muted-foreground">
+        {liveStatus === "connected"
+          ? "Live update channel connected"
+          : liveStatus === "connecting"
+            ? "Connecting live updates…"
+            : "Live updates unavailable. Refresh before relying on this queue."}
+      </p>
       {available && (
         <p className="text-xs text-muted-foreground">
           Showing {items.length} of {total} matching visible items. Metrics describe this view.
