@@ -1,9 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { Gavel, Download, FileCheck2, Lock, Loader2 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/haccora-client";
 import { useAuth } from "@/lib/auth";
+import {
+  ukCalendarDate,
+  ukInspectionPeriod,
+} from "../../supabase/functions/_shared/inspection-period";
 
 export const Route = createFileRoute("/app/inspection")({
   component: InspectionPage,
@@ -14,27 +18,21 @@ type EvidenceKey =
 
 type Row = { key: EvidenceKey; count: number; status: "ok" | "warn" | "empty" };
 
-function todayISO(date = new Date()) {
-  const parts = new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Europe/London",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(date);
-  const value = Object.fromEntries(parts.map((part) => [part.type, part.value]));
-  return `${value.year}-${value.month}-${value.day}`;
-}
-function isoDaysAgo(n: number) {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  return todayISO(d);
+function InspectionPage() {
+  const { user } = useAuth();
+  if (!user) return null;
+  return (
+    <InspectionWorkspace
+      key={`${user.id}:${user.organizationId}:${user.locationId}:${user.role}:${user.inspectorScopes.join(",")}`}
+    />
+  );
 }
 
-function InspectionPage() {
+function InspectionWorkspace() {
   const { t } = useI18n();
   const { user } = useAuth();
-  const [from, setFrom] = useState(isoDaysAgo(180));
-  const [to, setTo] = useState(todayISO());
+  const [from, setFrom] = useState(() => ukCalendarDate(new Date(), -180));
+  const [to, setTo] = useState(() => ukCalendarDate(new Date()));
   const [ready, setReady] = useState(false);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
@@ -42,91 +40,88 @@ function InspectionPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [rows, setRows] = useState<Row[]>([]);
   const [totals, setTotals] = useState({ evidence: 0, incidents: 0, incidentsOpen: 0 });
+  const [loadedPeriod, setLoadedPeriod] = useState("");
+  const requestId = useRef(0);
+  const exportLock = useRef(false);
+  const previewCurrent = !loading && !loadError && loadedPeriod === `${from}:${to}`;
 
   const load = useCallback(async () => {
+    const request = ++requestId.current;
     setLoading(true);
     setLoadError(null);
-    const fromDate = new Date(from);
-    const toDate = new Date(to);
-    if (
-      !Number.isFinite(fromDate.getTime()) ||
-      !Number.isFinite(toDate.getTime()) ||
-      toDate < fromDate
-    ) {
-      setLoadError("Choose a valid date range before generating inspection evidence.");
+    setExportError(null);
+    setReady(false);
+    setLoadedPeriod("");
+    setRows([]);
+    setTotals({ evidence: 0, incidents: 0, incidentsOpen: 0 });
+    let period: ReturnType<typeof ukInspectionPeriod>;
+    try {
+      period = ukInspectionPeriod(from, to);
+    } catch {
+      setLoadError("Choose a valid date range of up to 366 calendar days.");
       setLoading(false);
       return;
     }
-    const fromIso = fromDate.toISOString();
-    const toIso = new Date(toDate.getTime() + 86400000).toISOString();
+    const fromIso = period.start;
+    const toIso = period.end;
     const headRange = (table: string, col: string) =>
       supabase
         .from(table as any)
         .select("id", { count: "exact", head: true })
         .gte(col, fromIso)
-        .lte(col, toIso);
+        .lt(col, toIso);
 
-    const [temp, clean, pest, allerg, fitness, training, trace, audit, haccp, incAll, incOpen] =
-      await Promise.all([
-        headRange("temperature_logs", "logged_at"),
-        supabase
-          .from("checks")
-          .select("id", { count: "exact", head: true })
-          .eq("kind", "cleaning")
-          .eq("status", "completed")
-          .gte("completed_at", fromIso)
-          .lte("completed_at", toIso),
-        supabase
-          .from("pest_sightings")
-          .select("id", { count: "exact", head: true })
-          .gte("observed_at", fromIso)
-          .lte("observed_at", toIso),
-        supabase.from("recipes").select("id", { count: "exact", head: true }),
-        supabase
-          .from("health_register")
-          .select("id", { count: "exact", head: true })
-          .gte("created_at", fromIso)
-          .lte("created_at", toIso),
-        supabase
-          .from("training_records")
-          .select("id", { count: "exact", head: true })
-          .not("verified_at", "is", null)
-          .gte("verified_at", fromIso)
-          .lte("verified_at", toIso),
-        supabase
-          .from("goods_in_logs")
-          .select("id", { count: "exact", head: true })
-          .gte("received_at", fromIso)
-          .lte("received_at", toIso),
-        headRange("audits", "created_at"),
-        headRange("haccp_hazards", "created_at"),
-        headRange("incidents", "created_at"),
-        supabase
-          .from("incidents")
-          .select("id", { count: "exact", head: true })
-          .neq("status", "closed")
-          .gte("created_at", fromIso)
-          .lte("created_at", toIso),
-      ]);
-
-    const results = [
-      temp,
-      clean,
-      pest,
-      allerg,
-      fitness,
-      training,
-      trace,
-      audit,
-      haccp,
-      incAll,
-      incOpen,
-    ];
-    if (results.some((result) => result.error)) {
+    const results = await Promise.all([
+      headRange("temperature_logs", "logged_at"),
+      supabase
+        .from("checks")
+        .select("id", { count: "exact", head: true })
+        .eq("kind", "cleaning")
+        .eq("status", "completed")
+        .gte("completed_at", fromIso)
+        .lt("completed_at", toIso),
+      supabase
+        .from("pest_sightings")
+        .select("id", { count: "exact", head: true })
+        .gte("observed_at", fromIso)
+        .lt("observed_at", toIso),
+      supabase.from("recipes").select("id", { count: "exact", head: true }),
+      supabase
+        .from("health_register")
+        .select("id", { count: "exact", head: true })
+        .gte("created_at", fromIso)
+        .lt("created_at", toIso),
+      supabase
+        .from("training_records")
+        .select("id", { count: "exact", head: true })
+        .not("verified_at", "is", null)
+        .gte("verified_at", fromIso)
+        .lt("verified_at", toIso),
+      supabase
+        .from("goods_in_logs")
+        .select("id", { count: "exact", head: true })
+        .gte("received_at", fromIso)
+        .lt("received_at", toIso),
+      headRange("audits", "performed_at"),
+      headRange("haccp_hazards", "created_at"),
+      headRange("incidents", "created_at"),
+      supabase
+        .from("incidents")
+        .select("id", { count: "exact", head: true })
+        .neq("status", "closed")
+        .gte("created_at", fromIso)
+        .lt("created_at", toIso),
+    ]).catch(() => null);
+    if (request !== requestId.current) return;
+    if (!results || results.some((result) => result.error || result.count === null)) {
       setLoadError(
         "Some inspection evidence could not be loaded. Missing values are not being treated as compliant.",
       );
+      setLoading(false);
+      return;
     }
+    const [temp, clean, pest, allerg, fitness, training, trace, audit, haccp, incAll, incOpen] =
+      results;
 
     const c = (r: any) => r.count ?? 0;
     const build: Row[] = [
@@ -167,30 +162,43 @@ function InspectionPage() {
       incidents: c(incAll),
       incidentsOpen: c(incOpen),
     });
+    setLoadedPeriod(`${from}:${to}`);
     setLoading(false);
   }, [from, to, user?.inspectorScopes, user?.role]);
 
   useEffect(() => {
-    load();
+    void load();
+    return () => {
+      requestId.current += 1;
+    };
   }, [load]);
 
   const downloadEvidence = async () => {
+    if (!previewCurrent || !ready || exportLock.current) return;
+    exportLock.current = true;
+    const request = requestId.current;
     setExporting(true);
     setExportError(null);
-    const { data, error } = await supabase.functions.invoke("inspection-export", {
-      body: { from, to },
-    });
-    setExporting(false);
-    if (error || !(data instanceof Blob)) {
-      setExportError(error?.message ?? "Export failed");
-      return;
+    try {
+      const { data, error } = await supabase.functions.invoke("inspection-export", {
+        body: { from, to },
+      });
+      if (request !== requestId.current) return;
+      if (error || !(data instanceof Blob)) throw new Error("Export failed");
+      const url = URL.createObjectURL(data);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `haccora-evidence-${to}.pdf`;
+      anchor.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      if (request === requestId.current) {
+        setExportError("The evidence pack could not be downloaded. Please try again.");
+      }
+    } finally {
+      exportLock.current = false;
+      setExporting(false);
     }
-    const url = URL.createObjectURL(data);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = `haccora-evidence-${to}.pdf`;
-    anchor.click();
-    URL.revokeObjectURL(url);
   };
 
   return (
@@ -227,24 +235,24 @@ function InspectionPage() {
           >
             <Stat
               label={t("inspection.stat.evidence") || "Evidence records"}
-              value={totals.evidence}
+              value={previewCurrent ? totals.evidence : null}
             />
             {(user?.role !== "inspector" || user.inspectorScopes.includes("incidents")) && (
               <>
                 <Stat
                   label={t("inspection.stat.incidents") || "Incidents"}
-                  value={totals.incidents}
+                  value={previewCurrent ? totals.incidents : null}
                 />
                 <Stat
                   label={t("inspection.stat.open") || "Still open"}
-                  value={totals.incidentsOpen}
-                  accent={totals.incidentsOpen > 0 ? "warn" : "ok"}
+                  value={previewCurrent ? totals.incidentsOpen : null}
+                  accent={previewCurrent ? (totals.incidentsOpen > 0 ? "warn" : "ok") : undefined}
                 />
               </>
             )}
           </div>
           <div className="mt-4 divide-y divide-border">
-            {rows.map((r) => (
+            {(previewCurrent ? rows : []).map((r) => (
               <div key={r.key} className="py-3 flex items-center gap-3">
                 <div
                   className={`h-8 w-8 rounded-lg grid place-items-center ${r.status === "ok" ? "bg-success/15 text-success" : r.status === "warn" ? "bg-warning/15 text-warning-foreground" : "bg-muted text-muted-foreground"}`}
@@ -271,12 +279,17 @@ function InspectionPage() {
         <div className="surface p-6 h-fit">
           <h2 className="font-display text-xl">{t("inspection.generate")}</h2>
           <p className="text-xs text-muted-foreground mt-1">{t("inspection.desc")}</p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Dates are inclusive UK calendar days. The preview covers visible evidence categories;
+            the PDF contains its own supported sections across your granted workspace access.
+          </p>
           <div className="mt-4 space-y-3">
             <label className="block">
               <span className="text-xs text-muted-foreground">{t("inspection.from")}</span>
               <input
                 type="date"
                 value={from}
+                disabled={exporting}
                 onChange={(e) => {
                   setFrom(e.target.value);
                   setReady(false);
@@ -289,6 +302,7 @@ function InspectionPage() {
               <input
                 type="date"
                 value={to}
+                disabled={exporting}
                 onChange={(e) => {
                   setTo(e.target.value);
                   setReady(false);
@@ -300,12 +314,12 @@ function InspectionPage() {
           <button
             onClick={() => setReady(true)}
             className="btn-primary w-full mt-5"
-            disabled={loading || !!loadError}
+            disabled={!previewCurrent || exporting}
           >
             <Gavel size={16} /> {t("common.generate")}
           </button>
 
-          {ready && (
+          {ready && previewCurrent && (
             <div className="mt-4 rounded-lg bg-forest-deep text-primary-foreground p-4">
               <div className="text-xs opacity-70 uppercase tracking-widest">
                 {t("common.ready")}
@@ -314,10 +328,12 @@ function InspectionPage() {
                 {t("inspection.pack")} · {from} → {to}
               </div>
               <div className="text-xs opacity-80 mt-1">
-                {totals.evidence} records · {totals.incidents} incidents
+                {totals.evidence} preview records
+                {(user?.role !== "inspector" || user.inspectorScopes.includes("incidents")) &&
+                  ` · ${totals.incidents} incidents`}
               </div>
               <button
-                disabled={exporting}
+                disabled={exporting || !previewCurrent}
                 onClick={downloadEvidence}
                 className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-accent text-accent-foreground px-3 py-1.5 text-xs font-semibold disabled:opacity-60"
               >
@@ -341,7 +357,15 @@ function InspectionPage() {
   );
 }
 
-function Stat({ label, value, accent }: { label: string; value: number; accent?: "ok" | "warn" }) {
+function Stat({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: number | null;
+  accent?: "ok" | "warn";
+}) {
   const color =
     accent === "warn"
       ? "text-[color:var(--color-alert-red)]"
@@ -351,7 +375,7 @@ function Stat({ label, value, accent }: { label: string; value: number; accent?:
   return (
     <div className="rounded-xl border border-border bg-card p-3">
       <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</div>
-      <div className={`font-display text-2xl mt-0.5 ${color}`}>{value}</div>
+      <div className={`font-display text-2xl mt-0.5 ${color}`}>{value ?? "—"}</div>
     </div>
   );
 }

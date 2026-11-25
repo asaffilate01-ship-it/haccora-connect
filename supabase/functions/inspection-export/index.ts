@@ -8,6 +8,10 @@ import {
   requirePost,
 } from "../_shared/http.ts";
 import { requireUser } from "../_shared/supabase.ts";
+import {
+  ukCalendarDate,
+  ukInspectionPeriod,
+} from "../_shared/inspection-period.ts";
 
 type ExportInput = { from?: string; to?: string };
 
@@ -17,21 +21,19 @@ Deno.serve(async (request) => {
   try {
     const { client, user } = await requireUser(request);
     const input = (await readJsonBody(request, 8 * 1024)) as ExportInput;
-    const from = input.from
-      ? new Date(input.from)
-      : new Date(Date.now() - 30 * 86400000);
-    const to = input.to ? new Date(input.to) : new Date();
-    if (
-      !Number.isFinite(from.getTime()) ||
-      !Number.isFinite(to.getTime()) ||
-      to < from ||
-      to.getTime() - from.getTime() > 366 * 86400000
-    ) {
+    const now = new Date();
+    let period: ReturnType<typeof ukInspectionPeriod>;
+    try {
+      period = ukInspectionPeriod(
+        input?.from ?? ukCalendarDate(now, -30),
+        input?.to ?? ukCalendarDate(now),
+      );
+    } catch {
       return json(request, { error: "invalid_date_range" }, 400);
     }
 
     const [
-      { data: context },
+      { data: context, error: contextError },
       organizations,
       locations,
       temperatures,
@@ -52,29 +54,32 @@ Deno.serve(async (request) => {
       client
         .from("temperature_logs")
         .select("location,reading,status,logged_at", { count: "exact" })
-        .gte("logged_at", from.toISOString())
-        .lte("logged_at", to.toISOString())
+        .gte("logged_at", period.start)
+        .lt("logged_at", period.end)
+        .order("logged_at", { ascending: false })
         .limit(1000),
       client
         .from("temperature_logs")
         .select("id", { count: "exact", head: true })
         .eq("status", "out_of_range")
-        .gte("logged_at", from.toISOString())
-        .lte("logged_at", to.toISOString()),
+        .gte("logged_at", period.start)
+        .lt("logged_at", period.end),
       client
         .from("checks")
         .select("kind,title,status,completed_at", { count: "exact" })
         .eq("status", "completed")
-        .gte("created_at", from.toISOString())
-        .lte("created_at", to.toISOString())
+        .gte("completed_at", period.start)
+        .lt("completed_at", period.end)
+        .order("completed_at", { ascending: false })
         .limit(1000),
       client
         .from("audits")
         .select("title,audit_type,score,status,performed_at", {
           count: "exact",
         })
-        .gte("performed_at", from.toISOString())
-        .lte("performed_at", to.toISOString())
+        .gte("performed_at", period.start)
+        .lt("performed_at", period.end)
+        .order("performed_at", { ascending: false })
         .limit(300),
       client
         .from("recalls")
@@ -82,30 +87,36 @@ Deno.serve(async (request) => {
           count: "exact",
         })
         .neq("status", "closed")
-        .gte("initiated_at", from.toISOString())
-        .lte("initiated_at", to.toISOString())
+        .gte("initiated_at", period.start)
+        .lt("initiated_at", period.end)
+        .order("initiated_at", { ascending: false })
         .limit(300),
       client
         .from("training_records")
         .select("progress,score,completed_at,verified_at", { count: "exact" })
         .not("verified_at", "is", null)
-        .gte("created_at", from.toISOString())
-        .lte("created_at", to.toISOString())
+        .gte("verified_at", period.start)
+        .lt("verified_at", period.end)
+        .order("verified_at", { ascending: false })
         .limit(1000),
       client
         .from("health_register")
         .select("id", { count: "exact", head: true })
-        .gte("created_at", from.toISOString())
-        .lte("created_at", to.toISOString()),
+        .gte("created_at", period.start)
+        .lt("created_at", period.end),
       client
         .from("asset_events")
         .select("event_type,outcome,title,notes,recorded_by_name,recorded_at", {
           count: "exact",
         })
-        .gte("recorded_at", from.toISOString())
-        .lte("recorded_at", to.toISOString())
+        .gte("recorded_at", period.start)
+        .lt("recorded_at", period.end)
+        .order("recorded_at", { ascending: false })
         .limit(1000),
     ]);
+    if (contextError || organizations.error || locations.error) {
+      throw new Error("Export context unavailable");
+    }
     for (
       const result of [
         temperatures,
@@ -118,12 +129,14 @@ Deno.serve(async (request) => {
         equipment,
       ]
     ) {
-      if (result.error) throw result.error;
+      if (result.error || result.count === null) {
+        throw new Error("Inspection evidence unavailable");
+      }
     }
 
     const { error: auditError } = await client.rpc("record_evidence_export", {
-      p_from: from.toISOString().slice(0, 10),
-      p_to: to.toISOString().slice(0, 10),
+      p_from: period.from,
+      p_to: period.to,
     });
     if (auditError) throw auditError;
 
@@ -158,9 +171,7 @@ Deno.serve(async (request) => {
       ...(organization?.country_code
         ? [`Country: ${String(organization.country_code)}`]
         : []),
-      `Period: ${from.toISOString().slice(0, 10)} to ${
-        to.toISOString().slice(0, 10)
-      }`,
+      `Period (UK dates, inclusive): ${period.from} to ${period.to}`,
       `Generated by: ${user.email ?? user.id}`,
       `Generated at: ${
         new Date().toISOString().replace("T", " ").slice(0, 16)
@@ -174,7 +185,8 @@ Deno.serve(async (request) => {
       `Verified training records: ${training.count ?? 0}`,
       `Fitness-to-work records visible to this user: ${fitness.count ?? 0}`,
       `Equipment history records: ${equipment.count ?? 0}`,
-      "Detailed sections include bounded record samples; totals above are exact for the selected period.",
+      "Detailed sections contain limited samples of the latest records.",
+      "Totals cover records visible under your workspace access, not a selected-site filter.",
       "",
       "TEMPERATURE RECORDS",
       ...(temperatures.data ?? [])
@@ -322,11 +334,8 @@ Deno.serve(async (request) => {
       headers: {
         ...corsHeaders(request),
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="haccora-evidence-${
-          to
-            .toISOString()
-            .slice(0, 10)
-        }.pdf"`,
+        "Content-Disposition":
+          `attachment; filename="haccora-evidence-${period.to}.pdf"`,
         "Cache-Control": "no-store",
         "X-Content-Type-Options": "nosniff",
       },
