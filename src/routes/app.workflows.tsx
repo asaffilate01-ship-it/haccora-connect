@@ -61,6 +61,7 @@ function WorkflowStudio({
   const [templates, setTemplates] = useState<Template[]>([]);
   const [runs, setRuns] = useState<Run[]>([]);
   const [total, setTotal] = useState(0);
+  const [publishedVersions, setPublishedVersions] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -105,6 +106,24 @@ function WorkflowStudio({
       ) {
         throw new Error("Workflow evidence unavailable");
       }
+      const activeIds = templateResult.data.flatMap((template) =>
+        template.active_version_id ? [template.active_version_id] : [],
+      );
+      const confirmed: Record<string, string> = {};
+      if (activeIds.length) {
+        const versions = await supabase
+          .from("workflow_template_versions")
+          .select("id,template_id,published_at")
+          .eq("organization_id", organizationId)
+          .eq("status", "approved")
+          .in("id", activeIds);
+        if (request !== requestId.current) return;
+        if (versions.error || !versions.data) throw new Error("Publication evidence unavailable");
+        for (const version of versions.data) {
+          if (version.published_at) confirmed[version.template_id] = version.id;
+        }
+      }
+      setPublishedVersions(confirmed);
       setTemplates(templateResult.data);
       setRuns(runResult.data as unknown as Run[]);
       setTotal(templateResult.count);
@@ -113,6 +132,7 @@ function WorkflowStudio({
       setTemplates([]);
       setRuns([]);
       setTotal(0);
+      setPublishedVersions({});
       setLoadError("Workflow records could not be loaded. Refresh before making changes.");
     } finally {
       if (request === requestId.current) setLoading(false);
@@ -137,11 +157,11 @@ function WorkflowStudio({
     } catch {
       toast.error("The workflow change could not be confirmed. Review the refreshed records.");
     } finally {
-      writeLock.current = false;
       if (mounted.current) {
         await load();
         setSaving(false);
       }
+      writeLock.current = false;
     }
   }
 
@@ -216,15 +236,21 @@ function WorkflowStudio({
     });
   };
 
+  const isPublished = (template: Template) =>
+    !!template.active_version_id && publishedVersions[template.id] === template.active_version_id;
+
   const publish = async (template: Template) => {
-    if (!manager || !template.is_active || template.active_version_id) return;
+    if (!manager || !template.is_active || isPublished(template)) return;
     await write(async () => {
-      const { data: version, error } = await supabase
+      let query = supabase
         .from("workflow_template_versions")
-        .select("id,status")
+        .select("id,status,published_at")
         .eq("organization_id", organizationId)
-        .eq("template_id", template.id)
-        .in("status", ["draft", "approved"])
+        .eq("template_id", template.id);
+      query = template.active_version_id
+        ? query.eq("id", template.active_version_id).eq("status", "approved")
+        : query.in("status", ["draft", "approved"]);
+      const { data: version, error } = await query
         .order("version", { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -257,38 +283,44 @@ function WorkflowStudio({
         if (approved.error || !approved.data) throw new Error("Approval not confirmed");
       }
       ensureCurrent();
-      const activated = await supabase
-        .from("workflow_templates")
-        .update({ active_version_id: version.id, updated_at: now })
-        .eq("id", template.id)
-        .eq("organization_id", organizationId)
-        .eq("is_active", true)
-        .is("active_version_id", null)
-        .select("id")
-        .single();
-      if (activated.error || !activated.data) {
-        toast.error("Version approved, but activation was not confirmed. Refresh and retry.");
-        return;
+      if (!template.active_version_id) {
+        const activated = await supabase
+          .from("workflow_templates")
+          .update({ active_version_id: version.id, updated_at: now })
+          .eq("id", template.id)
+          .eq("organization_id", organizationId)
+          .eq("is_active", true)
+          .is("active_version_id", null)
+          .select("id")
+          .single();
+        if (activated.error || !activated.data) {
+          toast.error("Version approved, but activation was not confirmed. Refresh and retry.");
+          return;
+        }
       }
       ensureCurrent();
-      const published = await supabase
-        .from("workflow_template_versions")
-        .update({ published_at: now })
-        .eq("id", version.id)
-        .eq("organization_id", organizationId)
-        .eq("status", "approved")
-        .select("id")
-        .single();
-      if (published.error || !published.data) {
-        toast.error("Version activated, but its publication timestamp was not confirmed.");
-        return;
+      if (!version.published_at) {
+        const published = await supabase
+          .from("workflow_template_versions")
+          .update({ published_at: now })
+          .eq("id", version.id)
+          .eq("organization_id", organizationId)
+          .eq("template_id", template.id)
+          .eq("status", "approved")
+          .is("published_at", null)
+          .select("id")
+          .single();
+        if (published.error || !published.data) {
+          toast.error("Activation saved, but publication confirmation is incomplete. Retry.");
+          return;
+        }
       }
       toast.success("Workflow published.");
     });
   };
 
   const schedule = async (template: Template) => {
-    if (!canSchedule || !template.is_active || !template.active_version_id) return;
+    if (!canSchedule || !template.is_active || !isPublished(template)) return;
     await write(async () => {
       const { data: current, error } = await supabase
         .from("workflow_templates")
@@ -296,7 +328,12 @@ function WorkflowStudio({
         .eq("id", template.id)
         .eq("organization_id", organizationId)
         .single();
-      if (error || !current?.is_active || current.active_version_id !== template.active_version_id) {
+      if (
+        error ||
+        !current?.is_active ||
+        !current.active_version_id ||
+        current.active_version_id !== template.active_version_id
+      ) {
         toast.error("The published workflow changed. Refresh before scheduling.");
         return;
       }
@@ -450,24 +487,26 @@ function WorkflowStudio({
                     <div className="text-xs text-muted-foreground">
                       {template.is_active
                         ? template.active_version_id
-                          ? "Active version"
+                          ? isPublished(template)
+                            ? "Published"
+                            : "Publication incomplete"
                           : "Draft / awaiting activation"
                         : "Inactive"}
                       {template.location_id ? " · Selected site" : " · Shared organisation"}
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    {manager && template.is_active && !template.active_version_id && (
+                    {manager && template.is_active && !isPublished(template) && (
                       <button
                         disabled={saving || loading || !!loadError}
                         onClick={() => void publish(template)}
                         className="min-h-10 rounded-xl border border-border px-3 text-xs font-bold"
                       >
                         <Rocket size={13} className="mr-1 inline" />
-                        {"Publish"}
+                        {template.active_version_id ? "Finish publication" : "Publish"}
                       </button>
                     )}
-                    {canSchedule && template.is_active && template.active_version_id && (
+                    {canSchedule && template.is_active && isPublished(template) && (
                       <button
                         disabled={saving || loading || !!loadError}
                         onClick={() => void schedule(template)}
