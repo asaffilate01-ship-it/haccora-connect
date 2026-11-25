@@ -17,7 +17,9 @@ function savedDate(value: string) {
 }
 
 export default function Ppds() {
-  const { session, workspaceReady, organizationId, locationId, role, serviceStatus } = useSession();
+  const workspace = useSession();
+  const { session, workspaceReady, serviceStatus } = workspace;
+  const { organizationId, locationId, role } = workspace;
   if (!session || !workspaceReady || !organizationId || serviceStatus !== "active") {
     return (
       <CompliancePage
@@ -58,11 +60,8 @@ function LabelHistory({
       .from("ppds_label_versions")
       .select("id,product_name,version,allergens,generated_at")
       .eq("organization_id", organizationId);
-    void Promise.resolve(
-      (locationId ? query.eq("location_id", locationId) : query)
-        .order("generated_at", { ascending: false })
-        .limit(50),
-    )
+    const scoped = locationId ? query.eq("location_id", locationId) : query;
+    void Promise.resolve(scoped.order("generated_at", { ascending: false }).limit(50))
       .then(({ data, error: loadError }) => {
         if (!active) return;
         if (loadError || !data) {
@@ -82,6 +81,7 @@ function LabelHistory({
     };
   }, [organizationId, locationId, refresh]);
 
+  const refreshLabel = error ? "Retry loading" : "Refresh label history";
   return (
     <CompliancePage
       eyebrow="UK ALLERGEN MANAGEMENT"
@@ -129,7 +129,7 @@ function LabelHistory({
         onPress={() => setRefresh((value) => value + 1)}
         style={{ padding: 14, alignItems: "center" }}
       >
-        <Text style={{ fontWeight: "700" }}>{error ? "Retry loading" : "Refresh label history"}</Text>
+        <Text style={{ fontWeight: "700" }}>{refreshLabel}</Text>
       </Pressable>
     </CompliancePage>
   );
