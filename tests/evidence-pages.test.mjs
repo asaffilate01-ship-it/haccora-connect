@@ -42,7 +42,10 @@ test("evidence paging handles empty data and a lower provider page limit", async
 
 test("evidence paging rejects changing counts, duplicates, errors and missing rows", async () => {
   await assert.rejects(
-    readEvidencePages(async (from) => ({ data: dataset(1), count: from ? 3 : 2, error: null }), key),
+    readEvidencePages(
+      async (from) => ({ data: dataset(1), count: from ? 3 : 2, error: null }),
+      key,
+    ),
     /count changed/,
   );
   await assert.rejects(
