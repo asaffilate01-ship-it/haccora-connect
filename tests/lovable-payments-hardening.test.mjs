@@ -12,7 +12,7 @@ test("Lovable Stripe uses the SDK-supported API version and a server-owned mode"
     read("src/routes/app.billing.tsx"),
   ]);
 
-  assert.match(server, /apiVersion: "2026-03-25\.dahlia"/);
+  assert.match(server, /apiVersion: "2026-08-26\.dahlia"/);
   assert.match(server, /getConfiguredStripeEnvironment/);
   assert.match(server, /PAYMENTS_ENVIRONMENT/);
   assert.match(functions, /createStripeClient\(getConfiguredStripeEnvironment\(\)\)/);
