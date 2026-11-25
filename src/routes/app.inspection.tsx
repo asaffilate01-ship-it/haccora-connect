@@ -4,7 +4,10 @@ import { Gavel, Download, FileCheck2, Lock, Loader2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/haccora-client";
 import { useAuth } from "@/lib/auth";
-import { ukCalendarDate, ukInspectionPeriod } from "../../supabase/functions/_shared/inspection-period";
+import {
+  ukCalendarDate,
+  ukInspectionPeriod,
+} from "../../supabase/functions/_shared/inspection-period";
 
 export const Route = createFileRoute("/app/inspection")({
   component: InspectionPage,
