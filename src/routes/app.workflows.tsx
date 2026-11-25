@@ -400,7 +400,26 @@ function WorkflowStudio({
         })
         .select("id")
         .single();
+      if (saved.error?.code === "23505") {
+        const existing = await supabase
+          .from("workflow_runs")
+          .select("id,due_at,status")
+          .eq("organization_id", organizationId)
+          .eq("location_id", locationId)
+          .eq("assigned_to", userId)
+          .eq("template_id", template.id)
+          .eq("version_id", version.data.id)
+          .eq("idempotency_key", key)
+          .maybeSingle();
+        if (existing.error || !existing.data || existing.data.status !== "scheduled") {
+          throw new Error("Existing run not confirmed");
+        }
+        ensureCurrent();
+        toast.success("The matching workflow run is already scheduled.");
+        return;
+      }
       if (saved.error || !saved.data) throw new Error("Schedule not confirmed");
+      ensureCurrent();
       toast.success("Workflow run scheduled for 24 hours from now.");
     });
   };
