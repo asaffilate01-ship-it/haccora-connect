@@ -1,0 +1,2 @@
+DROP POLICY IF EXISTS safe_method_templates_read ON public.safe_method_templates;
+CREATE POLICY safe_method_templates_read ON public.safe_method_templates FOR SELECT TO authenticated USING (public.current_organization_id() IS NOT NULL);
