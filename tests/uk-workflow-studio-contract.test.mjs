@@ -39,3 +39,13 @@ test("scheduling requires current approved evidence and a confirmed run record",
   assert.match(source, /saved\.error \|\| !saved\.data/);
   assert.match(source, /manual:\$\{template\.id\}:\$\{locationId\}:\$\{userId\}/);
 });
+
+test("duplicate scheduling confirms the existing scoped run without rewriting it", () => {
+  assert.match(source, /saved\.error\?\.code === "23505"/);
+  assert.match(source, /\.eq\("idempotency_key", key\)/);
+  assert.match(source, /\.eq\("assigned_to", userId\)/);
+  assert.match(source, /\.eq\("version_id", version\.data\.id\)/);
+  assert.match(source, /existing\.data\.status !== "scheduled"/);
+  assert.match(source, /The matching workflow run is already scheduled/);
+  assert.doesNotMatch(source, /\.from\("workflow_runs"\)\s*\.upsert\(/);
+});
