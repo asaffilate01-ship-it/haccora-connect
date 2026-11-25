@@ -31,9 +31,7 @@ type LabelVersion = {
 function Ppds() {
   const { user } = useAuth();
   if (!user?.organizationId || !user.locationId) {
-    return (
-      <p className="p-5 text-sm">Select a business location to review its PPDS evidence.</p>
-    );
+    return <p className="p-5 text-sm">Select a business location to review its PPDS evidence.</p>;
   }
   return <SitePpds key={`${user.id}:${user.organizationId}:${user.locationId}:${user.role}`} />;
 }
@@ -318,7 +316,9 @@ function SitePpds() {
       return;
     }
     if (links.some((link) => link.recipe_id === recipeId && link.ingredient_id === ingredientId)) {
-      setMsg("This ingredient is already linked. Existing recipe quantities have not been changed.");
+      setMsg(
+        "This ingredient is already linked. Existing recipe quantities have not been changed.",
+      );
       return;
     }
     const organizationId = user.organizationId;
@@ -335,7 +335,9 @@ function SitePpds() {
         .select("recipe_id")
         .single();
       if (error || !data) throw new Error("Ingredient attachment not confirmed");
-      setMsg("Ingredient linked for review. Verify actual recipe quantities before label approval.");
+      setMsg(
+        "Ingredient linked for review. Verify actual recipe quantities before label approval.",
+      );
       await load();
     });
   };
@@ -550,7 +552,8 @@ function SitePpds() {
           </button>
           <p className="text-xs text-muted-foreground">
             Verify actual formulation, ingredient order, allergen emphasis and the physical label
-            before sale. Precautionary “may contain” statements require a documented risk assessment.
+            before sale. Precautionary “may contain” statements require a documented risk
+            assessment.
           </p>
         </fieldset>
       </div>
