@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/haccora-client";
 import { useAuth } from "@/lib/auth";
 import { UK_ALLERGENS } from "@/lib/uk-compliance";
+import { readEvidencePages } from "@/lib/evidence-pages";
 import { assessPpdsIntegrity, type PpdsLabelSnapshot } from "@/lib/ppds-integrity";
 import { IngredientChangeReview } from "@/components/ppds/IngredientChangeReview";
 
@@ -20,7 +21,7 @@ type Recipe = { id: string; name: string };
 type Link = { recipe_id: string; ingredient_id: string; quantity: number; unit: string };
 type LabelVersion = {
   id: string;
-  recipe_id: string;
+  recipe_id: string | null;
   version: number;
   generated_at: string;
   source_snapshot: PpdsLabelSnapshot | null;
@@ -66,50 +67,75 @@ function SitePpds() {
       setLoading(false);
       return null;
     }
+    const organizationId = user.organizationId;
+    const locationId = user.locationId;
+    const isCurrent = () => request === requestId.current;
     try {
-      const [a, b, c, d] = await Promise.all([
-        supabase
-          .from("ingredients")
-          .select(
-            "id,name,ingredient_statement,allergens,may_contain,specification_version,reviewed_at",
-            { count: "exact" },
-          )
-          .eq("organization_id", user.organizationId)
-          .order("name")
-          .order("id"),
-        supabase
-          .from("recipes")
-          .select("id,name", { count: "exact" })
-          .eq("organization_id", user.organizationId)
-          .or(`location_id.eq.${user.locationId},location_id.is.null`)
-          .order("name")
-          .order("id"),
-        supabase
-          .from("recipe_ingredients")
-          .select("recipe_id,ingredient_id,quantity,unit", { count: "exact" })
-          .eq("organization_id", user.organizationId)
-          .order("recipe_id")
-          .order("ingredient_id"),
-        supabase
-          .from("ppds_label_versions")
-          .select(
-            "id,recipe_id,version,generated_at,source_snapshot,allergens,ingredient_statement",
-            { count: "exact" },
-          )
-          .eq("organization_id", user.organizationId)
-          .eq("location_id", user.locationId)
-          .order("generated_at", { ascending: false })
-          .order("version", { ascending: false }),
+      const [ingredients, recipes, links, labels] = await Promise.all([
+        readEvidencePages(
+          (from, to) =>
+            supabase
+              .from("ingredients")
+              .select(
+                "id,name,ingredient_statement,allergens,may_contain,specification_version,reviewed_at",
+                { count: "exact" },
+              )
+              .eq("organization_id", organizationId)
+              .order("name")
+              .order("id")
+              .range(from, to),
+          (row) => row.id,
+          isCurrent,
+        ),
+        readEvidencePages(
+          (from, to) =>
+            supabase
+              .from("recipes")
+              .select("id,name", { count: "exact" })
+              .eq("organization_id", organizationId)
+              .or(`location_id.eq.${locationId},location_id.is.null`)
+              .order("name")
+              .order("id")
+              .range(from, to),
+          (row) => row.id,
+          isCurrent,
+        ),
+        readEvidencePages(
+          (from, to) =>
+            supabase
+              .from("recipe_ingredients")
+              .select("recipe_id,ingredient_id,quantity,unit", { count: "exact" })
+              .eq("organization_id", organizationId)
+              .order("recipe_id")
+              .order("ingredient_id")
+              .range(from, to),
+          (row) => `${row.recipe_id}:${row.ingredient_id}`,
+          isCurrent,
+        ),
+        readEvidencePages(
+          (from, to) =>
+            supabase
+              .from("ppds_label_versions")
+              .select(
+                "id,recipe_id,version,generated_at,source_snapshot,allergens,ingredient_statement",
+                { count: "exact" },
+              )
+              .eq("organization_id", organizationId)
+              .eq("location_id", locationId)
+              .order("generated_at", { ascending: false })
+              .order("version", { ascending: false })
+              .order("id")
+              .range(from, to),
+          (row) => row.id,
+          isCurrent,
+        ),
       ]);
-      if (request !== requestId.current) return null;
-      if ([a, b, c, d].some((r) => r.error || !r.data || r.count !== r.data.length)) {
-        throw new Error("Incomplete source evidence");
-      }
+      if (!isCurrent()) return null;
       const next = {
-        ingredients: (a.data ?? []) as Ingredient[],
-        recipes: (b.data ?? []) as Recipe[],
-        links: (c.data ?? []) as Link[],
-        labels: (d.data ?? []) as unknown as LabelVersion[],
+        ingredients,
+        recipes,
+        links,
+        labels: labels as unknown as LabelVersion[],
       };
       setIngredients(next.ingredients);
       setRecipes(next.recipes);
@@ -155,19 +181,22 @@ function SitePpds() {
     }
   }
 
+  const ingredientsById = useMemo(() => new Map(ingredients.map((i) => [i.id, i])), [ingredients]);
+  const formulation = useMemo(
+    () => links.filter((link) => link.recipe_id === recipeId),
+    [links, recipeId],
+  );
   const selected = useMemo(
     () =>
-      links
-        .filter((l) => l.recipe_id === recipeId)
-        .map((l) => ingredients.find((i) => i.id === l.ingredient_id))
-        .filter(Boolean) as Ingredient[],
-    [links, ingredients, recipeId],
+      formulation
+        .map((link) => ingredientsById.get(link.ingredient_id))
+        .filter((ingredient): ingredient is Ingredient => Boolean(ingredient)),
+    [formulation, ingredientsById],
   );
   const derivedAllergens = [...new Set(selected.flatMap((i) => i.allergens))].sort();
   const derivedMayContain = [...new Set(selected.flatMap((i) => i.may_contain))].sort();
   const derivedStatement = selected.map((i) => i.ingredient_statement || i.name).join(", ");
   const currentLabel = labels.find((label) => label.recipe_id === recipeId) ?? null;
-  const formulation = links.filter((link) => link.recipe_id === recipeId);
   const recipeIngredientIds = formulation.map((link) => link.ingredient_id);
   const integrity = assessPpdsIntegrity(selected, recipeIngredientIds, currentLabel, formulation);
   const labelIsStale = integrity.stale;
@@ -221,11 +250,10 @@ function SitePpds() {
       const fresh = await load();
       if (!fresh) return;
       const freshRecipe = fresh.recipes.find((r) => r.id === recipeId);
-      const oldLinks = links.filter((link) => link.recipe_id === recipeId);
+      const oldLinks = formulation;
       const freshLinks = fresh.links.filter((link) => link.recipe_id === recipeId);
-      const freshIngredients = freshLinks.map((link) =>
-        fresh.ingredients.find((ingredient) => ingredient.id === link.ingredient_id),
-      );
+      const freshById = new Map(fresh.ingredients.map((ingredient) => [ingredient.id, ingredient]));
+      const freshIngredients = freshLinks.map((link) => freshById.get(link.ingredient_id));
       if (
         !freshRecipe ||
         freshRecipe.name !== recipe.name ||
