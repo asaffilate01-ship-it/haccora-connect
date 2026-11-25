@@ -198,8 +198,8 @@ function ControlCentre({
     const action = actionFor(item);
     return Boolean(
       action &&
-        (action.status === "open" || action.status === "in_progress") &&
-        (canManage || action.owner_id === userId),
+      (action.status === "open" || action.status === "in_progress") &&
+      (canManage || action.owner_id === userId),
     );
   };
 
@@ -254,7 +254,8 @@ function ControlCentre({
           <div className="eyebrow">{"Live operations"}</div>
           <h1 className="mt-1 text-3xl md:text-4xl">{"Control centre"}</h1>
           <p className="mt-1 text-muted-foreground">
-            Review visible exceptions for the selected workspace, including shared organisation items.
+            Review visible exceptions for the selected workspace, including shared organisation
+            items.
           </p>
         </div>
         <div className="flex gap-2">
