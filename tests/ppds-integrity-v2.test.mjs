@@ -118,3 +118,32 @@ test("site safe-method reviews are captured by an append-only server trigger", a
     /grant (insert|update|delete) on public.site_safe_method_review_events/i,
   );
 });
+
+test("recipe quantities and units invalidate PPDS drafts when formulation changes", () => {
+  const formulation = [{ ingredient_id: "milk", quantity: 100, unit: "g" }];
+  const current = {
+    ...label,
+    source_snapshot: { ...label.source_snapshot, formulation },
+  };
+  assert.equal(assessPpdsIntegrity([ingredient], ["milk"], current, formulation).stale, false);
+  assert.equal(assessPpdsIntegrity([ingredient], ["milk"], label, formulation).stale, true);
+  for (const change of [
+    [{ ingredient_id: "milk", quantity: 200, unit: "g" }],
+    [{ ingredient_id: "milk", quantity: 100, unit: "ml" }],
+  ]) {
+    assert.equal(assessPpdsIntegrity([ingredient], ["milk"], current, change).stale, true);
+  }
+});
+
+test("PPDS drafts require complete current evidence and confirmed persistence", async () => {
+  const route = await readFile(new URL("../src/routes/app.ppds.tsx", import.meta.url), "utf8");
+  assert.match(route, /r\.count !== r\.data\.length/);
+  assert.match(route, /const fresh = await load\(\)/);
+  assert.match(route, /JSON\.stringify\(freshLinks\) !== JSON\.stringify\(oldLinks\)/);
+  assert.match(route, /if \(versionError\) throw new Error/);
+  assert.match(route, /if \(error \|\| !data\) throw new Error\("Label version not confirmed"\)/);
+  assert.match(route, /!supplierReviewed/);
+  assert.match(route, /writeLock\.current/);
+  assert.match(route, /Draft only — not approved for printing/);
+  assert.doesNotMatch(route, /\.from\("recipe_ingredients"\)\s*\.upsert\(/);
+});
