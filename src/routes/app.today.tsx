@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -10,6 +10,8 @@ import {
   Sunset,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/haccora-client";
+import { useAuth } from "@/lib/auth";
+import { operationalDate, operationalDay } from "@/lib/operational-day";
 
 export const Route = createFileRoute("/app/today")({ component: Today });
 
@@ -32,75 +34,127 @@ const emptyCounts: ShiftCounts = {
 };
 
 function Today() {
+  const { user } = useAuth();
+  if (!user?.organizationId || !user.locationId) {
+    return <p className="p-5 text-sm">Select a business location to see today’s shift.</p>;
+  }
+  return (
+    <SiteToday
+      key={`${user.id}:${user.organizationId}:${user.locationId}:${user.role}`}
+      organizationId={user.organizationId}
+      locationId={user.locationId}
+    />
+  );
+}
+
+function SiteToday({ organizationId, locationId }: { organizationId: string; locationId: string }) {
   const [counts, setCounts] = useState(emptyCounts);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
-  // Stabilise this value: regenerating it on every render retriggers the fetch effect.
-  const [since] = useState(() => {
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
-    return start.toISOString();
-  });
+  const [day, setDay] = useState(() => operationalDate(new Date(), "Europe/London"));
+  const [loadedDay, setLoadedDay] = useState("");
+  const requestId = useRef(0);
+  const available = !loading && !loadError && loadedDay === day;
 
   const load = useCallback(async () => {
+    const request = ++requestId.current;
     setLoading(true);
-    const [checksDone, checksOpen, temperatures, exceptions, actionsOpen, incidentsOpen] =
-      await Promise.all([
+    setLoadError("");
+    const period = operationalDay(new Date(day + "T12:00:00Z"), "Europe/London");
+    const count = { count: "exact" as const, head: true };
+    try {
+      const results = await Promise.all([
         supabase
           .from("checks")
-          .select("id", { count: "exact", head: true })
+          .select("id", count)
+          .eq("organization_id", organizationId)
+          .eq("location_id", locationId)
           .eq("status", "completed")
-          .gte("completed_at", since),
+          .gte("created_at", period.start)
+          .lt("created_at", period.end),
         supabase
           .from("checks")
-          .select("id", { count: "exact", head: true })
+          .select("id", count)
+          .eq("organization_id", organizationId)
+          .eq("location_id", locationId)
           .neq("status", "completed")
-          .gte("created_at", since),
+          .gte("created_at", period.start)
+          .lt("created_at", period.end),
         supabase
           .from("temperature_logs")
-          .select("id", { count: "exact", head: true })
-          .gte("logged_at", since),
+          .select("id", count)
+          .eq("organization_id", organizationId)
+          .eq("location_id", locationId)
+          .gte("logged_at", period.start)
+          .lt("logged_at", period.end),
         supabase
           .from("temperature_logs")
-          .select("id", { count: "exact", head: true })
+          .select("id", count)
+          .eq("organization_id", organizationId)
+          .eq("location_id", locationId)
           .in("status", ["out_of_range", "alert"])
-          .gte("logged_at", since),
+          .gte("logged_at", period.start)
+          .lt("logged_at", period.end),
         supabase
           .from("corrective_actions")
-          .select("id", { count: "exact", head: true })
+          .select("id", count)
+          .eq("organization_id", organizationId)
+          .eq("location_id", locationId)
           .neq("status", "closed"),
         supabase
           .from("incidents")
-          .select("id", { count: "exact", head: true })
+          .select("id", count)
+          .eq("organization_id", organizationId)
+          .eq("location_id", locationId)
           .neq("status", "closed"),
       ]);
-    const results = [checksDone, checksOpen, temperatures, exceptions, actionsOpen, incidentsOpen];
-    if (results.some((result) => result.error)) {
+      if (request !== requestId.current) return;
+      if (results.some((result) => result.error || result.count === null)) {
+        throw new Error("Incomplete shift evidence");
+      }
+      const [checksDone, checksOpen, temperatures, exceptions, actionsOpen, incidentsOpen] =
+        results;
+      setCounts({
+        checksDone: checksDone.count ?? 0,
+        checksOpen: checksOpen.count ?? 0,
+        temperatures: temperatures.count ?? 0,
+        exceptions: exceptions.count ?? 0,
+        actionsOpen: actionsOpen.count ?? 0,
+        incidentsOpen: incidentsOpen.count ?? 0,
+      });
+      setLoadedDay(day);
+    } catch {
+      if (request !== requestId.current) return;
+      setCounts(emptyCounts);
+      setLoadedDay("");
       setLoadError(
         "Some compliance records could not be loaded. Refresh before making safety decisions.",
       );
-      setLoading(false);
-      return;
+    } finally {
+      if (request === requestId.current) setLoading(false);
     }
-    setLoadError("");
-    setCounts({
-      checksDone: checksDone.count ?? 0,
-      checksOpen: checksOpen.count ?? 0,
-      temperatures: temperatures.count ?? 0,
-      exceptions: exceptions.count ?? 0,
-      actionsOpen: actionsOpen.count ?? 0,
-      incidentsOpen: incidentsOpen.count ?? 0,
-    });
-    setLoading(false);
-  }, [since]);
+  }, [day, organizationId, locationId]);
 
   useEffect(() => {
     void load();
+    return () => {
+      requestId.current += 1;
+    };
   }, [load]);
+
+  useEffect(() => {
+    const checkDay = () => setDay(operationalDate(new Date(), "Europe/London"));
+    const timer = window.setInterval(checkDay, 60_000);
+    window.addEventListener("focus", checkDay);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener("focus", checkDay);
+    };
+  }, []);
 
   const needsAttention = counts.exceptions + counts.actionsOpen + counts.incidentsOpen;
   const totalChecks = counts.checksDone + counts.checksOpen;
-  const completion = totalChecks ? Math.round((counts.checksDone / totalChecks) * 100) : 0;
+  const completion = totalChecks ? Math.round((counts.checksDone / totalChecks) * 100) : null;
   const nextAction = counts.exceptions
     ? { label: "Review temperature exceptions", to: "/app/temperature" }
     : counts.actionsOpen
@@ -125,8 +179,8 @@ function Today() {
           <div className="eyebrow">TODAY'S SHIFT</div>
           <h1 className="text-3xl mt-1">Open, monitor and close</h1>
           <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
-            A focused view for kitchen teams. Complete the work in each linked record so the
-            evidence remains traceable and inspection-ready.
+            A focused view of records visible at the selected site, using UK calendar days. Complete
+            the work in each linked record so evidence is saved to your site workspace.
           </p>
         </div>
         {loading ? (
@@ -143,18 +197,18 @@ function Today() {
             </button>
             <div
               className={`surface px-4 py-3 text-sm font-semibold ${
-                loadError
+                !available
                   ? "text-destructive"
                   : needsAttention
                     ? "text-warning-foreground"
                     : "text-success"
               }`}
             >
-              {loadError
+              {!available
                 ? "Summary unavailable"
                 : needsAttention
-                  ? `${needsAttention} item(s) need attention`
-                  : "No open exceptions"}
+                  ? `${needsAttention} records need attention`
+                  : "No visible exceptions in this summary"}
             </div>
           </div>
         )}
@@ -165,7 +219,9 @@ function Today() {
           <div className="text-xs font-black uppercase tracking-widest text-muted-foreground">
             Next required action
           </div>
-          <h2 className="mt-1 text-xl font-bold">{nextAction.label}</h2>
+          <h2 className="mt-1 text-xl font-bold">
+            {available ? nextAction.label : "Refresh evidence before reviewing priorities"}
+          </h2>
           <div className="mt-4 flex items-center gap-3">
             <div
               className="h-2 flex-1 overflow-hidden rounded-full bg-secondary"
@@ -173,26 +229,31 @@ function Today() {
               aria-label="Today's check completion"
               aria-valuemin={0}
               aria-valuemax={100}
-              aria-valuenow={completion}
+              aria-valuenow={available ? (completion ?? undefined) : undefined}
             >
               <div
                 className="h-full bg-success transition-all"
-                style={{ width: `${completion}%` }}
+                style={{ width: `${available ? (completion ?? 0) : 0}%` }}
               />
             </div>
-            <span className="text-xs font-bold tabular-nums">{completion}%</span>
+            <span className="text-xs font-bold tabular-nums">
+              {available && completion !== null ? `${completion}%` : "—"}
+            </span>
           </div>
           <p className="mt-2 text-xs text-muted-foreground">
-            {counts.checksDone} completed and {counts.checksOpen} open today. Records are saved to
-            your site workspace.
+            {available
+              ? `${counts.checksDone} completed and ${counts.checksOpen} open, among checks created today.`
+              : "Check completion is unavailable until the evidence has loaded."}
           </p>
         </div>
-        <Link
-          to={nextAction.to as never}
-          className="btn-primary px-5 py-3 inline-flex items-center justify-center gap-2 text-sm"
-        >
-          Start now <ChevronRight size={16} />
-        </Link>
+        {available && (
+          <Link
+            to={nextAction.to as never}
+            className="btn-primary px-5 py-3 inline-flex items-center justify-center gap-2 text-sm"
+          >
+            Start now <ChevronRight size={16} />
+          </Link>
+        )}
       </section>
 
       <div className="grid lg:grid-cols-3 gap-4">
@@ -200,7 +261,11 @@ function Today() {
           icon={<Sun size={18} />}
           title="1. Open"
           body="Complete opening checks and confirm the premises are ready for service."
-          metric={`${counts.checksDone} completed · ${counts.checksOpen} open`}
+          metric={
+            available
+              ? `${counts.checksDone} completed · ${counts.checksOpen} open`
+              : "Evidence unavailable"
+          }
           to="/app/checks"
           action="Opening checks"
         />
@@ -208,19 +273,27 @@ function Today() {
           icon={<AlertTriangle size={18} />}
           title="2. Monitor service"
           body="Record temperatures and deal with deviations when they occur."
-          metric={`${counts.temperatures} readings · ${counts.exceptions} exception(s)`}
+          metric={
+            available
+              ? `${counts.temperatures} readings · ${counts.exceptions} exception(s)`
+              : "Evidence unavailable"
+          }
           to="/app/temperature"
           action="Temperature records"
-          warning={counts.exceptions > 0}
+          warning={available && counts.exceptions > 0}
         />
         <ShiftCard
           icon={<Sunset size={18} />}
           title="3. Close"
           body="Resolve open actions, record unusual events and complete closing routines."
-          metric={`${counts.actionsOpen} actions · ${counts.incidentsOpen} incidents open`}
+          metric={
+            available
+              ? `${counts.actionsOpen} actions · ${counts.incidentsOpen} incidents open`
+              : "Evidence unavailable"
+          }
           to="/app/routines"
           action="Closing routines"
-          warning={counts.actionsOpen + counts.incidentsOpen > 0}
+          warning={available && counts.actionsOpen + counts.incidentsOpen > 0}
         />
       </div>
 
