@@ -40,7 +40,10 @@ test("strict calendar validation rejects rolled dates, timestamps and excessive 
 });
 
 test("preview and export use the same half-open bounds and reject incomplete evidence", () => {
-  const preview = readFileSync(new URL("../src/routes/app.inspection.tsx", import.meta.url), "utf8");
+  const preview = readFileSync(
+    new URL("../src/routes/app.inspection.tsx", import.meta.url),
+    "utf8",
+  );
   const exporter = readFileSync(
     new URL("../supabase/functions/inspection-export/index.ts", import.meta.url),
     "utf8",
