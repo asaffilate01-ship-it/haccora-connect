@@ -31,6 +31,9 @@ test("corrective acknowledgement prevents duplicate local writes and reports par
   assert.match(source, /item\.status !== "open"/);
   assert.match(source, /action\?\.status === "open"/);
   assert.match(source, /\.eq\("status", "open"\)/);
-  assert.match(source, /if \(error \|\| !data\) throw new Error\("Acknowledgement not confirmed"\)/);
+  assert.match(
+    source,
+    /if \(error \|\| !data\) throw new Error\("Acknowledgement not confirmed"\)/,
+  );
   assert.match(source, /Action started, but acknowledgement was not confirmed/);
 });
