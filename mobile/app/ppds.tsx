@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Text } from "react-native";
+import { Pressable, Text } from "react-native";
 import { ComplianceCard, CompliancePage, complianceStyles } from "@/components/compliance-list";
+import { useSession } from "@/lib/session";
 import { supabase } from "@/lib/supabase";
 
 type Label = {
@@ -12,43 +13,122 @@ type Label = {
 };
 
 export default function Ppds() {
+  const { session, workspaceReady, organizationId, locationId, role, serviceStatus } = useSession();
+  if (!session || !workspaceReady || !organizationId || serviceStatus !== "active") {
+    return (
+      <CompliancePage
+        eyebrow="UK ALLERGEN MANAGEMENT"
+        title="PPDS label history"
+        intro="A verified workspace is required to load saved label versions."
+        loading={false}
+        footer="Do not use an unverified label for sale."
+      />
+    );
+  }
+  return (
+    <LabelHistory
+      key={`${session.user.id}:${organizationId}:${locationId}:${role}`}
+      organizationId={organizationId}
+      locationId={locationId}
+    />
+  );
+}
+
+function LabelHistory({
+  organizationId,
+  locationId,
+}: {
+  organizationId: string;
+  locationId: string | null;
+}) {
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [refresh, setRefresh] = useState(0);
   const [labels, setLabels] = useState<Label[]>([]);
   useEffect(() => {
-    void supabase
+    let active = true;
+    setLoading(true);
+    setError(false);
+    setLabels([]);
+    const query = supabase
       .from("ppds_label_versions")
       .select("id,product_name,version,allergens,generated_at")
-      .order("generated_at", { ascending: false })
-      .limit(50)
-      .then(({ data }) => {
-        setLabels((data ?? []) as Label[]);
-        setLoading(false);
+      .eq("organization_id", organizationId);
+    void Promise.resolve(
+      (locationId ? query.eq("location_id", locationId) : query)
+        .order("generated_at", { ascending: false })
+        .limit(50),
+    )
+      .then(({ data, error: loadError }) => {
+        if (!active) return;
+        if (loadError || !data) {
+          setError(true);
+          return;
+        }
+        setLabels(data as Label[]);
+      })
+      .catch(() => {
+        if (active) setError(true);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
       });
-  }, []);
+    return () => {
+      active = false;
+    };
+  }, [organizationId, locationId, refresh]);
+
   return (
     <CompliancePage
       eyebrow="UK ALLERGEN MANAGEMENT"
-      title="PPDS labels"
-      intro="Check the most recent versioned labels before food is packed and offered for sale."
+      title="PPDS label history"
+      intro={
+        locationId
+          ? "Up to 50 recent saved label versions for the selected site."
+          : "Up to 50 recent saved label versions visible under your workspace access."
+      }
       loading={loading}
-      footer="Always compare the label with the current recipe and supplier specifications before printing or applying it."
+      footer="These are historical records, not approved current labels. Verify the recipe, current supplier specifications and physical label before sale."
     >
-      {labels.length ? (
+      {error ? (
+        <ComplianceCard
+          title="Label history unavailable"
+          detail="Do not rely on earlier records. Retry loading the saved versions."
+        />
+      ) : labels.length ? (
         labels.map((label) => (
           <ComplianceCard
             key={label.id}
             title={label.product_name}
             detail={
               label.allergens?.length
-                ? `Allergens: ${label.allergens.join(", ")}`
-                : "No declared allergens in this saved version."
+                ? `Recorded allergens: ${label.allergens.join(", ")}`
+                : "No allergens declared in this saved version. This does not mean allergen-free."
             }
-            status={<Text style={complianceStyles.badge}>V{label.version}</Text>}
-          />
+            status={
+              <Text style={[complianceStyles.badge, complianceStyles.warning]}>
+                V{label.version}
+              </Text>
+            }
+          >
+            <Text style={{ fontSize: 12, marginTop: 8 }}>
+              Saved {new Date(label.generated_at).toLocaleDateString("en-GB", {
+                timeZone: "Europe/London",
+              })} · Current recipe not verified
+            </Text>
+          </ComplianceCard>
         ))
       ) : (
-        <Text style={complianceStyles.empty}>No PPDS label versions have been generated.</Text>
+        <Text style={complianceStyles.empty}>No saved label versions visible for this scope.</Text>
       )}
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Refresh PPDS label history"
+        onPress={() => setRefresh((value) => value + 1)}
+        style={{ padding: 14, alignItems: "center" }}
+      >
+        <Text style={{ fontWeight: "700" }}>{error ? "Retry loading" : "Refresh label history"}</Text>
+      </Pressable>
     </CompliancePage>
   );
 }
