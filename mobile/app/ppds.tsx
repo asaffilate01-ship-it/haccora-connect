@@ -12,6 +12,10 @@ type Label = {
   generated_at: string;
 };
 
+function savedDate(value: string) {
+  return new Date(value).toLocaleDateString("en-GB", { timeZone: "Europe/London" });
+}
+
 export default function Ppds() {
   const { session, workspaceReady, organizationId, locationId, role, serviceStatus } = useSession();
   if (!session || !workspaceReady || !organizationId || serviceStatus !== "active") {
@@ -112,9 +116,7 @@ function LabelHistory({
             }
           >
             <Text style={{ fontSize: 12, marginTop: 8 }}>
-              Saved {new Date(label.generated_at).toLocaleDateString("en-GB", {
-                timeZone: "Europe/London",
-              })} · Current recipe not verified
+              {`Saved ${savedDate(label.generated_at)} · Current recipe not verified`}
             </Text>
           </ComplianceCard>
         ))
