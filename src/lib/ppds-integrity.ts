@@ -8,8 +8,11 @@ export type PpdsIngredient = {
   reviewed_at: string | null;
 };
 
+export type PpdsRecipeQuantity = { ingredient_id: string; quantity: number; unit: string };
+
 export type PpdsLabelSnapshot = {
   ingredient_ids?: string[];
+  formulation?: PpdsRecipeQuantity[];
   may_contain?: string[];
   specifications?: Array<{
     id: string;
@@ -31,6 +34,7 @@ export function assessPpdsIntegrity(
   ingredients: PpdsIngredient[],
   recipeIngredientIds: string[],
   label: PpdsLabel | null,
+  formulation?: PpdsRecipeQuantity[],
 ): { missing: string[]; stale: boolean; reasons: string[] } {
   const missing: string[] = [];
   const reasons: string[] = [];
@@ -51,6 +55,18 @@ export function assessPpdsIntegrity(
   if (!label) return { missing, stale: true, reasons: ["No controlled label version exists."] };
 
   const snapshot = label.source_snapshot;
+  if (formulation) {
+    const normalize = (values: PpdsRecipeQuantity[]) =>
+      values
+        .map(({ ingredient_id, quantity, unit }) => ({ ingredient_id, quantity, unit }))
+        .sort((a, b) => a.ingredient_id.localeCompare(b.ingredient_id));
+    if (
+      !Array.isArray(snapshot?.formulation) ||
+      JSON.stringify(normalize(formulation)) !== JSON.stringify(normalize(snapshot.formulation))
+    ) {
+      reasons.push("Recipe quantities or units are unrecorded or have changed.");
+    }
+  }
   if (!snapshot?.ingredient_ids || !snapshot.specifications) {
     reasons.push("The last label lacks a complete source snapshot.");
   } else {
