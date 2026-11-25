@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/haccora-client";
 import { useAuth } from "@/lib/auth";
 import { UK_ALLERGENS } from "@/lib/uk-compliance";
@@ -29,8 +29,25 @@ type LabelVersion = {
 };
 function Ppds() {
   const { user } = useAuth();
+  if (!user?.organizationId || !user.locationId) {
+    return (
+      <p className="p-5 text-sm">Select a business location to review its PPDS evidence.</p>
+    );
+  }
+  return (
+    <SitePpds key={`${user.id}:${user.organizationId}:${user.locationId}:${user.role}`} />
+  );
+}
+
+function SitePpds() {
+  const { user } = useAuth();
   const canApprove = user?.role === "owner" || user?.role === "manager";
   const [loadError, setLoadError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [supplierReviewed, setSupplierReviewed] = useState(false);
+  const writeLock = useRef(false);
+  const requestId = useRef(0);
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [links, setLinks] = useState<Link[]>([]);
@@ -43,46 +60,103 @@ function Ppds() {
   const [ingredientId, setIngredientId] = useState("");
   const [msg, setMsg] = useState("");
   const load = useCallback(async () => {
-    if (!user?.organizationId || !user.locationId) return;
-    const [a, b, c, d] = await Promise.all([
-      supabase
-        .from("ingredients")
-        .select(
-          "id,name,ingredient_statement,allergens,may_contain,specification_version,reviewed_at",
-        )
-        .eq("organization_id", user.organizationId)
-        .order("name"),
-      supabase
-        .from("recipes")
-        .select("id,name")
-        .eq("organization_id", user.organizationId)
-        .or(`location_id.eq.${user.locationId},location_id.is.null`)
-        .order("name"),
-      supabase
-        .from("recipe_ingredients")
-        .select("recipe_id,ingredient_id,quantity,unit")
-        .eq("organization_id", user.organizationId),
-      supabase
-        .from("ppds_label_versions")
-        .select("id,recipe_id,version,generated_at,source_snapshot,allergens,ingredient_statement")
-        .eq("organization_id", user.organizationId)
-        .eq("location_id", user.locationId)
-        .order("generated_at", { ascending: false }),
-    ]);
-    if (a.error || b.error || c.error || d.error) {
-      setLoadError("Ingredient, recipe or label evidence is unavailable. Do not generate labels.");
-      return;
-    }
+    const request = ++requestId.current;
+    setLoading(true);
     setLoadError("");
-    setIngredients((a.data ?? []) as Ingredient[]);
-    setRecipes((b.data ?? []) as Recipe[]);
-    setLinks((c.data ?? []) as Link[]);
-    setLabels((d.data ?? []) as unknown as LabelVersion[]);
-    if (!recipeId && b.data?.[0]) setRecipeId(b.data[0].id);
-  }, [recipeId, user?.organizationId, user?.locationId]);
+    if (!user?.organizationId || !user.locationId) {
+      setLoadError("Select a location before reviewing PPDS evidence.");
+      setLoading(false);
+      return null;
+    }
+    try {
+      const [a, b, c, d] = await Promise.all([
+        supabase
+          .from("ingredients")
+          .select(
+            "id,name,ingredient_statement,allergens,may_contain,specification_version,reviewed_at",
+            { count: "exact" },
+          )
+          .eq("organization_id", user.organizationId)
+          .order("name")
+          .order("id"),
+        supabase
+          .from("recipes")
+          .select("id,name", { count: "exact" })
+          .eq("organization_id", user.organizationId)
+          .or(`location_id.eq.${user.locationId},location_id.is.null`)
+          .order("name")
+          .order("id"),
+        supabase
+          .from("recipe_ingredients")
+          .select("recipe_id,ingredient_id,quantity,unit", { count: "exact" })
+          .eq("organization_id", user.organizationId)
+          .order("recipe_id")
+          .order("ingredient_id"),
+        supabase
+          .from("ppds_label_versions")
+          .select(
+            "id,recipe_id,version,generated_at,source_snapshot,allergens,ingredient_statement",
+            { count: "exact" },
+          )
+          .eq("organization_id", user.organizationId)
+          .eq("location_id", user.locationId)
+          .order("generated_at", { ascending: false })
+          .order("version", { ascending: false }),
+      ]);
+      if (request !== requestId.current) return null;
+      if ([a, b, c, d].some((r) => r.error || !r.data || r.count !== r.data.length)) {
+        throw new Error("Incomplete source evidence");
+      }
+      const next = {
+        ingredients: (a.data ?? []) as Ingredient[],
+        recipes: (b.data ?? []) as Recipe[],
+        links: (c.data ?? []) as Link[],
+        labels: (d.data ?? []) as unknown as LabelVersion[],
+      };
+      setIngredients(next.ingredients);
+      setRecipes(next.recipes);
+      setLinks(next.links);
+      setLabels(next.labels);
+      setRecipeId((id) =>
+        next.recipes.some((recipe) => recipe.id === id) ? id : (next.recipes[0]?.id ?? ""),
+      );
+      return next;
+    } catch {
+      if (request === requestId.current) {
+        setIngredients([]);
+        setRecipes([]);
+        setLinks([]);
+        setLabels([]);
+        setLoadError("Ingredient, recipe or label evidence is incomplete. Do not generate labels.");
+      }
+      return null;
+    } finally {
+      if (request === requestId.current) setLoading(false);
+    }
+  }, [user?.organizationId, user?.locationId]);
   useEffect(() => {
     void load();
+    return () => {
+      requestId.current += 1;
+    };
   }, [load]);
+
+  async function write(task: () => Promise<void>) {
+    if (!canApprove || loading || loadError || writeLock.current) return;
+    writeLock.current = true;
+    setBusy(true);
+    setMsg("");
+    try {
+      await task();
+    } catch {
+      setMsg("The change could not be confirmed. Refresh the evidence before trying again.");
+      await load();
+    } finally {
+      writeLock.current = false;
+      setBusy(false);
+    }
+  }
+
   const selected = useMemo(
     () =>
       links
@@ -101,31 +175,38 @@ function Ppds() {
   const integrity = assessPpdsIntegrity(selected, recipeIngredientIds, currentLabel);
   const labelIsStale = integrity.stale;
   const add = async () => {
-    if (!canApprove || !user?.organizationId || loadError || !name.trim() || !statement.trim()) {
+    if (!user?.organizationId || !supplierReviewed || !name.trim() || !statement.trim()) {
       return;
     }
-    const { error } = await supabase.from("ingredients").insert({
-      organization_id: user.organizationId,
-      name: name.trim(),
-      ingredient_statement: statement.trim(),
-      allergens,
-      may_contain: mayContain,
-      reviewed_at: new Date().toISOString(),
-      specification_version: "1",
-    });
-    setMsg(error?.message ?? "Ingredient specification saved.");
-    if (!error) {
+    const organizationId = user.organizationId;
+    await write(async () => {
+      const { data, error } = await supabase
+        .from("ingredients")
+        .insert({
+          organization_id: organizationId,
+          name: name.trim(),
+          ingredient_statement: statement.trim(),
+          allergens,
+          may_contain: mayContain,
+          reviewed_at: new Date().toISOString(),
+          specification_version: "1",
+        })
+        .select("id")
+        .single();
+      if (error || !data) throw new Error("Specification not confirmed");
       setName("");
       setStatement("");
       setAllergens([]);
       setMayContain([]);
-      void load();
-    }
+      setSupplierReviewed(false);
+      setMsg("Ingredient specification saved.");
+      await load();
+    });
   };
   const unverifiedIngredients = integrity.missing;
   const generate = async () => {
-    if (!canApprove || loadError) {
-      setMsg("Only an authorised manager can generate a label with available source evidence.");
+    if (!user?.organizationId || !user.locationId || !recipeId || !selected.length) {
+      setMsg("Add recipe ingredients before generating a PPDS draft.");
       return;
     }
     if (unverifiedIngredients.length) {
@@ -134,61 +215,99 @@ function Ppds() {
       );
       return;
     }
-    if (!user?.organizationId || !user.locationId || !recipeId || !selected.length) {
-      setMsg("Add recipe ingredients before generating a PPDS label.");
-      return;
-    }
     const recipe = recipes.find((r) => r.id === recipeId);
-    const { data: last } = await supabase
-      .from("ppds_label_versions")
-      .select("version")
-      .eq("recipe_id", recipeId)
-      .eq("organization_id", user.organizationId)
-      .eq("location_id", user.locationId)
-      .order("version", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    const { error } = await supabase.from("ppds_label_versions").insert({
-      organization_id: user.organizationId,
-      location_id: user.locationId,
-      recipe_id: recipeId,
-      product_name: recipe?.name ?? "PPDS food",
-      ingredient_statement: derivedStatement,
-      allergens: derivedAllergens,
-      source_snapshot: {
-        ingredient_ids: selected.map((i) => i.id),
-        may_contain: derivedMayContain,
-        specifications: selected.map((i) => ({
-          id: i.id,
-          version: i.specification_version,
-          reviewed_at: i.reviewed_at,
-        })),
-      },
-      version: (last?.version ?? 0) + 1,
-      generated_by: user.id,
+    if (!recipe) return;
+    const organizationId = user.organizationId;
+    const locationId = user.locationId;
+    const userId = user.id;
+    await write(async () => {
+      const fresh = await load();
+      if (!fresh) return;
+      const freshRecipe = fresh.recipes.find((r) => r.id === recipeId);
+      const oldLinks = links.filter((link) => link.recipe_id === recipeId);
+      const freshLinks = fresh.links.filter((link) => link.recipe_id === recipeId);
+      const freshIngredients = freshLinks.map((link) =>
+        fresh.ingredients.find((ingredient) => ingredient.id === link.ingredient_id),
+      );
+      if (
+        !freshRecipe ||
+        freshRecipe.name !== recipe.name ||
+        JSON.stringify(freshLinks) !== JSON.stringify(oldLinks) ||
+        JSON.stringify(freshIngredients) !== JSON.stringify(selected)
+      ) {
+        setMsg("Recipe or supplier evidence changed. Review the updated draft before generating.");
+        return;
+      }
+
+      const { data: last, error: versionError } = await supabase
+        .from("ppds_label_versions")
+        .select("version")
+        .eq("recipe_id", recipeId)
+        .eq("organization_id", organizationId)
+        .eq("location_id", locationId)
+        .order("version", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (versionError) throw new Error("Version lookup failed");
+      const { data, error } = await supabase
+        .from("ppds_label_versions")
+        .insert({
+          organization_id: organizationId,
+          location_id: locationId,
+          recipe_id: recipeId,
+          product_name: recipe.name,
+          ingredient_statement: derivedStatement,
+          allergens: derivedAllergens,
+          source_snapshot: {
+            ingredient_ids: selected.map((i) => i.id),
+            may_contain: derivedMayContain,
+            specifications: selected.map((i) => ({
+              id: i.id,
+              version: i.specification_version,
+              reviewed_at: i.reviewed_at,
+            })),
+          },
+          version: (last?.version ?? 0) + 1,
+          generated_by: userId,
+        })
+        .select("id")
+        .single();
+      if (error || !data) throw new Error("Label version not confirmed");
+      setMsg("PPDS draft version saved. Verify formulation, ingredient order and physical label.");
+      await load();
     });
-    setMsg(
-      error?.message ??
-        "Traceable PPDS label version generated; verify the printed output before use.",
-    );
-    if (!error) void load();
   };
   const attachIngredient = async () => {
-    if (!canApprove || !user?.organizationId || loadError || !recipeId || !ingredientId) {
+    if (
+      !user?.organizationId ||
+      !recipeId ||
+      !ingredientId ||
+      !recipes.some((recipe) => recipe.id === recipeId) ||
+      !ingredients.some((ingredient) => ingredient.id === ingredientId)
+    ) {
       return;
     }
-    const { error } = await supabase.from("recipe_ingredients").upsert(
-      {
-        organization_id: user.organizationId,
-        recipe_id: recipeId,
-        ingredient_id: ingredientId,
-        quantity: 1,
-        unit: "specification",
-      },
-      { onConflict: "recipe_id,ingredient_id" },
-    );
-    setMsg(error?.message ?? "Ingredient attached to recipe. Label data recalculated.");
-    if (!error) void load();
+    if (links.some((link) => link.recipe_id === recipeId && link.ingredient_id === ingredientId)) {
+      setMsg("This ingredient is already linked. Existing recipe quantities have not been changed.");
+      return;
+    }
+    const organizationId = user.organizationId;
+    await write(async () => {
+      const { data, error } = await supabase
+        .from("recipe_ingredients")
+        .insert({
+          organization_id: organizationId,
+          recipe_id: recipeId,
+          ingredient_id: ingredientId,
+          quantity: 1,
+          unit: "specification",
+        })
+        .select("recipe_id")
+        .single();
+      if (error || !data) throw new Error("Ingredient attachment not confirmed");
+      setMsg("Ingredient linked for review. Verify actual recipe quantities before label approval.");
+      await load();
+    });
   };
   return (
     <div className="p-6 md:p-10 space-y-6">
@@ -205,25 +324,44 @@ function Ppds() {
           {msg}
         </div>
       )}
+      {loading && <p role="status">Loading supplier and recipe evidence…</p>}
       {loadError && (
         <div role="alert" className="surface p-3 text-sm">
           {loadError}
+          <button
+            type="button"
+            className="btn-secondary mt-3 block px-3 py-2"
+            onClick={() => void load()}
+            disabled={busy || loading}
+          >
+            Retry loading
+          </button>
         </div>
       )}
       <div className="grid lg:grid-cols-2 gap-5">
-        <section className="surface p-5 space-y-4">
+        <fieldset
+          disabled={!canApprove || loading || busy || !!loadError}
+          className="surface p-5 space-y-4 min-w-0"
+        >
+          <legend className="sr-only">New ingredient specification</legend>
           <h2 className="text-xl font-bold">New ingredient specification</h2>
           <input
             className="input w-full"
             placeholder="Ingredient name"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+              setName(e.target.value);
+              setSupplierReviewed(false);
+            }}
           />
           <textarea
             className="input w-full min-h-24"
             placeholder="Full ingredient statement from the current supplier specification"
             value={statement}
-            onChange={(e) => setStatement(e.target.value)}
+            onChange={(e) => {
+              setStatement(e.target.value);
+              setSupplierReviewed(false);
+            }}
           />
           <div>
             <div className="text-sm font-bold mb-2">Contains</div>
@@ -233,11 +371,12 @@ function Ppds() {
                   <input
                     type="checkbox"
                     checked={allergens.includes(a)}
-                    onChange={(e) =>
+                    onChange={(e) => {
                       setAllergens(
                         e.target.checked ? [...allergens, a] : allergens.filter((x) => x !== a),
-                      )
-                    }
+                      );
+                      setSupplierReviewed(false);
+                    }}
                   />
                   {a}
                 </label>
@@ -255,27 +394,40 @@ function Ppds() {
                   <input
                     type="checkbox"
                     checked={mayContain.includes(a)}
-                    onChange={(e) =>
+                    onChange={(e) => {
                       setMayContain(
                         e.target.checked ? [...mayContain, a] : mayContain.filter((x) => x !== a),
-                      )
-                    }
+                      );
+                      setSupplierReviewed(false);
+                    }}
                   />
                   {a}
                 </label>
               ))}
             </div>
           </div>
+          <label className="flex items-start gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={supplierReviewed}
+              onChange={(event) => setSupplierReviewed(event.target.checked)}
+            />
+            I checked the statement and declarations against the current supplier specification.
+          </label>
           <button
             className="btn-primary px-4 py-2"
-            disabled={!canApprove || Boolean(loadError)}
+            disabled={!supplierReviewed || !name.trim() || !statement.trim()}
             onClick={() => void add()}
           >
             Save specification
           </button>
-        </section>
-        <section className="surface p-5 space-y-4">
-          <h2 className="text-xl font-bold">Generate PPDS label</h2>
+        </fieldset>
+        <fieldset
+          disabled={loading || busy || !!loadError}
+          className="surface p-5 space-y-4 min-w-0"
+        >
+          <legend className="sr-only">PPDS draft preparation</legend>
+          <h2 className="text-xl font-bold">Prepare PPDS draft</h2>
           <select
             className="input w-full"
             value={recipeId}
@@ -303,12 +455,14 @@ function Ppds() {
             </select>
             <button
               className="rounded-lg border px-3 text-sm font-bold"
+              disabled={!canApprove || !recipeId || !ingredientId}
               onClick={() => void attachIngredient()}
             >
               Attach
             </button>
           </div>
           <div className="rounded-xl border p-4 bg-white">
+            <p className="mb-2 text-xs font-semibold">Draft only — not approved for printing</p>
             <div className="text-2xl font-black">
               {recipes.find((r) => r.id === recipeId)?.name ?? "Product name"}
             </div>
@@ -357,18 +511,20 @@ function Ppds() {
           )}
           <button
             className="btn-primary px-4 py-2"
-            disabled={!canApprove || Boolean(loadError) || unverifiedIngredients.length > 0}
+            disabled={
+              !canApprove || !recipeId || !selected.length || unverifiedIngredients.length > 0
+            }
             onClick={() => void generate()}
           >
-            Generate controlled version
+            {busy ? "Saving…" : "Save draft version"}
           </button>
           <p className="text-xs text-muted-foreground">
-            Always verify the printed label against current supplier specifications before sale.
-            Precautionary “may contain” statements require a documented risk assessment.
+            Verify actual formulation, ingredient order, allergen emphasis and the physical label
+            before sale. Precautionary “may contain” statements require a documented risk assessment.
           </p>
-        </section>
+        </fieldset>
       </div>
-      {user?.organizationId && !loadError && (
+      {user?.organizationId && !loadError && !loading && !busy && (
         <IngredientChangeReview
           organizationId={user.organizationId}
           ingredients={ingredients}
