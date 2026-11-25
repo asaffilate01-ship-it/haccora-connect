@@ -34,9 +34,7 @@ function Ppds() {
       <p className="p-5 text-sm">Select a business location to review its PPDS evidence.</p>
     );
   }
-  return (
-    <SitePpds key={`${user.id}:${user.organizationId}:${user.locationId}:${user.role}`} />
-  );
+  return <SitePpds key={`${user.id}:${user.organizationId}:${user.locationId}:${user.role}`} />;
 }
 
 function SitePpds() {
@@ -169,10 +167,9 @@ function SitePpds() {
   const derivedMayContain = [...new Set(selected.flatMap((i) => i.may_contain))].sort();
   const derivedStatement = selected.map((i) => i.ingredient_statement || i.name).join(", ");
   const currentLabel = labels.find((label) => label.recipe_id === recipeId) ?? null;
-  const recipeIngredientIds = links
-    .filter((link) => link.recipe_id === recipeId)
-    .map((link) => link.ingredient_id);
-  const integrity = assessPpdsIntegrity(selected, recipeIngredientIds, currentLabel);
+  const formulation = links.filter((link) => link.recipe_id === recipeId);
+  const recipeIngredientIds = formulation.map((link) => link.ingredient_id);
+  const integrity = assessPpdsIntegrity(selected, recipeIngredientIds, currentLabel, formulation);
   const labelIsStale = integrity.stale;
   const add = async () => {
     if (!user?.organizationId || !supplierReviewed || !name.trim() || !statement.trim()) {
@@ -260,6 +257,11 @@ function SitePpds() {
           allergens: derivedAllergens,
           source_snapshot: {
             ingredient_ids: selected.map((i) => i.id),
+            formulation: formulation.map(({ ingredient_id, quantity, unit }) => ({
+              ingredient_id,
+              quantity,
+              unit,
+            })),
             may_contain: derivedMayContain,
             specifications: selected.map((i) => ({
               id: i.id,
@@ -479,7 +481,7 @@ function SitePpds() {
               </p>
             )}
           </div>
-          {currentLabel && (
+          {!loading && !loadError && currentLabel && (
             <div
               className={`rounded-xl border p-3 text-sm ${
                 labelIsStale
@@ -493,7 +495,7 @@ function SitePpds() {
                 : "Snapshot matches the recorded ingredient details; physical label approval is still required."}
             </div>
           )}
-          {labelIsStale && (
+          {!loading && !loadError && labelIsStale && (
             <ul
               role="alert"
               className="rounded-lg border border-destructive/40 p-3 text-sm list-disc pl-7"
