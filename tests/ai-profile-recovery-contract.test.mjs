@@ -36,3 +36,22 @@ test("registration evidence dates are preserved and save success requires a retu
   assert.match(profile, /if \(error \|\| !data\) throw new Error\("Profile not saved"\)/);
   assert.doesNotMatch(profile, /setMessage\(error\?\.message/);
 });
+
+test("AI reviews are keyed to the authorised workspace and connection evidence", () => {
+  assert.match(ai, /!user\?\.organizationId/);
+  assert.match(ai, /\["owner", "manager", "chef"\]\.includes\(user\.role\)/);
+  assert.match(ai, /key=\{workspaceKey\}/);
+  assert.match(ai, /scope !== lifetime\.current/);
+  assert.match(ai, /request !== statusRequest\.current/);
+  assert.match(ai, /data\.countryCode !== "GB"/);
+  assert.match(ai, /setBridge\(null\)/);
+  assert.match(ai, /statusLoading \|\| !bridge \? null/);
+  assert.match(ai, /Check connection/);
+});
+
+test("hidden browser tabs do not poll the AI provider", () => {
+  assert.match(ai, /document\.visibilityState === "visible"/);
+  assert.match(ai, /document\.addEventListener\("visibilitychange", refreshVisible\)/);
+  assert.match(ai, /document\.removeEventListener\("visibilitychange", refreshVisible\)/);
+  assert.match(ai, /window\.clearInterval\(timer\)/);
+});
