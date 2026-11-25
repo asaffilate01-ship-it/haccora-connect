@@ -242,6 +242,21 @@ function WorkflowStudio({
   const publish = async (template: Template) => {
     if (!manager || !template.is_active || isPublished(template)) return;
     await write(async () => {
+      const current = await supabase
+        .from("workflow_templates")
+        .select("active_version_id,is_active")
+        .eq("id", template.id)
+        .eq("organization_id", organizationId)
+        .or(`location_id.eq.${locationId},location_id.is.null`)
+        .single();
+      if (
+        current.error ||
+        !current.data?.is_active ||
+        current.data.active_version_id !== template.active_version_id
+      ) {
+        toast.error("Workflow changed. Refresh before publishing.");
+        return;
+      }
       let query = supabase
         .from("workflow_template_versions")
         .select("id,status,published_at")
@@ -269,6 +284,14 @@ function WorkflowStudio({
         return;
       }
       ensureCurrent();
+      const scope = template.location_id ? "this premises" : "the organisation";
+      if (
+        !window.confirm(
+          `Publish ${template.name} for ${scope} with ${required.count} required steps?`,
+        )
+      ) {
+        return;
+      }
       const now = new Date().toISOString();
       if (version.status === "draft") {
         const approved = await supabase
@@ -327,6 +350,7 @@ function WorkflowStudio({
         .select("active_version_id,is_active")
         .eq("id", template.id)
         .eq("organization_id", organizationId)
+        .or(`location_id.eq.${locationId},location_id.is.null`)
         .single();
       if (
         error ||
@@ -347,6 +371,16 @@ function WorkflowStudio({
         .single();
       if (version.error || !version.data?.published_at) {
         toast.error("Publication evidence is incomplete. Scheduling is unavailable.");
+        return;
+      }
+      const required = await supabase
+        .from("workflow_steps")
+        .select("id", { count: "exact", head: true })
+        .eq("organization_id", organizationId)
+        .eq("version_id", version.data.id)
+        .eq("required", true);
+      if (required.error || !required.count) {
+        toast.error("Required steps could not be confirmed. Scheduling is unavailable.");
         return;
       }
       ensureCurrent();
