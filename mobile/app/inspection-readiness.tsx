@@ -8,7 +8,7 @@ import { supabase } from "@/lib/supabase";
 type Evidence = { label: string; count: number; attention?: boolean };
 
 export default function InspectionReadiness() {
-  const { session, workspaceReady, organizationId, locationId, locationName, serviceStatus } =
+  const { session, workspaceReady, organizationId, locationId, locationName, role, serviceStatus } =
     useSession();
   if (!session || !workspaceReady || !organizationId || serviceStatus !== "active") {
     return (
@@ -23,7 +23,7 @@ export default function InspectionReadiness() {
   }
   return (
     <EvidenceView
-      key={`${session.user.id}:${organizationId}:${locationId}`}
+      key={`${session.user.id}:${organizationId}:${locationId}:${role}`}
       organizationId={organizationId}
       locationId={locationId}
       locationName={locationName}
@@ -135,7 +135,7 @@ function EvidenceView({
               <Text
                 style={[
                   complianceStyles.badge,
-                  (item.attention || item.count === 0) && complianceStyles.warning,
+                  (item.attention ?? item.count === 0) && complianceStyles.warning,
                 ]}
               >
                 {item.count}
