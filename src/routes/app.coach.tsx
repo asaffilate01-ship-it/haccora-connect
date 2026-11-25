@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertTriangle,
   ArrowRight,
@@ -13,6 +13,8 @@ import {
   Thermometer,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/haccora-client";
+import { useAuth } from "@/lib/auth";
+import { operationalDate, operationalDay } from "@/lib/operational-day";
 
 export const Route = createFileRoute("/app/coach")({ component: ComplianceCoach });
 
@@ -27,7 +29,7 @@ type Action = {
 
 type CoachData = {
   openChecks: number;
-  completedChecks: string[];
+  week: Array<{ key: string; label: string; count: number }>;
   openActions: Array<{ id: string; description: string; severity: string; due_at: string | null }>;
   excursions: number;
   openIncidents: number;
@@ -37,7 +39,7 @@ type CoachData = {
 
 const emptyData: CoachData = {
   openChecks: 0,
-  completedChecks: [],
+  week: [],
   openActions: [],
   excursions: 0,
   openIncidents: 0,
@@ -45,102 +47,168 @@ const emptyData: CoachData = {
   expiringTraining: 0,
 };
 
-function startOfDay(daysAgo = 0) {
-  const date = new Date();
-  date.setDate(date.getDate() - daysAgo);
-  date.setHours(0, 0, 0, 0);
-  return date;
+function ComplianceCoach() {
+  const { user } = useAuth();
+  if (!user?.organizationId || !user.locationId) {
+    return <p className="p-5 text-sm">Select a business location to see compliance priorities.</p>;
+  }
+  const workspaceKey = `${user.id}:${user.organizationId}:${user.locationId}:${user.role}`;
+  return (
+    <SiteCoach
+      key={workspaceKey}
+      organizationId={user.organizationId}
+      locationId={user.locationId}
+    />
+  );
 }
 
-function ComplianceCoach() {
+function SiteCoach({
+  organizationId,
+  locationId,
+}: {
+  organizationId: string;
+  locationId: string;
+}) {
   const [data, setData] = useState(emptyData);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [day, setDay] = useState(() => operationalDate(new Date(), "Europe/London"));
+  const [loadedDay, setLoadedDay] = useState("");
+  const requestId = useRef(0);
+  const available = !loading && !error && loadedDay === day;
 
   const load = useCallback(async () => {
+    const request = ++requestId.current;
     setLoading(true);
     setError("");
-    const today = startOfDay().toISOString();
-    const week = startOfDay(6).toISOString();
-    const thirtyDays = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
-    const nowDate = new Date().toISOString().slice(0, 10);
-
-    const [checks, completed, actions, excursions, incidents, methods, training] =
-      await Promise.all([
-        supabase
-          .from("checks")
-          .select("id", { count: "exact", head: true })
-          .neq("status", "completed")
-          .gte("created_at", today),
-        supabase
-          .from("checks")
-          .select("completed_at")
-          .eq("status", "completed")
-          .gte("completed_at", week),
-        supabase
-          .from("corrective_actions")
-          .select("id,description,severity,due_at")
-          .neq("status", "closed")
-          .order("due_at", { ascending: true, nullsFirst: false })
-          .limit(6),
-        supabase
-          .from("temperature_logs")
-          .select("id", { count: "exact", head: true })
-          .eq("status", "out_of_range")
-          .gte("logged_at", week),
-        supabase
-          .from("incidents")
-          .select("id", { count: "exact", head: true })
-          .neq("status", "closed"),
-        supabase
-          .from("site_safe_methods")
-          .select("id", { count: "exact", head: true })
-          .eq("status", "adopted"),
-        supabase
-          .from("training_records")
-          .select("id", { count: "exact", head: true })
-          .gte("certificate_valid_to", nowDate)
-          .lte("certificate_valid_to", thirtyDays),
-      ]);
-
-    const firstError = [checks, completed, actions, excursions, incidents, methods, training].find(
-      (result) => result.error,
-    )?.error;
-    if (firstError) setError(firstError.message);
-    setData({
-      openChecks: checks.count ?? 0,
-      completedChecks: (completed.data ?? [])
-        .map((row) => row.completed_at)
-        .filter((value): value is string => Boolean(value)),
-      openActions: actions.data ?? [],
-      excursions: excursions.count ?? 0,
-      openIncidents: incidents.count ?? 0,
-      adoptedMethods: methods.count ?? 0,
-      expiringTraining: training.count ?? 0,
+    const anchor = new Date(day + "T12:00:00Z");
+    const periods = Array.from({ length: 7 }, (_, index) => {
+      const date = operationalDate(anchor, "Europe/London", index - 6);
+      const noon = new Date(date + "T12:00:00Z");
+      return {
+        ...operationalDay(noon, "Europe/London"),
+        label: noon.toLocaleDateString("en-GB", {
+          weekday: "short",
+          timeZone: "Europe/London",
+        }).slice(0, 2),
+      };
     });
-    setLoading(false);
-  }, []);
+    const today = periods[6];
+    const thirtyDays = operationalDate(anchor, "Europe/London", 30);
+    const count = { count: "exact" as const, head: true };
+    try {
+      const [checks, actions, excursions, incidents, methods, training, completed] =
+        await Promise.all([
+          supabase
+            .from("checks")
+            .select("id", count)
+            .eq("organization_id", organizationId)
+            .eq("location_id", locationId)
+            .neq("status", "completed")
+            .gte("created_at", today.start)
+            .lt("created_at", today.end),
+          supabase
+            .from("corrective_actions")
+            .select("id,description,severity,due_at")
+            .eq("organization_id", organizationId)
+            .eq("location_id", locationId)
+            .not("status", "in", '("verified","closed")')
+            .order("due_at", { ascending: true, nullsFirst: false })
+            .order("id")
+            .limit(6),
+          supabase
+            .from("temperature_logs")
+            .select("id", count)
+            .eq("organization_id", organizationId)
+            .eq("location_id", locationId)
+            .in("status", ["out_of_range", "alert"])
+            .gte("logged_at", periods[0].start)
+            .lt("logged_at", today.end),
+          supabase
+            .from("incidents")
+            .select("id", count)
+            .eq("organization_id", organizationId)
+            .eq("location_id", locationId)
+            .neq("status", "closed"),
+          supabase
+            .from("site_safe_methods")
+            .select("id", count)
+            .eq("organization_id", organizationId)
+            .eq("location_id", locationId)
+            .eq("status", "active"),
+          supabase
+            .from("training_records")
+            .select("id", count)
+            .eq("organization_id", organizationId)
+            .eq("location_id", locationId)
+            .not("verified_at", "is", null)
+            .gte("certificate_valid_to", day)
+            .lte("certificate_valid_to", thirtyDays),
+          Promise.all(
+            periods.map((period) =>
+              supabase
+                .from("checks")
+                .select("id", count)
+                .eq("organization_id", organizationId)
+                .eq("location_id", locationId)
+                .eq("status", "completed")
+                .gte("completed_at", period.start)
+                .lt("completed_at", period.end),
+            ),
+          ),
+        ]);
+      if (request !== requestId.current) return;
+      const counts = [checks, excursions, incidents, methods, training, ...completed];
+      if (actions.error || !actions.data || counts.some((r) => r.error || r.count === null)) {
+        throw new Error("Incomplete coach evidence");
+      }
+      setData({
+        openChecks: checks.count ?? 0,
+        week: periods.map((period, index) => ({
+          key: period.date,
+          label: period.label,
+          count: completed[index].count ?? 0,
+        })),
+        openActions: actions.data,
+        excursions: excursions.count ?? 0,
+        openIncidents: incidents.count ?? 0,
+        adoptedMethods: methods.count ?? 0,
+        expiringTraining: training.count ?? 0,
+      });
+      setLoadedDay(day);
+    } catch {
+      if (request !== requestId.current) return;
+      setData(emptyData);
+      setLoadedDay("");
+      setError("Some evidence could not be loaded. Refresh before reviewing priorities.");
+    } finally {
+      if (request === requestId.current) setLoading(false);
+    }
+  }, [day, organizationId, locationId]);
 
   useEffect(() => {
     void load();
+    return () => {
+      requestId.current += 1;
+    };
   }, [load]);
 
-  const week = useMemo(
-    () =>
-      Array.from({ length: 7 }, (_, index) => {
-        const date = startOfDay(6 - index);
-        const key = date.toISOString().slice(0, 10);
-        return {
-          key,
-          label: date.toLocaleDateString("en-GB", { weekday: "short" }).slice(0, 2),
-          count: data.completedChecks.filter((stamp) => stamp.slice(0, 10) === key).length,
-        };
-      }),
-    [data.completedChecks],
-  );
+  useEffect(() => {
+    const checkDay = () => setDay(operationalDate(new Date(), "Europe/London"));
+    const timer = window.setInterval(checkDay, 60_000);
+    window.addEventListener("focus", checkDay);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener("focus", checkDay);
+    };
+  }, []);
+
+  const week = available ? data.week : [];
   const maxDay = Math.max(1, ...week.map((day) => day.count));
+  const completedTotal = data.week.reduce((sum, day) => sum + day.count, 0);
 
   const actions = useMemo(() => {
+    if (!available) return [];
     const result: Action[] = [];
     for (const action of data.openActions.slice(0, 3)) {
       const overdue = action.due_at ? new Date(action.due_at) < new Date() : false;
@@ -192,14 +260,14 @@ function ComplianceCoach() {
     if (!result.length)
       result.push({
         id: "clear",
-        label: "No urgent evidence gaps found",
+        label: "No priorities found in this evidence view",
         detail: "Continue today's checks and complete the closing review",
         to: "/app/today",
         priority: 1,
         tone: "good",
       });
     return result.sort((a, b) => b.priority - a.priority).slice(0, 5);
-  }, [data]);
+  }, [available, data]);
 
   return (
     <div className="p-5 md:p-8 max-w-6xl space-y-5">
@@ -212,14 +280,21 @@ function ComplianceCoach() {
             AI-generated food-safety advice.
           </p>
         </div>
-        <button className="btn-secondary px-4 py-2 text-sm" onClick={() => void load()}>
+        <button
+          className="btn-secondary px-4 py-2 text-sm"
+          disabled={loading}
+          onClick={() => void load()}
+        >
           {loading ? <Loader2 className="animate-spin" size={15} /> : "Refresh"}
         </button>
       </header>
 
       {error && (
-        <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm">
-          Some evidence could not be loaded: {error}
+        <div
+          role="alert"
+          className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm"
+        >
+          {error}
         </div>
       )}
 
@@ -233,10 +308,13 @@ function ComplianceCoach() {
               </h2>
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Overdue and higher-risk evidence appears first.
+              Includes up to six corrective actions ordered by earliest due date.
             </p>
           </div>
           <div className="divide-y divide-border">
+            {!available && (
+              <p className="p-4 text-sm text-muted-foreground">Priorities unavailable.</p>
+            )}
             {actions.map((action, index) => (
               <Link
                 key={action.id}
@@ -271,8 +349,9 @@ function ComplianceCoach() {
             Seven-day momentum
           </h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            Completed checks—not a hygiene rating.
+            Completed checks by UK calendar day—not a hygiene rating.
           </p>
+          {!available && <p className="mt-4 text-sm text-muted-foreground">Evidence unavailable.</p>}
           <div className="mt-5 flex h-36 items-end gap-2" aria-label="Completed checks by day">
             {week.map((day) => (
               <div
@@ -298,25 +377,25 @@ function ComplianceCoach() {
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Evidence coverage">
         <Metric
           icon={<ClipboardCheck size={16} />}
-          value={data.completedChecks.length}
+          value={available ? completedTotal : null}
           label="Checks in 7 days"
         />
         <Metric
           icon={<BookOpenCheck size={16} />}
-          value={data.adoptedMethods}
+          value={available ? data.adoptedMethods : null}
           label="Safe methods adopted"
         />
         <Metric
           icon={<Thermometer size={16} />}
-          value={data.excursions}
+          value={available ? data.excursions : null}
           label="Temperature exceptions"
-          warn={data.excursions > 0}
+          warn={available && data.excursions > 0}
         />
         <Metric
           icon={<GraduationCap size={16} />}
-          value={data.expiringTraining}
+          value={available ? data.expiringTraining : null}
           label="Training due in 30 days"
-          warn={data.expiringTraining > 0}
+          warn={available && data.expiringTraining > 0}
         />
       </section>
 
@@ -348,7 +427,7 @@ function Metric({
   warn = false,
 }: {
   icon: React.ReactNode;
-  value: number;
+  value: number | null;
   label: string;
   warn?: boolean;
 }) {
@@ -357,7 +436,7 @@ function Metric({
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         {icon} {label}
       </div>
-      <div className="mt-2 text-2xl font-black tabular-nums">{value}</div>
+      <div className="mt-2 text-2xl font-black tabular-nums">{value ?? "—"}</div>
     </article>
   );
 }
