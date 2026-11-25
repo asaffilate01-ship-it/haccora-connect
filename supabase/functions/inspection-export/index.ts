@@ -8,7 +8,10 @@ import {
   requirePost,
 } from "../_shared/http.ts";
 import { requireUser } from "../_shared/supabase.ts";
-import { ukCalendarDate, ukInspectionPeriod } from "../_shared/inspection-period.ts";
+import {
+  ukCalendarDate,
+  ukInspectionPeriod,
+} from "../_shared/inspection-period.ts";
 
 type ExportInput = { from?: string; to?: string };
 
