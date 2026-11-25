@@ -29,7 +29,9 @@ function calendarMillis(value: unknown): number {
     throw new RangeError("Invalid calendar date");
   }
   const ms = Date.parse(value + "T00:00:00Z");
-  if (!Number.isFinite(ms) || new Date(ms).toISOString().slice(0, 10) !== value) {
+  if (
+    !Number.isFinite(ms) || new Date(ms).toISOString().slice(0, 10) !== value
+  ) {
     throw new RangeError("Invalid calendar date");
   }
   return ms;
