@@ -137,7 +137,9 @@ test("recipe quantities and units invalidate PPDS drafts when formulation change
 
 test("PPDS drafts require complete current evidence and confirmed persistence", async () => {
   const route = await readFile(new URL("../src/routes/app.ppds.tsx", import.meta.url), "utf8");
-  assert.match(route, /r\.count !== r\.data\.length/);
+  assert.match(route, /readEvidencePages\(/);
+  assert.match(route, /\.range\(from, to\)/);
+  assert.match(route, /if \(!isCurrent\(\)\) return null/);
   assert.match(route, /const fresh = await load\(\)/);
   assert.match(route, /JSON\.stringify\(freshLinks\) !== JSON\.stringify\(oldLinks\)/);
   assert.match(route, /if \(versionError\) throw new Error/);
