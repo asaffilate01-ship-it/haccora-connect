@@ -11,6 +11,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/haccora-client";
+import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/app/ai-assistant")({
   component: AiEvidenceAssistant,
@@ -74,31 +75,58 @@ function answerText(payload: RunPayload | null) {
 }
 
 function AiEvidenceAssistant() {
+  const { user } = useAuth();
+  if (!user?.organizationId || !["owner", "manager", "chef"].includes(user.role)) {
+    return (
+      <p className="p-5 text-sm">
+        An authorised owner, manager or chef workspace is required to start an AI evidence review.
+      </p>
+    );
+  }
+  const workspaceKey = `${user.id}:${user.organizationId}:${user.locationId}:${user.role}`;
+  return <WorkspaceAssistant key={workspaceKey} />;
+}
+
+function WorkspaceAssistant() {
   const [bridge, setBridge] = useState<BridgeStatus | null>(null);
   const [kind, setKind] = useState<(typeof kinds)[number][0]>("compliance_question");
   const [question, setQuestion] = useState("");
   const [runId, setRunId] = useState("");
   const [run, setRun] = useState<RunPayload | null>(null);
   const [busy, setBusy] = useState(false);
+  const [statusLoading, setStatusLoading] = useState(true);
   const [error, setError] = useState("");
   const [refreshError, setRefreshError] = useState("");
   const starting = useRef(false);
+  const statusRequest = useRef(0);
+  const lifetime = useRef(0);
   const currentRunId = useRef("");
   const readingRun = useRef("");
   const runStatus = run?.run?.status ?? "";
   const activeRun = ["queued", "running"].includes(runStatus);
 
   const loadStatus = useCallback(async () => {
+    const request = ++statusRequest.current;
+    setStatusLoading(true);
     setError("");
-    const result = await supabase.functions.invoke("omniqora-platform", {
-      body: { action: "status" },
-    });
-    if (result.error) {
-      setBridge({ connected: false, countryCode: "GB", entitlements: {} });
-      setError("Omniqora status is unavailable.");
-      return;
+    try {
+      const result = await supabase.functions.invoke("omniqora-platform", {
+        body: { action: "status" },
+      });
+      if (request !== statusRequest.current) return;
+      if (result.error) throw result.error;
+      const data = result.data as BridgeStatus | null;
+      if (!data || data.countryCode !== "GB" || typeof data.connected !== "boolean") {
+        throw new Error("Invalid workspace connection status");
+      }
+      setBridge(data);
+    } catch {
+      if (request !== statusRequest.current) return;
+      setBridge(null);
+      setError("Omniqora status is unavailable. Check the connection before starting a review.");
+    } finally {
+      if (request === statusRequest.current) setStatusLoading(false);
     }
-    setBridge(result.data as BridgeStatus);
   }, []);
 
   const readRun = useCallback(async (id: string) => {
@@ -130,6 +158,7 @@ function AiEvidenceAssistant() {
       question.trim().length < 10 ||
       question.trim().length > 3000 ||
       starting.current ||
+      statusLoading ||
       activeRun ||
       !bridge?.connected ||
       bridge.entitlements?.["haccora.ai-copilot"]?.enabled !== true
@@ -137,6 +166,7 @@ function AiEvidenceAssistant() {
       return;
     }
     starting.current = true;
+    const scope = lifetime.current;
     setBusy(true);
     setError("");
     setRefreshError("");
@@ -147,6 +177,7 @@ function AiEvidenceAssistant() {
       const result = await supabase.functions.invoke("omniqora-platform", {
         body: { action: "ai_start", kind, question: question.trim() },
       });
+      if (scope !== lifetime.current) return;
       if (result.error) throw result.error;
       const id = String((result.data as { runId?: unknown } | null)?.runId ?? "");
       if (!id) throw new Error("No run id");
@@ -156,26 +187,42 @@ function AiEvidenceAssistant() {
       setRun({ run: { id, status }, reviewRequired: true });
       void readRun(id);
     } catch {
-      setError(
-        "The AI request was not started. Check the Haccora AI entitlement and Omniqora provider configuration.",
-      );
+      if (scope !== lifetime.current) return;
+      setError("The AI request could not be confirmed. Check the connection before trying again.");
     } finally {
-      starting.current = false;
-      setBusy(false);
+      if (scope === lifetime.current) {
+        starting.current = false;
+        setBusy(false);
+      }
     }
   }
 
   useEffect(() => {
     void loadStatus();
+    return () => {
+      lifetime.current += 1;
+      statusRequest.current += 1;
+      currentRunId.current = "";
+      readingRun.current = "";
+    };
   }, [loadStatus]);
 
   useEffect(() => {
     if (!runId || !["queued", "running"].includes(runStatus)) return;
-    const timer = window.setInterval(() => void readRun(runId), 3500);
-    return () => window.clearInterval(timer);
+    const refreshVisible = () => {
+      if (document.visibilityState === "visible") void readRun(runId);
+    };
+    const timer = window.setInterval(refreshVisible, 3500);
+    document.addEventListener("visibilitychange", refreshVisible);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", refreshVisible);
+    };
   }, [readRun, runId, runStatus]);
 
   const enabled = (key: string) => bridge?.entitlements?.[key]?.enabled === true;
+  const entitlementStatus = (key: string) =>
+    statusLoading || !bridge ? null : bridge.connected && enabled(key);
   const sources = useMemo(
     () => Array.from(new Set((run?.steps ?? []).flatMap((step) => step.source_refs ?? []))),
     [run],
@@ -198,22 +245,40 @@ function AiEvidenceAssistant() {
         <StatusCard
           icon={<BrainCircuit size={16} />}
           label="AI Copilot"
-          active={enabled("haccora.ai-copilot")}
+          active={entitlementStatus("haccora.ai-copilot")}
         />
-        <StatusCard icon={<FileSearch2 size={16} />} label="RAG" active={enabled("haccora.rag")} />
+        <StatusCard
+          icon={<FileSearch2 size={16} />}
+          label="RAG"
+          active={entitlementStatus("haccora.rag")}
+        />
         <StatusCard
           icon={<Network size={16} />}
           label="GraphRAG"
-          active={enabled("haccora.graphrag")}
+          active={entitlementStatus("haccora.graphrag")}
         />
         <StatusCard
           icon={<BookOpenCheck size={16} />}
           label="Regulatory intelligence"
-          active={enabled("haccora.regulatory-intelligence")}
+          active={entitlementStatus("haccora.regulatory-intelligence")}
         />
       </section>
 
-      {!bridge?.connected && (
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p role="status" className="text-sm text-muted-foreground">
+          {statusLoading ? "Checking workspace connection…" : "Connection check finished"}
+        </p>
+        <button
+          type="button"
+          className="btn-secondary px-3 py-2 text-sm"
+          disabled={statusLoading || busy}
+          onClick={() => void loadStatus()}
+        >
+          Check connection
+        </button>
+      </div>
+
+      {!statusLoading && !bridge?.connected && (
         <div className="rounded-xl border border-warning/40 bg-warning/10 p-4 text-sm flex gap-2">
           <AlertTriangle size={17} className="shrink-0" />
           This workspace is not currently connected to Omniqora. Core Haccora remains available, but
@@ -274,6 +339,7 @@ function AiEvidenceAssistant() {
           className="btn-primary px-4 py-2 text-sm inline-flex items-center gap-2"
           disabled={
             busy ||
+            statusLoading ||
             activeRun ||
             !bridge?.connected ||
             !enabled("haccora.ai-copilot") ||
@@ -367,7 +433,7 @@ function StatusCard({
 }: {
   icon: React.ReactNode;
   label: string;
-  active: boolean;
+  active: boolean | null;
 }) {
   return (
     <article className="surface p-4">
@@ -375,7 +441,9 @@ function StatusCard({
         {icon}
         {label}
       </div>
-      <div className="mt-2 text-sm font-bold">{active ? "Enabled" : "Not enabled"}</div>
+      <div className="mt-2 text-sm font-bold">
+        {active === null ? "Unverified" : active ? "Enabled" : "Not enabled"}
+      </div>
     </article>
   );
 }
