@@ -22,7 +22,7 @@ test("control centre suppresses stale or incomplete evidence and coalesces refre
   assert.match(source, /available \? String\(value\) : "—"/);
   assert.doesNotMatch(source, /All clear/);
   assert.match(source, /organization_id=eq\.\$\{organizationId\}/);
-  assert.match(source, /if \(!active \|\| timer !== undefined\) return/);
+  assert.match(source, /if \(!active \|\| timer !== undefined \|\| !navigator\.onLine\) return/);
   assert.match(source, /createRefreshQueue\(load\)/);
   assert.match(source, /queue\.dispose\(\)/);
   assert.match(source, /clearTimeout\(timer\)/);
