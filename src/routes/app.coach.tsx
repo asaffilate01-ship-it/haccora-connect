@@ -267,8 +267,8 @@ function SiteCoach({ organizationId, locationId }: { organizationId: string; loc
           <div className="eyebrow">COMPLIANCE COACH</div>
           <h1 className="mt-1">Know what to do next</h1>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Priorities from visible evidence for the selected site, using UK calendar days. No
-            generic score and no AI-generated food-safety advice.
+            UK calendar-day priorities from visible site records. No generic score and no
+            AI-generated food-safety advice.
           </p>
         </div>
         <button
@@ -342,7 +342,7 @@ function SiteCoach({ organizationId, locationId }: { organizationId: string; loc
             Seven-day momentum
           </h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            Completed checks—not a hygiene rating.
+            Completed checks, not an official hygiene rating.
           </p>
           <div className="mt-5 flex h-36 items-end gap-2" aria-label="Completed checks by day">
             {!available && <p className="text-xs text-muted-foreground">Evidence unavailable</p>}
