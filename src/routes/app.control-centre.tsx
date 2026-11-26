@@ -180,6 +180,7 @@ function ControlCentre({
       setLiveStatus("unavailable");
     };
     const reconnect = () => {
+      setLoadedFilter("");
       setOnline(true);
       scheduleRefresh();
     };
