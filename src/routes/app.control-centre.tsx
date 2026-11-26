@@ -242,9 +242,7 @@ function ControlCentre({
   const openItems = items.filter(
     (item) => item.status === "open" || item.status === "acknowledged",
   );
-  const overdue = openItems.filter(
-    (item) => item.due_at && Date.parse(item.due_at) < clock,
-  ).length;
+  const overdue = openItems.filter((item) => item.due_at && Date.parse(item.due_at) < clock).length;
   const critical = openItems.filter((item) => item.severity === "critical").length;
   const offline = openItems.filter((item) => item.item_type === "sensor_offline").length;
 
