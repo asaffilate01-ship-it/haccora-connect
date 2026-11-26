@@ -1,93 +1,196 @@
-import { Redirect, router } from "expo-router";
-import { useEffect, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Redirect, router, useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  AppState,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { supabase } from "@/lib/supabase";
 import { useSession } from "@/lib/session";
+import { operationalDate, operationalDay } from "@/lib/operational-day";
 
 type Priority = { label: string; detail: string; path: string; urgent?: boolean };
 
 export default function Coach() {
-  const { session, workspaceReady, loading } = useSession();
-  const [priorities, setPriorities] = useState<Priority[]>([]);
-  const [checks, setChecks] = useState(0);
-
-  useEffect(() => {
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
-    void Promise.all([
-      supabase
-        .from("checks")
-        .select("id", { count: "exact", head: true })
-        .neq("status", "completed")
-        .gte("created_at", start.toISOString()),
-      supabase
-        .from("corrective_actions")
-        .select("id,description,severity,due_at")
-        .neq("status", "closed")
-        .order("due_at", { ascending: true, nullsFirst: false })
-        .limit(3),
-      supabase
-        .from("temperature_logs")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "out_of_range")
-        .gte("logged_at", start.toISOString()),
-    ]).then(([openChecks, actions, excursions]) => {
-      const next: Priority[] = (actions.data ?? []).map((action) => ({
-        label: action.description,
-        detail: `${action.severity} corrective action`,
-        path: "/actions",
-        urgent:
-          action.severity === "critical" ||
-          Boolean(action.due_at && new Date(action.due_at) < new Date()),
-      }));
-      if (excursions.count)
-        next.unshift({
-          label: `Review ${excursions.count} temperature exception${excursions.count === 1 ? "" : "s"}`,
-          detail: "Record the product decision and corrective action",
-          path: "/temperature",
-          urgent: true,
-        });
-      if (openChecks.count)
-        next.push({
-          label: `Complete ${openChecks.count} open check${openChecks.count === 1 ? "" : "s"}`,
-          detail: "Finish today's assigned records",
-          path: "/checks",
-        });
-      setChecks(openChecks.count ?? 0);
-      setPriorities(
-        next.length
-          ? next.slice(0, 5)
-          : [
-              {
-                label: "No urgent evidence gaps found",
-                detail: "Continue normal monitoring and closing checks",
-                path: "/dashboard",
-              },
-            ],
-      );
-    });
-  }, []);
-
+  const workspace = useSession();
+  const { session, workspaceReady, loading, role, serviceStatus } = workspace;
+  const { organizationId, locationId } = workspace;
   if (loading) return null;
   if (!session) return <Redirect href="/login" />;
   if (!workspaceReady) return <Redirect href="/onboarding" />;
+  if (serviceStatus !== "active") return <Redirect href="/account-status" />;
+  if (role === "inspector") return <Redirect href="/inspection-readiness" />;
+  if (!organizationId || !locationId) {
+    return (
+      <View style={styles.page}>
+        <Text style={styles.title}>Compliance coach</Text>
+        <Text style={styles.intro}>Select a business location to review its evidence priorities.</Text>
+      </View>
+    );
+  }
+  return (
+    <SiteCoach
+      key={`${session.user.id}:${organizationId}:${locationId}:${role}`}
+      organizationId={organizationId}
+      locationId={locationId}
+    />
+  );
+}
+
+function SiteCoach({ organizationId, locationId }: { organizationId: string; locationId: string }) {
+  const [priorities, setPriorities] = useState<Priority[]>([]);
+  const [checks, setChecks] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [refresh, setRefresh] = useState(0);
+  const [day, setDay] = useState(() => operationalDate(new Date(), "Europe/London"));
+  const [loadedDay, setLoadedDay] = useState("");
+  const available = !loading && !error && loadedDay === day;
+
+  const refreshEvidence = useCallback(() => {
+    setLoading(true);
+    setLoadedDay("");
+    setDay(operationalDate(new Date(), "Europe/London"));
+    setRefresh((value) => value + 1);
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshEvidence();
+      const subscription = AppState.addEventListener("change", (state) => {
+        if (state === "active") refreshEvidence();
+      });
+      const timer = setInterval(() => {
+        if (AppState.currentState === "active") {
+          setDay(operationalDate(new Date(), "Europe/London"));
+        }
+      }, 60_000);
+      return () => {
+        subscription.remove();
+        clearInterval(timer);
+      };
+    }, [refreshEvidence]),
+  );
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setError(false);
+    setChecks(null);
+    setPriorities([]);
+    const period = operationalDay(new Date(day + "T12:00:00Z"), "Europe/London");
+    const count = { count: "exact" as const, head: true };
+    void Promise.all([
+      supabase
+        .from("checks")
+        .select("id", count)
+        .eq("organization_id", organizationId)
+        .eq("location_id", locationId)
+        .neq("status", "completed")
+        .gte("created_at", period.start)
+        .lt("created_at", period.end),
+      supabase
+        .from("corrective_actions")
+        .select("id,description,severity,due_at")
+        .eq("organization_id", organizationId)
+        .eq("location_id", locationId)
+        .not("status", "in", '("verified","closed")')
+        .order("due_at", { ascending: true, nullsFirst: false })
+        .order("id")
+        .limit(6),
+      supabase
+        .from("temperature_logs")
+        .select("id", count)
+        .eq("organization_id", organizationId)
+        .eq("location_id", locationId)
+        .in("status", ["out_of_range", "alert"])
+        .gte("logged_at", period.start)
+        .lt("logged_at", period.end),
+    ])
+      .then(([openChecks, actions, excursions]) => {
+        if (!active) return;
+        if (
+          openChecks.error ||
+          openChecks.count === null ||
+          actions.error ||
+          !actions.data ||
+          excursions.error ||
+          excursions.count === null
+        ) {
+          setError(true);
+          return;
+        }
+        const next: Priority[] = actions.data.map((action) => ({
+          label: action.description,
+          detail: `${action.severity} corrective action`,
+          path: "/actions",
+          urgent:
+            action.severity === "critical" ||
+            Boolean(action.due_at && new Date(action.due_at) < new Date()),
+        }));
+        if (excursions.count) {
+          next.push({
+            label: `Review ${excursions.count} temperature exception(s)`,
+            detail: "Record the product decision and corrective action",
+            path: "/temperature",
+            urgent: true,
+          });
+        }
+        if (openChecks.count) {
+          next.push({
+            label: `Complete ${openChecks.count} open check(s)`,
+            detail: "Review records created today",
+            path: "/checks",
+          });
+        }
+        next.sort((a, b) => Number(!!b.urgent) - Number(!!a.urgent));
+        setChecks(openChecks.count);
+        setPriorities(next.slice(0, 5));
+        setLoadedDay(day);
+      })
+      .catch(() => {
+        if (active) setError(true);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [day, organizationId, locationId, refresh]);
 
   return (
     <ScrollView contentContainerStyle={styles.page}>
       <Text style={styles.eyebrow}>COMPLIANCE COACH</Text>
       <Text style={styles.title}>Know what to do next</Text>
       <Text style={styles.intro}>
-        Priorities calculated from your saved workspace records—not generic advice or an official
-        hygiene rating.
+        Priorities calculated from visible records at this site, using UK dates—not generic advice
+        or an official hygiene rating.
       </Text>
       <View style={styles.summary}>
-        <Text style={styles.summaryValue}>{checks}</Text>
+        <Text style={styles.summaryValue}>{available ? checks : "—"}</Text>
         <Text style={styles.summaryLabel}>open checks today</Text>
       </View>
       <Text style={styles.section}>PRIORITIES NOW</Text>
-      {priorities.map((priority, index) => (
+      {loading && <ActivityIndicator accessibilityLabel="Loading evidence" />}
+      {!loading && !available && (
+        <Text accessibilityRole="alert" style={styles.intro}>
+          Evidence could not be verified. Refresh before reviewing priorities.
+        </Text>
+      )}
+      {available && priorities.length === 0 && (
+        <Text style={styles.intro}>
+          No priorities found in this view. Review the underlying records before making decisions.
+        </Text>
+      )}
+      {(available ? priorities : []).map((priority, index) => (
         <Pressable
           key={`${priority.path}-${index}`}
+          accessibilityRole="button"
           style={[styles.card, priority.urgent && styles.urgent]}
           onPress={() => router.push(priority.path as never)}
         >
@@ -101,6 +204,15 @@ export default function Coach() {
           <Text style={styles.arrow}>›</Text>
         </Pressable>
       ))}
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Refresh compliance coach"
+        disabled={loading}
+        onPress={refreshEvidence}
+        style={styles.refresh}
+      >
+        <Text style={styles.cardTitle}>{error ? "Retry loading" : "Refresh evidence"}</Text>
+      </Pressable>
       <Text style={styles.disclaimer}>
         Haccora organises evidence. Official guidance and competent food-safety judgement remain
         authoritative.
@@ -128,6 +240,7 @@ const styles = StyleSheet.create({
     gap: 12,
     padding: 14,
   },
+  refresh: { alignItems: "center", padding: 14 },
   urgent: { borderColor: "#e43f2c" },
   number: {
     alignItems: "center",
