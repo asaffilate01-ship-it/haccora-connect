@@ -79,6 +79,21 @@ test("control centre uses the shared queue and reports live connection failures"
   assert.match(route, /refreshQueue\.current\?\.request\(\)/);
   assert.match(route, /status === "SUBSCRIBED"/);
   assert.match(route, /status === "CHANNEL_ERROR"/);
-  assert.match(route, /window\.removeEventListener\("online", scheduleRefresh\)/);
+  assert.match(route, /window\.removeEventListener\("online", reconnect\)/);
   assert.match(route, /filter: \x60organization_id=eq\.\$\{organizationId\}\x60/);
+});
+
+test("disconnected control centre refreshes only while visible and online", async () => {
+  const route = await readFile(
+    new URL("../src/routes/app.control-centre.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(route, /document\.visibilityState !== "visible"/);
+  assert.match(route, /navigator\.onLine && liveStatus !== "connected"/);
+  assert.match(route, /window\.clearInterval\(interval\)/);
+  assert.match(route, /setOnline\(false\)/);
+  assert.match(route, /!online \|\|/);
+  assert.match(route, /setLastSynced\(synced\)/);
+  assert.match(route, /setLastSynced\(null\)/);
+  assert.match(route, /Date\.parse\(item\.due_at\) < clock/);
 });
