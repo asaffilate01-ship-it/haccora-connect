@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/haccora-client";
 import { useAuth } from "@/lib/auth";
+import { aiReviewPollDelay } from "@/lib/ai-review-poll-delay";
 
 export const Route = createFileRoute("/app/ai-assistant")({
   component: AiEvidenceAssistant,
@@ -102,6 +103,7 @@ function WorkspaceAssistant() {
   const lifetime = useRef(0);
   const currentRunId = useRef("");
   const readingRun = useRef("");
+  const failedReads = useRef(0);
   const runStatus = run?.run?.status ?? "";
   const activeRun = ["queued", "running"].includes(runStatus);
 
@@ -142,11 +144,15 @@ function WorkspaceAssistant() {
       if (!payload?.run?.status || (payload.run.id && payload.run.id !== id)) {
         throw new Error("Invalid run status");
       }
+      failedReads.current = 0;
       setRun(payload);
       setRefreshError("");
     } catch {
       if (currentRunId.current === id) {
-        setRefreshError("Review status could not be refreshed. Try Refresh again.");
+        failedReads.current = Math.min(5, failedReads.current + 1);
+        setRefreshError(
+          "Review status could not be refreshed. Automatic retries slow down after errors.",
+        );
       }
     } finally {
       if (readingRun.current === id) readingRun.current = "";
@@ -171,6 +177,7 @@ function WorkspaceAssistant() {
     setError("");
     setRefreshError("");
     currentRunId.current = "";
+    failedReads.current = 0;
     setRunId("");
     setRun(null);
     try {
@@ -209,14 +216,44 @@ function WorkspaceAssistant() {
 
   useEffect(() => {
     if (!runId || !["queued", "running"].includes(runStatus)) return;
-    const refreshVisible = () => {
-      if (document.visibilityState === "visible") void readRun(runId);
+    let disposed = false;
+    let polling = false;
+    let timer: number | undefined;
+    const canPoll = () => !disposed && document.visibilityState === "visible" && navigator.onLine;
+    const clearTimer = () => {
+      if (timer !== undefined) window.clearTimeout(timer);
+      timer = undefined;
     };
-    const timer = window.setInterval(refreshVisible, 3500);
+    const schedule = () => {
+      clearTimer();
+      if (canPoll()) {
+        timer = window.setTimeout(() => void poll(), aiReviewPollDelay(failedReads.current));
+      }
+    };
+    async function poll() {
+      if (!canPoll() || polling) return;
+      polling = true;
+      try {
+        await readRun(runId);
+      } finally {
+        polling = false;
+        schedule();
+      }
+    }
+    const refreshVisible = () => {
+      clearTimer();
+      if (canPoll()) void poll();
+    };
+    schedule();
     document.addEventListener("visibilitychange", refreshVisible);
+    window.addEventListener("online", refreshVisible);
+    window.addEventListener("offline", refreshVisible);
     return () => {
-      window.clearInterval(timer);
+      disposed = true;
+      clearTimer();
       document.removeEventListener("visibilitychange", refreshVisible);
+      window.removeEventListener("online", refreshVisible);
+      window.removeEventListener("offline", refreshVisible);
     };
   }, [readRun, runId, runStatus]);
 

@@ -53,5 +53,12 @@ test("hidden browser tabs do not poll the AI provider", () => {
   assert.match(ai, /document\.visibilityState === "visible"/);
   assert.match(ai, /document\.addEventListener\("visibilitychange", refreshVisible\)/);
   assert.match(ai, /document\.removeEventListener\("visibilitychange", refreshVisible\)/);
-  assert.match(ai, /window\.clearInterval\(timer\)/);
+  assert.match(ai, /window\.clearTimeout\(timer\)/);
+  assert.match(ai, /navigator\.onLine/);
+  assert.match(ai, /if \(!canPoll\(\) \|\| polling\) return/);
+  assert.match(ai, /aiReviewPollDelay\(failedReads\.current\)/);
+  assert.match(ai, /window\.removeEventListener\("online", refreshVisible\)/);
+  assert.match(ai, /window\.removeEventListener\("offline", refreshVisible\)/);
+  assert.match(ai, /disposed = true/);
+  assert.doesNotMatch(ai, /window\.setInterval\(/);
 });
