@@ -201,7 +201,7 @@ function SiteCoach({ organizationId, locationId }: { organizationId: string; loc
   const actions = useMemo(() => {
     if (!available) return [];
     const result: Action[] = [];
-    for (const action of data.openActions.slice(0, 3)) {
+    for (const action of data.openActions) {
       const overdue = action.due_at ? new Date(action.due_at) < new Date() : false;
       result.push({
         id: action.id,
@@ -382,13 +382,13 @@ function SiteCoach({ organizationId, locationId }: { organizationId: string; loc
           icon={<Thermometer size={16} />}
           value={available ? data.excursions : null}
           label="Temperature exceptions"
-          warn={data.excursions > 0}
+          warn={available && data.excursions > 0}
         />
         <Metric
           icon={<GraduationCap size={16} />}
           value={available ? data.expiringTraining : null}
           label="Training due in 30 days"
-          warn={data.expiringTraining > 0}
+          warn={available && data.expiringTraining > 0}
         />
       </section>
 
