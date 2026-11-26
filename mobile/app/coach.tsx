@@ -28,7 +28,7 @@ export default function Coach() {
     return (
       <View style={styles.page}>
         <Text style={styles.title}>Compliance coach</Text>
-        <Text style={styles.intro}>Select a business location to review its evidence priorities.</Text>
+        <Text style={styles.intro}>Select a site to review its evidence priorities.</Text>
       </View>
     );
   }
