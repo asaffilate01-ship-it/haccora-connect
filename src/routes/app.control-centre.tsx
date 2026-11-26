@@ -83,6 +83,9 @@ function ControlCentre({
     "connecting",
   );
   const refreshQueue = useRef<ReturnType<typeof createRefreshQueue> | null>(null);
+  const [online, setOnline] = useState(true);
+  const [lastSynced, setLastSynced] = useState<number | null>(null);
+  const [clock, setClock] = useState(() => Date.now());
   const requestId = useRef(0);
   const writeLock = useRef(false);
   const available = !loading && !loadError && loadedFilter === filter;
@@ -135,12 +138,16 @@ function ControlCentre({
       setActions(nextActions);
       setTotal(inbox.count);
       setLoadedFilter(filter);
+      const synced = Date.now();
+      setLastSynced(synced);
+      setClock(synced);
     } catch {
       if (request !== requestId.current) return;
       setItems([]);
       setActions([]);
       setTotal(0);
       setLoadedFilter("");
+      setLastSynced(null);
       setLoadError("Operational evidence could not be loaded. Refresh before making decisions.");
     } finally {
       if (request === requestId.current) setLoading(false);
@@ -162,16 +169,31 @@ function ControlCentre({
     let active = true;
     let timer: ReturnType<typeof setTimeout> | undefined;
     const scheduleRefresh = () => {
-      if (!active || timer !== undefined) return;
+      if (!active || timer !== undefined || !navigator.onLine) return;
       timer = setTimeout(() => {
         timer = undefined;
-        if (active) void refreshQueue.current?.request();
+        if (active && navigator.onLine) void refreshQueue.current?.request();
       }, 500);
     };
-    const offline = () => setLiveStatus("unavailable");
-    window.addEventListener("focus", scheduleRefresh);
-    window.addEventListener("online", scheduleRefresh);
+    const offline = () => {
+      setOnline(false);
+      setLiveStatus("unavailable");
+    };
+    const reconnect = () => {
+      setOnline(true);
+      scheduleRefresh();
+    };
+    const visible = () => {
+      if (document.visibilityState === "visible") {
+        setClock(Date.now());
+        scheduleRefresh();
+      }
+    };
+    setOnline(navigator.onLine);
+    window.addEventListener("focus", visible);
+    window.addEventListener("online", reconnect);
     window.addEventListener("offline", offline);
+    document.addEventListener("visibilitychange", visible);
     const channel = supabase
       .channel(`control-centre-${organizationId}`)
       .on(
@@ -196,28 +218,54 @@ function ControlCentre({
     return () => {
       active = false;
       if (timer !== undefined) clearTimeout(timer);
-      window.removeEventListener("focus", scheduleRefresh);
-      window.removeEventListener("online", scheduleRefresh);
+      window.removeEventListener("focus", visible);
+      window.removeEventListener("online", reconnect);
       window.removeEventListener("offline", offline);
+      document.removeEventListener("visibilitychange", visible);
       void supabase.removeChannel(channel);
     };
   }, [organizationId]);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      if (document.visibilityState !== "visible") return;
+      setClock(Date.now());
+      if (navigator.onLine && liveStatus !== "connected") {
+        void refreshQueue.current?.request();
+      }
+    }, 60_000);
+    return () => window.clearInterval(interval);
+  }, [liveStatus]);
 
   const byId = useMemo(() => new Map(actions.map((action) => [action.id, action])), [actions]);
   const openItems = items.filter(
     (item) => item.status === "open" || item.status === "acknowledged",
   );
   const overdue = openItems.filter(
-    (item) => item.due_at && new Date(item.due_at) < new Date(),
+    (item) => item.due_at && Date.parse(item.due_at) < clock,
   ).length;
   const critical = openItems.filter((item) => item.severity === "critical").length;
   const offline = openItems.filter((item) => item.item_type === "sensor_offline").length;
+
+  const syncTime =
+    lastSynced === null
+      ? null
+      : new Date(lastSynced).toLocaleTimeString("en-GB", {
+          timeZone: "Europe/London",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
 
   const actionFor = (item: InboxItem) =>
     item.source_table === "corrective_actions" ? byId.get(item.source_id) : undefined;
 
   const canProgress = (item: InboxItem) => {
-    if (!available || item.status !== "open" || (!canManage && item.owner_id !== userId)) {
+    if (
+      !available ||
+      !online ||
+      item.status !== "open" ||
+      (!canManage && item.owner_id !== userId)
+    ) {
       return false;
     }
     if (item.source_table !== "corrective_actions") return true;
@@ -267,9 +315,12 @@ function ControlCentre({
           : "The change could not be confirmed. Review the refreshed queue.",
       );
     } finally {
-      await refreshQueue.current?.request();
-      writeLock.current = false;
-      setBusy(null);
+      try {
+        await refreshQueue.current?.request();
+      } finally {
+        writeLock.current = false;
+        setBusy(null);
+      }
     }
   };
 
@@ -294,7 +345,7 @@ function ControlCentre({
           </button>
           <button
             className="rounded-full bg-foreground px-3 py-2 text-xs font-bold text-background"
-            disabled={loading || !!busy}
+            disabled={loading || !!busy || !online}
             onClick={() => void refreshQueue.current?.request()}
           >
             <RefreshCw size={13} className="mr-1 inline" /> {"Refresh"}
@@ -321,15 +372,18 @@ function ControlCentre({
       </div>
 
       <p role="status" className="text-xs text-muted-foreground">
-        {liveStatus === "connected"
-          ? "Live update channel connected"
-          : liveStatus === "connecting"
-            ? "Connecting live updates…"
-            : "Live updates unavailable. Refresh before relying on this queue."}
+        {!online
+          ? "Offline — the last retrieved evidence may be out of date. Actions are unavailable."
+          : liveStatus === "connected"
+            ? "Live update channel connected"
+            : liveStatus === "connecting"
+              ? "Connecting live updates…"
+              : "Live updates unavailable. Refreshing once a minute while this page is visible."}
       </p>
       {available && (
         <p className="text-xs text-muted-foreground">
           Showing {items.length} of {total} matching visible items. Metrics describe this view.
+          {syncTime && ` Last retrieved ${syncTime} UK time.`}
         </p>
       )}
       <div className="surface overflow-hidden">
@@ -356,7 +410,7 @@ function ControlCentre({
               const isOverdue =
                 (item.status === "open" || item.status === "acknowledged") &&
                 item.due_at &&
-                new Date(item.due_at) < new Date();
+                Date.parse(item.due_at) < clock;
               return (
                 <li
                   key={item.id}
