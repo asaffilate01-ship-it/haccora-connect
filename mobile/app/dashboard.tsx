@@ -227,6 +227,7 @@ function SiteDashboard({ organizationId, locationId, userId }: SiteScope) {
         setRefreshKey((key) => key + 1);
       };
       const dayTimer = setInterval(() => {
+        if (AppState.currentState !== "active") return;
         if (operationalDate(new Date(), "Europe/London") !== day.date) refresh();
       }, 60_000);
       const subscription = AppState.addEventListener("change", (state) => {
