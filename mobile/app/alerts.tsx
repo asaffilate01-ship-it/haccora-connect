@@ -89,14 +89,15 @@ function SiteAlerts({ userId, organizationId, locationId }: Scope) {
 
   useFocusEffect(
     useCallback(() => {
+      let active = true;
       focused.current = true;
       setLive(false);
       let timer: ReturnType<typeof setTimeout> | undefined;
       const scheduleRefresh = () => {
-        if (!focused.current || timer !== undefined) return;
+        if (!active || !focused.current || timer !== undefined) return;
         timer = setTimeout(() => {
           timer = undefined;
-          if (focused.current) refreshInbox();
+          if (active && focused.current) refreshInbox();
         }, 600);
       };
       const channel = supabase
@@ -112,7 +113,7 @@ function SiteAlerts({ userId, organizationId, locationId }: Scope) {
           scheduleRefresh,
         )
         .subscribe((status) => {
-          if (!focused.current) return;
+          if (!active || !focused.current) return;
           setLive(status === "SUBSCRIBED");
           if (status === "SUBSCRIBED") scheduleRefresh();
         });
@@ -120,6 +121,7 @@ function SiteAlerts({ userId, organizationId, locationId }: Scope) {
         if (state === "active") scheduleRefresh();
       });
       return () => {
+        active = false;
         focused.current = false;
         if (timer !== undefined) clearTimeout(timer);
         subscription.remove();
@@ -193,6 +195,8 @@ function SiteAlerts({ userId, organizationId, locationId }: Scope) {
   const unreadInView = rows.filter((row) => !row.read_at);
   const markRead = async (ids: string[]) => {
     if (!focused.current || !available || writeLock.current || !ids.length) return;
+    const visibleIds = new Set(unreadInView.map((row) => row.id));
+    if (ids.some((id) => !visibleIds.has(id))) return;
     writeLock.current = true;
     setBusy(true);
     setNotice("");
@@ -235,7 +239,7 @@ function SiteAlerts({ userId, organizationId, locationId }: Scope) {
             {available ? `${unread} unread at this site` : "Unread unavailable"}
           </Text>
           <Text style={styles.intro}>
-            {live ? "Live updates connected" : "Live updates unavailable — pull to refresh"}
+            {live ? "Live channel connected" : "Live updates unavailable — pull to refresh"}
           </Text>
         </View>
         {available && unreadInView.length > 0 && (
