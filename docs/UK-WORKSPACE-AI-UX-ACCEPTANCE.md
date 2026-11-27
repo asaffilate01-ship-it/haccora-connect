@@ -31,18 +31,18 @@ These are design and engineering references, not a claim that these providers ar
 
 ## Acceptance matrix
 
-| Area | Required evidence |
-| --- | --- |
-| Web layout | 360, 390, 768, 1024 and 1440 CSS pixel widths; no horizontal overflow |
-| Keyboard | Tab order, visible focus, Escape, arrow keys and Enter in workspace search |
-| Screen readers | Dialog name, input name, status and error announcements; axe plus manual checks |
-| Access control | All tenant roles, inspector scopes, direct URLs and two unrelated tenants |
-| Native | Android and iOS tool search, large text, focus recovery, empty and unavailable states |
-| AI input | 10–3000 trimmed characters, confirmation reset on edit, no automatic submission |
-| AI runtime | Missing entitlement, disconnected service, timeout, malformed result, stale run |
-| AI outputs | Source references, missing evidence, disagreement, no unsupervised approval |
-| Agent/MCP | Server-side tool allowlist, tenant authorization, approval audit, timeouts and replay |
-| Performance | Measure p50/p95 load latency, request count, render cost and bundle size |
+| Area           | Required evidence                                                                     |
+| -------------- | ------------------------------------------------------------------------------------- |
+| Web layout     | 360, 390, 768, 1024 and 1440 CSS pixel widths; no horizontal overflow                 |
+| Keyboard       | Tab order, visible focus, Escape, arrow keys and Enter in workspace search            |
+| Screen readers | Dialog name, input name, status and error announcements; axe plus manual checks       |
+| Access control | All tenant roles, inspector scopes, direct URLs and two unrelated tenants             |
+| Native         | Android and iOS tool search, large text, focus recovery, empty and unavailable states |
+| AI input       | 10–3000 trimmed characters, confirmation reset on edit, no automatic submission       |
+| AI runtime     | Missing entitlement, disconnected service, timeout, malformed result, stale run       |
+| AI outputs     | Source references, missing evidence, disagreement, no unsupervised approval           |
+| Agent/MCP      | Server-side tool allowlist, tenant authorization, approval audit, timeouts and replay |
+| Performance    | Measure p50/p95 load latency, request count, render cost and bundle size              |
 
 ## Further implementation gates
 
