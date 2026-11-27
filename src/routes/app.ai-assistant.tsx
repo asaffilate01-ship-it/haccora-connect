@@ -281,10 +281,7 @@ function WorkspaceAssistant() {
     [run],
   );
   const answer = answerText(run);
-  const steps = useMemo(
-    () => [...(run?.steps ?? [])].sort((a, b) => a.step_no - b.step_no),
-    [run],
-  );
+  const steps = useMemo(() => [...(run?.steps ?? [])].sort((a, b) => a.step_no - b.step_no), [run]);
   const selectedPreset = aiReviewPresets.find((preset) => preset.kind === kind);
 
   return (
