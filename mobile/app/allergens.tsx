@@ -70,7 +70,9 @@ export default function Allergens() {
   );
 }
 
-function SiteAllergens({ organizationId, locationId }: { organizationId: string; locationId: string }) {
+type SiteScope = { organizationId: string; locationId: string };
+
+function SiteAllergens({ organizationId, locationId }: SiteScope) {
   const [query, setQuery] = useState("");
   const load = useCallback(
     (isCurrent: () => boolean) =>
@@ -111,8 +113,8 @@ function SiteAllergens({ organizationId, locationId }: { organizationId: string;
           <Text style={styles.eyebrow}>RECORDED MENU EVIDENCE</Text>
           <Text style={styles.title}>Allergen lookup</Text>
           <Text style={styles.intro}>
-            Review saved declarations for this premises and shared organisation recipes. Verify
-            current ingredients and supplier specifications before advising customers.
+            Review saved site and shared recipes. Verify current supplier specifications before
+            advising customers.
           </Text>
           <TextInput
             accessibilityLabel="Search dishes"
