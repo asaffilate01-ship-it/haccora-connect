@@ -13,7 +13,12 @@ import {
 import { supabase } from "@/integrations/supabase/haccora-client";
 import { useAuth } from "@/lib/auth";
 import { aiReviewPollDelay } from "@/lib/ai-review-poll-delay";
-import { aiReviewPresets, readableReviewAnswer, type AiReviewKind } from "@/lib/ai-review-presets";
+import {
+  aiReviewPresets,
+  readableReviewAnswer,
+  reviewQuestionValid,
+  type AiReviewKind,
+} from "@/lib/ai-review-presets";
 
 export const Route = createFileRoute("/app/ai-assistant")({
   component: AiEvidenceAssistant,
@@ -367,11 +372,15 @@ function WorkspaceAssistant() {
         </div>
 
         <div className="space-y-2">
-          <h3 className="text-sm font-semibold">Choose a review starting point</h3>
+          <h3 className="text-sm font-semibold">Choose a review type</h3>
           <p className="text-xs text-muted-foreground">
-            These examples populate your draft only. They do not start a review.
+            Selecting an example replaces your draft question. It does not start a review.
           </p>
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          <div
+            role="group"
+            aria-label="Review type"
+            className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3"
+          >
             {aiReviewPresets.map((preset) => (
               <button
                 key={preset.kind}
@@ -394,25 +403,6 @@ function WorkspaceAssistant() {
             ))}
           </div>
         </div>
-
-        <label className="block text-sm font-semibold">
-          Review type
-          <select
-            className="mt-1 block w-full rounded-lg border border-border bg-background px-3 py-2"
-            value={kind}
-            disabled={formLocked}
-            onChange={(event) => {
-              setKind(event.target.value as AiReviewKind);
-              setConfirmed(false);
-            }}
-          >
-            {aiReviewPresets.map((preset) => (
-              <option key={preset.kind} value={preset.kind}>
-                {preset.label}
-              </option>
-            ))}
-          </select>
-        </label>
 
         <label className="block text-sm font-semibold">
           Question
@@ -455,8 +445,7 @@ function WorkspaceAssistant() {
             activeRun ||
             !bridge?.connected ||
             !enabled("haccora.ai-copilot") ||
-            question.trim().length < 10 ||
-            question.trim().length > 3000
+            !reviewQuestionValid(question)
           }
           onClick={() => void start()}
         >
