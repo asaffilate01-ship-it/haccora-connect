@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useI18n } from "@/lib/i18n";
-import { supabase } from "@/integrations/supabase/haccora-client";
+import { useAlertPreview } from "@/lib/use-alert-preview";
 import { BrandLogoImage } from "@/components/BrandLogo";
 import { ExperienceController } from "@/components/ExperienceController";
 import {
@@ -207,7 +207,7 @@ const ALL_ITEMS: NavItem[] = GROUPS.flatMap((g) => g.items);
 const canOpenAi = (role: string) => ["owner", "manager", "chef"].includes(role);
 
 function AppShell() {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
   const { user, signOut, hydrated } = useAuth();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -430,57 +430,41 @@ function AppShell() {
     )
     .join(" · ");
 
-  // Notifications — live unread alerts from Supabase, role-scoped by RLS.
-  type Notif = {
-    id: string;
-    sev: "high" | "medium" | "low";
-    title: string;
-    meta: string;
-    to: string;
+  const canViewAlerts = Boolean(
+    user?.organizationId &&
+    user.locationId &&
+    user.serviceStatus === "active" &&
+    canAccess(user.role, "alerts", user.inspectorScopes),
+  );
+  const alertPreview = useAlertPreview(
+    user?.id ?? null,
+    user?.organizationId ?? null,
+    user?.locationId ?? null,
+    canViewAlerts,
+  );
+  const alertRoutes: Record<string, string> = {
+    temperature: "/app/temperature",
+    cleaning: "/app/cleaning",
+    haccp: "/app/haccp",
+    training: "/app/training",
+    incident: "/app/incidents",
+    expiry: "/app/expiry",
+    audit: "/app/audits",
+    recall: "/app/recalls",
+    asset: "/app/assets",
   };
-  const [liveNotifs, setLiveNotifs] = useState<Notif[]>([]);
-  useEffect(() => {
-    if (!user) return;
-    const KIND_TO_ROUTE: Record<string, string> = {
-      temperature: "/app/temperature",
-      cleaning: "/app/cleaning",
-      haccp: "/app/haccp",
-      training: "/app/training",
-      incident: "/app/incidents",
-      expiry: "/app/expiry",
-      audit: "/app/audits",
-      recall: "/app/recalls",
-      asset: "/app/assets",
+  const notifs = alertPreview.rows.map((alert) => {
+    const candidate = alertRoutes[alert.kind];
+    return {
+      id: alert.id,
+      sev: alert.severity === "critical" ? "high" : alert.severity === "warning" ? "medium" : "low",
+      title: alert.title,
+      meta:
+        alert.message ??
+        new Date(alert.created_at).toLocaleString("en-GB", { timeZone: "Europe/London" }),
+      to: visibleFlat.some((item) => item.to === candidate) ? candidate : "/app/alerts",
     };
-    const sevMap = (s: string): Notif["sev"] =>
-      s === "critical" ? "high" : s === "warning" ? "medium" : "low";
-    const load = async () => {
-      const { data } = await supabase
-        .from("alerts")
-        .select("id,kind,severity,title,message,created_at")
-        .is("read_at", null)
-        .order("created_at", { ascending: false })
-        .limit(8);
-      setLiveNotifs(
-        (data ?? []).map((a: any) => ({
-          id: a.id,
-          sev: sevMap(a.severity),
-          title: a.title,
-          meta: a.message ?? new Date(a.created_at).toLocaleString("en-GB"),
-          to: KIND_TO_ROUTE[a.kind] ?? "/app/alerts",
-        })),
-      );
-    };
-    load();
-    const ch = supabase
-      .channel("shell-alerts")
-      .on("postgres_changes", { event: "*", schema: "public", table: "alerts" }, load)
-      .subscribe();
-    return () => {
-      supabase.removeChannel(ch);
-    };
-  }, [user, lang]);
-  const notifs = liveNotifs;
+  });
 
   if (!hydrated || !user || !user.organizationId || user.serviceStatus !== "active") {
     return (
@@ -714,81 +698,108 @@ function AppShell() {
               </button>
               {/* Notifications */}
 
-              <div className="relative">
-                <button
-                  onClick={() => {
-                    setNotifOpen((v) => !v);
-                    setMenuOpen(false);
-                  }}
-                  className="relative inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card hover:bg-secondary transition"
-                  aria-label={t("notif.title")}
-                >
-                  <Bell size={16} />
-                  {notifs.length > 0 && (
-                    <span className="absolute top-1 right-1 h-4 min-w-4 px-1 rounded-full bg-destructive text-[9px] font-bold text-destructive-foreground grid place-items-center">
-                      {notifs.length}
-                    </span>
-                  )}
-                </button>
-                {notifOpen && (
-                  <>
-                    <div className="fixed inset-0 z-40" onClick={() => setNotifOpen(false)} />
-                    <div className="absolute right-0 top-full mt-2 w-[22rem] max-w-[calc(100vw-2rem)] rounded-xl border border-border bg-card shadow-xl z-50 overflow-hidden">
-                      <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-                        <div className="font-display text-sm">{t("notif.title")}</div>
-                        <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                          {notifs.length} {t("notif.new")}
-                        </div>
-                      </div>
-                      <div className="max-h-[26rem] overflow-y-auto divide-y divide-border">
-                        {notifs.length === 0 && (
-                          <div className="px-4 py-6 text-sm text-muted-foreground text-center">
-                            {t("notif.empty")}
+              {canViewAlerts && (
+                <div className="relative">
+                  <button
+                    onClick={() => {
+                      if (!notifOpen) alertPreview.refresh();
+                      setNotifOpen((v) => !v);
+                      setMenuOpen(false);
+                    }}
+                    className="relative inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card hover:bg-secondary transition"
+                    aria-label={
+                      alertPreview.total === null
+                        ? `${t("notif.title")}, unread count unavailable`
+                        : `${t("notif.title")}, ${alertPreview.total} unread`
+                    }
+                    aria-expanded={notifOpen}
+                  >
+                    <Bell size={16} />
+                    {alertPreview.total !== null && alertPreview.total > 0 && (
+                      <span className="absolute top-1 right-1 h-4 min-w-4 px-1 rounded-full bg-destructive text-[9px] font-bold text-destructive-foreground grid place-items-center">
+                        {alertPreview.total > 99 ? "99+" : alertPreview.total}
+                      </span>
+                    )}
+                  </button>
+                  {notifOpen && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setNotifOpen(false)} />
+                      <div className="fixed inset-x-4 top-28 z-50 overflow-hidden rounded-xl border border-border bg-card shadow-xl sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[22rem]">
+                        <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+                          <div className="font-display text-sm">{t("notif.title")}</div>
+                          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                            {alertPreview.total === null
+                              ? "Unavailable"
+                              : `${alertPreview.total} unread`}
                           </div>
-                        )}
-                        {notifs.map((n) => (
-                          <Link
-                            key={n.id}
-                            to={n.to as never}
-                            onClick={() => setNotifOpen(false)}
-                            className="flex items-start gap-3 px-4 py-3 hover:bg-secondary transition"
-                          >
-                            {n.sev === "high" && (
-                              <AlertTriangle
-                                size={16}
-                                className="text-destructive mt-0.5 shrink-0"
-                              />
-                            )}
-                            {n.sev === "medium" && (
-                              <Clock
-                                size={16}
-                                className="text-warning-foreground mt-0.5 shrink-0"
-                              />
-                            )}
-                            {n.sev === "low" && (
-                              <CheckCircle2
-                                size={16}
-                                className="text-muted-foreground mt-0.5 shrink-0"
-                              />
-                            )}
-                            <div className="min-w-0">
-                              <div className="text-sm font-medium truncate">{n.title}</div>
-                              <div className="text-xs text-muted-foreground truncate">{n.meta}</div>
+                        </div>
+                        <div className="max-h-[26rem] overflow-y-auto divide-y divide-border">
+                          {alertPreview.status !== "ready" ? (
+                            <p
+                              role="status"
+                              className="px-4 py-6 text-center text-sm text-muted-foreground"
+                            >
+                              {alertPreview.status === "loading"
+                                ? "Loading unread alerts…"
+                                : "Unread alerts unavailable. Open the inbox to retry."}
+                            </p>
+                          ) : notifs.length === 0 ? (
+                            <div className="px-4 py-6 text-sm text-muted-foreground text-center">
+                              {t("notif.empty")}
                             </div>
-                          </Link>
-                        ))}
+                          ) : null}
+                          {notifs.map((n) => (
+                            <Link
+                              key={n.id}
+                              to={n.to as never}
+                              onClick={() => setNotifOpen(false)}
+                              className="flex items-start gap-3 px-4 py-3 hover:bg-secondary transition"
+                            >
+                              {n.sev === "high" && (
+                                <AlertTriangle
+                                  size={16}
+                                  className="text-destructive mt-0.5 shrink-0"
+                                />
+                              )}
+                              {n.sev === "medium" && (
+                                <Clock
+                                  size={16}
+                                  className="text-warning-foreground mt-0.5 shrink-0"
+                                />
+                              )}
+                              {n.sev === "low" && (
+                                <CheckCircle2
+                                  size={16}
+                                  className="text-muted-foreground mt-0.5 shrink-0"
+                                />
+                              )}
+                              <div className="min-w-0">
+                                <div className="text-sm font-medium truncate">{n.title}</div>
+                                <div className="text-xs text-muted-foreground truncate">
+                                  {n.meta}
+                                </div>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                        {alertPreview.total !== null && alertPreview.total > notifs.length && (
+                          <p className="px-4 py-2 text-xs text-muted-foreground">
+                            Showing the latest {notifs.length} of {alertPreview.total} unread
+                            alerts.
+                          </p>
+                        )}
+                        <Link
+                          to="/app/alerts"
+                          onClick={() => setNotifOpen(false)}
+                          className="block px-4 py-2.5 text-center text-xs font-semibold text-primary hover:bg-secondary border-t border-border"
+                        >
+                          {t("notif.viewAll")} →
+                        </Link>
                       </div>
-                      <Link
-                        to="/app/inspection"
-                        onClick={() => setNotifOpen(false)}
-                        className="block px-4 py-2.5 text-center text-xs font-semibold text-primary hover:bg-secondary border-t border-border"
-                      >
-                        {t("notif.viewAll")} →
-                      </Link>
-                    </div>
-                  </>
-                )}
-              </div>
+                    </>
+                  )}
+                </div>
+              )}
 
               {/* User menu */}
               <div className="relative">
