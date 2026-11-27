@@ -13,6 +13,7 @@ import {
 import { supabase } from "@/integrations/supabase/haccora-client";
 import { useAuth } from "@/lib/auth";
 import { aiReviewPollDelay } from "@/lib/ai-review-poll-delay";
+import { aiReviewPresets, readableReviewAnswer, type AiReviewKind } from "@/lib/ai-review-presets";
 
 export const Route = createFileRoute("/app/ai-assistant")({
   component: AiEvidenceAssistant,
@@ -44,35 +45,11 @@ type RunPayload = {
   reviewRequired?: boolean;
 };
 
-const kinds = [
-  ["compliance_question", "Compliance question"],
-  ["inspection_readiness", "Inspection readiness"],
-  ["allergen_review", "Allergen review"],
-  ["corrective_action_review", "Corrective action review"],
-  ["haccp_review", "HACCP review"],
-  ["regulatory_question", "Regulatory question"],
-] as const;
-
 function answerText(payload: RunPayload | null) {
-  const value = payload?.run?.result;
-  if (typeof value === "string") return value;
-
-  if (value && typeof value === "object") {
-    const result = value as Record<string, unknown>;
-    for (const key of ["answer", "summary", "text", "final"]) {
-      if (typeof result[key] === "string") return result[key] as string;
-    }
-    if (Object.keys(result).length) return JSON.stringify(result, null, 2);
-  }
-
+  const answer = readableReviewAnswer(payload?.run?.result);
+  if (answer) return answer;
   const final = [...(payload?.steps ?? [])].reverse().find((step) => step.step_type === "final");
-  if (typeof final?.response === "string") return final.response;
-  if (final?.response && typeof final.response === "object") {
-    const response = final.response as Record<string, unknown>;
-    if (typeof response.text === "string") return response.text;
-    if (typeof response.answer === "string") return response.answer;
-  }
-  return "";
+  return readableReviewAnswer(final?.response);
 }
 
 function AiEvidenceAssistant() {
@@ -90,8 +67,10 @@ function AiEvidenceAssistant() {
 
 function WorkspaceAssistant() {
   const [bridge, setBridge] = useState<BridgeStatus | null>(null);
-  const [kind, setKind] = useState<(typeof kinds)[number][0]>("compliance_question");
+  const [kind, setKind] = useState<AiReviewKind>("compliance_question");
   const [question, setQuestion] = useState("");
+  const [confirmed, setConfirmed] = useState(false);
+  const [submittedKind, setSubmittedKind] = useState<AiReviewKind | null>(null);
   const [runId, setRunId] = useState("");
   const [run, setRun] = useState<RunPayload | null>(null);
   const [busy, setBusy] = useState(false);
@@ -106,6 +85,7 @@ function WorkspaceAssistant() {
   const failedReads = useRef(0);
   const runStatus = run?.run?.status ?? "";
   const activeRun = ["queued", "running"].includes(runStatus);
+  const formLocked = busy || activeRun;
 
   const loadStatus = useCallback(async () => {
     const request = ++statusRequest.current;
@@ -141,11 +121,30 @@ function WorkspaceAssistant() {
       if (currentRunId.current !== id) return;
       if (result.error) throw result.error;
       const payload = result.data as RunPayload | null;
-      if (!payload?.run?.status || (payload.run.id && payload.run.id !== id)) {
+      if (
+        !payload?.run?.status ||
+        typeof payload.run.status !== "string" ||
+        (payload.run.id && payload.run.id !== id) ||
+        (payload.steps !== undefined && !Array.isArray(payload.steps)) ||
+        (payload.proposals !== undefined && !Array.isArray(payload.proposals))
+      ) {
         throw new Error("Invalid run status");
       }
       failedReads.current = 0;
-      setRun(payload);
+      setRun({
+        ...payload,
+        steps: payload.steps?.filter(
+          (step) => step && Number.isFinite(step.step_no) && typeof step.step_type === "string",
+        ),
+        proposals: payload.proposals?.filter(
+          (item) =>
+            item &&
+            typeof item.id === "string" &&
+            typeof item.action_key === "string" &&
+            typeof item.rationale === "string" &&
+            typeof item.status === "string",
+        ),
+      });
       setRefreshError("");
     } catch {
       if (currentRunId.current === id) {
@@ -161,6 +160,7 @@ function WorkspaceAssistant() {
 
   async function start() {
     if (
+      !confirmed ||
       question.trim().length < 10 ||
       question.trim().length > 3000 ||
       starting.current ||
@@ -172,6 +172,8 @@ function WorkspaceAssistant() {
       return;
     }
     starting.current = true;
+    setConfirmed(false);
+    setSubmittedKind(kind);
     const scope = lifetime.current;
     setBusy(true);
     setError("");
@@ -261,10 +263,24 @@ function WorkspaceAssistant() {
   const entitlementStatus = (key: string) =>
     statusLoading || !bridge ? null : bridge.connected && enabled(key);
   const sources = useMemo(
-    () => Array.from(new Set((run?.steps ?? []).flatMap((step) => step.source_refs ?? []))),
+    () =>
+      Array.from(
+        new Set(
+          (run?.steps ?? []).flatMap((step) =>
+            Array.isArray(step.source_refs)
+              ? step.source_refs.filter((ref) => typeof ref === "string")
+              : [],
+          ),
+        ),
+      ),
     [run],
   );
   const answer = answerText(run);
+  const steps = useMemo(
+    () => [...(run?.steps ?? [])].sort((a, b) => a.step_no - b.step_no),
+    [run],
+  );
+  const selectedPreset = aiReviewPresets.find((preset) => preset.kind === kind);
 
   return (
     <div className="p-5 md:p-8 max-w-6xl space-y-5">
@@ -278,7 +294,7 @@ function WorkspaceAssistant() {
         </p>
       </header>
 
-      <section className="grid gap-3 md:grid-cols-4">
+      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatusCard
           icon={<BrainCircuit size={16} />}
           label="AI Copilot"
@@ -303,7 +319,11 @@ function WorkspaceAssistant() {
 
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p role="status" className="text-sm text-muted-foreground">
-          {statusLoading ? "Checking workspace connection…" : "Connection check finished"}
+          {statusLoading
+            ? "Checking workspace connection…"
+            : bridge?.connected
+              ? "Omniqora connection verified"
+              : "Omniqora connection unverified"}
         </p>
         <button
           type="button"
@@ -324,18 +344,21 @@ function WorkspaceAssistant() {
       )}
 
       {error && (
-        <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm">
+        <div
+          role="alert"
+          className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm"
+        >
           {error}
         </div>
       )}
 
-      <section className="surface p-5 space-y-4">
+      <section className="surface p-4 sm:p-5 space-y-4">
         <div className="flex flex-wrap justify-between gap-3">
           <div>
             <h2 className="text-lg">Ask from your evidence</h2>
             <p className="text-xs text-muted-foreground">
-              Only a scoped evidence summary is sent by default; raw Haccora tables are not copied
-              into the prompt.
+              Your question and an organisation-scoped evidence summary are sent to the configured
+              Omniqora runtime. The summary may cover more than the selected site.
             </p>
           </div>
           <span className="text-xs rounded-full border border-border px-3 py-1">
@@ -343,16 +366,49 @@ function WorkspaceAssistant() {
           </span>
         </div>
 
+        <div className="space-y-2">
+          <h3 className="text-sm font-semibold">Choose a review starting point</h3>
+          <p className="text-xs text-muted-foreground">
+            These examples populate your draft only. They do not start a review.
+          </p>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {aiReviewPresets.map((preset) => (
+              <button
+                key={preset.kind}
+                type="button"
+                aria-pressed={kind === preset.kind}
+                disabled={formLocked}
+                onClick={() => {
+                  setKind(preset.kind);
+                  setQuestion(preset.prompt);
+                  setConfirmed(false);
+                }}
+                className={`min-h-12 rounded-xl border px-3 py-2 text-left text-sm font-semibold transition ${
+                  kind === preset.kind
+                    ? "border-primary bg-primary/5 text-foreground"
+                    : "border-border hover:bg-muted"
+                }`}
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <label className="block text-sm font-semibold">
           Review type
           <select
             className="mt-1 block w-full rounded-lg border border-border bg-background px-3 py-2"
             value={kind}
-            onChange={(event) => setKind(event.target.value as (typeof kinds)[number][0])}
+            disabled={formLocked}
+            onChange={(event) => {
+              setKind(event.target.value as AiReviewKind);
+              setConfirmed(false);
+            }}
           >
-            {kinds.map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
+            {aiReviewPresets.map((preset) => (
+              <option key={preset.kind} value={preset.kind}>
+                {preset.label}
               </option>
             ))}
           </select>
@@ -364,18 +420,37 @@ function WorkspaceAssistant() {
             className="mt-1 min-h-32 w-full rounded-lg border border-border bg-background p-3 font-normal"
             value={question}
             maxLength={3000}
-            onChange={(event) => setQuestion(event.target.value)}
-            placeholder="For example: What evidence gaps should I review before an inspection, based on the records currently available?"
+            disabled={formLocked}
+            onChange={(event) => {
+              setQuestion(event.target.value);
+              setConfirmed(false);
+            }}
+            placeholder={selectedPreset?.prompt}
           />
           <span className="mt-1 block text-xs font-normal text-muted-foreground">
             {question.length} / 3000 characters
           </span>
         </label>
 
+        <label className="flex items-start gap-3 rounded-xl border border-border p-3 text-sm">
+          <input
+            type="checkbox"
+            checked={confirmed}
+            disabled={formLocked}
+            onChange={(event) => setConfirmed(event.target.checked)}
+            className="mt-1 shrink-0"
+          />
+          <span>
+            I have reviewed this question and agree to send it with the organisation evidence
+            summary. Do not include personal, health or other unnecessary sensitive information.
+          </span>
+        </label>
         <button
-          className="btn-primary px-4 py-2 text-sm inline-flex items-center gap-2"
+          type="button"
+          className="btn-primary min-h-11 w-full sm:w-auto px-4 py-2 text-sm inline-flex items-center justify-center gap-2"
           disabled={
             busy ||
+            !confirmed ||
             statusLoading ||
             activeRun ||
             !bridge?.connected ||
@@ -391,10 +466,13 @@ function WorkspaceAssistant() {
       </section>
 
       {runId && (
-        <section className="surface p-5 space-y-4">
-          <div className="flex justify-between gap-3">
-            <div>
+        <section className="surface min-w-0 p-4 sm:p-5 space-y-4">
+          <div className="flex flex-wrap justify-between gap-3">
+            <div className="min-w-0">
               <div className="text-xs uppercase text-muted-foreground">Run {runId.slice(0, 8)}</div>
+              <p className="text-sm font-semibold">
+                {aiReviewPresets.find((preset) => preset.kind === submittedKind)?.label ?? "Review"}
+              </p>
               <h2 className="text-lg" role="status">
                 Status: {runStatus || "queued"}
               </h2>
@@ -413,8 +491,42 @@ function WorkspaceAssistant() {
           {answer && (
             <div className="rounded-xl border border-border bg-muted/30 p-4">
               <h3 className="font-semibold">Draft response</h3>
-              <div className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">{answer}</div>
+              <div className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed">
+                {answer}
+              </div>
             </div>
+          )}
+
+          {runStatus === "completed" && !answer && (
+            <p role="status" className="text-sm text-muted-foreground">
+              No readable draft response was returned. Verify the evidence before taking action.
+            </p>
+          )}
+
+          {steps.length > 0 && (
+            <details className="rounded-xl border border-border p-3">
+              <summary className="cursor-pointer font-semibold text-sm">
+                Reported review activity ({steps.length})
+              </summary>
+              <p className="mt-2 text-xs text-muted-foreground">
+                Provider-reported step metadata, not a guarantee that any recommendation is correct.
+              </p>
+              <ol className="mt-3 space-y-2">
+                {steps.map((step, index) => (
+                  <li
+                    key={`${step.step_no}:${index}`}
+                    className="flex flex-wrap items-center justify-between gap-2 text-sm"
+                  >
+                    <span className="break-words">
+                      {step.step_no}. {step.step_type.replaceAll("_", " ")}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {typeof step.status === "string" ? step.status : "Unknown"}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </details>
           )}
 
           {sources.length > 0 && (
@@ -424,7 +536,7 @@ function WorkspaceAssistant() {
                 {sources.map((source) => (
                   <span
                     key={source}
-                    className="rounded-full border border-border px-2 py-1 text-xs"
+                    className="max-w-full break-all rounded-lg border border-border px-2 py-1 text-xs"
                   >
                     {source}
                   </span>
@@ -436,14 +548,17 @@ function WorkspaceAssistant() {
           {(run?.proposals?.length ?? 0) > 0 && (
             <div>
               <h3 className="text-sm font-semibold">Proposed actions — approval required</h3>
+              <p className="mt-1 text-xs text-muted-foreground">
+                This interface does not approve or execute proposed actions.
+              </p>
               <div className="mt-2 space-y-2">
                 {run!.proposals!.map((proposal) => (
                   <div key={proposal.id} className="rounded-lg border border-border p-3 text-sm">
-                    <div className="flex justify-between">
-                      <strong>{proposal.action_key}</strong>
+                    <div className="flex flex-wrap justify-between gap-2">
+                      <strong className="break-all">{proposal.action_key}</strong>
                       <span className="text-xs uppercase">{proposal.status}</span>
                     </div>
-                    <p className="mt-1 text-muted-foreground">{proposal.rationale}</p>
+                    <p className="mt-1 break-words text-muted-foreground">{proposal.rationale}</p>
                   </div>
                 ))}
               </div>
