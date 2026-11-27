@@ -30,7 +30,10 @@ test("diary drafts preserve saved evidence rather than starting blank", () => {
   assert.equal(draft.problems, record.problems);
   assert.equal(draft.actions, record.corrective_actions);
   assert.equal(draftFromDiary(null).opening, false);
-  assert.equal(draftFromDiary({ ...record, opening_checks: { completed: "false" } }).opening, false);
+  assert.equal(
+    draftFromDiary({ ...record, opening_checks: { completed: "false" } }).opening,
+    false,
+  );
 });
 
 test("signed or partially signed diary entries are locked", () => {
