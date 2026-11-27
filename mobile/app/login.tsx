@@ -70,6 +70,14 @@ export default function Login() {
       >
         <Text style={styles.buttonText}>{busy ? "Signing in…" : "Sign in"}</Text>
       </Pressable>
+      <Pressable
+        accessibilityRole="button"
+        disabled={busy}
+        style={styles.recovery}
+        onPress={() => router.push("/forgot-password")}
+      >
+        <Text style={styles.recoveryText}>Forgot your password?</Text>
+      </Pressable>
     </View>
   );
 }
@@ -87,4 +95,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   buttonText: { color: "#fff", fontWeight: "800", fontSize: 16 },
+  recovery: { minHeight: 48, justifyContent: "center", alignItems: "center" },
+  recoveryText: { color: "#a31024", fontSize: 16, textDecorationLine: "underline" },
 });
