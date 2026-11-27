@@ -24,6 +24,8 @@ export default function RootLayout() {
           >
             <Stack.Screen name="index" options={{ headerShown: false }} />
             <Stack.Screen name="login" options={{ title: "Haccora" }} />
+            <Stack.Screen name="forgot-password" options={{ title: "Reset password" }} />
+            <Stack.Screen name="reset-password" options={{ title: "New password" }} />
             <Stack.Screen name="onboarding" options={{ title: "Set up workspace" }} />
             <Stack.Screen
               name="platform-access"
