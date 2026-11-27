@@ -142,6 +142,23 @@ test.describe("authenticated production role dashboards", () => {
       expect(accessibility.violations).toEqual([]);
       expect(browserErrors).toEqual([]);
 
+      if (account.path.startsWith("/app")) {
+        await page.keyboard.press("Control+k");
+        const palette = page.getByRole("dialog", { name: "Find a workspace tool" });
+        await expect(palette).toBeVisible();
+        const search = palette.getByLabel("Search workspace tools");
+        await search.fill("AI evidence assistant");
+        if (account.name === "staff" || account.name === "inspector") {
+          await expect(palette.getByRole("option")).toHaveCount(0);
+        } else {
+          await expect(palette.getByRole("option")).toHaveCount(1);
+        }
+        await search.fill(account.name === "inspector" ? "inspection" : "today");
+        await expect(palette.getByRole("option").first()).toBeVisible();
+        await page.keyboard.press("Escape");
+        await expect(palette).not.toBeVisible();
+      }
+
       if (account.forbiddenPath && account.forbiddenRedirect) {
         await page.goto(account.forbiddenPath);
         await expect(page).toHaveURL(account.forbiddenRedirect, { timeout: 30_000 });

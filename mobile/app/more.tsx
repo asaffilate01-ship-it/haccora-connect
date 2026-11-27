@@ -1,4 +1,5 @@
-import { router } from "expo-router";
+import { Redirect, router } from "expo-router";
+import { useState } from "react";
 import {
   BellRing,
   BookOpenCheck,
@@ -11,12 +12,14 @@ import {
   HeartPulse,
   Lightbulb,
   ScanLine,
+  Search,
   ShieldCheck,
+  X,
   Tag,
   Users,
   type LucideIcon,
 } from "lucide-react-native";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSession } from "@/lib/session";
 import { cardShadow, colours, screen, typeScale } from "@/lib/theme";
 
@@ -59,19 +62,37 @@ const groups: readonly Group[] = [
 ];
 
 export default function More() {
-  const { role, organizationName, locationName } = useSession();
+  const workspace = useSession();
+  const { session, workspaceReady, loading, role, serviceStatus } = workspace;
+  const [query, setQuery] = useState("");
+  const { organizationName, locationName } = workspace;
+  if (loading) return null;
+  if (!session) return <Redirect href="/login" />;
+  if (!workspaceReady) return <Redirect href="/onboarding" />;
+  if (serviceStatus !== "active") return <Redirect href="/account-status" />;
+
+  const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
   const visibleGroups = groups
     .map(
       ([name, items]) =>
-        [name, items.filter(([, , roles]) => !role || roles.includes(role))] as const,
+        [
+          name,
+          items.filter(([label, route, roles]) => {
+            if (!role || !roles.includes(role)) return false;
+            const text = `${name} ${label} ${route}`.toLowerCase().replace(/[-_/&]/g, " ");
+            return terms.every((term) => text.includes(term));
+          }),
+        ] as const,
     )
     .filter(([, items]) => items.length > 0);
+  const total = visibleGroups.reduce((sum, [, items]) => sum + items.length, 0);
 
   return (
     <ScrollView
       style={styles.canvas}
       contentContainerStyle={styles.page}
       showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
     >
       <Text style={styles.eyebrow}>WORKSPACE</Text>
       <Text style={styles.title}>All tools</Text>
@@ -82,6 +103,36 @@ export default function More() {
         Frequent tasks stay under Log. Less-used evidence, people and management tools are grouped
         here.
       </Text>
+      <View style={styles.search}>
+        <Search size={18} color={colours.muted} />
+        <TextInput
+          accessibilityLabel="Search workspace tools"
+          placeholder="Find a tool or task"
+          placeholderTextColor={colours.muted}
+          value={query}
+          onChangeText={setQuery}
+          autoCapitalize="none"
+          autoCorrect={false}
+          returnKeyType="search"
+          style={styles.input}
+        />
+        {!!query && (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Clear tool search"
+            onPress={() => setQuery("")}
+            style={styles.clear}
+          >
+            <X size={18} color={colours.ink} />
+          </Pressable>
+        )}
+      </View>
+      <Text accessibilityLiveRegion="polite" style={styles.resultCount}>
+        {total} available tool{total === 1 ? "" : "s"}
+      </Text>
+      {total === 0 && (
+        <Text style={styles.intro}>No matching tools for your role. Try a different search.</Text>
+      )}
       {visibleGroups.map(([name, items]) => (
         <View key={name} style={styles.group}>
           <Text style={styles.groupTitle}>{name}</Text>
@@ -120,8 +171,22 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     letterSpacing: -0.35,
   },
-  workspace: { color: colours.ink, fontSize: 10.5, fontWeight: "800", marginTop: -5 },
-  intro: { color: colours.muted, fontSize: 10.5, lineHeight: 15, marginBottom: 3 },
+  workspace: { color: colours.ink, fontSize: 12, fontWeight: "800", marginTop: -5 },
+  intro: { color: colours.muted, fontSize: 13, lineHeight: 19, marginBottom: 3 },
+  search: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    minHeight: 52,
+    borderWidth: 1,
+    borderColor: colours.line,
+    borderRadius: 14,
+    backgroundColor: colours.card,
+    paddingHorizontal: 14,
+  },
+  input: { flex: 1, minHeight: 48, fontSize: typeScale.input, color: colours.ink },
+  clear: { minWidth: 44, minHeight: 44, alignItems: "center", justifyContent: "center" },
+  resultCount: { color: colours.muted, fontSize: 12, fontWeight: "600" },
   group: {
     ...cardShadow,
     backgroundColor: colours.card,
@@ -158,5 +223,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: 30,
   },
-  label: { color: colours.ink, flex: 1, fontSize: typeScale.body, fontWeight: "800" },
+  label: { color: colours.ink, flex: 1, fontSize: 14, fontWeight: "700" },
 });
