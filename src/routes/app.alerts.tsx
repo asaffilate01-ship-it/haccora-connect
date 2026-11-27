@@ -99,6 +99,10 @@ function SiteAlerts({ userId, organizationId, locationId }: Scope) {
           .is("read_at", null),
       ]);
       if (request !== requestId.current) return;
+      if (list.status === 416 && page > 0) {
+        setPage(0);
+        return;
+      }
       if (
         list.error ||
         !list.data ||
