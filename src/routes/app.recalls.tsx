@@ -22,6 +22,17 @@ interface Recall {
   severity: string;
   status: string;
   initiated_at: string;
+  organization_id: string | null;
+  location_id: string | null;
+}
+
+interface RecallDecision {
+  id: string;
+  recall_id: string;
+  previous_status: string;
+  next_status: string;
+  decision_note: string;
+  decided_at: string;
 }
 
 function RecallsPage() {
@@ -30,6 +41,7 @@ function RecallsPage() {
   const role = user?.role;
   const t = (_legacy: string, english: string) => english;
   const canEdit = role === "owner" || role === "manager" || role === "chef";
+  const canDecide = role === "owner" || role === "manager";
 
   const [rows, setRows] = useState<Recall[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,18 +49,47 @@ function RecallsPage() {
   const [err, setErr] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ product: "", batch: "", reason: "", severity: "high" });
+  const [decisions, setDecisions] = useState<RecallDecision[]>([]);
+  const [draft, setDraft] = useState<{ id: string; nextStatus: string; reason: string } | null>(
+    null,
+  );
+  const [transitionBusy, setTransitionBusy] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
+    if (!user?.organizationId || !user.locationId) {
+      setErr("Choose an active organisation and premises to view recalls.");
+      setRows([]);
+      setDecisions([]);
+      setLoading(false);
+      return;
+    }
     const { data, error } = await supabase
       .from("recalls")
       .select("*")
+      .eq("organization_id", user.organizationId)
+      .or(`location_id.eq.${user.locationId},location_id.is.null`)
       .order("initiated_at", { ascending: false })
       .limit(50);
-    if (error) setErr(error.message);
-    else setRows((data ?? []) as Recall[]);
+    if (error) {
+      setErr("Recall records could not be loaded. Refresh and try again.");
+      setRows([]);
+      setDecisions([]);
+    } else {
+      const nextRows = (data ?? []) as Recall[];
+      setRows(nextRows);
+      const { data: decisionData } = await (supabase as any)
+        .from("recall_status_events")
+        .select("id,recall_id,previous_status,next_status,decision_note,decided_at")
+        .eq("organization_id", user.organizationId)
+        .eq("location_id", user.locationId)
+        .order("decided_at", { ascending: false })
+        .limit(200);
+      setDecisions((decisionData ?? []) as RecallDecision[]);
+      setErr(null);
+    }
     setLoading(false);
-  }, []);
+  }, [user?.organizationId, user?.locationId]);
   useEffect(() => {
     load();
   }, [load]);
@@ -67,10 +108,12 @@ function RecallsPage() {
       severity: form.severity,
       status: "open",
       initiated_by: user?.id ?? null,
+      organization_id: user?.organizationId,
+      location_id: user?.locationId,
     });
     setBusy(false);
     if (error) {
-      setErr(error.message);
+      setErr("Recall could not be reported. Check the details and try again.");
       return;
     }
     setForm({ product: "", batch: "", reason: "", severity: "high" });
@@ -78,10 +121,24 @@ function RecallsPage() {
     load();
   };
 
-  const updateStatus = async (id: string, status: string) => {
-    const { error } = await supabase.from("recalls").update({ status }).eq("id", id);
-    if (error) setErr(error.message);
-    else load();
+  const updateStatus = async () => {
+    if (!draft) return;
+    setTransitionBusy(true);
+    setErr(null);
+    const recall = rows.find((row) => row.id === draft.id);
+    const { error } = await (supabase as any).rpc("transition_recall_status", {
+      p_recall_id: draft.id,
+      p_expected_status: recall?.status,
+      p_next_status: draft.nextStatus,
+      p_reason: draft.reason,
+    });
+    setTransitionBusy(false);
+    if (error) {
+      setErr("Recall decision was not saved. Refresh the record and try again.");
+      return;
+    }
+    setDraft(null);
+    await load();
   };
 
   const active = rows.filter((r) => r.status === "open").length;
@@ -220,22 +277,81 @@ function RecallsPage() {
                     {r.severity}
                   </span>
                 </div>
-                <div className="md:col-span-2 text-right">
-                  {canEdit && r.status !== "closed" ? (
-                    <select
-                      value={r.status}
-                      onChange={(e) => updateStatus(r.id, e.target.value)}
-                      className="text-[10px] font-bold uppercase rounded border border-border bg-card px-2 py-0.5"
-                    >
-                      <option value="open">{"Open"}</option>
-                      <option value="quarantined">{"Quarantine"}</option>
-                      <option value="closed">{"Closed"}</option>
-                    </select>
-                  ) : (
-                    <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-success/15 text-success">
-                      {"Closed"}
-                    </span>
+                <div className="md:col-span-2 md:text-right">
+                  <span
+                    className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${r.status === "closed" ? "bg-success/15 text-success" : r.status === "quarantined" ? "bg-warning/15 text-warning-foreground" : "bg-destructive/10 text-destructive"}`}
+                  >
+                    {r.status}
+                  </span>
+                  {canDecide && r.status !== "closed" && (
+                    <div className="mt-2">
+                      {draft?.id === r.id ? (
+                        <div className="space-y-2 md:min-w-56">
+                          <select
+                            value={draft.nextStatus}
+                            onChange={(e) => setDraft({ ...draft, nextStatus: e.target.value })}
+                            className="w-full rounded border border-border bg-card px-2 py-1 text-xs"
+                          >
+                            <option value="open">Reopen action</option>
+                            <option value="quarantined">Quarantine</option>
+                            <option value="closed">Close recall</option>
+                          </select>
+                          <textarea
+                            value={draft.reason}
+                            onChange={(e) => setDraft({ ...draft, reason: e.target.value })}
+                            minLength={12}
+                            maxLength={2000}
+                            placeholder="Decision reason (12–2000 characters)"
+                            className="w-full rounded border border-border bg-card px-2 py-1 text-xs"
+                            rows={2}
+                          />
+                          <div className="flex justify-end gap-2">
+                            <button onClick={() => setDraft(null)} className="text-xs underline">
+                              Cancel
+                            </button>
+                            <button
+                              onClick={updateStatus}
+                              disabled={
+                                transitionBusy ||
+                                draft.reason.trim().length < 12 ||
+                                draft.nextStatus === r.status
+                              }
+                              className="btn-alert-solid text-xs disabled:opacity-50"
+                            >
+                              {transitionBusy ? "Saving…" : "Confirm decision"}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() =>
+                            setDraft({
+                              id: r.id,
+                              nextStatus: r.status === "open" ? "quarantined" : "closed",
+                              reason: "",
+                            })
+                          }
+                          className="text-xs underline"
+                        >
+                          Change status
+                        </button>
+                      )}
+                    </div>
                   )}
+                  {decisions
+                    .filter((decision) => decision.recall_id === r.id)
+                    .map((decision) => (
+                      <div
+                        key={decision.id}
+                        className="mt-2 text-left text-[11px] text-muted-foreground"
+                      >
+                        <span className="font-semibold">
+                          {decision.previous_status} → {decision.next_status}
+                        </span>
+                        <span> · {new Date(decision.decided_at).toLocaleString("en-GB")}</span>
+                        <p>{decision.decision_note}</p>
+                      </div>
+                    ))}
                 </div>
               </li>
             ))}
