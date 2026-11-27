@@ -40,6 +40,7 @@ export function useAlertPreview(
     const queue = createRefreshQueue(async () => {
       if (!active) return;
       try {
+        if (!navigator.onLine) throw new Error("Offline");
         const result = await supabase
           .from("alerts")
           .select("id,kind,severity,title,message,created_at", { count: "exact" })
@@ -51,7 +52,7 @@ export function useAlertPreview(
           .order("id")
           .limit(8);
         if (!active) return;
-        if (result.error || !result.data || result.count === null) {
+        if (!navigator.onLine || result.error || !result.data || result.count === null) {
           throw new Error("Unread alerts unavailable");
         }
         setPreview({ key, rows: result.data, total: result.count, status: "ready" });
