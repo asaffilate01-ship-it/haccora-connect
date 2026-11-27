@@ -4,7 +4,10 @@ export function isWorkspaceRoute(pathname: string, destination: string, exact = 
 
 export function matchesWorkspaceSearch(query: string, ...fields: string[]) {
   const terms = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
-  const text = fields.join(" ").toLowerCase().replace(/[-_/&]/g, " ");
+  const text = fields
+    .join(" ")
+    .toLowerCase()
+    .replace(/[-_/&]/g, " ");
   return terms.every((term) => text.includes(term));
 }
 
