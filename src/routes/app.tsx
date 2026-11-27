@@ -671,7 +671,7 @@ function AppShell() {
                   {notifOpen && (
                     <>
                       <div className="fixed inset-0 z-40" onClick={() => setNotifOpen(false)} />
-                      <div className="absolute right-0 top-full mt-2 w-[22rem] max-w-[calc(100vw-2rem)] rounded-xl border border-border bg-card shadow-xl z-50 overflow-hidden">
+                      <div className="fixed inset-x-4 top-28 z-50 overflow-hidden rounded-xl border border-border bg-card shadow-xl sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[22rem]">
                         <div className="px-4 py-3 border-b border-border flex items-center justify-between">
                           <div className="font-display text-sm">{t("notif.title")}</div>
                           <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
