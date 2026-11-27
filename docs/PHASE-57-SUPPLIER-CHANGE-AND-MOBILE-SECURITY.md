@@ -12,10 +12,11 @@ This phase is **code-complete only where specifically described**, not a product
 3. **Manager review.** Created a restricted `review_ingredient_change` function that locks the pending request and ingredient, confirms the reviewer's organisation permission, prevents approval of a stale or unchanged supplier version, updates the ingredient atomically after approval, and records previous/new snapshots and a decision note.
 4. **Kitchen experience.** Added a proposal and review panel to the existing PPDS workspace, including a list of known affected recipes. This intentionally does **not** automatically send new allergen declarations to Dishbee, suspend stock, release products, or approve printed labels.
 5. **Regression checks.** Added source-contract tests and mobile package-version assertions.
+6. **Direct update guard.** A forward migration revokes direct `UPDATE` on ingredient records from `PUBLIC`, `anon` and `authenticated`. New ingredient inserts remain role-scoped. Supplier changes must use the manager review function, which updates the ingredient and records previous/current snapshots in one transaction.
 
 ## Remaining limitations and responsible use
 
-- Existing direct ingredient-edit APIs elsewhere in the platform have not yet been migrated to proposal-only workflows. Review permissions and other write paths before claiming exclusive change control.
+- Privileged database/service-role access can still change ingredient records outside the interactive proposal flow. Keep those credentials server-side, audited and unavailable to tenant clients.
 - Versioned supplier reference text is not independent verification. Require a real supplier specification or product documentation, ideally associated with a private evidence document.
 - The recipe impact list only covers currently linked records. It does not yet prove batch-to-order traceability or downstream delivery-platform propagation.
 - Approval means a new ingredient specification was recorded. Any impacted printed PPDS label, menu, recipe, cross-contact procedure, or quarantined stock requires separate competent staff review.
