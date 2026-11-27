@@ -1,5 +1,5 @@
 import { operationalDay, operationalDate } from "@/lib/operational-day";
-import { Redirect, router } from "expo-router";
+import { Redirect, router, useFocusEffect } from "expo-router";
 import { useNetInfo } from "@react-native-community/netinfo";
 import {
   AlertTriangle,
@@ -18,8 +18,16 @@ import {
   WifiOff,
   type LucideIcon,
 } from "lucide-react-native";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { useEffect, useMemo, useState } from "react";
+import {
+  AppState,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { supabase } from "@/lib/supabase";
 import { useSession } from "@/lib/session";
@@ -74,18 +82,37 @@ const QUICK_TOOLS: QuickTool[] = [
 ];
 
 export default function Dashboard() {
-  const {
-    session,
-    workspaceReady,
-    role,
-    roleName,
-    displayName,
-    organizationName,
-    locationName,
-    serviceStatus,
-    actionPermissions,
-    loading,
-  } = useSession();
+  const workspace = useSession();
+  const { session, loading, workspaceReady, serviceStatus, role } = workspace;
+  const { organizationId, locationId } = workspace;
+  if (loading) return null;
+  if (!session) return <Redirect href="/login" />;
+  if (!workspaceReady) return <Redirect href="/onboarding" />;
+  if (serviceStatus !== "active") return <Redirect href="/account-status" />;
+  if (role === "inspector") return <Redirect href="/inspection-readiness" />;
+  if (!organizationId || !locationId) {
+    return (
+      <View style={styles.page}>
+        <Text style={styles.title}>Your workspace</Text>
+        <Text style={styles.syncBody}>Select a site to view current operational records.</Text>
+      </View>
+    );
+  }
+  return (
+    <SiteDashboard
+      key={`${session.user.id}:${organizationId}:${locationId}:${role}`}
+      organizationId={organizationId}
+      locationId={locationId}
+      userId={session.user.id}
+    />
+  );
+}
+
+type SiteScope = { organizationId: string; locationId: string; userId: string };
+
+function SiteDashboard({ organizationId, locationId, userId }: SiteScope) {
+  const { role, roleName, displayName, organizationName, locationName, actionPermissions } =
+    useSession();
   const network = useNetInfo();
   const [failedUploads, setFailedUploads] = useState(0);
   const [pending, setPending] = useState<number | null>(null);
@@ -123,77 +150,103 @@ export default function Dashboard() {
       active = false;
       clearInterval(timer);
     };
-  }, [network.isConnected, session?.user.id]);
+  }, [network.isConnected, userId]);
 
-  useEffect(() => {
-    if (!session || !workspaceReady) return;
-    let active = true;
-    setDataState("loading");
-    const now = new Date();
-    const day = operationalDay(now, "Europe/London");
-    const inSevenDays = operationalDate(now, "Europe/London", 7);
-    void Promise.all([
-      supabase
-        .from("checks")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "completed")
-        .gte("created_at", day.start)
-        .lt("created_at", day.end),
-      supabase
-        .from("checks")
-        .select("id", { count: "exact", head: true })
-        .neq("status", "completed")
-        .gte("created_at", day.start)
-        .lt("created_at", day.end),
-      supabase
-        .from("corrective_actions")
-        .select("id", { count: "exact", head: true })
-        .neq("status", "closed"),
-      supabase.from("alerts").select("id", { count: "exact", head: true }).is("read_at", null),
-      supabase
-        .from("expiry_items")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "active")
-        .lte("expires_on", inSevenDays),
-    ])
-      .then(([done, open, actions, alerts, expiring]) => {
-        if (!active) return;
-        if ([done, open, actions, alerts, expiring].some((result) => result.error)) {
-          setDataState("error");
-          return;
-        }
-        setToday({
-          done: done.count ?? 0,
-          open: open.count ?? 0,
-          actions: actions.count ?? 0,
-          alerts: alerts.count ?? 0,
-          expiring: expiring.count ?? 0,
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      if (network.isConnected === false) {
+        setDataState("error");
+        return;
+      }
+      setDataState("loading");
+      const now = new Date();
+      const day = operationalDay(now, "Europe/London");
+      const inSevenDays = operationalDate(now, "Europe/London", 7);
+      const count = { count: "exact" as const, head: true };
+      void Promise.all([
+        supabase
+          .from("checks")
+          .select("id", count)
+          .eq("organization_id", organizationId)
+          .eq("location_id", locationId)
+          .eq("status", "completed")
+          .gte("created_at", day.start)
+          .lt("created_at", day.end),
+        supabase
+          .from("checks")
+          .select("id", count)
+          .eq("organization_id", organizationId)
+          .eq("location_id", locationId)
+          .neq("status", "completed")
+          .gte("created_at", day.start)
+          .lt("created_at", day.end),
+        supabase
+          .from("corrective_actions")
+          .select("id", count)
+          .eq("organization_id", organizationId)
+          .eq("location_id", locationId)
+          .not("status", "in", '("verified","closed")'),
+        supabase
+          .from("alerts")
+          .select("id", count)
+          .eq("organization_id", organizationId)
+          .eq("user_id", userId)
+          .or(`location_id.eq.${locationId},location_id.is.null`)
+          .is("read_at", null),
+        supabase
+          .from("expiry_items")
+          .select("id", count)
+          .eq("organization_id", organizationId)
+          .eq("location_id", locationId)
+          .eq("status", "active")
+          .lte("expires_on", inSevenDays),
+      ])
+        .then(([done, open, actions, alerts, expiring]) => {
+          if (!active) return;
+          const results = [done, open, actions, alerts, expiring];
+          if (results.some((result) => result.error || result.count === null)) {
+            setDataState("error");
+            return;
+          }
+          setToday({
+            done: done.count ?? 0,
+            open: open.count ?? 0,
+            actions: actions.count ?? 0,
+            alerts: alerts.count ?? 0,
+            expiring: expiring.count ?? 0,
+          });
+          setDataState("ready");
+        })
+        .catch(() => {
+          if (active) setDataState("error");
         });
-        setDataState("ready");
-      })
-      .catch(() => {
-        if (active) setDataState("error");
-      });
-    const dayTimer = setInterval(() => {
-      if (operationalDate(new Date(), "Europe/London") !== day.date)
+
+      const refresh = () => {
+        setDataState("loading");
         setRefreshKey((key) => key + 1);
-    }, 60000);
-    return () => {
-      active = false;
-      clearInterval(dayTimer);
-    };
-  }, [session, workspaceReady, network.isConnected, refreshKey]);
+      };
+      const dayTimer = setInterval(() => {
+        if (AppState.currentState !== "active") return;
+        if (operationalDate(new Date(), "Europe/London") !== day.date) refresh();
+      }, 60_000);
+      const subscription = AppState.addEventListener("change", (state) => {
+        if (state === "active") refresh();
+      });
+      return () => {
+        active = false;
+        clearInterval(dayTimer);
+        subscription.remove();
+      };
+    }, [organizationId, locationId, userId, network.isConnected, refreshKey]),
+  );
+
+  const available = dataState === "ready" && network.isConnected !== false;
 
   const progress = useMemo(() => {
     const total = today.done + today.open;
     return total ? Math.round((today.done / total) * 100) : 0;
   }, [today.done, today.open]);
-
-  if (loading) return null;
-  if (!session) return <Redirect href="/login" />;
-  if (!workspaceReady) return <Redirect href="/onboarding" />;
-  if (serviceStatus !== "active") return <Redirect href="/account-status" />;
-  if (role === "inspector") return <Redirect href="/inspection-readiness" />;
 
   const firstName = displayName?.trim().split(/\s+/)[0] || "team";
   const date = new Date().toLocaleDateString("en-GB", {
@@ -216,7 +269,7 @@ export default function Dashboard() {
         }
       : {
           title: "Log the next temperature reading",
-          body: "Your scheduled checks are clear. Keep the next reading quick and traceable.",
+          body: "No open items in these counts. Check source records and continue monitoring.",
           route: "/temperature",
         };
   const focus = {
@@ -237,8 +290,8 @@ export default function Dashboard() {
     },
     staff: {
       label: "MY SHIFT",
-      body: "Your due routines and fastest logging tools for today's work.",
-      progress: "MY ROUTINES",
+      body: "Visible site routines and the fastest logging tools for today’s work.",
+      progress: "VISIBLE ROUTINES",
     },
   }[role ?? "staff"] ?? {
     label: "TODAY",
@@ -270,6 +323,15 @@ export default function Dashboard() {
       style={styles.canvas}
       contentContainerStyle={styles.page}
       showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={dataState === "loading"}
+          onRefresh={() => {
+            setDataState("loading");
+            setRefreshKey((key) => key + 1);
+          }}
+        />
+      }
     >
       <View style={styles.brandRow}>
         <BrandLogo maxWidth={132} minWidth={112} />
@@ -334,7 +396,7 @@ export default function Dashboard() {
         </View>
       </View>
 
-      {dataState === "error" && (
+      {(dataState === "error" || network.isConnected === false) && (
         <View accessibilityRole="alert" style={styles.dataError}>
           <AlertTriangle color={colours.danger} size={19} />
           <View style={styles.flex}>
@@ -354,13 +416,13 @@ export default function Dashboard() {
         </View>
       )}
 
-      {dataState === "loading" && (
+      {dataState === "loading" && network.isConnected !== false && (
         <View style={styles.loadingCard}>
           <Text style={styles.syncBody}>Loading current workspace records…</Text>
         </View>
       )}
 
-      {dataState === "ready" && (
+      {available && (
         <View style={styles.progressCard}>
           <View style={styles.progressHeader}>
             <View>
@@ -388,7 +450,7 @@ export default function Dashboard() {
         </View>
       )}
 
-      {dataState === "ready" && (
+      {available && (
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={`Next required action: ${priority.title}`}
@@ -416,7 +478,7 @@ export default function Dashboard() {
         ))}
       </View>
 
-      {dataState === "ready" && (
+      {available && (
         <>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Needs attention</Text>
@@ -427,7 +489,7 @@ export default function Dashboard() {
           <View style={styles.metrics}>
             <Metric
               icon={BellRing}
-              label="Unread alerts"
+              label="My unread alerts"
               value={today.alerts}
               tone={today.alerts ? "danger" : "quiet"}
             />
@@ -439,7 +501,7 @@ export default function Dashboard() {
             />
             <Metric
               icon={LayoutGrid}
-              label="Expiring in 7 days"
+              label="Expiry due or overdue (7 days)"
               value={today.expiring}
               tone={today.expiring ? "warning" : "quiet"}
             />
