@@ -44,8 +44,10 @@ type Recipe = {
   allergens: unknown;
   flagged: boolean;
 };
-const normalise = (value: string) =>
-  aliases[value.toLowerCase().trim()] || value.toLowerCase().trim();
+const normalise = (value: string) => {
+  const key = value.toLowerCase().trim();
+  return Object.prototype.hasOwnProperty.call(aliases, key) ? aliases[key] : key;
+};
 
 export default function Allergens() {
   const workspace = useSession();
