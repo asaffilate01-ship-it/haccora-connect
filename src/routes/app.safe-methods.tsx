@@ -1,8 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, CheckCircle2, Loader2, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/haccora-client";
+import { operationalDate } from "@/lib/operational-day";
+import {
+  safeMethodNextReview,
+  safeMethodReviewCurrent,
+  type ReviewControls,
+} from "@/lib/safe-method-review";
 
 export const Route = createFileRoute("/app/safe-methods")({ component: SafeMethods });
 
@@ -25,12 +31,7 @@ type Adoption = {
   template_id: string;
   status: string;
   review_due_at: string | null;
-  controls: {
-    answers?: Record<string, string>;
-    templateVersion?: string;
-    jurisdiction?: string;
-    reviewedAt?: string;
-  } | null;
+  controls: ReviewControls | null;
 };
 const priority = (method: Method, profile: Profile | null) => {
   if (!profile) return 0;
@@ -40,6 +41,16 @@ const priority = (method: Method, profile: Profile | null) => {
   return 1;
 };
 function SafeMethods() {
+  const { user } = useAuth();
+  if (!user?.organizationId || !user.locationId) {
+    return <p className="p-5 text-sm">Select a location to review its food-safety methods.</p>;
+  }
+  return (
+    <SiteSafeMethods key={`${user.id}:${user.organizationId}:${user.locationId}:${user.role}`} />
+  );
+}
+
+function SiteSafeMethods() {
   const { user } = useAuth();
   const canManage = user?.role === "owner" || user?.role === "manager";
   const [methods, setMethods] = useState<Method[]>([]);
@@ -52,49 +63,101 @@ function SafeMethods() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [acknowledged, setAcknowledged] = useState(false);
+  const [loadError, setLoadError] = useState("");
+  const [today, setToday] = useState(() => operationalDate(new Date(), "Europe/London"));
+  const requestId = useRef(0);
+  const writeLock = useRef(false);
+  const mounted = useRef(false);
 
   const load = useCallback(async () => {
-    if (!user?.organizationId || !user.locationId) {
-      setLoading(false);
-      return;
-    }
+    if (!user?.organizationId || !user.locationId) return null;
+    const request = ++requestId.current;
     setLoading(true);
-    setProfile(null);
-    const [templates, adoptions, site] = await Promise.all([
-      supabase.from("safe_method_templates").select("*").order("title"),
-      supabase
-        .from("site_safe_methods")
-        .select("template_id,status,review_due_at,controls")
-        .eq("organization_id", user.organizationId)
-        .eq("location_id", user.locationId),
-      supabase
-        .from("site_compliance_profiles")
-        .select("jurisdiction,business_type,serves_ppds,serves_vulnerable_groups")
-        .eq("organization_id", user.organizationId)
-        .eq("location_id", user.locationId)
-        .maybeSingle(),
-    ]);
-    setLoading(false);
-    if (templates.error || adoptions.error || site.error) {
-      setMethods([]);
-      setAdopted([]);
-      setError("Could not load this premises' controlled methods. Refresh before reviewing.");
-      return;
+    setLoadError("");
+    try {
+      const [templates, adoptions, site] = await Promise.all([
+        supabase
+          .from("safe_method_templates")
+          .select("id,title,category,summary,prompts,official_source_url,version", {
+            count: "exact",
+          })
+          .order("title")
+          .order("id"),
+        supabase
+          .from("site_safe_methods")
+          .select("template_id,status,review_due_at,controls", { count: "exact" })
+          .eq("organization_id", user.organizationId)
+          .eq("location_id", user.locationId),
+        supabase
+          .from("site_compliance_profiles")
+          .select("jurisdiction,business_type,serves_ppds,serves_vulnerable_groups")
+          .eq("organization_id", user.organizationId)
+          .eq("location_id", user.locationId)
+          .maybeSingle(),
+      ]);
+      if (!mounted.current || request !== requestId.current) return null;
+      if (
+        templates.error ||
+        !templates.data ||
+        templates.count !== templates.data.length ||
+        adoptions.error ||
+        !adoptions.data ||
+        adoptions.count !== adoptions.data.length ||
+        site.error
+      ) {
+        throw new Error("Incomplete review evidence");
+      }
+      if (
+        templates.data.some(
+          (method) =>
+            !Array.isArray(method.prompts) ||
+            !method.prompts.length ||
+            method.prompts.some((prompt) => typeof prompt !== "string" || !prompt.trim()),
+        )
+      ) {
+        throw new Error("Invalid method prompts");
+      }
+      const snapshot = {
+        methods: templates.data as Method[],
+        adopted: adoptions.data as unknown as Adoption[],
+        profile: site.data as Profile | null,
+      };
+      setMethods(snapshot.methods);
+      setAdopted(snapshot.adopted);
+      setProfile(snapshot.profile);
+      setToday(operationalDate(new Date(), "Europe/London"));
+      return snapshot;
+    } catch {
+      if (mounted.current && request === requestId.current) {
+        setMethods([]);
+        setAdopted([]);
+        setProfile(null);
+        setLoadError("Review evidence is unavailable. Refresh before confirming a method.");
+      }
+      return null;
+    } finally {
+      if (mounted.current && request === requestId.current) setLoading(false);
     }
-    setError("");
-    setMethods(
-      ((templates.data ?? []) as Method[]).filter((method) => Array.isArray(method.prompts)),
-    );
-    setAdopted((adoptions.data ?? []) as unknown as Adoption[]);
-    setProfile(site.data as Profile | null);
   }, [user?.organizationId, user?.locationId]);
 
   useEffect(() => {
-    setSelectedId(null);
-    setAnswers({});
-    setAcknowledged(false);
+    mounted.current = true;
     void load();
+    return () => {
+      mounted.current = false;
+      requestId.current += 1;
+    };
   }, [load]);
+
+  useEffect(() => {
+    const updateDay = () => setToday(operationalDate(new Date(), "Europe/London"));
+    const timer = window.setInterval(updateDay, 60_000);
+    window.addEventListener("focus", updateDay);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener("focus", updateDay);
+    };
+  }, []);
 
   const ordered = useMemo(
     () =>
@@ -106,24 +169,23 @@ function SafeMethods() {
   const selected = ordered.find((method) => method.id === selectedId) ?? null;
   const adoptedFor = (id: string) => adopted.find((entry) => entry.template_id === id);
 
-  const needsReview = (method: Method) => {
-    const current = adoptedFor(method.id);
-    if (!current || current.status !== "active") return true;
-    if (current.controls?.templateVersion !== method.version) return true;
-    if (current.controls?.jurisdiction !== profile?.jurisdiction) return true;
-    if (!current.controls?.reviewedAt) return true;
-    if (method.prompts.some((_, index) => !current.controls?.answers?.[String(index)]?.trim())) {
-      return true;
-    }
-    return Boolean(
-      current.review_due_at && current.review_due_at < new Date().toISOString().slice(0, 10),
-    );
-  };
+  const available = !loading && !loadError && profile !== null;
+  const needsReview = (method: Method) =>
+    !safeMethodReviewCurrent(method, profile, adoptedFor(method.id), today);
 
   const open = (method: Method) => {
+    if (!available || saving || !canManage) return;
     const current = adoptedFor(method.id);
     setSelectedId(method.id);
-    setAnswers(current?.controls?.answers ?? {});
+    const recorded = current?.controls?.answers;
+    setAnswers(
+      Object.fromEntries(
+        method.prompts.map((_, index) => {
+          const answer = recorded?.[String(index)];
+          return [String(index), typeof answer === "string" ? answer : ""];
+        }),
+      ),
+    );
     setAcknowledged(false);
     setError("");
     setMessage("");
@@ -132,6 +194,9 @@ function SafeMethods() {
   const save = async () => {
     if (
       !canManage ||
+      !available ||
+      saving ||
+      writeLock.current ||
       !selected ||
       !profile ||
       !user?.organizationId ||
@@ -147,60 +212,124 @@ function SafeMethods() {
       setError("Explain each control in at least 12 characters and confirm the management review.");
       return;
     }
+    writeLock.current = true;
     setSaving(true);
     setError("");
-    const reviewedAt = new Date();
-    const nextReview = new Date(reviewedAt);
-    nextReview.setMonth(nextReview.getMonth() + 6);
-    const { error: writeError } = await supabase.from("site_safe_methods").upsert(
-      {
-        organization_id: user.organizationId,
-        location_id: user.locationId,
-        template_id: selected.id,
-        status: "active",
-        adopted_by: user.id,
-        adopted_at: reviewedAt.toISOString(),
-        review_due_at: [
-          nextReview.getFullYear(),
-          String(nextReview.getMonth() + 1).padStart(2, "0"),
-          String(nextReview.getDate()).padStart(2, "0"),
-        ].join("-"),
-        controls: {
-          answers: Object.fromEntries(
-            selected.prompts.map((_, index) => [String(index), answers[String(index)].trim()]),
-          ),
-          templateVersion: selected.version,
-          jurisdiction: profile.jurisdiction,
-          businessType: profile.business_type,
-          reviewedAt: reviewedAt.toISOString(),
-          reviewedBy: user.id,
-          managementConfirmed: true,
-        },
-      },
-      { onConflict: "organization_id,location_id,template_id" },
-    );
-    setSaving(false);
-    if (writeError) {
-      setError("The review could not be saved. Nothing has been confirmed: " + writeError.message);
-      return;
+    setMessage("");
+    try {
+      const fresh = await load();
+      if (!mounted.current) return;
+      if (!fresh) {
+        setAcknowledged(false);
+        return;
+      }
+      const freshMethod = fresh.methods.find((method) => method.id === selected.id);
+      const freshAdoption = fresh.adopted.find((entry) => entry.template_id === selected.id);
+      if (
+        !fresh.profile ||
+        JSON.stringify(freshMethod) !== JSON.stringify(selected) ||
+        JSON.stringify(fresh.profile) !== JSON.stringify(profile) ||
+        JSON.stringify(freshAdoption) !== JSON.stringify(adoptedFor(selected.id))
+      ) {
+        setAcknowledged(false);
+        setSelectedId(null);
+        setError(
+          "The method or premises evidence changed. Open the current method and review again.",
+        );
+        return;
+      }
+      const reviewedAt = new Date();
+      const reviewDate = safeMethodNextReview(operationalDate(reviewedAt, "Europe/London"));
+      const { data, error: writeError } = await supabase
+        .from("site_safe_methods")
+        .upsert(
+          {
+            organization_id: user.organizationId,
+            location_id: user.locationId,
+            template_id: selected.id,
+            status: "active",
+            adopted_by: user.id,
+            adopted_at: reviewedAt.toISOString(),
+            review_due_at: reviewDate,
+            controls: {
+              answers: Object.fromEntries(
+                selected.prompts.map((_, index) => [String(index), answers[String(index)].trim()]),
+              ),
+              templateVersion: selected.version,
+              jurisdiction: profile.jurisdiction,
+              businessType: profile.business_type,
+              reviewedAt: reviewedAt.toISOString(),
+              reviewedBy: user.id,
+              managementConfirmed: true,
+            },
+          },
+          { onConflict: "organization_id,location_id,template_id" },
+        )
+        .select("id,template_id,status,review_due_at,adopted_by,controls")
+        .single();
+      if (!mounted.current) return;
+      if (
+        writeError ||
+        !data ||
+        data.template_id !== selected.id ||
+        data.adopted_by !== user.id ||
+        data.review_due_at !== reviewDate ||
+        !safeMethodReviewCurrent(
+          selected,
+          profile,
+          data as unknown as Adoption,
+          operationalDate(reviewedAt, "Europe/London"),
+        )
+      ) {
+        throw new Error("Review not confirmed");
+      }
+      setMessage("Premises-specific safe method recorded. Review it after material changes.");
+      setSelectedId(null);
+      setAcknowledged(false);
+      await load();
+    } catch {
+      if (mounted.current) {
+        setAcknowledged(false);
+        setError("The review could not be confirmed. Refresh and check the current record.");
+        await load();
+      }
+    } finally {
+      writeLock.current = false;
+      if (mounted.current) setSaving(false);
     }
-    setMessage("Premises-specific safe method recorded. Review it after material changes.");
-    setSelectedId(null);
-    setAcknowledged(false);
-    void load();
   };
 
   const verifiedCount = ordered.filter((method) => !needsReview(method)).length;
   return (
     <main className="p-5 md:p-8 max-w-6xl space-y-5">
-      <header>
-        <div className="eyebrow">GUIDED UK FOOD SAFETY METHODS</div>
-        <h1 className="mt-1">Document your actual controls</h1>
-        <p className="text-sm text-muted-foreground mt-2 max-w-3xl">
-          Answer the method prompts for this premises. A manager must confirm the real procedure
-          before it is marked adopted. These are internal records, not regulator approval.
-        </p>
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <div className="eyebrow">GUIDED UK FOOD SAFETY METHODS</div>
+          <h1 className="mt-1">Document your actual controls</h1>
+          <p className="text-sm text-muted-foreground mt-2 max-w-3xl">
+            Answer the method prompts for this premises. A manager must confirm the real procedure
+            before it is marked adopted. These are internal records, not regulator approval.
+          </p>
+        </div>
+        <button
+          type="button"
+          className="btn-secondary min-h-11 px-4 py-2 text-sm"
+          disabled={loading || saving}
+          onClick={() => {
+            setSelectedId(null);
+            setAcknowledged(false);
+            setError("");
+            void load();
+          }}
+        >
+          Refresh evidence
+        </button>
       </header>
+      {loadError && (
+        <div role="alert" className="surface border border-destructive/40 p-3 text-sm">
+          {loadError}
+        </div>
+      )}
       {error && (
         <div role="alert" className="surface border border-destructive/40 p-3 text-sm">
           {error}
@@ -211,7 +340,7 @@ function SafeMethods() {
           {message}
         </div>
       )}
-      {!profile && !loading && (
+      {!profile && !loading && !loadError && (
         <div className="surface border border-warning/40 p-4 text-sm">
           Complete your UK jurisdiction and business profile first.{" "}
           <Link to="/app/uk-compliance" className="underline font-semibold">
@@ -219,7 +348,7 @@ function SafeMethods() {
           </Link>
         </div>
       )}
-      {profile && (
+      {available && profile && (
         <section className="surface p-4 flex items-center justify-between gap-3 flex-wrap">
           <div>
             <div className="text-sm font-bold">
@@ -239,6 +368,8 @@ function SafeMethods() {
         <div className="surface p-8 text-center">
           <Loader2 size={18} className="inline animate-spin" /> Loading methods…
         </div>
+      ) : loadError ? (
+        <p className="text-sm text-muted-foreground">Method reviews are unavailable.</p>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {ordered.map((method) => {
@@ -271,7 +402,7 @@ function SafeMethods() {
                     <button
                       type="button"
                       onClick={() => open(method)}
-                      disabled={!profile}
+                      disabled={!available || saving}
                       className="btn-primary px-4 py-2 text-sm"
                     >
                       {current ? "Review method" : "Document method"}
@@ -291,7 +422,7 @@ function SafeMethods() {
           })}
         </div>
       )}
-      {selected && canManage && (
+      {selected && canManage && available && (
         <section
           className="surface p-5 space-y-4 border border-primary/20"
           aria-labelledby="method-title"
@@ -300,7 +431,12 @@ function SafeMethods() {
             <h2 id="method-title" className="text-xl font-bold">
               {selected.title}
             </h2>
-            <button type="button" className="text-sm underline" onClick={() => setSelectedId(null)}>
+            <button
+              type="button"
+              className="min-h-11 text-sm underline"
+              disabled={saving}
+              onClick={() => setSelectedId(null)}
+            >
               Close
             </button>
           </div>
@@ -314,9 +450,11 @@ function SafeMethods() {
               <textarea
                 className="input w-full min-h-24 mt-2 font-normal"
                 value={answers[String(index)] ?? ""}
-                onChange={(event) =>
-                  setAnswers((previous) => ({ ...previous, [String(index)]: event.target.value }))
-                }
+                disabled={saving}
+                onChange={(event) => {
+                  setAnswers((previous) => ({ ...previous, [String(index)]: event.target.value }));
+                  setAcknowledged(false);
+                }}
                 maxLength={2000}
                 placeholder="Describe your actual on-site control and response when it fails"
               />
@@ -326,6 +464,7 @@ function SafeMethods() {
             <input
               type="checkbox"
               checked={acknowledged}
+              disabled={saving}
               onChange={(event) => setAcknowledged(event.target.checked)}
             />
             <span>
@@ -337,7 +476,7 @@ function SafeMethods() {
             type="button"
             className="btn-primary px-4 py-2 inline-flex items-center gap-2"
             onClick={() => void save()}
-            disabled={saving || !acknowledged || !profile}
+            disabled={saving || !acknowledged || !available}
           >
             <ShieldCheck size={17} /> {saving ? "Saving…" : "Confirm site method"}
           </button>
