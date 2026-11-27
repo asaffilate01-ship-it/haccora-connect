@@ -118,12 +118,9 @@ function SiteMethods({
 
   const evidence = useFocusedEvidence(load);
   const { data, status, refresh } = evidence;
-  const available = status === "ready" && data?.checkedDay === today;
+  const available = status === "ready" && data !== null;
+  const reviewDay = data && data.checkedDay > today ? data.checkedDay : today;
   const byTemplate = new Map(data?.adoptions.map((item) => [item.template_id, item]) ?? []);
-
-  useEffect(() => {
-    if (status === "ready" && !available) refresh();
-  }, [available, refresh, status]);
 
   return (
     <CompliancePage
@@ -146,7 +143,7 @@ function SiteMethods({
       ) : data.methods.length ? (
         data.methods.map((method) => {
           const adoption = byTemplate.get(method.id);
-          const reviewed = safeMethodReviewCurrent(method, data.profile, adoption, today);
+          const reviewed = safeMethodReviewCurrent(method, data.profile, adoption, reviewDay);
           return (
             <ComplianceCard
               key={method.id}
