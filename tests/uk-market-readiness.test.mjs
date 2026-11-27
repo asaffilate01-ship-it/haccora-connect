@@ -198,7 +198,10 @@ test("native navigation gives inspectors a read-focused evidence surface", () =>
   const dashboard = read("mobile/app/dashboard.tsx");
   assert.match(nav, /role === "inspector" \? inspectorItems : operationsItems/);
   assert.match(nav, /useSafeAreaInsets/);
-  assert.match(more, /items\.filter\(\(\[, , roles\]\)/);
+  assert.match(more, /if \(!role \|\| !roles\.includes\(role\)\) return false/);
+  assert.match(more, /ALL_WORKSPACE_ROLES/);
+  assert.match(more, /"Evidence readiness", "\/inspection-readiness", ALL_WORKSPACE_ROLES/);
+  assert.match(more, /"Corrective actions", "\/actions", ALL_TENANT_ROLES/);
   assert.match(dashboard, /role === "inspector"/);
 });
 test("native SaaS operators are sent to the governed web console instead of tenant onboarding", () => {
