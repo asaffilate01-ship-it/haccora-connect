@@ -83,3 +83,18 @@ test("superseded evidence requests stop and never return a partial dataset", asy
   );
   assert.equal(calls, 1);
 });
+
+test("malformed evidence payloads fail closed instead of producing a partial report", async () => {
+  for (const data of [{ length: 0 }, "invalid", null]) {
+    await assert.rejects(
+      readEvidencePages(async () => ({ data, count: 0, error: null }), key),
+      /unavailable/,
+    );
+  }
+  for (const row of [null, { id: " " }, { id: 42 }, { id: undefined }]) {
+    await assert.rejects(
+      readEvidencePages(async () => ({ data: [row], count: 1, error: null }), key),
+      /invalid evidence record/,
+    );
+  }
+});
