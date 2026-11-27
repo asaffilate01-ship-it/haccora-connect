@@ -1,4 +1,5 @@
 import { execFile } from "node:child_process";
+import { createHash } from "node:crypto";
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
@@ -6,6 +7,14 @@ import { promisify } from "node:util";
 const run = promisify(execFile);
 const root = process.cwd();
 const findings = [];
+const publishedDemoProvision = {
+  path: "supabase/migrations/20260816074111_8e45c285-9600-43f9-b3e2-045fa8f9c742.sql",
+  sha256: "943524c296b06ba61d74b9494e1f6f5a127689966b7168c0dc59c32adb78ef8d",
+};
+const demoRemediation =
+  "supabase/migrations/20261127180000_revoke_embedded_demo_platform_accounts.sql";
+const provisionsDatabasePassword =
+  /insert\s+into\s+auth\.users[\s\S]*?encrypted_password[\s\S]*?(?:crypt\s*\(|\$2[aby]\$)/i;
 const allowedEnvironmentFiles = new Set([
   ".env.example",
   ".env.demo.example",
@@ -77,6 +86,27 @@ for (const relative of trackedFiles) {
   }
   if (metadata.size > 1024 * 1024) continue;
   const content = await readFile(absolute, "utf8");
+
+  if (relative.startsWith("supabase/migrations/") && provisionsDatabasePassword.test(content)) {
+    const digest = createHash("sha256").update(content).digest("hex");
+    if (relative !== publishedDemoProvision.path || digest !== publishedDemoProvision.sha256) {
+      findings.push(
+        `${relative}: database passwords must not be provisioned by production migrations`,
+      );
+      continue;
+    }
+    try {
+      const remediation = await readFile(path.join(root, demoRemediation), "utf8");
+      if (
+        !/status\s*=\s*'revoked'/i.test(remediation) ||
+        !/delete\s+from\s+auth\.identities/i.test(remediation)
+      ) {
+        findings.push(`${relative}: published demo provisioning is not fully revoked`);
+      }
+    } catch {
+      findings.push(`${relative}: published demo provisioning is missing its revocation migration`);
+    }
+  }
 
   if (
     isEnvironmentFile &&
