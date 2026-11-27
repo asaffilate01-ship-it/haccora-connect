@@ -20,7 +20,10 @@ test("every guided review maps to a supported runtime kind and valid draft quest
     "haccp_review",
     "regulatory_question",
   ];
-  assert.deepEqual(aiReviewPresets.map((preset) => preset.kind), expected);
+  assert.deepEqual(
+    aiReviewPresets.map((preset) => preset.kind),
+    expected,
+  );
   for (const preset of aiReviewPresets) {
     assert.ok(reviewQuestionValid(preset.prompt));
     assert.ok(preset.label.length > 0);
@@ -38,7 +41,10 @@ test("draft validation enforces the runtime question limits", () => {
 
 test("AI display extracts only supported answer fields instead of arbitrary objects", () => {
   assert.equal(readableReviewAnswer("Draft"), "Draft");
-  assert.equal(readableReviewAnswer({ answer: "Evidence draft", debug: "hidden" }), "Evidence draft");
+  assert.equal(
+    readableReviewAnswer({ answer: "Evidence draft", debug: "hidden" }),
+    "Evidence draft",
+  );
   assert.equal(readableReviewAnswer({ summary: "Review" }), "Review");
   for (const value of [null, [], 42, { debug: "hidden" }, { answer: { text: "hidden" } }]) {
     assert.equal(readableReviewAnswer(value), "");
