@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useCallback } from "react";
 import { Pressable, Text } from "react-native";
 import { ComplianceCard, CompliancePage, complianceStyles } from "@/components/compliance-list";
 import { useSession } from "@/lib/session";
 import { supabase } from "@/lib/supabase";
+import { useFocusedEvidence } from "@/lib/use-focused-evidence";
 
 type Label = {
   id: string;
@@ -47,39 +48,23 @@ function LabelHistory({
   organizationId: string;
   locationId: string | null;
 }) {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const [refresh, setRefresh] = useState(0);
-  const [labels, setLabels] = useState<Label[]>([]);
-  useEffect(() => {
-    let active = true;
-    setLoading(true);
-    setError(false);
-    setLabels([]);
-    const query = supabase
-      .from("ppds_label_versions")
-      .select("id,product_name,version,allergens,generated_at")
-      .eq("organization_id", organizationId);
-    const scoped = locationId ? query.eq("location_id", locationId) : query;
-    void Promise.resolve(scoped.order("generated_at", { ascending: false }).limit(50))
-      .then(({ data, error: loadError }) => {
-        if (!active) return;
-        if (loadError || !data) {
-          setError(true);
-          return;
-        }
-        setLabels(data as Label[]);
-      })
-      .catch(() => {
-        if (active) setError(true);
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, [organizationId, locationId, refresh]);
+  const load = useCallback(
+    async (isCurrent: () => boolean): Promise<Label[]> => {
+      const query = supabase
+        .from("ppds_label_versions")
+        .select("id,product_name,version,allergens,generated_at")
+        .eq("organization_id", organizationId);
+      const scoped = locationId ? query.eq("location_id", locationId) : query;
+      const result = await scoped.order("generated_at", { ascending: false }).order("id").limit(50);
+      if (!isCurrent()) throw new Error("PPDS evidence request expired");
+      if (result.error || !result.data) throw new Error("PPDS label history unavailable");
+      return result.data as Label[];
+    },
+    [organizationId, locationId],
+  );
+  const { data: labels, status, refresh } = useFocusedEvidence(load);
+  const loading = status === "loading";
+  const error = status === "error";
 
   const refreshLabel = error ? "Retry loading" : "Refresh label history";
   return (
@@ -99,7 +84,7 @@ function LabelHistory({
           title="Label history unavailable"
           detail="Do not rely on earlier records. Retry loading the saved versions."
         />
-      ) : labels.length ? (
+      ) : status === "ready" && labels.length ? (
         labels.map((label) => (
           <ComplianceCard
             key={label.id}
@@ -126,7 +111,7 @@ function LabelHistory({
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Refresh PPDS label history"
-        onPress={() => setRefresh((value) => value + 1)}
+        onPress={refresh}
         style={{ padding: 14, alignItems: "center" }}
       >
         <Text style={{ fontWeight: "700" }}>{refreshLabel}</Text>
