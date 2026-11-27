@@ -102,6 +102,7 @@ function ActionList({
     action: Action,
     nextStatus: string,
     evidence: unknown[] = [],
+    showFailure = true,
   ): Promise<boolean> => {
     if (!canEdit || busyRef.current) return false;
     busyRef.current = true;
@@ -117,6 +118,12 @@ function ActionList({
       refresh();
       return true;
     } catch {
+      if (showFailure) {
+        Alert.alert(
+          "Update not confirmed",
+          "The action was not confirmed as updated. Refresh the records or ask your manager.",
+        );
+      }
       return false;
     } finally {
       busyRef.current = false;
@@ -151,13 +158,18 @@ function ActionList({
       });
       uploaded = true;
       busyRef.current = false;
-      const linked = await transition(action, "in_progress", [
-        {
-          document_id: document.id,
-          storage_path: document.storage_path,
-          captured_at: new Date().toISOString(),
-        },
-      ]);
+      const linked = await transition(
+        action,
+        "in_progress",
+        [
+          {
+            document_id: document.id,
+            storage_path: document.storage_path,
+            captured_at: new Date().toISOString(),
+          },
+        ],
+        false,
+      );
       if (!linked) {
         Alert.alert(
           "Photo uploaded; action not updated",
@@ -188,7 +200,7 @@ function ActionList({
       <Text style={styles.intro}>
         {canEdit
           ? "Review outstanding work, attach evidence and keep each transition traceable."
-          : "Inspector access is read-only. Review the records without changing them."}
+          : "Your access is read-only. Review the records without changing them."}
       </Text>
       {status === "loading" && (
         <View style={styles.empty} accessibilityLiveRegion="polite">
