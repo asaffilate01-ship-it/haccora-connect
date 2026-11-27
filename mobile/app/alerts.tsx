@@ -1,6 +1,14 @@
-import { Redirect, router } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Redirect, router, useFocusEffect } from "expo-router";
+import { useCallback, useRef, useState } from "react";
+import {
+  AppState,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { useSession } from "@/lib/session";
 import { supabase } from "@/lib/supabase";
 
@@ -26,82 +34,237 @@ const routes: Record<string, string> = {
 };
 
 export default function Alerts() {
-  const { session, loading } = useSession();
-  const [rows, setRows] = useState<AlertRow[]>([]);
-  const [filter, setFilter] = useState<"unread" | "all" | "critical">("unread");
-  const [refreshing, setRefreshing] = useState(false);
-  const load = useCallback(async () => {
-    setRefreshing(true);
-    const { data } = await supabase
-      .from("alerts")
-      .select("id,kind,severity,title,message,read_at,created_at")
-      .order("created_at", { ascending: false })
-      .limit(100);
-    setRows((data ?? []) as AlertRow[]);
-    setRefreshing(false);
-  }, []);
-  useEffect(() => {
-    if (!session) return;
-    void load();
-    const channel = supabase
-      .channel("native-alert-inbox")
-      .on("postgres_changes", { event: "*", schema: "public", table: "alerts" }, () => void load())
-      .subscribe();
-    return () => {
-      void supabase.removeChannel(channel);
-    };
-  }, [load, session]);
-  const visible = useMemo(
-    () =>
-      rows.filter((row) =>
-        filter === "all" ? true : filter === "unread" ? !row.read_at : row.severity === "critical",
-      ),
-    [filter, rows],
-  );
+  const workspace = useSession();
+  const { session, loading, workspaceReady, serviceStatus, role } = workspace;
+  const { organizationId, locationId } = workspace;
   if (loading) return null;
   if (!session) return <Redirect href="/login" />;
-  const markRead = async (id: string) => {
-    const { error } = await supabase
-      .from("alerts")
-      .update({ read_at: new Date().toISOString() })
-      .eq("id", id);
-    if (!error)
-      setRows((current) =>
-        current.map((row) => (row.id === id ? { ...row, read_at: new Date().toISOString() } : row)),
-      );
+  if (!workspaceReady) return <Redirect href="/onboarding" />;
+  if (serviceStatus !== "active") return <Redirect href="/account-status" />;
+  if (role === "inspector") return <Redirect href="/inspection-readiness" />;
+  if (!organizationId || !locationId) {
+    return (
+      <View style={styles.page}>
+        <Text style={styles.title}>Alerts</Text>
+        <Text style={styles.intro}>Select a site to review your alerts.</Text>
+      </View>
+    );
+  }
+  return (
+    <SiteAlerts
+      key={`${session.user.id}:${organizationId}:${locationId}:${role}`}
+      userId={session.user.id}
+      organizationId={organizationId}
+      locationId={locationId}
+    />
+  );
+}
+
+type Scope = { userId: string; organizationId: string; locationId: string };
+
+function alertDate(value: string) {
+  return new Date(value).toLocaleString("en-GB", { timeZone: "Europe/London" });
+}
+
+function SiteAlerts({ userId, organizationId, locationId }: Scope) {
+  const [rows, setRows] = useState<AlertRow[]>([]);
+  const [filter, setFilter] = useState<"unread" | "all" | "critical">("unread");
+  const [refresh, setRefresh] = useState(0);
+  const [refreshing, setRefreshing] = useState(true);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [total, setTotal] = useState(0);
+  const [unread, setUnread] = useState(0);
+  const [loadedKey, setLoadedKey] = useState("");
+  const [live, setLive] = useState(false);
+  const focused = useRef(false);
+  const writeLock = useRef(false);
+  const viewKey = `${filter}:${refresh}`;
+  const available = !refreshing && !error && loadedKey === viewKey;
+  const refreshInbox = useCallback(() => {
+    setRefreshing(true);
+    setRefresh((value) => value + 1);
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      focused.current = true;
+      setLive(false);
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      const scheduleRefresh = () => {
+        if (!active || !focused.current || timer !== undefined) return;
+        timer = setTimeout(() => {
+          timer = undefined;
+          if (active && focused.current) refreshInbox();
+        }, 600);
+      };
+      const channel = supabase
+        .channel(`native-alert-inbox-${userId}-${locationId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "alerts",
+            filter: `user_id=eq.${userId}`,
+          },
+          scheduleRefresh,
+        )
+        .subscribe((status) => {
+          if (!active || !focused.current) return;
+          setLive(status === "SUBSCRIBED");
+          if (status === "SUBSCRIBED") scheduleRefresh();
+        });
+      const subscription = AppState.addEventListener("change", (state) => {
+        if (state === "active") scheduleRefresh();
+      });
+      return () => {
+        active = false;
+        focused.current = false;
+        if (timer !== undefined) clearTimeout(timer);
+        subscription.remove();
+        void supabase.removeChannel(channel);
+      };
+    }, [userId, locationId, refreshInbox]),
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      setRefreshing(true);
+      setError("");
+      setLoadedKey("");
+      setRows([]);
+      const scope = `location_id.eq.${locationId},location_id.is.null`;
+      async function load() {
+        try {
+          let query = supabase
+            .from("alerts")
+            .select("id,kind,severity,title,message,read_at,created_at", { count: "exact" })
+            .eq("organization_id", organizationId)
+            .eq("user_id", userId)
+            .or(scope)
+            .order("created_at", { ascending: false })
+            .order("id")
+            .limit(100);
+          if (filter === "unread") query = query.is("read_at", null);
+          if (filter === "critical") query = query.eq("severity", "critical");
+          const [list, count] = await Promise.all([
+            query,
+            supabase
+              .from("alerts")
+              .select("id", { count: "exact", head: true })
+              .eq("organization_id", organizationId)
+              .eq("user_id", userId)
+              .or(scope)
+              .is("read_at", null),
+          ]);
+          if (!active) return;
+          if (
+            list.error ||
+            !list.data ||
+            list.count === null ||
+            count.error ||
+            count.count === null
+          ) {
+            throw new Error("Alert evidence unavailable");
+          }
+          setRows(list.data as AlertRow[]);
+          setTotal(list.count);
+          setUnread(count.count);
+          setLoadedKey(viewKey);
+        } catch {
+          if (!active) return;
+          setError("Alerts could not be verified. Refresh before relying on this inbox.");
+          setRows([]);
+          setTotal(0);
+          setUnread(0);
+        } finally {
+          if (active) setRefreshing(false);
+        }
+      }
+      void load();
+      return () => {
+        active = false;
+      };
+    }, [filter, locationId, organizationId, userId, viewKey]),
+  );
+
+  const unreadInView = rows.filter((row) => !row.read_at);
+  const markRead = async (ids: string[]) => {
+    if (!focused.current || !available || writeLock.current || !ids.length) return;
+    const visibleIds = new Set(unreadInView.map((row) => row.id));
+    if (ids.some((id) => !visibleIds.has(id))) return;
+    writeLock.current = true;
+    setBusy(true);
+    setNotice("");
+    try {
+      const { data, error: writeError } = await supabase
+        .from("alerts")
+        .update({ read_at: new Date().toISOString() })
+        .eq("organization_id", organizationId)
+        .eq("user_id", userId)
+        .or(`location_id.eq.${locationId},location_id.is.null`)
+        .in("id", ids)
+        .is("read_at", null)
+        .select("id,read_at");
+      const confirmed = new Set((data ?? []).filter((row) => row.read_at).map((row) => row.id));
+      if (writeError || ids.some((id) => !confirmed.has(id))) {
+        throw new Error("Read status not fully confirmed");
+      }
+      if (focused.current) setNotice("Read status saved.");
+    } catch {
+      if (focused.current) {
+        setNotice("Not all read statuses were confirmed. Review the refreshed inbox.");
+      }
+    } finally {
+      writeLock.current = false;
+      setBusy(false);
+      if (focused.current) refreshInbox();
+    }
   };
-  const markAllRead = async () => {
-    const readAt = new Date().toISOString();
-    const { error } = await supabase.from("alerts").update({ read_at: readAt }).is("read_at", null);
-    if (!error)
-      setRows((current) => current.map((row) => ({ ...row, read_at: row.read_at || readAt })));
-  };
-  const open = async (row: AlertRow) => {
-    if (!row.read_at) await markRead(row.id);
-    router.push((routes[row.kind] || "/actions") as never);
-  };
-  const unread = rows.filter((row) => !row.read_at).length;
+
   return (
     <ScrollView
       contentContainerStyle={styles.page}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void load()} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refreshInbox} />}
     >
       <View style={styles.headerRow}>
         <View style={styles.flex}>
           <Text style={styles.eyebrow}>ACTION INBOX</Text>
           <Text style={styles.title}>Alerts</Text>
-          <Text style={styles.intro}>{unread} unread · updates appear automatically</Text>
+          <Text style={styles.intro}>
+            {available ? `${unread} unread at this site` : "Unread unavailable"}
+          </Text>
+          <Text style={styles.intro}>
+            {live ? "Live channel connected" : "Live updates unavailable — pull to refresh"}
+          </Text>
         </View>
-        {unread > 0 && (
-          <Pressable style={styles.readAll} onPress={() => void markAllRead()}>
-            <Text style={styles.readAllText}>Read all</Text>
+        {available && unreadInView.length > 0 && (
+          <Pressable
+            accessibilityRole="button"
+            disabled={busy}
+            style={styles.readAll}
+            onPress={() => void markRead(unreadInView.map((row) => row.id))}
+          >
+            <Text style={styles.readAllText}>Read visible</Text>
           </Pressable>
         )}
       </View>
+      {notice ? (
+        <Text accessibilityRole="alert" style={styles.intro}>
+          {notice}
+        </Text>
+      ) : null}
       <View style={styles.filters}>
         {(["unread", "all", "critical"] as const).map((value) => (
           <Pressable
             key={value}
+            accessibilityRole="button"
+            accessibilityState={{ selected: filter === value, disabled: busy }}
+            disabled={busy}
             style={[styles.filter, filter === value && styles.filterActive]}
             onPress={() => setFilter(value)}
           >
@@ -111,7 +274,22 @@ export default function Alerts() {
           </Pressable>
         ))}
       </View>
-      {visible.map((row) => {
+      {error ? (
+        <View style={styles.empty}>
+          <Text accessibilityRole="alert" style={styles.intro}>
+            {error}
+          </Text>
+          <Pressable accessibilityRole="button" onPress={refreshInbox} style={styles.readAll}>
+            <Text style={styles.readAllText}>Retry loading</Text>
+          </Pressable>
+        </View>
+      ) : null}
+      {available && (
+        <Text style={styles.intro}>
+          Showing {rows.length} of {total} matching alerts. Read status is not resolution.
+        </Text>
+      )}
+      {(available ? rows : []).map((row) => {
         const colour =
           row.severity === "critical"
             ? styles.critical
@@ -119,31 +297,41 @@ export default function Alerts() {
               ? styles.warning
               : styles.info;
         return (
-          <Pressable
-            key={row.id}
-            accessibilityRole="button"
-            accessibilityLabel={`${row.severity} alert: ${row.title}`}
-            style={[styles.card, row.read_at && styles.read]}
-            onPress={() => void open(row)}
-          >
+          <View key={row.id} style={[styles.card, row.read_at && styles.read]}>
             <View style={[styles.severity, colour]} />
             <View style={styles.flex}>
-              <View style={styles.cardHeader}>
-                <Text style={styles.kind}>{row.kind.replaceAll("_", " ")}</Text>
-                {!row.read_at && <Text style={styles.newBadge}>NEW</Text>}
-              </View>
-              <Text style={styles.cardTitle}>{row.title}</Text>
-              {row.message && <Text style={styles.message}>{row.message}</Text>}
-              <Text style={styles.date}>{new Date(row.created_at).toLocaleString("en-GB")}</Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Open ${row.severity} alert: ${row.title}`}
+                onPress={() => router.push((routes[row.kind] || "/actions") as never)}
+              >
+                <View style={styles.cardHeader}>
+                  <Text style={styles.kind}>{row.kind.replaceAll("_", " ")}</Text>
+                  {!row.read_at && <Text style={styles.newBadge}>NEW</Text>}
+                </View>
+                <Text style={styles.cardTitle}>{row.title}</Text>
+                {row.message && <Text style={styles.message}>{row.message}</Text>}
+                <Text style={styles.date}>{alertDate(row.created_at)}</Text>
+              </Pressable>
+              {!row.read_at && (
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={busy}
+                  onPress={() => void markRead([row.id])}
+                  style={{ minHeight: 44, justifyContent: "center" }}
+                >
+                  <Text style={styles.newBadge}>Mark read</Text>
+                </Pressable>
+              )}
             </View>
             <Text style={styles.chevron}>›</Text>
-          </Pressable>
+          </View>
         );
       })}
-      {!refreshing && visible.length === 0 && (
+      {available && rows.length === 0 && (
         <View style={styles.empty}>
-          <Text style={styles.emptyTitle}>All clear</Text>
-          <Text style={styles.intro}>There are no alerts in this view.</Text>
+          <Text style={styles.emptyTitle}>No matching alerts</Text>
+          <Text style={styles.intro}>Review source records for outstanding safety actions.</Text>
         </View>
       )}
     </ScrollView>
