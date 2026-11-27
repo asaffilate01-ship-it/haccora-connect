@@ -4,6 +4,20 @@ import { useI18n } from "@/lib/i18n";
 import { useAlertPreview } from "@/lib/use-alert-preview";
 import { BrandLogoImage } from "@/components/BrandLogo";
 import { ExperienceController } from "@/components/ExperienceController";
+import {
+  Command as CommandMenu,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import {
+  isWorkspaceRoute,
+  matchesWorkspaceSearch,
+  restoreWorkspaceGroups,
+} from "@/lib/workspace-navigation";
 import { useAuth, canAccess, homeFor, type NavKey } from "@/lib/auth";
 import {
   LayoutDashboard,
@@ -190,6 +204,8 @@ const GROUPS: NavGroup[] = [
 
 const ALL_ITEMS: NavItem[] = GROUPS.flatMap((g) => g.items);
 
+const canOpenAi = (role: string) => ["owner", "manager", "chef"].includes(role);
+
 function AppShell() {
   const { t } = useI18n();
   const { user, signOut, hydrated } = useAuth();
@@ -200,11 +216,15 @@ function AppShell() {
   const [notifOpen, setNotifOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [paletteQ, setPaletteQ] = useState("");
+  const paletteTrigger = useRef<HTMLElement | null>(null);
   const [expandedGroups, setExpandedGroups] = useState<string[]>(() => {
     if (typeof window === "undefined") return [];
     try {
       const stored = window.localStorage.getItem("haccora-nav-groups-v1");
-      return stored ? (JSON.parse(stored) as string[]) : [];
+      return restoreWorkspaceGroups(
+        stored ? JSON.parse(stored) : [],
+        GROUPS.map((group) => group.labelKey),
+      );
     } catch {
       return [];
     }
@@ -246,6 +266,9 @@ function AppShell() {
       { prefix: "/app/readiness", nav: "dashboard" },
       { prefix: "/app/get-started", nav: "dashboard" },
       { prefix: "/app/safe-methods", nav: "haccp" },
+      { prefix: "/app/uk-compliance", nav: "haccp" },
+      { prefix: "/app/diary", nav: "checks" },
+      { prefix: "/app/traceability", nav: "recalls" },
       { prefix: "/app/ppds", nav: "labels" },
       { prefix: "/app/haccp", nav: "haccp" },
       { prefix: "/app/checks", nav: "checks" },
@@ -290,43 +313,68 @@ function AppShell() {
       { prefix: "/app/preferences", nav: "preferences" },
     ];
 
-    const match = PATH_KEY.find(
-      (p) => pathname === p.prefix || pathname.startsWith(p.prefix + "/"),
-    );
-    if (match && !canAccess(user.role, match.nav, user.inspectorScopes)) {
+    const match = PATH_KEY.find((p) => isWorkspaceRoute(pathname, p.prefix));
+    if (
+      (match && !canAccess(user.role, match.nav, user.inspectorScopes)) ||
+      (isWorkspaceRoute(pathname, "/app/ai-assistant") && !canOpenAi(user.role))
+    ) {
       navigate({ to: homeFor(user.role) as never, replace: true });
     }
   }, [user, pathname, navigate]);
+
+  function openPalette() {
+    paletteTrigger.current = document.activeElement as HTMLElement | null;
+    setPaletteQ("");
+    setMenuOpen(false);
+    setNotifOpen(false);
+    setPaletteOpen(true);
+  }
+
+  function closePalette() {
+    setPaletteQ("");
+    setPaletteOpen(false);
+  }
 
   // Global Cmd/Ctrl+K -> command palette.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
-        setPaletteOpen((v) => !v);
+        if (paletteOpen) {
+          setPaletteOpen(false);
+          setPaletteQ("");
+        } else {
+          paletteTrigger.current = document.activeElement as HTMLElement | null;
+          setPaletteQ("");
+          setMenuOpen(false);
+          setNotifOpen(false);
+          setPaletteOpen(true);
+        }
       }
       if (e.key === "Escape") {
         setPaletteOpen(false);
+        setPaletteQ("");
         setNotifOpen(false);
         setMenuOpen(false);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [paletteOpen]);
 
   const visibleGroups = useMemo(() => {
     if (!user) return [];
     return GROUPS.map((g) => ({
       ...g,
-      items: g.items.filter((i) => canAccess(user.role, i.nav, user.inspectorScopes)),
+      items: g.items.filter(
+        (i) =>
+          canAccess(user.role, i.nav, user.inspectorScopes) &&
+          (i.to !== "/app/ai-assistant" || canOpenAi(user.role)),
+      ),
     })).filter((g) => g.items.length > 0);
   }, [user]);
 
-  const visibleFlat = useMemo(
-    () => (user ? ALL_ITEMS.filter((i) => canAccess(user.role, i.nav, user.inspectorScopes)) : []),
-    [user],
-  );
+  const visibleFlat = useMemo(() => visibleGroups.flatMap((group) => group.items), [visibleGroups]);
 
   const quickItems = useMemo(() => {
     if (!user) return [];
@@ -373,12 +421,9 @@ function AppShell() {
     navigate({ to: "/login" });
   };
 
-  const current =
-    ALL_ITEMS.find((i) =>
-      i.exact
-        ? pathname === i.to
-        : pathname.startsWith(i.to) && (i.to !== "/app" || pathname === "/app"),
-    ) ?? ALL_ITEMS.find((i) => !i.exact && pathname.startsWith(i.to));
+  const current = visibleFlat.find((i) => isWorkspaceRoute(pathname, i.to, i.exact));
+  const knownRoute = ALL_ITEMS.find((i) => isWorkspaceRoute(pathname, i.to, i.exact));
+  const routeDenied = Boolean(knownRoute && !current);
   const workspaceLabel = [user?.organizationName, user?.location]
     .filter(
       (value, index, values): value is string => Boolean(value) && values.indexOf(value) === index,
@@ -387,9 +432,9 @@ function AppShell() {
 
   const canViewAlerts = Boolean(
     user?.organizationId &&
-      user.locationId &&
-      user.serviceStatus === "active" &&
-      canAccess(user.role, "alerts", user.inspectorScopes),
+    user.locationId &&
+    user.serviceStatus === "active" &&
+    canAccess(user.role, "alerts", user.inspectorScopes),
   );
   const alertPreview = useAlertPreview(
     user?.id ?? null,
@@ -421,7 +466,7 @@ function AppShell() {
     };
   });
 
-  if (!hydrated || !user) {
+  if (!hydrated || !user || !user.organizationId || user.serviceStatus !== "active") {
     return (
       <div className="min-h-screen grid place-items-center bg-secondary/40 text-sm text-muted-foreground">
         …
@@ -430,8 +475,14 @@ function AppShell() {
   }
 
   // Command palette matches over role-allowed items.
-  const q = paletteQ.trim().toLowerCase();
-  const paletteResults = visibleFlat.filter((i) => !q || t(i.key).toLowerCase().includes(q));
+  const paletteGroups = visibleGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) =>
+        matchesWorkspaceSearch(paletteQ, t(item.key), t(group.labelKey), item.to),
+      ),
+    }))
+    .filter((group) => group.items.length > 0);
 
   return (
     <div className="app-shell min-h-screen bg-secondary/40 flex flex-col">
@@ -485,11 +536,12 @@ function AppShell() {
                 Quick access
               </div>
               {quickItems.map(({ to, icon: Icon, key, exact }) => {
-                const active = exact ? pathname === to : pathname.startsWith(to);
+                const active = isWorkspaceRoute(pathname, to, exact);
                 return (
                   <Link
                     key={to}
                     to={to as never}
+                    aria-current={active ? "page" : undefined}
                     className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm mb-0.5 transition group relative ${active ? "bg-primary text-primary-foreground shadow-sm" : "text-foreground/80 hover:bg-secondary hover:text-foreground"}`}
                   >
                     <Icon
@@ -511,7 +563,7 @@ function AppShell() {
               </div>
               {secondaryGroups.map((group) => {
                 const groupActive = group.items.some((item) =>
-                  item.exact ? pathname === item.to : pathname.startsWith(item.to),
+                  isWorkspaceRoute(pathname, item.to, item.exact),
                 );
                 const expanded = expandedGroups.includes(group.labelKey) || groupActive;
                 return (
@@ -532,11 +584,12 @@ function AppShell() {
                     {expanded && (
                       <div className="pl-2">
                         {group.items.map(({ to, icon: Icon, key, exact }) => {
-                          const active = exact ? pathname === to : pathname.startsWith(to);
+                          const active = isWorkspaceRoute(pathname, to, exact);
                           return (
                             <Link
                               key={to}
                               to={to as never}
+                              aria-current={active ? "page" : undefined}
                               className={`flex items-center gap-3 rounded-lg px-3 py-2 text-xs mb-0.5 transition group relative ${
                                 active
                                   ? "bg-primary text-primary-foreground shadow-sm"
@@ -564,7 +617,7 @@ function AppShell() {
 
           <div className="p-3 border-t border-border space-y-1">
             <button
-              onClick={() => setPaletteOpen(true)}
+              onClick={openPalette}
               className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition"
             >
               <Search size={16} /> <span className="flex-1 text-left">{t("nav.search")}</span>
@@ -624,7 +677,7 @@ function AppShell() {
 
             {/* Search trigger */}
             <button
-              onClick={() => setPaletteOpen(true)}
+              onClick={openPalette}
               className="hidden md:flex items-center gap-2 flex-1 max-w-md mx-8 rounded-full border border-border bg-card px-3.5 py-1.5 text-sm text-muted-foreground hover:bg-secondary transition"
             >
               <Search size={14} />
@@ -637,7 +690,7 @@ function AppShell() {
             <div className="flex items-center gap-2 md:gap-3 shrink-0">
               {/* Mobile search */}
               <button
-                onClick={() => setPaletteOpen(true)}
+                onClick={openPalette}
                 className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card active:scale-95 transition"
                 aria-label={t("nav.search")}
               >
@@ -722,14 +775,17 @@ function AppShell() {
                               )}
                               <div className="min-w-0">
                                 <div className="text-sm font-medium truncate">{n.title}</div>
-                                <div className="text-xs text-muted-foreground truncate">{n.meta}</div>
+                                <div className="text-xs text-muted-foreground truncate">
+                                  {n.meta}
+                                </div>
                               </div>
                             </Link>
                           ))}
                         </div>
                         {alertPreview.total !== null && alertPreview.total > notifs.length && (
                           <p className="px-4 py-2 text-xs text-muted-foreground">
-                            Showing the latest {notifs.length} of {alertPreview.total} unread alerts.
+                            Showing the latest {notifs.length} of {alertPreview.total} unread
+                            alerts.
                           </p>
                         )}
                         <Link
@@ -826,7 +882,13 @@ function AppShell() {
           )}
 
           <main id="main-content" tabIndex={-1} className="flex-1 min-w-0 pb-tabbar md:pb-0">
-            <Outlet />
+            {routeDenied ? (
+              <p role="status" className="p-5 text-sm text-muted-foreground">
+                This tool is not available to your role. Returning to your workspace.
+              </p>
+            ) : (
+              <Outlet />
+            )}
           </main>
 
           <MobileBottomNav
@@ -839,53 +901,62 @@ function AppShell() {
       </div>
 
       {/* Command palette */}
-      {paletteOpen && (
-        <div
-          className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm grid place-items-start pt-[10vh] px-4"
-          onClick={() => setPaletteOpen(false)}
+      <Dialog
+        open={paletteOpen}
+        onOpenChange={(open) => {
+          if (!open) closePalette();
+        }}
+      >
+        <DialogContent
+          data-workspace-search
+          className="w-[calc(100%_-_2rem)] max-w-xl gap-0 overflow-hidden rounded-2xl p-0"
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            if (paletteTrigger.current?.isConnected) paletteTrigger.current.focus();
+          }}
         >
-          <div
-            className="w-full max-w-xl rounded-2xl bg-card border border-border shadow-2xl overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center gap-3 px-4 border-b border-border">
-              <Search size={16} className="text-muted-foreground" />
-              <input
-                autoFocus
-                value={paletteQ}
-                onChange={(e) => setPaletteQ(e.target.value)}
-                placeholder={t("palette.placeholder")}
-                className="flex-1 py-4 bg-transparent outline-none text-sm"
-              />
-              <kbd className="text-[10px] rounded border border-border bg-secondary px-1.5 py-0.5">
-                ESC
-              </kbd>
-            </div>
-            <div className="max-h-[50vh] overflow-y-auto py-2">
-              {paletteResults.length === 0 && (
-                <div className="px-4 py-6 text-center text-sm text-muted-foreground">
-                  {t("palette.empty")}
-                </div>
-              )}
-              {paletteResults.map(({ to, icon: Icon, key }) => (
-                <button
-                  key={to}
-                  onClick={() => {
-                    setPaletteOpen(false);
-                    setPaletteQ("");
-                    navigate({ to: to as never });
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-secondary transition"
-                >
-                  <Icon size={16} className="text-muted-foreground" />
-                  <span className="flex-1 text-left">{t(key)}</span>
-                  <ChevronRight size={14} className="text-muted-foreground/60" />
-                </button>
-              ))}
-            </div>
+          <div className="px-5 pb-3 pt-5 pr-12">
+            <DialogTitle>Find a workspace tool</DialogTitle>
+            <DialogDescription className="mt-1">
+              Search only the tools available to your role.
+            </DialogDescription>
           </div>
-        </div>
-      )}
+          <CommandMenu shouldFilter={false} loop>
+            <CommandInput
+              value={paletteQ}
+              onValueChange={setPaletteQ}
+              placeholder={t("palette.placeholder")}
+              aria-label="Search workspace tools"
+              className="h-12 text-base"
+            />
+            <CommandList className="max-h-[min(50dvh,24rem)] p-2">
+              <CommandEmpty>{t("palette.empty")}</CommandEmpty>
+              {paletteGroups.map((group) => (
+                <CommandGroup key={group.labelKey} heading={t(group.labelKey)}>
+                  {group.items.map(({ to, icon: Icon, key }) => (
+                    <CommandItem
+                      key={to}
+                      value={to}
+                      className="min-h-11 gap-3 rounded-lg px-3"
+                      onSelect={() => {
+                        closePalette();
+                        void navigate({ to: to as never });
+                      }}
+                    >
+                      <Icon className="text-muted-foreground" />
+                      <span className="flex-1 truncate">{t(key)}</span>
+                      <ChevronRight className="text-muted-foreground/60" />
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              ))}
+            </CommandList>
+          </CommandMenu>
+          <p className="border-t border-border px-5 py-3 text-xs text-muted-foreground">
+            Use arrow keys and Enter to navigate, or tap a tool. Esc closes search.
+          </p>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -924,7 +995,7 @@ function MobileBottomNav({
         style={{ gridTemplateColumns: `repeat(${pinned.length + 1}, minmax(0, 1fr))` }}
       >
         {pinned.map(({ to, icon: Icon, key, exact }) => {
-          const active = exact ? pathname === to : pathname.startsWith(to);
+          const active = isWorkspaceRoute(pathname, to, exact);
           const primary = to === "/app/quick-log";
           return (
             <Link
@@ -1009,11 +1080,12 @@ function MobileBottomNav({
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     {g.items.map(({ to, icon: Icon, key, exact }) => {
-                      const active = exact ? pathname === to : pathname.startsWith(to);
+                      const active = isWorkspaceRoute(pathname, to, exact);
                       return (
                         <Link
                           key={to}
                           to={to as never}
+                          aria-current={active ? "page" : undefined}
                           onClick={() => setMoreOpen(false)}
                           className={`flex min-h-12 items-center gap-2.5 rounded-xl border px-3 py-2.5 text-sm font-semibold transition active:scale-[0.97] touch-native ${
                             active
