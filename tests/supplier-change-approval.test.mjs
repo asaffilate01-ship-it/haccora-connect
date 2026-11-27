@@ -37,6 +37,24 @@ test("atomic review rechecks scope and ingredient versions before any approved m
   assert.match(sql, /grant execute on function public\.review_ingredient_change/);
 });
 
+test("direct ingredient updates are revoked so supplier changes use the audited review function", async () => {
+  const guard = await read(
+    "../supabase/migrations/20261127192000_guard_direct_ingredient_spec_updates.sql",
+  );
+  const approval = await read(
+    "../supabase/migrations/20261015232000_ingredient_change_approval.sql",
+  );
+  assert.match(
+    guard,
+    /revoke update on table public\.ingredients from public, anon, authenticated/i,
+  );
+  assert.match(approval, /security definer/);
+  assert.match(approval, /create or replace function public\.review_ingredient_change/);
+  assert.match(approval, /update public\.ingredients/);
+  assert.match(approval, /previous_snapshot = v_previous/);
+  assert.match(approval, /applied_snapshot = v_current/);
+});
+
 test("supplier review UI shows impacted recipes and requires explicit decision notes", async () => {
   const source = await read("../src/components/ppds/IngredientChangeReview.tsx");
   const ppds = await read("../src/routes/app.ppds.tsx");
