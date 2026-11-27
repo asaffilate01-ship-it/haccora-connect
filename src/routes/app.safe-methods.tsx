@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AlertTriangle, CheckCircle2, Loader2, ShieldCheck } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ExternalLink, Loader2, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/haccora-client";
 import { operationalDate } from "@/lib/operational-day";
@@ -9,6 +9,8 @@ import {
   safeMethodReviewCurrent,
   type ReviewControls,
 } from "@/lib/safe-method-review";
+import { isUkJurisdiction } from "@/lib/uk-authorities";
+import { getUkOfficialGuidance } from "@/lib/uk-official-guidance";
 
 export const Route = createFileRoute("/app/safe-methods")({ component: SafeMethods });
 
@@ -168,6 +170,10 @@ function SiteSafeMethods() {
   );
   const selected = ordered.find((method) => method.id === selectedId) ?? null;
   const adoptedFor = (id: string) => adopted.find((entry) => entry.template_id === id);
+  const officialGuidance =
+    profile && isUkJurisdiction(profile.jurisdiction)
+      ? getUkOfficialGuidance(profile.jurisdiction, profile.business_type)
+      : null;
 
   const available = !loading && !loadError && profile !== null;
   const needsReview = (method: Method) =>
@@ -364,6 +370,33 @@ function SiteSafeMethods() {
           </div>
         </section>
       )}
+      {available && officialGuidance && (
+        <section
+          className="surface p-5 md:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border border-primary/20"
+          aria-labelledby="official-guidance-title"
+        >
+          <div className="min-w-0">
+            <div className="eyebrow">OFFICIAL STARTING POINT · {officialGuidance.source}</div>
+            <h2 id="official-guidance-title" className="mt-2 text-lg font-bold">
+              {officialGuidance.title}
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">{officialGuidance.fit}</p>
+          </div>
+          <a
+            href={officialGuidance.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-secondary min-h-11 shrink-0 px-4 py-2 inline-flex items-center justify-center gap-2 text-sm"
+          >
+            Open official guidance <ExternalLink size={15} aria-hidden="true" />
+          </a>
+          <p className="sm:basis-full -mt-1 text-xs text-muted-foreground">
+            This resource does not approve the templates below. Confirm that the chosen approach
+            fits your actual operations; ask your local authority or a competent food-safety
+            specialist if unsure.
+          </p>
+        </section>
+      )}
       {loading ? (
         <div className="surface p-8 text-center">
           <Loader2 size={18} className="inline animate-spin" /> Loading methods…
@@ -409,12 +442,12 @@ function SiteSafeMethods() {
                     </button>
                   )}
                   <a
-                    href={method.official_source_url}
+                    href={officialGuidance?.href ?? method.official_source_url}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     className="underline text-xs"
                   >
-                    Official guidance
+                    {officialGuidance?.title ?? "Official guidance"}
                   </a>
                 </div>
               </article>
