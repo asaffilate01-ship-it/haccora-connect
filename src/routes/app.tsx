@@ -313,9 +313,7 @@ function AppShell() {
       { prefix: "/app/preferences", nav: "preferences" },
     ];
 
-    const match = PATH_KEY.find(
-      (p) => isWorkspaceRoute(pathname, p.prefix),
-    );
+    const match = PATH_KEY.find((p) => isWorkspaceRoute(pathname, p.prefix));
     if (
       (match && !canAccess(user.role, match.nav, user.inspectorScopes)) ||
       (isWorkspaceRoute(pathname, "/app/ai-assistant") && !canOpenAi(user.role))
@@ -342,7 +340,7 @@ function AppShell() {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
-        if (document.querySelector("[data-workspace-search]")) {
+        if (paletteOpen) {
           setPaletteOpen(false);
           setPaletteQ("");
         } else {
@@ -362,7 +360,7 @@ function AppShell() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [paletteOpen]);
 
   const visibleGroups = useMemo(() => {
     if (!user) return [];
@@ -376,10 +374,7 @@ function AppShell() {
     })).filter((g) => g.items.length > 0);
   }, [user]);
 
-  const visibleFlat = useMemo(
-    () => visibleGroups.flatMap((group) => group.items),
-    [visibleGroups],
-  );
+  const visibleFlat = useMemo(() => visibleGroups.flatMap((group) => group.items), [visibleGroups]);
 
   const quickItems = useMemo(() => {
     if (!user) return [];
@@ -427,6 +422,8 @@ function AppShell() {
   };
 
   const current = visibleFlat.find((i) => isWorkspaceRoute(pathname, i.to, i.exact));
+  const knownRoute = ALL_ITEMS.find((i) => isWorkspaceRoute(pathname, i.to, i.exact));
+  const routeDenied = Boolean(knownRoute && !current);
   const workspaceLabel = [user?.organizationName, user?.location]
     .filter(
       (value, index, values): value is string => Boolean(value) && values.indexOf(value) === index,
@@ -874,7 +871,13 @@ function AppShell() {
           )}
 
           <main id="main-content" tabIndex={-1} className="flex-1 min-w-0 pb-tabbar md:pb-0">
-            <Outlet />
+            {routeDenied ? (
+              <p role="status" className="p-5 text-sm text-muted-foreground">
+                This tool is not available to your role. Returning to your workspace.
+              </p>
+            ) : (
+              <Outlet />
+            )}
           </main>
 
           <MobileBottomNav
