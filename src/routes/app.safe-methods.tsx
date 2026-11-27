@@ -218,7 +218,11 @@ function SiteSafeMethods() {
     setMessage("");
     try {
       const fresh = await load();
-      if (!fresh || !mounted.current) return;
+      if (!mounted.current) return;
+      if (!fresh) {
+        setAcknowledged(false);
+        return;
+      }
       const freshMethod = fresh.methods.find((method) => method.id === selected.id);
       const freshAdoption = fresh.adopted.find((entry) => entry.template_id === selected.id);
       if (
@@ -229,7 +233,9 @@ function SiteSafeMethods() {
       ) {
         setAcknowledged(false);
         setSelectedId(null);
-        setError("The method or premises evidence changed. Open the current method and review again.");
+        setError(
+          "The method or premises evidence changed. Open the current method and review again.",
+        );
         return;
       }
       const reviewedAt = new Date();
