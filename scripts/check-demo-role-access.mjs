@@ -65,7 +65,10 @@ async function visibleCount(supabase, table) {
 
 async function signIn(email) {
   const supabase = client();
-  const { error } = await supabase.auth.signInWithPassword({ email, password: demoPasswordFor(email) });
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password: demoPasswordFor(email),
+  });
   if (error) throw new Error(`${email}: ${error.message}`);
   return supabase;
 }
