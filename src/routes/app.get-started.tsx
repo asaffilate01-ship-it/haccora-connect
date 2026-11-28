@@ -152,7 +152,9 @@ function SiteSetup() {
         const prompts = method.prompts;
         if (
           !Array.isArray(prompts) ||
-          !prompts.every((prompt): prompt is string => typeof prompt === "string" && !!prompt.trim())
+          !prompts.every(
+            (prompt): prompt is string => typeof prompt === "string" && !!prompt.trim(),
+          )
         ) {
           return false;
         }
@@ -284,7 +286,10 @@ function SiteSetup() {
             {loading || error ? "—" : `${progress}%`}
           </div>
           <div className="mt-3 h-2 overflow-hidden rounded-full bg-secondary">
-            <div className="h-full bg-success transition-all" style={{ width: `${loading || error ? 0 : progress}%` }} />
+            <div
+              className="h-full bg-success transition-all"
+              style={{ width: `${loading || error ? 0 : progress}%` }}
+            />
           </div>
           <p className="mt-3 text-xs text-muted-foreground">
             {loading || error
