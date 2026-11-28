@@ -90,3 +90,11 @@ Sign in as the test platform owner. Inspect aggregate tenant and plan metadata, 
 ## 8. Administrator provisioning checklist
 
 Use the protected staging rehearsal workflow on a dedicated project, or run `npm run demo:seed`, `npm run demo:verify` and `npm run demo:access` with private configuration after applying migrations. Run `npm run demo:persistence` to verify saved evidence. An actual hosted demo login is available only after the protected provisioning, access tests and hosted release checks have succeeded. The password must be supplied privately by the authorised administrator and never committed or published. See the [technical playbook](DEMO-CLIENT-TEST-PLAYBOOK.md).
+
+## Choosing a demo role
+
+On a separately configured demonstration build, open Sign in and choose **Demonstration dashboard**. The selector fills the chosen test identity's email, clears any previous password, and leaves the password entry to the authorised user. On web it covers all nine demonstration identities, including three isolated platform roles. Native builds offer the six tenant/inspector identities; use the isolated web demo for SaaS operator roles.
+
+To change roles, use Switch account or Sign out, then choose another test identity. This signs out of the previous account rather than impersonating it or changing its permissions. Actual access is determined by the authenticated identity, tenant membership, platform role, scope and plan. No password is embedded in the browser or mobile bundle.
+
+For deployment, set the role-selection flag, dedicated demo app origin, exact demo Supabase origin, known production project ref, email domain and optional owner email using the corresponding public build variables in the example environment files. The selector refuses production hostnames, mismatched origins, the production Supabase project and duplicate role identities. The protected demo seed must provision the selected accounts and their private passwords before use.
