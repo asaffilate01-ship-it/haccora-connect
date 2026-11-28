@@ -26,8 +26,7 @@ export const Route = createFileRoute("/legal/privacy")({
       { name: "twitter:title", content: "Privacy — Haccora" },
       {
         name: "twitter:description",
-        content:
-          "Haccora privacy notice under UK GDPR and the Data Protection Act 2018.",
+        content: "Haccora privacy notice under UK GDPR and the Data Protection Act 2018.",
       },
     ],
     links: [{ rel: "canonical", href: "https://haccora.co.uk/legal/privacy" }],

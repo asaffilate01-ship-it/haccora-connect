@@ -104,7 +104,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { property: "og:locale", content: "en_GB" },
       { property: "og:image", content: "https://haccora.co.uk/og-haccora-v2.png" },
-      { property: "og:image:alt", content: "Haccora red and navy shield and food safety management" },
+      {
+        property: "og:image:alt",
+        content: "Haccora red and navy shield and food safety management",
+      },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:image", content: "https://haccora.co.uk/og-haccora-v2.png" },
       { name: "twitter:image:alt", content: "Haccora food safety management" },

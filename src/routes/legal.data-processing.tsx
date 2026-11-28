@@ -9,8 +9,7 @@ export const Route = createFileRoute("/legal/data-processing")({
       { property: "og:title", content: "Data processing — Haccora" },
       {
         property: "og:description",
-        content:
-          "Summary of Haccora's UK GDPR processor commitments.",
+        content: "Summary of Haccora's UK GDPR processor commitments.",
       },
       { property: "og:url", content: "https://haccora.co.uk/legal/data-processing" },
       { property: "og:image", content: "https://haccora.co.uk/og-haccora-v2.png" },
@@ -21,8 +20,7 @@ export const Route = createFileRoute("/legal/data-processing")({
       { name: "twitter:title", content: "Data processing — Haccora" },
       {
         name: "twitter:description",
-        content:
-          "Summary of Haccora's UK GDPR processor commitments.",
+        content: "Summary of Haccora's UK GDPR processor commitments.",
       },
       { name: "twitter:image", content: "https://haccora.co.uk/og-haccora-v2.png" },
     ],

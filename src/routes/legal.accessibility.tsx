@@ -17,8 +17,7 @@ export const Route = createFileRoute("/legal/accessibility")({
       { name: "twitter:title", content: "Accessibility — Haccora" },
       {
         name: "twitter:description",
-        content:
-          "Haccora accessibility statement and contact route.",
+        content: "Haccora accessibility statement and contact route.",
       },
       { name: "twitter:image", content: "https://haccora.co.uk/og-haccora-v2.png" },
     ],

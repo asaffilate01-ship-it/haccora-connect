@@ -10,8 +10,7 @@ export const Route = createFileRoute("/legal/complaints")({
       { property: "og:url", content: "https://haccora.co.uk/legal/complaints" },
       {
         property: "og:description",
-        content:
-          "Haccora customer complaints and escalation procedure.",
+        content: "Haccora customer complaints and escalation procedure.",
       },
       { property: "og:image", content: "https://haccora.co.uk/og-haccora-v2.png" },
       { property: "og:image:width", content: "1200" },
@@ -21,8 +20,7 @@ export const Route = createFileRoute("/legal/complaints")({
       { name: "twitter:title", content: "Complaints — Haccora" },
       {
         name: "twitter:description",
-        content:
-          "Haccora customer complaints and escalation procedure.",
+        content: "Haccora customer complaints and escalation procedure.",
       },
       { name: "twitter:image", content: "https://haccora.co.uk/og-haccora-v2.png" },
     ],
