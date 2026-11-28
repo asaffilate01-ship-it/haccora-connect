@@ -74,9 +74,13 @@ test("first-week setup is premises-scoped and checks real method attestations", 
     new URL("../src/routes/app.get-started.tsx", import.meta.url),
     "utf8",
   );
-  assert.match(route, /select\("location_id,jurisdiction"\)/);
+  assert.match(route, /select\("location_id,jurisdiction,business_type,reviewed_at"\)/);
   assert.match(route, /\.eq\("location_id", user\.locationId\)/);
-  assert.match(route, /managementConfirmed === true/);
+  assert.match(route, /safeMethodReviewCurrent\(/);
+  assert.match(route, /profile\.data\?\.reviewed_at \? profile\.data : null/);
+  const review = await readFile(new URL("../src/lib/safe-method-review.ts", import.meta.url), "utf8");
+  assert.match(review, /controls\.managementConfirmed !== true/);
+  assert.match(review, /controls\.templateVersion !== method\.version/);
   assert.match(route, /Progress unavailable/);
   assert.doesNotMatch(route, /\.from\("site_compliance_profiles"\)\s*\.select\("id"/);
 });
