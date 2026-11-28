@@ -252,6 +252,9 @@ function GetStarted() {
           <Link to="/app/readiness" className="btn-ghost-dark mt-4 w-full text-xs">
             <ShieldCheck size={14} /> View UK readiness
           </Link>
+          <Link to="/help" className="btn-ghost-dark mt-2 w-full text-xs">
+            <ArrowRight size={14} /> Open the user guide
+          </Link>
         </aside>
 
         <div className="surface divide-y overflow-hidden">

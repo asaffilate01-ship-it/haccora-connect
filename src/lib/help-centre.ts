@@ -20,6 +20,16 @@ export const HELP_CENTRE_SECTIONS: HelpCentreSection[] = [
           "Add the legal business and premises details, select the correct UK nation, record the local authority or district council, then add responsible users, equipment and the opening and closing routines used at that premises.",
       },
       {
+        question: "How do I explore Haccora from start to finish?",
+        answer:
+          "Start with Get started and confirm your premises. Open Today and Quick log to record daily checks, then Control centre to review exceptions. Work through UK compliance, safe methods, HACCP, suppliers, recipes, PPDS, equipment, training, documents and inspection. Use Organisation and Billing for owner settings. Each screen only exposes the actions your role and plan permit.",
+      },
+      {
+        question: "How can I try a demonstration workspace?",
+        answer:
+          "Ask an authorised Haccora administrator for a private demo invitation. Use a dedicated test workspace and fictional records, not a real customer database. The tenant-owner demo covers business tools; separate test identities cover manager, chef, staff, inspector and platform administration. Do not use shared or publicly posted passwords, real payment cards or real customer information.",
+      },
+      {
         question: "Does Haccora choose my HACCP or safe-method controls for me?",
         answer:
           "No. Haccora structures hazards, controls, monitoring, corrective action and approval, but the food business must choose procedures that fit its activities. Use the relevant official approach, such as SFBB, CookSafe, Safe Catering or a suitable HACCP system, and obtain competent advice where needed.",

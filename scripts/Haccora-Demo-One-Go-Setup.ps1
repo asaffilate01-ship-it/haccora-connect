@@ -161,7 +161,7 @@ try {
         throw "The demo email domain contains invalid characters."
     }
 
-    $demoPassword = Read-SecretText -Prompt "Password for all seven demo accounts (16+ characters)"
+    $demoPassword = Read-SecretText -Prompt "Password for all nine demo accounts (16+ characters)"
     $confirmPassword = Read-SecretText -Prompt "Enter the demo password again"
     if ($demoPassword.Length -lt 16) { throw "The demo password must contain at least 16 characters." }
     if ($demoPassword -ne $confirmPassword) { throw "The two demo passwords do not match." }
@@ -225,7 +225,7 @@ try {
         }
     }
 
-    Invoke-ExternalStep -Name "Creating or resetting all seven demo accounts" -Command {
+    Invoke-ExternalStep -Name "Creating or resetting all nine demo accounts" -Command {
         & npm run demo:seed
     }
     Invoke-ExternalStep -Name "Verifying the seeded client and roles" -Command {
@@ -239,6 +239,8 @@ try {
     Write-Host "Use the private password you entered with these accounts:" -ForegroundColor Green
     foreach ($login in @(
         "saas-owner@$emailDomain",
+        "saas-support@$emailDomain",
+        "saas-auditor@$emailDomain",
         "tenant-admin@$emailDomain",
         "manager@$emailDomain",
         "chef@$emailDomain",

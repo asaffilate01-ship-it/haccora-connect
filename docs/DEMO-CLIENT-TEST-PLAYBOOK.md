@@ -23,7 +23,7 @@ npm run demo:verify
 npm run demo:access
 ```
 
-Re-running the seed is safe: fixed demonstration records are upserted and the seven test users are reused. Their password is reset to the current private `DEMO_PASSWORD` value. `demo:access` signs in through the publishable client as every identity and checks the deployed RLS boundary; it does not use the service key for those assertions.
+Re-running the seed is safe: fixed demonstration records are upserted and the nine verified test users are reused. Their password is reset to the current private `DEMO_PASSWORD` value. Existing accounts without the server-owned `haccora_demo_seed` marker, banned accounts and revoked identities are not automatically adopted. Use a fresh isolated project or ask its authorised Auth administrator to review and recreate legacy demo identities before retrying. `demo:access` signs in through the publishable client as every identity and checks the deployed RLS boundary; it does not use the service key for those assertions.
 
 The accounts are created only after the latest migrations have been applied to the selected non-production project and `npm run demo:seed` succeeds. Source code alone cannot create hosted logins without that project's private service-role key. Phase 25 also checks that every visible assets, document, goods-in, training, cleaning, corrective-action and asset-history row remains in the signed-in tenant, and proves that an inspector cannot insert operational evidence.
 
@@ -64,6 +64,8 @@ With the default `DEMO_EMAIL_DOMAIN=demo.haccora.co.uk`, the seed creates:
 | Isolation owner      | `isolation-owner@demo.haccora.co.uk` | Harbour Café only; proves cross-tenant denial                  |
 
 All accounts use the private `DEMO_PASSWORD` from `.env.demo`. The password is intentionally never committed or printed. If `DEMO_EMAIL_DOMAIN` changes, use the same local parts at that domain.
+
+For an end-user tour of every functional area, see the [Haccora UK user guide](HACCORA-UK-USER-GUIDE.md). Demo access is separate from production customer and SaaS administration; do not circulate a privileged login or seed a live database.
 
 ## 5. Test by role
 

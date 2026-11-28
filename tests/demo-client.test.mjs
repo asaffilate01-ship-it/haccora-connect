@@ -104,3 +104,22 @@ test("playbook tests every seeded role plus offline behaviour", () => {
   assert.match(playbook, /flight mode/i);
   assert.match(playbook, /APNs\/FCM/);
 });
+
+test("demo seed satisfies tenant approval before premises and membership inserts", () => {
+  assert.match(seed, /access_approved_at: now\.toISOString\(\)/);
+  assert.match(seed, /access_approved_by: users\.platformOwner\.id/);
+  assert.match(seed, /access_approval_type: "trial"/);
+  const organizations = seed.indexOf('await upsert("organizations"');
+  const subscriptions = seed.indexOf('"subscriptions",');
+  const premises = seed.indexOf('await upsert("locations"');
+  const members = seed.indexOf('await upsert("organization_memberships"');
+  assert.ok(organizations >= 0 && organizations < subscriptions);
+  assert.ok(subscriptions < premises && premises < members);
+});
+
+test("demo provisioning does not adopt unverified or revoked identities", () => {
+  assert.match(seed, /existing\.app_metadata\?\.haccora_demo_seed !== true/);
+  assert.match(seed, /existing\.user_metadata\?\.haccora_demo_revoked === true/);
+  assert.match(seed, /app_metadata: \{ haccora_demo_seed: true \}/);
+  assert.match(seed, /Refusing to reset an unverified or revoked demo identity/);
+});
