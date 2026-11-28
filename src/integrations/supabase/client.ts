@@ -44,6 +44,10 @@ function createSupabaseClient() {
     throw new Error(message);
   }
 
+  if (SUPABASE_PUBLISHABLE_KEY.startsWith('sb_secret_')) {
+    throw new Error('The browser Supabase client requires a public key');
+  }
+
   return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     global: {
       fetch: createSupabaseFetch(SUPABASE_PUBLISHABLE_KEY),
