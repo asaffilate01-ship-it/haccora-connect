@@ -46,6 +46,7 @@ function harness(
     signIn = async () => ({ error: null }),
     brokenStorage = false,
     screenSession = { session: null },
+    demoRoles = [],
   } = {},
 ) {
   const states = [],
@@ -93,6 +94,9 @@ function harness(
     if (name === "./workspace-cache") return cache;
     if (name === "./supabase" || name === "@/lib/supabase") return { supabase };
     if (name === "@/lib/session") return { useSession: () => screenSession };
+    if (name === "@/lib/native-demo-role-options") {
+      return { getNativeDemoRoleOptions: () => demoRoles };
+    }
     if (name === "@/lib/native-language")
       return { useNativeLanguage: () => ({ copy, language: "en", setLanguage() {} }) };
     if (name === "@react-native-async-storage/async-storage")
@@ -124,6 +128,7 @@ function harness(
     if (name === "react-native")
       return {
         Pressable: "Pressable",
+        ScrollView: "ScrollView",
         View: "View",
         Text: "Text",
         TextInput: "TextInput",
@@ -280,6 +285,49 @@ test("rejected sign-in recovers and duplicate taps submit only once", async () =
     ).props.accessibilityState.busy,
     false,
   );
+  h.cleanup();
+});
+
+test("native demo selection fills the chosen identity and clears previous passwords", async () => {
+  const calls = [];
+  const h = harness("mobile/app/login.tsx", {
+    demoRoles: [
+      { id: "owner", label: "Business owner", email: "owner@example.test", description: "Owner" },
+      { id: "staff", label: "Team member", email: "staff@example.test", description: "Staff" },
+    ],
+    signIn: async (input) => {
+      calls.push(input);
+      return { error: null };
+    },
+  });
+  const inputs = () => nodes(h.render()).filter((node) => node.type === "TextInput");
+  inputs()[1].props.onChangeText("previous-password");
+  const open = () =>
+    nodes(h.render())
+      .find((node) => node.props?.accessibilityState?.expanded !== undefined)
+      .props.onPress();
+  open();
+  nodes(h.render())
+    .find(
+      (node) => node.props?.accessibilityRole === "radio" && text(node).includes("Team member"),
+    )
+    .props.onPress();
+  assert.equal(inputs()[0].props.value, "staff@example.test");
+  assert.equal(inputs()[1].props.value, "");
+  inputs()[1].props.onChangeText("staff-private-password");
+  await nodes(h.render())
+    .find((node) => node.props?.accessibilityState?.busy !== undefined)
+    .props.onPress();
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].email, "staff@example.test");
+  open();
+  nodes(h.render())
+    .find(
+      (node) => node.props?.accessibilityRole === "radio" && text(node).includes("Business owner"),
+    )
+    .props.onPress();
+  assert.equal(inputs()[0].props.value, "owner@example.test");
+  assert.equal(inputs()[1].props.value, "");
   h.cleanup();
 });
 
