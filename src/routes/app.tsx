@@ -416,9 +416,10 @@ function AppShell() {
     }
   };
 
-  const doSignOut = () => {
-    signOut();
-    navigate({ to: "/login" });
+  const doSignOut = async () => {
+    setMenuOpen(false);
+    await signOut();
+    navigate({ to: "/login", replace: true });
   };
 
   const current = visibleFlat.find((i) => isWorkspaceRoute(pathname, i.to, i.exact));
@@ -845,13 +846,13 @@ function AppShell() {
                           <Settings size={14} /> {t("menu.settings")}
                         </Link>
                       )}
-                      <Link
-                        to="/login"
-                        onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-secondary"
+                      <button
+                        type="button"
+                        onClick={() => void doSignOut()}
+                        className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm hover:bg-secondary"
                       >
                         <Users size={14} /> {t("auth.switch")}
-                      </Link>
+                      </button>
                       <button
                         onClick={doSignOut}
                         className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-[color:var(--color-alert-red)] hover:bg-secondary"

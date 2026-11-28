@@ -16,6 +16,7 @@ import {
 import { BrandLogo } from "@/components/BrandLogo";
 import { supabase } from "@/integrations/supabase/haccora-client";
 import { SUPABASE_UNAVAILABLE_MESSAGE } from "@/integrations/supabase/config";
+import { getWebDemoRoleOptions } from "@/lib/web-demo-role-options";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -68,6 +69,24 @@ function LoginPage() {
   const [info, setInfo] = useState<string | null>(null);
   const [acceptingInvite, setAcceptingInvite] = useState(false);
   const [inviteAttempted, setInviteAttempted] = useState(false);
+  const [demoRoles, setDemoRoles] = useState<ReturnType<typeof getWebDemoRoleOptions>>([]);
+  const [demoRole, setDemoRole] = useState("");
+
+  useEffect(() => {
+    setDemoRoles(getWebDemoRoleOptions());
+  }, []);
+
+  const selectedDemo = demoRoles.find((role) => role.id === demoRole);
+  const showDemoRoles = !invitationSignup && mode === "signin" && demoRoles.length > 0;
+
+  const selectDemo = (id: string) => {
+    const selected = demoRoles.find((role) => role.id === id);
+    setDemoRole(selected?.id ?? "");
+    setEmail(selected?.email ?? "");
+    setPassword("");
+    setError(null);
+    setInfo(null);
+  };
 
   useEffect(() => {
     if (hydrated && user) {
@@ -238,6 +257,42 @@ function LoginPage() {
             )}
           </div>
 
+          {showDemoRoles && (
+            <fieldset className="mt-5 rounded-xl border border-border bg-secondary/30 p-4">
+              <legend className="px-1 text-sm font-bold">Choose a demo role</legend>
+              <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
+                Explore a fictional business or isolated platform dashboard. Each option uses its
+                own authorised test identity.
+              </p>
+              <label htmlFor="demo-role" className="text-xs font-semibold">
+                Demonstration dashboard
+              </label>
+              <select
+                id="demo-role"
+                value={demoRole}
+                disabled={busy || !authenticationAvailable}
+                onChange={(event) => selectDemo(event.target.value)}
+                className="mt-1 min-h-11 w-full rounded-lg border border-border bg-card px-3 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+              >
+                <option value="">Choose a role or sign in normally</option>
+                {demoRoles.map((role) => (
+                  <option key={role.id} value={role.id}>
+                    {role.label}
+                  </option>
+                ))}
+              </select>
+              {selectedDemo && (
+                <div aria-live="polite" className="mt-3 space-y-1 text-xs leading-relaxed">
+                  <p className="font-semibold">{selectedDemo.description}</p>
+                  <p className="text-muted-foreground">
+                    Enter the private password supplied for this demo identity. Selecting a role
+                    does not change account permissions.
+                  </p>
+                </div>
+              )}
+            </fieldset>
+          )}
+
           <div className="mt-5 space-y-3">
             {mode === "signup" && (
               <>
@@ -265,7 +320,13 @@ function LoginPage() {
             <Field
               label="Email"
               value={email}
-              onChange={setEmail}
+              onChange={(value) => {
+                setEmail(value);
+                if (selectedDemo && value !== selectedDemo.email) {
+                  setDemoRole("");
+                  setPassword("");
+                }
+              }}
               type="email"
               placeholder="you@restaurant.co.uk"
               autoComplete="email"
