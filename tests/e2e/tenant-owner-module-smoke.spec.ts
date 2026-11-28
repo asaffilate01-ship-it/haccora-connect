@@ -2,7 +2,8 @@ import { expect, test } from "@playwright/test";
 
 const enabled = process.env.HACCORA_MODULE_E2E === "true";
 const email = process.env.ROLE_ACCEPTANCE_OWNER_EMAIL ?? "";
-const password = process.env.ROLE_ACCEPTANCE_PASSWORD ?? "";
+const password =
+  process.env.ROLE_ACCEPTANCE_OWNER_PASSWORD || process.env.ROLE_ACCEPTANCE_PASSWORD || "";
 
 // Read-only route acceptance, using the same protected demo tenant on all three viewport sizes.
 const routeGroups = [
@@ -76,7 +77,7 @@ test.describe("hosted tenant owner module navigation", () => {
     if (process.env.HACCORA_ENV !== "staging" || !process.env.PLAYWRIGHT_BASE_URL) {
       throw new Error("Module tour requires the protected staging application.");
     }
-    if (!email || password.length < 16) {
+    if (!email || password.length < 12) {
       throw new Error("Private demo owner credentials are missing.");
     }
   });

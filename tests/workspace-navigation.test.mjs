@@ -45,3 +45,16 @@ test("workspace search is role-filtered and uses accessible dialog and command c
   assert.match(native, /accessibilityLabel="Search workspace tools"/);
   assert.match(native, /keyboardShouldPersistTaps="handled"/);
 });
+
+test("food safety terminology and punctuation find the same tools on web and native", async () => {
+  assert.equal(matchesWorkspaceSearch("EHO", "Inspection", "/app/inspection"), true);
+  assert.equal(matchesWorkspaceSearch("Natasha’s Law", "PPDS", "/app/ppds"), true);
+  assert.equal(matchesWorkspaceSearch("goods-in", "Receiving", "/app/goodsin"), true);
+  assert.equal(matchesWorkspaceSearch("invoice", "Training", "/app/training"), false);
+
+  const nativeSource = await readFile(
+    new URL("../mobile/lib/workspace-search.ts", import.meta.url),
+    "utf8",
+  );
+  assert.ok(source.includes(nativeSource.trim()));
+});

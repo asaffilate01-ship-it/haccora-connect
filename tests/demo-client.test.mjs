@@ -1,3 +1,4 @@
+import { demoEmails, demoPasswordFor } from "../scripts/demo-client-config.mjs";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
@@ -122,4 +123,23 @@ test("demo provisioning does not adopt unverified or revoked identities", () => 
   assert.match(seed, /existing\.user_metadata\?\.haccora_demo_revoked === true/);
   assert.match(seed, /app_metadata: \{ haccora_demo_seed: true \}/);
   assert.match(seed, /Refusing to reset an unverified or revoked demo identity/);
+});
+
+test("demo owner override stays separate from platform and isolation identities", () => {
+  const env = {
+    DEMO_EMAIL_DOMAIN: "demo.example.test",
+    DEMO_PASSWORD: "private-operator-test-passphrase",
+    DEMO_OWNER_EMAIL: "demo@example.test",
+    DEMO_OWNER_PASSWORD: "owner-test-unique",
+  };
+  const identities = demoEmails(env);
+  assert.equal(identities.owner, "demo@example.test");
+  assert.equal(demoPasswordFor(identities.owner, env), env.DEMO_OWNER_PASSWORD);
+  assert.equal(demoPasswordFor(identities.platformOwner, env), env.DEMO_PASSWORD);
+  assert.equal(demoPasswordFor(identities.isolationOwner, env), env.DEMO_PASSWORD);
+  assert.throws(() => demoEmails({ ...env, DEMO_OWNER_EMAIL: identities.platformOwner }));
+  assert.throws(() => demoPasswordFor(identities.owner, { ...env, DEMO_OWNER_PASSWORD: "" }));
+  assert.throws(() =>
+    demoPasswordFor(identities.owner, { ...env, DEMO_OWNER_PASSWORD: env.DEMO_PASSWORD }),
+  );
 });

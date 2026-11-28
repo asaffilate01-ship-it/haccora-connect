@@ -5,6 +5,7 @@ import {
   DEMO_ORGANIZATION_ID,
   ISOLATION_ORGANIZATION_ID,
   demoEmails,
+  demoPasswordFor,
   requireDemoEnvironment,
 } from "./demo-client-config.mjs";
 
@@ -64,7 +65,10 @@ async function visibleCount(supabase, table) {
 
 async function signIn(email) {
   const supabase = client();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password: demoPasswordFor(email),
+  });
   if (error) throw new Error(`${email}: ${error.message}`);
   return supabase;
 }

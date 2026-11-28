@@ -77,11 +77,11 @@ const accounts = [
   },
 ] as const;
 
-async function signIn(page: Page, email: string) {
+async function signIn(page: Page, email: string, accountPassword: string) {
   const response = await page.goto("/login");
   expect(response?.status()).toBeLessThan(400);
   await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Password").fill(password);
+  await page.getByLabel("Password").fill(accountPassword);
   await page.getByRole("button", { name: "Sign in to Haccora" }).click();
 }
 
@@ -108,7 +108,12 @@ test.describe("authenticated production role dashboards", () => {
         if (message.type() === "error") browserErrors.push(message.text());
       });
 
-      await signIn(page, process.env[account.emailKey] as string);
+      const accountPassword =
+        process.env.HACCORA_ENV === "staging" && account.emailKey === "ROLE_ACCEPTANCE_OWNER_EMAIL"
+          ? process.env.ROLE_ACCEPTANCE_OWNER_PASSWORD || password
+          : password;
+      expect(accountPassword.length).toBeGreaterThanOrEqual(12);
+      await signIn(page, process.env[account.emailKey] as string, accountPassword);
       await expect(page).toHaveURL(new RegExp(`${account.path}/?$`), {
         timeout: 30_000,
       });
