@@ -124,7 +124,7 @@ test("public metadata uses the UK domain while private pages remain non-indexabl
   assert.match(home, /UK Food Safety Management & HACCP Software/);
   assert.match(home, /SoftwareApplication/);
   assert.match(home, /"@type": "Organization"/);
-  assert.match(home, /https:\/\/haccora\.co\.uk\//);
+  assert.ok(home.includes('href: "https://haccora.co.uk/"'));
   assert.equal(JSON.parse(manifest).orientation, "any");
   assert.match(server, /X-Robots-Tag", "noindex, nofollow"/);
   assert.match(worker, /haccora-shell-v2/);
