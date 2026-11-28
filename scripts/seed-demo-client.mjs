@@ -40,7 +40,7 @@ async function ensureUser(email, fullName) {
   if (existing) {
     if (
       existing.app_metadata?.haccora_demo_seed !== true ||
-      (existing.banned_until && Date.parse(existing.banned_until) > Date.now()) ||
+      (existing.banned_until && !(Date.parse(existing.banned_until) <= Date.now())) ||
       existing.user_metadata?.haccora_demo_revoked === true
     ) {
       throw new Error(`Refusing to reset an unverified or revoked demo identity: ${email}`);
