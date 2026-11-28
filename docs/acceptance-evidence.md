@@ -36,3 +36,7 @@ Repository configuration required by the workflow:
 - secret: `ROLE_ACCEPTANCE_PASSWORD`.
 
 The verifier does not mutate subscription, service or credit-control state. It authenticates the tenant owner and platform operator, then checks the provider-derived subscription, tenant service state, credit-control case and notification stage. The platform query creates its normal audit event. The workflow does not simulate or forge a Stripe webhook, and it does not prove Resend/push delivery; those provider delivery logs are separate launch evidence.
+
+## Hosted demo module navigation
+
+The protected staging rehearsal now requires a signed-in browser journey with the provisioned demo roles. It also walks every owner navigation destination on desktop, mobile and tablet viewports. The separate authenticated and owner-module gates must both pass before the evidence manifest marks the web pilot ready. The route tour is read-only; it checks routing, visible content, account scope, viewport overflow and JavaScript runtime exceptions. It does not prove every form mutation, external provider, physical device or business-specific food-safety decision. Retain the existing persistence, RLS and provider acceptance evidence as well.

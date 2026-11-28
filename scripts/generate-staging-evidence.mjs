@@ -21,6 +21,8 @@ const gateNames = [
   "HOSTED_HEALTH_PASSED",
   "HOSTED_SMOKE_PASSED",
   "HOSTED_BROWSER_E2E_PASSED",
+  "HOSTED_AUTHENTICATED_E2E_PASSED",
+  "HOSTED_OWNER_MODULES_PASSED",
   "NATIVE_EXPORT_PASSED",
   "NATIVE_INTERNAL_BUILD_PASSED",
 ];
@@ -36,6 +38,7 @@ const evidenceFiles = [
   "hosted-health.txt",
   "hosted-smoke.txt",
   "hosted-browser-results.json",
+  "hosted-authenticated-acceptance.txt",
   "eas-internal-build.json",
 ];
 
@@ -91,6 +94,8 @@ const requiredWebPilotGates = [
   "HOSTED_HEALTH_PASSED",
   "HOSTED_SMOKE_PASSED",
   "HOSTED_BROWSER_E2E_PASSED",
+  "HOSTED_AUTHENTICATED_E2E_PASSED",
+  "HOSTED_OWNER_MODULES_PASSED",
 ];
 const manifest = {
   schemaVersion: 1,
