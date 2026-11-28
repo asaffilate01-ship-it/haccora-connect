@@ -60,7 +60,10 @@ test("preview and export use the same half-open bounds and reject incomplete evi
 });
 
 test("inspection failures expose a retry and suppress stale evidence and exports", () => {
-  const preview = readFileSync(new URL("../src/routes/app.inspection.tsx", import.meta.url), "utf8");
+  const preview = readFileSync(
+    new URL("../src/routes/app.inspection.tsx", import.meta.url),
+    "utf8",
+  );
   assert.match(preview, /Retry evidence loading/);
   assert.match(preview, /onClick=\{\(\) => void load\(\)\}/);
   assert.match(preview, /disabled=\{loading \|\| exporting\}/);
