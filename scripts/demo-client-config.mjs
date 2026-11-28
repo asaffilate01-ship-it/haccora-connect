@@ -35,18 +35,44 @@ export function requireDemoEnvironment() {
   };
 }
 
-export function demoEmails() {
-  const domain = process.env.DEMO_EMAIL_DOMAIN ?? "example.test";
+export function demoEmails(env = process.env) {
+  const domain = env.DEMO_EMAIL_DOMAIN || "example.test";
   if (!/^[a-z0-9.-]+$/i.test(domain)) throw new Error("DEMO_EMAIL_DOMAIN is invalid.");
-  return {
+  const identities = {
     platformOwner: `saas-owner@${domain}`,
     platformSupport: `saas-support@${domain}`,
     platformAuditor: `saas-auditor@${domain}`,
-    owner: `tenant-admin@${domain}`,
+    owner: env.DEMO_OWNER_EMAIL?.trim().toLowerCase() || `tenant-admin@${domain}`,
     manager: `manager@${domain}`,
     chef: `chef@${domain}`,
     staff: `staff@${domain}`,
     inspector: `inspector@${domain}`,
     isolationOwner: `isolation-owner@${domain}`,
   };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identities.owner)) {
+    throw new Error("DEMO_OWNER_EMAIL must be a valid email address.");
+  }
+  const addresses = Object.values(identities).map((email) => email.toLowerCase());
+  if (new Set(addresses).size !== addresses.length) {
+    throw new Error("Demo identities must use distinct email addresses.");
+  }
+  return identities;
+}
+
+/** A separately shared tenant-owner credential never doubles as an operator password. */
+export function demoPasswordFor(email, env = process.env) {
+  const identities = demoEmails(env);
+  const password = env.DEMO_PASSWORD;
+  if (!password || password.length < 16) {
+    throw new Error("DEMO_PASSWORD must contain at least 16 characters.");
+  }
+  const ownerEmail = env.DEMO_OWNER_EMAIL?.trim();
+  const ownerPassword = env.DEMO_OWNER_PASSWORD;
+  if (ownerEmail || ownerPassword) {
+    if (!ownerEmail || !ownerPassword || ownerPassword.length < 12 || ownerPassword === password) {
+      throw new Error("Use a distinct demo owner email and a separate password of 12+ characters.");
+    }
+    if (email.toLowerCase() === identities.owner) return ownerPassword;
+  }
+  return password;
 }

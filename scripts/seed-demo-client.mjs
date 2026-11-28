@@ -7,6 +7,7 @@ import {
   ISOLATION_ORGANIZATION_ID,
   ISOLATION_ORGANIZATION_SLUG,
   demoEmails,
+  demoPasswordFor,
   requireDemoEnvironment,
 } from "./demo-client-config.mjs";
 
@@ -36,6 +37,7 @@ async function findUser(email) {
 }
 
 async function ensureUser(email, fullName) {
+  const accountPassword = demoPasswordFor(email);
   const existing = await findUser(email);
   if (existing) {
     if (
@@ -46,7 +48,7 @@ async function ensureUser(email, fullName) {
       throw new Error(`Refusing to reset an unverified or revoked demo identity: ${email}`);
     }
     const { data, error } = await supabase.auth.admin.updateUserById(existing.id, {
-      password,
+      password: accountPassword,
       email_confirm: true,
       user_metadata: { ...existing.user_metadata, full_name: fullName, haccora_demo: true },
     });
@@ -55,7 +57,7 @@ async function ensureUser(email, fullName) {
   }
   const { data, error } = await supabase.auth.admin.createUser({
     email,
-    password,
+    password: accountPassword,
     email_confirm: true,
     app_metadata: { haccora_demo_seed: true },
     user_metadata: { full_name: fullName, haccora_demo: true },

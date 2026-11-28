@@ -1,3 +1,5 @@
+import { demoEmails, demoPasswordFor } from "./demo-client-config.mjs";
+
 const failures = [];
 const value = (name) => (process.env[name] ?? "").trim();
 const projectRefPattern = /^[a-z0-9]{20}$/;
@@ -98,6 +100,11 @@ requireSecret("SUPABASE_ACCESS_TOKEN", 20);
 requireSecret("SUPABASE_DB_PASSWORD", 16);
 requireSecret("DEMO_PASSWORD", 16);
 requireValue("DEMO_EMAIL_DOMAIN");
+try {
+  demoPasswordFor(demoEmails().owner);
+} catch (error) {
+  failures.push(error.message);
+}
 
 if (value("STAGING_APPLY_CHANGES") === "true") {
   if (value("STAGING_BACKUP_OR_DISPOSABLE_CONFIRMED") !== "true") {

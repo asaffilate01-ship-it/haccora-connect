@@ -63,7 +63,7 @@ With the default `DEMO_EMAIL_DOMAIN=demo.haccora.co.uk`, the seed creates:
 | Inspector            | `inspector@demo.haccora.co.uk`       | Read-only, time/location/scope-limited Riverside evidence      |
 | Isolation owner      | `isolation-owner@demo.haccora.co.uk` | Harbour Café only; proves cross-tenant denial                  |
 
-All accounts use the private `DEMO_PASSWORD` from `.env.demo`. The password is intentionally never committed or printed. If `DEMO_EMAIL_DOMAIN` changes, use the same local parts at that domain.
+By default all test accounts use the private `DEMO_PASSWORD` from `.env.demo`. For a separately shared tenant-owner login, set `DEMO_OWNER_EMAIL` (for example `demo@haccora.co.uk`) and `DEMO_OWNER_PASSWORD` (a distinct private password, at least 12 characters). The other eight test identities retain the private 16+ character `DEMO_PASSWORD`. In the protected GitHub staging environment, use an owner email variable and an owner password secret. Neither password is committed or printed. If `DEMO_EMAIL_DOMAIN` changes, use the same local parts at that domain.
 
 For an end-user tour of every functional area, see the [Haccora UK user guide](HACCORA-UK-USER-GUIDE.md). Demo access is separate from production customer and SaaS administration; do not circulate a privileged login or seed a live database.
 
@@ -86,7 +86,7 @@ For an end-user tour of every functional area, see the [Haccora UK user guide](H
 
 ### Tenant admin journey
 
-1. Sign in as `tenant-admin@<DEMO_EMAIL_DOMAIN>`.
+1. Sign in as `DEMO_OWNER_EMAIL` if configured, otherwise `tenant-admin@<DEMO_EMAIL_DOMAIN>`.
 2. Review business, premises, team, notification and subscription settings.
 3. Invite another test user and verify role/location scoping.
 4. Request an inspector access link, verify its expiry/scope, then revoke it.

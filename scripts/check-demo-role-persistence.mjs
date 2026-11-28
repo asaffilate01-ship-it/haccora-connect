@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { demoEmails, requireDemoEnvironment } from "./demo-client-config.mjs";
+import { demoEmails, demoPasswordFor, requireDemoEnvironment } from "./demo-client-config.mjs";
 
 const productionMode = process.env.HACCORA_ENV === "production";
 let url;
@@ -72,7 +72,11 @@ function client() {
 
 async function signIn(email) {
   const supabase = client();
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  const accountPassword = productionMode ? password : demoPasswordFor(email);
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password: accountPassword,
+  });
   if (error || !data.user)
     throw new Error(`Could not authenticate the ${email.split("@")[0]} role.`);
   return { supabase, user: data.user };
