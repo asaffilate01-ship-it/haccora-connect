@@ -21,6 +21,7 @@ import {
 } from "lucide-react-native";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSession } from "@/lib/session";
+import { matchesWorkspaceSearch } from "@/lib/workspace-search";
 import { cardShadow, colours, screen, typeScale } from "@/lib/theme";
 
 const ALL_TENANT_ROLES = ["owner", "manager", "chef", "staff"] as const;
@@ -71,7 +72,6 @@ export default function More() {
   if (!workspaceReady) return <Redirect href="/onboarding" />;
   if (serviceStatus !== "active") return <Redirect href="/account-status" />;
 
-  const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
   const visibleGroups = groups
     .map(
       ([name, items]) =>
@@ -79,8 +79,7 @@ export default function More() {
           name,
           items.filter(([label, route, roles]) => {
             if (!role || !roles.includes(role)) return false;
-            const text = `${name} ${label} ${route}`.toLowerCase().replace(/[-_/&]/g, " ");
-            return terms.every((term) => text.includes(term));
+            return matchesWorkspaceSearch(query, name, label, route);
           }),
         ] as const,
     )
@@ -107,7 +106,7 @@ export default function More() {
         <Search size={18} color={colours.muted} />
         <TextInput
           accessibilityLabel="Search workspace tools"
-          placeholder="Find a tool or task"
+          placeholder="Search EHO, allergens, equipment…"
           placeholderTextColor={colours.muted}
           value={query}
           onChangeText={setQuery}
