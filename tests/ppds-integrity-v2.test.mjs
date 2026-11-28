@@ -78,7 +78,10 @@ test("first-week setup is premises-scoped and checks real method attestations", 
   assert.match(route, /\.eq\("location_id", user\.locationId\)/);
   assert.match(route, /safeMethodReviewCurrent\(/);
   assert.match(route, /profile\.data\?\.reviewed_at \? profile\.data : null/);
-  const review = await readFile(new URL("../src/lib/safe-method-review.ts", import.meta.url), "utf8");
+  const review = await readFile(
+    new URL("../src/lib/safe-method-review.ts", import.meta.url),
+    "utf8",
+  );
   assert.match(review, /controls\.managementConfirmed !== true/);
   assert.match(review, /controls\.templateVersion !== method\.version/);
   assert.match(route, /Progress unavailable/);
