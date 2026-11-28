@@ -8,7 +8,16 @@ type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
 };
 
-const PRIVATE_ROUTE_PREFIXES = ["/app", "/login", "/onboarding", "/platform", "/account-status"];
+const PRIVATE_ROUTE_PREFIXES = [
+  "/app",
+  "/login",
+  "/onboarding",
+  "/platform",
+  "/platform-prospects",
+  "/platform-support",
+  "/account-status",
+  "/api",
+];
 
 let serverEntryPromise: Promise<ServerEntry> | undefined;
 
@@ -90,6 +99,10 @@ function withSecurityHeaders(response: Response, request: Request): Response {
     )
   ) {
     headers.set("Cache-Control", "private, no-store, no-cache, max-age=0, must-revalidate");
+    headers.set("X-Robots-Tag", "noindex, nofollow");
+  }
+  if (requestUrl.hostname === "app.haccora.co.uk") {
+    headers.set("X-Robots-Tag", "noindex, nofollow");
   }
   return new Response(response.body, {
     status: response.status,

@@ -29,7 +29,7 @@
       "package": "uk.co.haccora.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#c8102e"
+        "backgroundColor": "#ffffff"
       },
       "blockedPermissions": ["RECORD_AUDIO"],
       "intentFilters": [

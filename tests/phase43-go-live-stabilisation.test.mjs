@@ -73,7 +73,8 @@ test("Phase 43 preserves protected auth redirects and canonical marketing URLs",
   assert.match(appRoute, /authRedirectStarted = useRef\(false\)/);
   assert.match(appRoute, /pathname\.startsWith\("\/app"\) \? pathname : "\/app"/);
   assert.match(appRoute, /replace: true/);
-  assert.match(sitemap, /process\.env\.PUBLIC_MARKETING_URL/);
+  assert.match(sitemap, /const BASE_URL = "https:\/\/haccora\.co\.uk";/);
+  assert.doesNotMatch(sitemap, /process\.env\.PUBLIC_MARKETING_URL/);
   assert.doesNotMatch(sitemap, /process\.env\.PUBLIC_APP_URL/);
   assert.match(envExample, /PUBLIC_MARKETING_URL=https:\/\/haccora\.co\.uk/);
   assert.match(legalRoute, /legalPublishReady \? "index, follow" : "noindex, nofollow"/);

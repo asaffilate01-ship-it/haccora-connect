@@ -12,6 +12,12 @@ import {
   ShieldCheck,
   Smartphone,
   Thermometer,
+  Truck,
+  QrCode,
+  PackageSearch,
+  Sparkles,
+  Settings2,
+  Building2,
   Users,
   Wheat,
   CheckCircle2,
@@ -38,23 +44,37 @@ import mobileDiary from "@/assets/mobile-diary.jpg";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Haccora — Safe. Clean. Compliant." },
+      { title: "UK Food Safety Management & HACCP Software | Haccora" },
       {
         name: "description",
         content:
-          "Haccora is one platform for HACCP, temperature logs, cleaning, allergens, training and EHO inspection evidence — web, mobile app and platform console for UK food businesses.",
+          "Run your UK food safety management system with HACCP, daily checks, allergens, PPDS, equipment, traceability and inspection evidence in Haccora.",
       },
-      { property: "og:title", content: "Haccora — Safe. Clean. Compliant." },
+      { property: "og:title", content: "UK Food Safety Management & HACCP Software | Haccora" },
       {
         property: "og:description",
         content:
-          "HACCP, daily diary, temperature monitoring, allergens and PPDS, staff compliance and one-tap inspection packs — built for UK kitchens.",
+          "Run your UK food safety management system with HACCP, daily checks, allergens, PPDS, equipment, traceability and inspection evidence in Haccora.",
       },
       { property: "og:type", content: "website" },
+      {
+        name: "keywords",
+        content:
+          "UK food safety software, HACCP software, SFBB digital diary, allergen management, PPDS labelling, EHO inspection, food traceability, hospitality compliance",
+      },
       { property: "og:url", content: "https://haccora.co.uk/" },
-      { property: "og:image", content: "https://haccora.co.uk/images/promo-hero.jpg" },
+      { property: "og:image", content: "https://haccora.co.uk/og-haccora-v2.png" },
+      { property: "og:image:type", content: "image/png" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:image", content: "https://haccora.co.uk/images/promo-hero.jpg" },
+      { name: "twitter:title", content: "UK Food Safety Management & HACCP Software | Haccora" },
+      {
+        name: "twitter:description",
+        content:
+          "Run your UK food safety management system with HACCP, daily checks, allergens, PPDS, equipment, traceability and inspection evidence in Haccora.",
+      },
+      { name: "twitter:image", content: "https://haccora.co.uk/og-haccora-v2.png" },
     ],
     links: [{ rel: "canonical", href: "https://haccora.co.uk/" }],
     scripts: [
@@ -62,12 +82,53 @@ export const Route = createFileRoute("/")({
         type: "application/ld+json",
         children: JSON.stringify({
           "@context": "https://schema.org",
-          "@type": "FAQPage",
-          mainEntity: MARKETING_FAQS.map(({ question, answer }) => ({
-            "@type": "Question",
-            name: question,
-            acceptedAnswer: { "@type": "Answer", text: answer },
-          })),
+          "@graph": [
+            {
+              "@type": "Organization",
+              "@id": "https://haccora.co.uk/#organization",
+              name: "Haccora",
+              url: "https://haccora.co.uk/",
+              logo: "https://haccora.co.uk/brand/haccora-logo.png",
+              email: PUBLIC_CONFIG.legal.email,
+            },
+            {
+              "@type": "WebSite",
+              "@id": "https://haccora.co.uk/#website",
+              name: "Haccora",
+              url: "https://haccora.co.uk/",
+              inLanguage: "en-GB",
+              publisher: { "@id": "https://haccora.co.uk/#organization" },
+            },
+            {
+              "@type": "SoftwareApplication",
+              name: "Haccora",
+              url: "https://haccora.co.uk/",
+              applicationCategory: "BusinessApplication",
+              applicationSubCategory: "Food safety management software",
+              operatingSystem: "Web, iOS, Android",
+              description:
+                "Run your UK food safety management system with HACCP, daily checks, allergens, PPDS, equipment, traceability and inspection evidence in Haccora.",
+              inLanguage: "en-GB",
+              publisher: { "@id": "https://haccora.co.uk/#organization" },
+              featureList: [
+                "HACCP and safe methods",
+                "Daily checks and temperature logs",
+                "Allergen and PPDS evidence",
+                "Supplier and batch traceability",
+                "Staff training and equipment records",
+                "Scoped inspection evidence",
+                "Multi-site management",
+              ],
+            },
+            {
+              "@type": "FAQPage",
+              mainEntity: MARKETING_FAQS.map(({ question, answer }) => ({
+                "@type": "Question",
+                name: question,
+                acceptedAnswer: { "@type": "Answer", text: answer },
+              })),
+            },
+          ],
         }),
       },
     ],
@@ -98,7 +159,7 @@ const MODULES = [
     icon: Wheat,
     tone: "icon-3d-green",
     title: "Allergens & PPDS labelling",
-    body: "Recipe-level allergen matrix, Natasha's Law compliant PPDS labels and menu change control.",
+    body: "Recipe-level allergen evidence, PPDS label preparation and supplier change reviews before approval.",
   },
   {
     icon: Users,
@@ -110,7 +171,43 @@ const MODULES = [
     icon: ShieldCheck,
     tone: "icon-3d",
     title: "Inspection evidence packs",
-    body: "One tap produces a structured evidence pack for your EHO — no folders, no last-minute panic.",
+    body: "Prepare a scoped, dated evidence pack for inspection or internal review.",
+  },
+  {
+    icon: Truck,
+    tone: "icon-3d-dark",
+    title: "Suppliers & purchasing",
+    body: "Supplier records, purchasing, receiving checks and ingredient specification reviews.",
+  },
+  {
+    icon: PackageSearch,
+    tone: "icon-3d-green",
+    title: "Stock, traceability & recalls",
+    body: "Connect lots, recipes and sale evidence; record stock movements, waste and recall decisions.",
+  },
+  {
+    icon: QrCode,
+    tone: "icon-3d",
+    title: "Equipment, QR & maintenance",
+    body: "Equipment histories, printable QR labels, calibration and assigned maintenance checks.",
+  },
+  {
+    icon: Settings2,
+    tone: "icon-3d-green",
+    title: "Routines & corrective actions",
+    body: "Assign work, track exceptions, record resolutions and review the evidence trail.",
+  },
+  {
+    icon: Sparkles,
+    tone: "icon-3d-dark",
+    title: "AI evidence assistant",
+    body: "Review source-linked evidence and draft guidance when configured, with human approval.",
+  },
+  {
+    icon: Building2,
+    tone: "icon-3d",
+    title: "Multi-site & business management",
+    body: "Role-based dashboards, site oversight, team permissions, subscriptions and integrations.",
   },
 ];
 
@@ -118,12 +215,12 @@ const PLATFORM = [
   {
     icon: Smartphone,
     title: "Mobile app and PWA",
-    body: "iOS and Android app plus an installable web app, with offline capture that syncs when signal returns.",
+    body: "Responsive web and PWA, plus native core workflows that queue supported records when offline.",
   },
   {
     icon: Bell,
     title: "Alerts and notifications",
-    body: "Push, email and in-app alerts for missed checks, breaches, expiries and corrective actions.",
+    body: "In-app alerts, with email and push delivery when the relevant providers are configured.",
   },
   {
     icon: Lock,
@@ -566,11 +663,11 @@ function PromoHome() {
           <div className="relative mx-auto grid max-w-[1400px] items-center gap-8 px-4 py-12 sm:py-16 md:grid-cols-[1.15fr_0.85fr] md:gap-10 md:px-8 md:py-24">
             <div>
               <h1 className="hero-title display-black uppercase tracking-tight">
-                Every food safety record, in one place
+                Your complete food safety management system
               </h1>
               <p className="mt-4 max-w-xl text-sm leading-relaxed text-white/75 sm:mt-5 sm:text-base md:text-lg">
-                Haccora replaces paper diaries, temperature sheets and folders of printouts with one
-                simple system your whole team can use — kitchen, office and inspector.
+                Digital HACCP, SFBB-style routines, allergens, PPDS, supplier traceability, staff
+                training and inspection evidence in one system for UK food businesses.
               </p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <Link to="/contact" className="btn-red w-full sm:w-auto">
@@ -581,7 +678,7 @@ function PromoHome() {
               <ul className="mt-7 grid gap-2 text-sm text-white/65 sm:flex sm:flex-wrap sm:gap-x-6 sm:gap-y-2">
                 {[
                   "Structured for UK food businesses",
-                  "Works offline in the kitchen",
+                  "Native offline capture for supported tasks",
                   "Inspector-ready evidence",
                 ].map((item) => (
                   <li key={item} className="flex items-center gap-2">
@@ -644,9 +741,9 @@ function PromoHome() {
           <div className="relative border-t border-white/10">
             <div className="mx-auto grid max-w-[1400px] grid-cols-2 gap-x-4 px-4 md:grid-cols-4 md:gap-px md:px-8">
               {[
-                ["6", "compliance modules"],
-                ["1 tap", "inspection evidence pack"],
-                ["Offline", "capture in the kitchen"],
+                ["Connected", "food safety and operations"],
+                ["Scoped", "inspection evidence packs"],
+                ["Mobile", "daily evidence capture"],
                 ["Multi-site", "oversight and audit trail"],
               ].map(([stat, label]) => (
                 <div key={label} className="py-6 md:py-10">
@@ -665,7 +762,7 @@ function PromoHome() {
         >
           <p className="eyebrow">The platform</p>
           <h2 className="mt-3 text-2xl sm:text-3xl md:text-4xl display-black uppercase tracking-tight">
-            Everything a UK food business has to prove
+            Connected food safety, kitchen operations and business management
           </h2>
           <div className="mt-8 grid gap-4 sm:mt-10 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
             {MODULES.map(({ icon: Icon, tone, title, body }) => (
@@ -675,13 +772,19 @@ function PromoHome() {
                 </span>
                 <h3 className="mt-5 text-lg font-black leading-tight">{title}</h3>
                 <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{body}</p>
-                <span className="mt-5 inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-[color:var(--color-alert-red)] opacity-0 transition-opacity group-hover:opacity-100">
-                  Included
-                  <ArrowRight size={13} />
-                </span>
+                <Link
+                  to="/features"
+                  className="mt-5 inline-flex items-center gap-1.5 text-xs font-bold text-[color:var(--color-alert-red)] hover:underline"
+                  aria-label={`Explore ${title}`}
+                >
+                  Explore features <ArrowRight size={13} />
+                </Link>
               </article>
             ))}
           </div>
+          <p className="mt-6 text-sm text-muted-foreground">
+            Module availability depends on your plan, role and configured providers.
+          </p>
         </section>
 
         {/* Screenshots */}
@@ -689,11 +792,11 @@ function PromoHome() {
           <div className="mx-auto max-w-[1400px] px-4 py-12 sm:py-16 md:px-8 md:py-24">
             <p className="eyebrow text-[color:var(--color-alert-red-on-dark)]">Inside Haccora</p>
             <h2 className="mt-3 display-black uppercase tracking-tight">
-              Real screens from the live product
+              Explore the Haccora workspace
             </h2>
             <p className="mt-3 max-w-2xl text-sm text-white/65 sm:text-base">
-              These are captured straight from the Haccora workspace — no mockups. Pick a screen to
-              see how the day-to-day evidence is recorded and produced for inspection.
+              Explore product screens for day-to-day evidence, inspections and kitchen operations.
+              The current release and your granted role determine the tools available to you.
             </p>
             <div className="mt-8 sm:mt-10">
               <ScreenshotGallery />

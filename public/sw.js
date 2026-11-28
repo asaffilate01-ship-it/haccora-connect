@@ -1,5 +1,11 @@
-const CACHE = "haccora-shell-v1";
-const SHELL = ["/", "/manifest.webmanifest", "/favicon.ico", "/icons/icon-192.png"];
+const CACHE = "haccora-shell-v2";
+const SHELL = [
+  "/",
+  "/manifest.webmanifest?v=2",
+  "/favicon.ico?v=2",
+  "/favicon.png?v=2",
+  "/icons/icon-192.png?v=2",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)));
@@ -31,7 +37,10 @@ self.addEventListener("fetch", (event) => {
   const sensitiveRoute =
     url.pathname.startsWith("/app") ||
     url.pathname.startsWith("/login") ||
-    url.pathname.startsWith("/onboarding");
+    url.pathname.startsWith("/onboarding") ||
+    url.pathname.startsWith("/platform") ||
+    url.pathname.startsWith("/account-status") ||
+    url.pathname.startsWith("/api/");
   if (sensitiveRoute) {
     event.respondWith(fetch(request));
     return;
@@ -56,7 +65,11 @@ self.addEventListener("fetch", (event) => {
       (cached) =>
         cached ??
         fetch(request).then((response) => {
-          if (response.ok && ["style", "script", "image", "font"].includes(request.destination)) {
+          if (
+            response.ok &&
+            !response.headers.get("cache-control")?.includes("no-store") &&
+            ["style", "script", "image", "font"].includes(request.destination)
+          ) {
             caches.open(CACHE).then((cache) => cache.put(request, response.clone()));
           }
           return response;

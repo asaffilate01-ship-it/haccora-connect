@@ -23,6 +23,17 @@ export const Route = createFileRoute("/help")({
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://haccora.co.uk/help" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:image", content: "https://haccora.co.uk/og-haccora-v2.png" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:image:type", content: "image/png" },
+      { name: "twitter:title", content: "Haccora Help Centre — UK food-safety software" },
+      {
+        name: "twitter:description",
+        content:
+          "Practical help for setting up and using Haccora records, roles, equipment QR labels, inspection evidence, subscriptions and native apps.",
+      },
+      { name: "twitter:image", content: "https://haccora.co.uk/og-haccora-v2.png" },
     ],
     links: [{ rel: "canonical", href: "https://haccora.co.uk/help" }],
   }),

@@ -14,9 +14,14 @@ export function industryHead(content: IndustryContent) {
       { property: "og:description", content: content.description },
       { property: "og:type", content: "website" },
       { property: "og:url", content: url },
-      { property: "og:image", content: "https://haccora.co.uk/og-haccora.jpg" },
+      { property: "og:image", content: "https://haccora.co.uk/og-haccora-v2.png" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:image", content: "https://haccora.co.uk/og-haccora.jpg" },
+      { name: "twitter:image", content: "https://haccora.co.uk/og-haccora-v2.png" },
+      { name: "twitter:title", content: content.metaTitle },
+      { name: "twitter:description", content: content.description },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:image:type", content: "image/png" },
     ],
     links: [{ rel: "canonical", href: url }],
     scripts: [
@@ -60,10 +65,10 @@ export function IndustryPage({ content }: { content: IndustryContent }) {
           <p className="mt-5 max-w-3xl text-black/60 text-lg">{content.intro}</p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
-              to="/login"
+              to="/contact"
               className="inline-flex items-center gap-2 rounded-full bg-[color:var(--color-alert-red)] px-6 py-3 text-sm font-black uppercase tracking-widest text-white"
             >
-              Start free
+              Request a demo
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
             <Link
