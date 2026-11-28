@@ -308,9 +308,7 @@ test("native demo selection fills the chosen identity and clears previous passwo
       .props.onPress();
   open();
   nodes(h.render())
-    .find(
-      (node) => node.props?.accessibilityRole === "radio" && text(node).includes("Team member"),
-    )
+    .find((node) => node.props?.accessibilityRole === "radio" && text(node).includes("Team member"))
     .props.onPress();
   assert.equal(inputs()[0].props.value, "staff@example.test");
   assert.equal(inputs()[1].props.value, "");
