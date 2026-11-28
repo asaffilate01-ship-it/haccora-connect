@@ -6,14 +6,14 @@ One food safety management system for independent and multi-site UK hospitality 
 
 ## Reference products and engineering patterns
 
-| Reference | Pattern to evaluate | Haccora acceptance criterion |
-| --- | --- | --- |
-| [Trail](https://trailapp.com/) | Shift-based tasks and exception-led daily operations | Today's work prioritises tasks due, overdue and failed, with a clearly assigned responsible person. |
-| [FoodDocs](https://www.fooddocs.com/) | Guided setup, monitoring and source-based traceability | Setup progress measures actual evidence; ingredient-to-batch-to-sale links can be inspected. |
-| [Navitas Safety](https://www.navitassafety.com/) | Multi-site oversight and monitoring integrations | Site filtering, device health, missed readings and escalations are explicit. |
-| [TanStack Router](https://github.com/TanStack/router) | Type-safe navigation and nested route boundaries | Shared route registry, keyboard discovery, role access and direct-link checks remain consistent. |
-| [OpenAI Agents SDK](https://github.com/openai/openai-agents-js) | Tool orchestration, human approval and tracing | Any AI-assisted action has a recorded run, source links, proposed change and authorised approval before execution. |
-| [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk) | Schema-validated tools and scoped authorisation | Tools operate on the requesting tenant only and reject unauthorised reads and writes. |
+| Reference                                                                    | Pattern to evaluate                                    | Haccora acceptance criterion                                                                                       |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| [Trail](https://trailapp.com/)                                               | Shift-based tasks and exception-led daily operations   | Today's work prioritises tasks due, overdue and failed, with a clearly assigned responsible person.                |
+| [FoodDocs](https://www.fooddocs.com/)                                        | Guided setup, monitoring and source-based traceability | Setup progress measures actual evidence; ingredient-to-batch-to-sale links can be inspected.                       |
+| [Navitas Safety](https://www.navitassafety.com/)                             | Multi-site oversight and monitoring integrations       | Site filtering, device health, missed readings and escalations are explicit.                                       |
+| [TanStack Router](https://github.com/TanStack/router)                        | Type-safe navigation and nested route boundaries       | Shared route registry, keyboard discovery, role access and direct-link checks remain consistent.                   |
+| [OpenAI Agents SDK](https://github.com/openai/openai-agents-js)              | Tool orchestration, human approval and tracing         | Any AI-assisted action has a recorded run, source links, proposed change and authorised approval before execution. |
+| [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk) | Schema-validated tools and scoped authorisation        | Tools operate on the requesting tenant only and reject unauthorised reads and writes.                              |
 
 References inform interaction patterns, not copied code or unsupported feature claims. No external AI SDK or provider is installed by this change.
 
