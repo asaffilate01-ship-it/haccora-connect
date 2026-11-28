@@ -66,13 +66,7 @@ const routeGroups = [
     "/app/audits",
     "/app/inspection",
   ],
-  [
-    "/app/security",
-    "/app/support",
-    "/app/preferences",
-    "/app/integrations",
-    "/app/billing",
-  ],
+  ["/app/security", "/app/support", "/app/preferences", "/app/integrations", "/app/billing"],
 ];
 
 test.describe("hosted tenant owner module navigation", () => {
