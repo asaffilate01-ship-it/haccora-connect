@@ -16,17 +16,17 @@ The demo is not a compliance certificate, inspection prediction or substitute fo
 
 The protected demo seed creates Riverside Kitchen Demo and a second isolation-test business, Harbour Café. The following are the proposed login local parts; the administrator chooses the private demo email domain and passwords. These are not published credentials or confirmation that a hosted account exists.
 
-| Identity | What to explore |
-| --- | --- |
-| tenant-admin | Full tenant-owner journey and all entitled business modules |
-| manager | Daily supervision, controls, training, corrective actions and inspection |
-| chef | Kitchen evidence, recipes, ingredients, allergens, receiving and stock |
-| staff | Opening and closing checks, temperatures, cleaning and QR records |
-| inspector | Scoped, expiring read-only inspection evidence |
-| isolation-owner | Separate test business; verify no Riverside evidence is visible |
-| saas-owner | Test-only platform administration, tenant metadata and billing controls |
-| saas-support | Test-only support and service operations, without tenant evidence bypass |
-| saas-auditor | Test-only read-only platform audit and permitted finance overview |
+| Identity        | What to explore                                                          |
+| --------------- | ------------------------------------------------------------------------ |
+| tenant-admin    | Full tenant-owner journey and all entitled business modules              |
+| manager         | Daily supervision, controls, training, corrective actions and inspection |
+| chef            | Kitchen evidence, recipes, ingredients, allergens, receiving and stock   |
+| staff           | Opening and closing checks, temperatures, cleaning and QR records        |
+| inspector       | Scoped, expiring read-only inspection evidence                           |
+| isolation-owner | Separate test business; verify no Riverside evidence is visible          |
+| saas-owner      | Test-only platform administration, tenant metadata and billing controls  |
+| saas-support    | Test-only support and service operations, without tenant evidence bypass |
+| saas-auditor    | Test-only read-only platform audit and permitted finance overview        |
 
 Never use a single superuser for all roles. Platform accounts must only be provisioned on an isolated demonstration database, not shared with real tenants. Use private credentials, MFA where required, and separate test sessions. See [demo provisioning and role testing](DEMO-CLIENT-TEST-PLAYBOOK.md).
 
@@ -43,25 +43,25 @@ Never use a single superuser for all roles. Platform accounts must only be provi
 
 ## 3. Workspace tour
 
-| Area | Use | How to demonstrate |
-| --- | --- | --- |
-| Dashboard, Today, Quick log | Shift overview and fast recording | Record a test check, then refresh and confirm evidence |
-| Compliance coach, UK readiness | Highlight evidence and review gaps | Review missing or stale sources; never interpret a score as approval |
-| Control centre, alerts, expiry | Due work, exceptions, escalation | Investigate a fictional failed check and assign a follow-up |
-| Routines, workflows, rota | Scheduled work and staff coordination | Draft a routine, review ownership, publish if entitled |
-| UK compliance, safe methods, HACCP, HACCP flows | Premises-specific documented controls | Record a draft and approved version, review linked official sources |
-| Daily diary, checks, temperatures | Daily monitoring and sign-off | Complete an opening check and record an out-of-range reading and response |
-| Calibration, cleaning, pest, oil, chemicals | Equipment and hygiene controls | Add a fictional maintenance or cleaning record, check history |
-| Menu, recipes, PPDS and labels | Ingredients, allergen and label evidence | Review a supplier specification and resulting label draft |
-| Suppliers, purchasing, goods in, stock, waste | Receiving and inventory evidence | Create a fictional delivery, batch and stock movement |
-| Traceability, recalls | Trace lots and record recall decisions | Use test batches; do not issue real recall notices |
-| Equipment | Assets, QR labels, checks and maintenance | Scan a demonstration QR, add an attributed check |
-| Organisation, rota, training, inductions, health | People and premises management | Invite a test colleague and review training evidence; avoid real health data |
-| Incidents, complaints, documents, logs, audits | Incident investigation and retained evidence | Create a test issue, attach synthetic evidence, review history |
-| Inspection | Scoped evidence review and exports | Set an inclusive UK date window, retry if loading fails, review the PDF |
-| Security, preferences, support | Privacy, device settings, service support | Review access and accessibility; use support without disclosing secrets |
-| Billing, integrations, business services | Plan, provider readiness and service requests | Review configuration; exercise sandbox providers only |
-| AI evidence assistant | Draft and summarise source-linked evidence | Check source references, review suggestions, never automate approvals |
+| Area                                             | Use                                           | How to demonstrate                                                           |
+| ------------------------------------------------ | --------------------------------------------- | ---------------------------------------------------------------------------- |
+| Dashboard, Today, Quick log                      | Shift overview and fast recording             | Record a test check, then refresh and confirm evidence                       |
+| Compliance coach, UK readiness                   | Highlight evidence and review gaps            | Review missing or stale sources; never interpret a score as approval         |
+| Control centre, alerts, expiry                   | Due work, exceptions, escalation              | Investigate a fictional failed check and assign a follow-up                  |
+| Routines, workflows, rota                        | Scheduled work and staff coordination         | Draft a routine, review ownership, publish if entitled                       |
+| UK compliance, safe methods, HACCP, HACCP flows  | Premises-specific documented controls         | Record a draft and approved version, review linked official sources          |
+| Daily diary, checks, temperatures                | Daily monitoring and sign-off                 | Complete an opening check and record an out-of-range reading and response    |
+| Calibration, cleaning, pest, oil, chemicals      | Equipment and hygiene controls                | Add a fictional maintenance or cleaning record, check history                |
+| Menu, recipes, PPDS and labels                   | Ingredients, allergen and label evidence      | Review a supplier specification and resulting label draft                    |
+| Suppliers, purchasing, goods in, stock, waste    | Receiving and inventory evidence              | Create a fictional delivery, batch and stock movement                        |
+| Traceability, recalls                            | Trace lots and record recall decisions        | Use test batches; do not issue real recall notices                           |
+| Equipment                                        | Assets, QR labels, checks and maintenance     | Scan a demonstration QR, add an attributed check                             |
+| Organisation, rota, training, inductions, health | People and premises management                | Invite a test colleague and review training evidence; avoid real health data |
+| Incidents, complaints, documents, logs, audits   | Incident investigation and retained evidence  | Create a test issue, attach synthetic evidence, review history               |
+| Inspection                                       | Scoped evidence review and exports            | Set an inclusive UK date window, retry if loading fails, review the PDF      |
+| Security, preferences, support                   | Privacy, device settings, service support     | Review access and accessibility; use support without disclosing secrets      |
+| Billing, integrations, business services         | Plan, provider readiness and service requests | Review configuration; exercise sandbox providers only                        |
+| AI evidence assistant                            | Draft and summarise source-linked evidence    | Check source references, review suggestions, never automate approvals        |
 
 Some areas start empty until the owner creates suitable records. Do not interpret an empty list as an assurance that nothing is wrong. Native apps cover a subset of the web workflows.
 
