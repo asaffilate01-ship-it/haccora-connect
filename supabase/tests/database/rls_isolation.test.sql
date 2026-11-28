@@ -1,6 +1,6 @@
 begin;
 
-select plan(21);
+select plan(23);
 
 select ok(
   not (select rolcanlogin from pg_roles where rolname = 'sandbox_exec'),
@@ -76,6 +76,15 @@ insert into auth.users (
     'staff-a@example.test', '', now(), '{"provider":"email","providers":["email"]}',
     '{}', now(), now()
   );
+
+insert into auth.users (
+  id, aud, role, email, encrypted_password, email_confirmed_at,
+  raw_app_meta_data, raw_user_meta_data, created_at, updated_at
+) values (
+  '30000000-0000-0000-0000-000000000003', 'authenticated', 'authenticated',
+  'no-membership@example.test', '', now(), '{"provider":"email","providers":["email"]}',
+  '{}', now(), now()
+);
 
 insert into public.organizations (
   id, name, slug, created_by, access_approved_at, access_approval_type
@@ -207,6 +216,10 @@ select is(
   (select count(*) from public.temperature_logs),
   1::bigint,
   'Tenant A owner can read Tenant A temperature evidence'
+);
+select ok(
+  (select count(*) from public.safe_method_templates) > 0,
+  'An active organization member can read safe method templates'
 );
 
 reset role;
@@ -372,6 +385,20 @@ select is(
   (select count(*) from public.temperature_logs),
   0::bigint,
   'Tenant B owner cannot read Tenant A temperature evidence'
+);
+
+reset role;
+set local role authenticated;
+select set_config(
+  'request.jwt.claim.sub',
+  '30000000-0000-0000-0000-000000000003',
+  true
+);
+select set_config('request.jwt.claim.role', 'authenticated', true);
+select is(
+  (select count(*) from public.safe_method_templates),
+  0::bigint,
+  'An authenticated account without active organization membership cannot read safe method templates'
 );
 
 reset role;
