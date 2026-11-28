@@ -38,6 +38,13 @@ export const Route = createFileRoute("/compare/haccora-vs-fooddocs")({
       { property: "og:type", content: "article" },
       { property: "og:url", content: URL },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:image", content: "https://haccora.co.uk/og-haccora-v2.png" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:image:type", content: "image/png" },
+      { name: "twitter:title", content: "Haccora vs FoodDocs — UK food safety software compared" },
+      { name: "twitter:description", content: DESCRIPTION },
+      { name: "twitter:image", content: "https://haccora.co.uk/og-haccora-v2.png" },
     ],
     links: [{ rel: "canonical", href: URL }],
     scripts: [

@@ -26,6 +26,17 @@ export const Route = createFileRoute("/blog/")({
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://haccora.co.uk/blog" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:image", content: "https://haccora.co.uk/og-haccora-v2.png" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:image:type", content: "image/png" },
+      { name: "twitter:title", content: "Blog — Haccora" },
+      {
+        name: "twitter:description",
+        content:
+          "HACCP, Food-handler health, food hygiene and daily operations — practical guides for UK food businesses.",
+      },
+      { name: "twitter:image", content: "https://haccora.co.uk/og-haccora-v2.png" },
     ],
     links: [{ rel: "canonical", href: "https://haccora.co.uk/blog" }],
   }),
