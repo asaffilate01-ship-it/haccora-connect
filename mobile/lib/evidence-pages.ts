@@ -23,7 +23,13 @@ export async function readEvidencePages<T>(
     const result = await fetchPage(offset, offset + PAGE_SIZE - 1);
     if (!isCurrent()) throw new Error("Evidence request superseded");
     const { data, error, count } = result;
-    if (error || !data || count === null || !Number.isSafeInteger(count) || count < 0) {
+    if (
+      error ||
+      !Array.isArray(data) ||
+      count === null ||
+      !Number.isSafeInteger(count) ||
+      count < 0
+    ) {
       throw new Error("Evidence page unavailable");
     }
     if (count > MAX_ROWS) throw new Error("Evidence exceeds review limit");
@@ -33,8 +39,11 @@ export async function readEvidencePages<T>(
       throw new Error("Invalid evidence page");
     }
     for (const row of data) {
+      if (row == null) throw new Error("Duplicate or invalid evidence record");
       const key = rowKey(row);
-      if (!key || seen.has(key)) throw new Error("Duplicate or invalid evidence record");
+      if (typeof key !== "string" || !key.trim() || seen.has(key)) {
+        throw new Error("Duplicate or invalid evidence record");
+      }
       seen.add(key);
       rows.push(row);
     }
