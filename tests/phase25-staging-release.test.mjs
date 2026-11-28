@@ -124,3 +124,28 @@ test("Phase 25 hosted RLS rehearsal checks sensitive evidence and inspector writ
   assert.match(access, /Inspector cannot create operational evidence/);
   assert.match(access, /tenantBoundary/);
 });
+
+test("staging pilot requires authenticated dashboard and owner module navigation checks", async () => {
+  const [workflow, manifest, smoke, shell] = await Promise.all([
+    read(".github/workflows/staging-rehearsal.yml"),
+    read("scripts/generate-staging-evidence.mjs"),
+    read("tests/e2e/tenant-owner-module-smoke.spec.ts"),
+    read("src/routes/app.tsx"),
+  ]);
+  assert.match(workflow, /HACCORA_AUTHENTICATED_E2E: "true"/);
+  assert.match(workflow, /ROLE_ACCEPTANCE_PASSWORD: \$\{\{ secrets\.DEMO_PASSWORD \}\}/);
+  assert.match(workflow, /npm run test:e2e:authenticated/);
+  assert.match(workflow, /--project=tablet-chromium/);
+  assert.match(smoke, /HACCORA_MODULE_E2E/);
+  assert.match(smoke, /HACCORA_ENV !== "staging"/);
+  for (const gate of ["HOSTED_AUTHENTICATED_E2E_PASSED", "HOSTED_OWNER_MODULES_PASSED"]) {
+    assert.ok(manifest.includes(gate));
+    assert.ok(workflow.includes(gate));
+  }
+  const destinations = [
+    ...new Set([...shell.matchAll(/to: "(\/app(?:\/[a-z-]+)?)"/g)].map((match) => match[1])),
+  ];
+  for (const destination of destinations) {
+    assert.ok(smoke.includes(JSON.stringify(destination)), `Missing module tour: ${destination}`);
+  }
+});
