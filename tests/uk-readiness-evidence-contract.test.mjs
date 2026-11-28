@@ -31,3 +31,19 @@ test("incomplete evidence never produces a displayed coverage percentage", () =>
   assert.match(source, /unavailable \? "—" :/);
   assert.match(source, /applicable: snapshot\.servesPpds !== false/);
 });
+
+test("guided setup only counts completed and verified current evidence", async () => {
+  const setup = await readFile(
+    new URL("../src/routes/app.get-started.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(setup, /safeMethodReviewCurrent\(/);
+  assert.match(setup, /templates\.count !== templates\.data\.length/);
+  assert.match(setup, /methods\.count !== methods\.data\.length/);
+  assert.match(setup, /\.eq\("status", "completed"\)/);
+  assert.match(setup, /\.not\("completed_at", "is", null\)/);
+  assert.match(setup, /\.not\("verified_at", "is", null\)/);
+  assert.match(setup, /request !== requestId\.current/);
+  assert.match(setup, /Retry setup evidence/);
+  assert.match(setup, /setSnapshot\(EMPTY\)/);
+});
