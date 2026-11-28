@@ -78,8 +78,8 @@ export default function Login() {
               </Pressable>
             ))}
           <Text style={styles.demoText}>
-            Use the private password for the selected identity. SaaS operator roles are available
-            in the isolated web demo.
+            Use the private password for the selected identity. SaaS operator roles are available in
+            the isolated web demo.
           </Text>
         </View>
       )}
