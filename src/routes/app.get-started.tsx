@@ -130,7 +130,7 @@ function SiteSetup() {
           .select("trial_ends_at")
           .eq("organization_id", user.organizationId)
           .maybeSingle(),
-          ]);
+      ]);
       if (request !== requestId.current) return;
       const counts = [team, assets, suppliers, recipes, checks, training];
       if (
@@ -147,6 +147,7 @@ function SiteSetup() {
         throw new Error("Incomplete setup evidence");
       }
       const today = operationalDate(new Date(), "Europe/London");
+      const adoptions = methods.data;
       const completedMethods = templates.data.filter((method) => {
         const prompts = method.prompts;
         if (
@@ -155,7 +156,7 @@ function SiteSetup() {
         ) {
           return false;
         }
-        const adoption = methods.data.find((row) => row.template_id === method.id);
+        const adoption = adoptions.find((row) => row.template_id === method.id);
         return safeMethodReviewCurrent(
           { version: method.version, prompts },
           profile.data?.reviewed_at ? profile.data : null,
@@ -265,7 +266,10 @@ function SiteSetup() {
       </header>
 
       {error && (
-        <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm">
+        <div
+          role="alert"
+          className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm"
+        >
           Some setup data could not be loaded: {error}
           <button type="button" className="ml-2 underline" onClick={() => void load()}>
             Retry setup evidence
