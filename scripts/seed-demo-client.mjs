@@ -38,6 +38,13 @@ async function findUser(email) {
 async function ensureUser(email, fullName) {
   const existing = await findUser(email);
   if (existing) {
+    if (
+      existing.app_metadata?.haccora_demo_seed !== true ||
+      (existing.banned_until && Date.parse(existing.banned_until) > Date.now()) ||
+      existing.user_metadata?.haccora_demo_revoked === true
+    ) {
+      throw new Error(`Refusing to reset an unverified or revoked demo identity: ${email}`);
+    }
     const { data, error } = await supabase.auth.admin.updateUserById(existing.id, {
       password,
       email_confirm: true,
@@ -50,6 +57,7 @@ async function ensureUser(email, fullName) {
     email,
     password,
     email_confirm: true,
+    app_metadata: { haccora_demo_seed: true },
     user_metadata: { full_name: fullName, haccora_demo: true },
   });
   if (error) throw error;
@@ -114,6 +122,9 @@ await upsert("organizations", [
     name: "Riverside Kitchen Demo Ltd",
     slug: DEMO_ORGANIZATION_SLUG,
     created_by: users.owner.id,
+    access_approved_at: now.toISOString(),
+    access_approved_by: users.platformOwner.id,
+    access_approval_type: "trial",
     country_code: "GB",
     timezone: "Europe/London",
     enabled_modules: ["food_safety", "allergens", "training", "documents", "team"],
@@ -123,11 +134,41 @@ await upsert("organizations", [
     name: "Harbour Café Isolation Demo Ltd",
     slug: ISOLATION_ORGANIZATION_SLUG,
     created_by: users.isolationOwner.id,
+    access_approved_at: now.toISOString(),
+    access_approved_by: users.platformOwner.id,
+    access_approval_type: "trial",
     country_code: "GB",
     timezone: "Europe/London",
     enabled_modules: ["food_safety", "allergens", "training", "documents", "team"],
   },
 ]);
+await upsert(
+  "subscriptions",
+  [
+    {
+      organization_id: DEMO_ORGANIZATION_ID,
+      plan: "complete",
+      status: "trialing",
+      seats: 5,
+      trial_ends_at: isoDaysFromNow(12),
+      current_period_end: isoDaysFromNow(12),
+      currency: "gbp",
+      billing_email: emails.owner,
+    },
+    {
+      organization_id: ISOLATION_ORGANIZATION_ID,
+      plan: "essential",
+      status: "trialing",
+      seats: 2,
+      trial_ends_at: isoDaysFromNow(9),
+      current_period_end: isoDaysFromNow(9),
+      currency: "gbp",
+      billing_email: emails.isolationOwner,
+    },
+  ],
+  "organization_id",
+);
+
 await upsert("locations", [
   {
     id: DEMO_LOCATION_ID,
@@ -274,8 +315,8 @@ await upsert(
     vertical: "restaurant",
     business_state: "England",
     onboarded_at: now.toISOString(),
-    push_alerts: true,
-    email_alerts: true,
+    push_alerts: false,
+    email_alerts: false,
   })),
 );
 
@@ -304,33 +345,6 @@ await upsert("inspector_access_grants", [
     reason: "Seeded read-only UK food-safety inspection demonstration",
   },
 ]);
-
-await upsert(
-  "subscriptions",
-  [
-    {
-      organization_id: DEMO_ORGANIZATION_ID,
-      plan: "complete",
-      status: "trialing",
-      seats: 5,
-      trial_ends_at: isoDaysFromNow(12),
-      current_period_end: isoDaysFromNow(12),
-      currency: "gbp",
-      billing_email: emails.owner,
-    },
-    {
-      organization_id: ISOLATION_ORGANIZATION_ID,
-      plan: "essential",
-      status: "trialing",
-      seats: 2,
-      trial_ends_at: isoDaysFromNow(9),
-      current_period_end: isoDaysFromNow(9),
-      currency: "gbp",
-      billing_email: emails.isolationOwner,
-    },
-  ],
-  "organization_id",
-);
 
 await upsert("checks", [
   {
