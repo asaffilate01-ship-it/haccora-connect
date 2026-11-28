@@ -12,12 +12,16 @@ import {
   Recycle,
   QrCode,
   BarChart3,
+  PackageSearch,
+  Sparkles,
+  CalendarDays,
+  Settings2,
 } from "lucide-react";
 import { MarketingShell } from "@/components/MarketingShell";
 
-const TITLE = "Features — Digital HACCP, temperature logs and inspection packs | Haccora";
+const TITLE = "UK Food Safety Management System Features | Haccora";
 const DESCRIPTION =
-  "Every Haccora module: digital HACCP, fridge and probe temperature logs, cleaning schedules, allergens and PPDS, staff training, supplier and delivery checks, QR equipment checks and one-tap EHO inspection packs.";
+  "Explore Haccora modules for HACCP, SFBB, allergens, PPDS, supplier traceability, daily checks, staff training, equipment, inspections and multi-site management.";
 
 const FEATURES = [
   {
@@ -58,12 +62,12 @@ const FEATURES = [
   {
     icon: Bell,
     title: "Alerts and escalations",
-    body: "Missed checks, breaches and expiries notify the right person by email, push or in-app alert.",
+    body: "Review missed checks, deviations and expiries; use configured in-app, email or push notifications.",
   },
   {
     icon: FileText,
     title: "One-tap inspection pack",
-    body: "Export a dated, tamper-evident evidence pack for your EHO or third-party auditor.",
+    body: "Generate a dated, scoped evidence pack for your environmental health officer or auditor.",
   },
   {
     icon: Recycle,
@@ -78,7 +82,27 @@ const FEATURES = [
   {
     icon: Smartphone,
     title: "Works offline on mobile",
-    body: "Native iOS and Android apps plus an installable web app that queue records when signal drops.",
+    body: "Responsive web and PWA, with supported native workflows that queue records when offline.",
+  },
+  {
+    icon: PackageSearch,
+    title: "Batch traceability and recall decisions",
+    body: "Review supplier lots, recipe links and sale evidence; record attributable recall decisions.",
+  },
+  {
+    icon: CalendarDays,
+    title: "Workflows, rota and corrective actions",
+    body: "Assign tasks, organise shifts, follow up deviations and retain evidence of resolution.",
+  },
+  {
+    icon: Sparkles,
+    title: "AI evidence assistant",
+    body: "Draft and review evidence summaries with configured AI providers and human approval.",
+  },
+  {
+    icon: Settings2,
+    title: "Business administration and integrations",
+    body: "Manage permitted roles, subscriptions, service requests and provider configuration.",
   },
 ] as const;
 
@@ -91,9 +115,14 @@ export const Route = createFileRoute("/features")({
       { property: "og:description", content: DESCRIPTION },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://haccora.co.uk/features" },
-      { property: "og:image", content: "https://haccora.co.uk/og-haccora.jpg" },
+      { property: "og:image", content: "https://haccora.co.uk/og-haccora-v2.png" },
+      { property: "og:image:type", content: "image/png" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:image", content: "https://haccora.co.uk/og-haccora.jpg" },
+      { name: "twitter:title", content: TITLE },
+      { name: "twitter:description", content: DESCRIPTION },
+      { name: "twitter:image", content: "https://haccora.co.uk/og-haccora-v2.png" },
     ],
     links: [{ rel: "canonical", href: "https://haccora.co.uk/features" }],
   }),

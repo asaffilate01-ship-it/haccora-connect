@@ -5,4 +5,5 @@ Disallow: /login
 Disallow: /onboarding
 Disallow: /platform
 Disallow: /account-status
+Disallow: /api/
 Sitemap: https://haccora.co.uk/sitemap.xml

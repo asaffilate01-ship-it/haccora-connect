@@ -15,10 +15,12 @@ export function BrandLogoArtwork({
 }) {
   return (
     <img
-      src={light ? "/brand/haccora-logo-light.png" : "/brand/haccora-logo.png"}
+      src={light ? "/brand/haccora-wordmark-light-v2.png" : "/brand/haccora-wordmark-v2.png"}
       alt={decorative ? "" : title}
       aria-hidden={decorative ? true : undefined}
       className={`${className} object-contain`}
+      width={720}
+      height={208}
       loading="eager"
       decoding="async"
     />

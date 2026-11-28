@@ -2,7 +2,7 @@ import { Image, type ImageStyle, StyleSheet, useWindowDimensions } from "react-n
 
 const darkLogo = require("@/assets/haccora-wordmark.png");
 const lightLogo = require("@/assets/haccora-wordmark-light.png");
-const ASPECT_RATIO = 720 / 371;
+const ASPECT_RATIO = 720 / 208;
 
 type BrandLogoProps = {
   maxWidth?: number;
@@ -19,7 +19,7 @@ export function BrandLogo({
   style,
 }: BrandLogoProps) {
   const { width } = useWindowDimensions();
-  const logoWidth = Math.max(minWidth, Math.min(maxWidth, width - 48));
+  const logoWidth = Math.min(Math.max(1, width - 48), Math.max(minWidth, maxWidth));
 
   return (
     <Image

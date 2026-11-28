@@ -62,7 +62,8 @@ export const Route = createFileRoute("/home")({
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://haccora.co.uk/home" },
-      { property: "og:image", content: "https://haccora.co.uk/og-haccora.jpg" },
+      { property: "og:image", content: "https://haccora.co.uk/og-haccora-v2.png" },
+      { property: "og:image:type", content: "image/png" },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "630" },
       {
@@ -70,7 +71,13 @@ export const Route = createFileRoute("/home")({
         content: "Haccora — food safety software for UK businesses",
       },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:image", content: "https://haccora.co.uk/og-haccora.jpg" },
+      { name: "twitter:title", content: "Explore Haccora — UK food safety management" },
+      {
+        name: "twitter:description",
+        content:
+          "Explore digital HACCP, kitchen operations, allergen control, traceability and role-based dashboards.",
+      },
+      { name: "twitter:image", content: "https://haccora.co.uk/og-haccora-v2.png" },
     ],
     links: [{ rel: "canonical", href: "https://haccora.co.uk/home" }],
     scripts: [
