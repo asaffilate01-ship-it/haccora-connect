@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, CheckCircle2, Circle, Clock3, Rocket, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/haccora-client";
 import { useAuth } from "@/lib/auth";
+import { operationalDate } from "@/lib/operational-day";
+import { safeMethodReviewCurrent, type ReviewControls } from "@/lib/safe-method-review";
 
 export const Route = createFileRoute("/app/get-started")({ component: GetStarted });
 
@@ -40,9 +42,18 @@ type SetupStep = {
 
 function GetStarted() {
   const { user } = useAuth();
+  if (!user?.organizationId || !user.locationId) {
+    return <p className="p-5 text-sm">Select an active premises to review setup progress.</p>;
+  }
+  return <SiteSetup key={`${user.id}:${user.organizationId}:${user.locationId}:${user.role}`} />;
+}
+
+function SiteSetup() {
+  const { user } = useAuth();
   const [snapshot, setSnapshot] = useState(EMPTY);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const requestId = useRef(0);
 
   const load = useCallback(async () => {
     if (!user?.organizationId || !user.locationId) {
@@ -50,14 +61,27 @@ function GetStarted() {
       setError("Select an active premises before using the setup checklist.");
       return;
     }
+    const request = ++requestId.current;
+    setSnapshot(EMPTY);
     setLoading(true);
     setError("");
     const count = { count: "exact" as const, head: true };
-    const [profile, team, methods, assets, suppliers, recipes, checks, training, subscription] =
-      await Promise.all([
+    try {
+      const [
+        profile,
+        team,
+        methods,
+        templates,
+        assets,
+        suppliers,
+        recipes,
+        checks,
+        training,
+        subscription,
+      ] = await Promise.all([
         supabase
           .from("site_compliance_profiles")
-          .select("location_id,jurisdiction")
+          .select("location_id,jurisdiction,business_type,reviewed_at")
           .eq("organization_id", user.organizationId)
           .eq("location_id", user.locationId)
           .maybeSingle(),
@@ -68,10 +92,11 @@ function GetStarted() {
           .eq("status", "active"),
         supabase
           .from("site_safe_methods")
-          .select("id,controls,review_due_at")
+          .select("template_id,status,controls,review_due_at", { count: "exact" })
           .eq("organization_id", user.organizationId)
           .eq("location_id", user.locationId)
           .eq("status", "active"),
+        supabase.from("safe_method_templates").select("id,version,prompts", { count: "exact" }),
         supabase
           .from("assets")
           .select("id", count)
@@ -91,64 +116,80 @@ function GetStarted() {
           .from("checks")
           .select("id", count)
           .eq("organization_id", user.organizationId)
-          .eq("location_id", user.locationId),
+          .eq("location_id", user.locationId)
+          .eq("status", "completed")
+          .not("completed_at", "is", null),
         supabase
           .from("training_records")
           .select("id", count)
           .eq("organization_id", user.organizationId)
-          .eq("location_id", user.locationId),
+          .eq("location_id", user.locationId)
+          .not("verified_at", "is", null),
         supabase
           .from("subscriptions")
           .select("trial_ends_at")
           .eq("organization_id", user.organizationId)
           .maybeSingle(),
-      ]);
-    const results = [
-      profile,
-      team,
-      methods,
-      assets,
-      suppliers,
-      recipes,
-      checks,
-      training,
-      subscription,
-    ];
-    const firstError = results.find((result) => result.error)?.error;
-    if (firstError) {
-      setError("Site onboarding data could not be verified. Refresh before relying on progress.");
-      setLoading(false);
-      return;
+          ]);
+      if (request !== requestId.current) return;
+      const counts = [team, assets, suppliers, recipes, checks, training];
+      if (
+        profile.error ||
+        subscription.error ||
+        methods.error ||
+        templates.error ||
+        !methods.data ||
+        !templates.data ||
+        methods.count !== methods.data.length ||
+        templates.count !== templates.data.length ||
+        counts.some((result) => result.error || result.count === null)
+      ) {
+        throw new Error("Incomplete setup evidence");
+      }
+      const today = operationalDate(new Date(), "Europe/London");
+      const completedMethods = templates.data.filter((method) => {
+        const prompts = method.prompts;
+        if (
+          !Array.isArray(prompts) ||
+          !prompts.every((prompt): prompt is string => typeof prompt === "string" && !!prompt.trim())
+        ) {
+          return false;
+        }
+        const adoption = methods.data.find((row) => row.template_id === method.id);
+        return safeMethodReviewCurrent(
+          { version: method.version, prompts },
+          profile.data?.reviewed_at ? profile.data : null,
+          adoption
+            ? { ...adoption, controls: adoption.controls as unknown as ReviewControls | null }
+            : undefined,
+          today,
+        );
+      }).length;
+      setSnapshot({
+        profile: profile.data?.reviewed_at ? 1 : 0,
+        team: team.count ?? 0,
+        methods: completedMethods,
+        assets: assets.count ?? 0,
+        suppliers: suppliers.count ?? 0,
+        recipes: recipes.count ?? 0,
+        checks: checks.count ?? 0,
+        training: training.count ?? 0,
+        trialEndsAt: subscription.data?.trial_ends_at ?? null,
+      });
+    } catch {
+      if (request !== requestId.current) return;
+      setSnapshot(EMPTY);
+      setError("Site onboarding evidence could not be verified. Refresh to try again.");
+    } finally {
+      if (request === requestId.current) setLoading(false);
     }
-    const completedMethods = (methods.data ?? []).filter((row) => {
-      const details = row.controls as Record<string, unknown> | null;
-      const answers = details?.answers as Record<string, string> | undefined;
-      return (
-        details?.managementConfirmed === true &&
-        details?.jurisdiction === profile.data?.jurisdiction &&
-        typeof details?.templateVersion === "string" &&
-        Boolean(answers) &&
-        Object.values(answers ?? {}).length > 0 &&
-        Object.values(answers ?? {}).every((answer) => answer.trim().length >= 12) &&
-        (!row.review_due_at || row.review_due_at >= new Date().toISOString().slice(0, 10))
-      );
-    }).length;
-    setSnapshot({
-      profile: profile.data ? 1 : 0,
-      team: team.count ?? 0,
-      methods: completedMethods,
-      assets: assets.count ?? 0,
-      suppliers: suppliers.count ?? 0,
-      recipes: recipes.count ?? 0,
-      checks: checks.count ?? 0,
-      training: training.count ?? 0,
-      trialEndsAt: subscription.data?.trial_ends_at ?? null,
-    });
-    setLoading(false);
   }, [user?.organizationId, user?.locationId]);
 
   useEffect(() => {
     void load();
+    return () => {
+      requestId.current += 1;
+    };
   }, [load]);
 
   const steps = useMemo<SetupStep[]>(
@@ -224,8 +265,11 @@ function GetStarted() {
       </header>
 
       {error && (
-        <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm">
+        <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm">
           Some setup data could not be loaded: {error}
+          <button type="button" className="ml-2 underline" onClick={() => void load()}>
+            Retry setup evidence
+          </button>
         </div>
       )}
 
@@ -236,14 +280,14 @@ function GetStarted() {
             {loading || error ? "—" : `${progress}%`}
           </div>
           <div className="mt-3 h-2 overflow-hidden rounded-full bg-secondary">
-            <div className="h-full bg-success transition-all" style={{ width: `${progress}%` }} />
+            <div className="h-full bg-success transition-all" style={{ width: `${loading || error ? 0 : progress}%` }} />
           </div>
           <p className="mt-3 text-xs text-muted-foreground">
-            {error
+            {loading || error
               ? "Progress unavailable"
               : `${completed} of ${steps.length} setup steps complete`}
           </p>
-          {trialDays !== null && (
+          {!loading && !error && trialDays !== null && Number.isFinite(trialDays) && (
             <div className="mt-4 rounded-xl bg-secondary p-3 text-xs">
               <Clock3 size={14} className="mr-1 inline" /> {trialDays} trial day
               {trialDays === 1 ? "" : "s"} remaining
@@ -264,7 +308,7 @@ function GetStarted() {
               key={step.title}
               className="flex items-center gap-3 p-4 hover:bg-secondary/50 transition"
             >
-              {step.complete ? (
+              {!loading && !error && step.complete ? (
                 <CheckCircle2 size={19} className="shrink-0 text-success" />
               ) : (
                 <Circle size={19} className="shrink-0 text-muted-foreground" />
