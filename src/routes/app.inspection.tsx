@@ -216,7 +216,15 @@ function InspectionWorkspace() {
 
       {loadError && (
         <div role="alert" className="rounded-xl bg-destructive/10 p-4 text-sm text-destructive">
-          {loadError}
+          <p>{loadError}</p>
+          <button
+            type="button"
+            className="mt-2 rounded-md border border-current px-3 py-1.5 font-semibold"
+            onClick={() => void load()}
+            disabled={loading || exporting}
+          >
+            Retry evidence loading
+          </button>
         </div>
       )}
 
