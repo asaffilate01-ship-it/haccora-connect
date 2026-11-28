@@ -85,3 +85,49 @@ test("launch help explains competitor-service and notification boundaries", asyn
     /does not automatically turn general guidance into a safe business-specific decision/,
   );
 });
+
+test("social card, favicons and responsive wordmarks have consistent real image dimensions", async () => {
+  const png = (path) => readFile(new URL(`../${path}`, import.meta.url));
+  const dimensions = (bytes) => {
+    assert.equal(bytes.subarray(0, 8).toString("hex"), "89504e470d0a1a0a");
+    return [bytes.readUInt32BE(16), bytes.readUInt32BE(20)];
+  };
+
+  assert.deepEqual(dimensions(await png("public/og-haccora-v2.png")), [1200, 630]);
+  assert.deepEqual(dimensions(await png("public/favicon.png")), [64, 64]);
+  assert.deepEqual(dimensions(await png("public/icons/icon-192.png")), [192, 192]);
+  assert.deepEqual(dimensions(await png("public/icons/icon-512.png")), [512, 512]);
+  assert.deepEqual(dimensions(await png("public/icons/apple-touch-icon.png")), [180, 180]);
+
+  for (const [web, native] of [
+    ["haccora-wordmark-v2.png", "haccora-wordmark.png"],
+    ["haccora-wordmark-light-v2.png", "haccora-wordmark-light.png"],
+  ]) {
+    const webBytes = await png(`public/brand/${web}`);
+    assert.deepEqual(dimensions(webBytes), [720, 208]);
+    assert.deepEqual(webBytes, await png(`mobile/assets/${native}`));
+  }
+});
+
+test("public metadata uses the UK domain while private pages remain non-indexable", async () => {
+  const [root, home, manifest, server, worker, industry] = await Promise.all([
+    text("src/routes/__root.tsx"),
+    text("src/routes/index.tsx"),
+    text("public/manifest.webmanifest"),
+    text("src/server.ts"),
+    text("public/sw.js"),
+    text("src/components/IndustryPage.tsx"),
+  ]);
+
+  assert.match(root, /og-haccora-v2\.png/);
+  assert.match(root, /favicon\.png\?v=2/);
+  assert.match(home, /UK Food Safety Management & HACCP Software/);
+  assert.match(home, /SoftwareApplication/);
+  assert.match(home, /"@type": "Organization"/);
+  assert.match(home, /https:\/\/haccora\.co\.uk\//);
+  assert.equal(JSON.parse(manifest).orientation, "any");
+  assert.match(server, /X-Robots-Tag", "noindex, nofollow"/);
+  assert.match(worker, /haccora-shell-v2/);
+  assert.match(industry, /to="\/contact"/);
+  assert.match(industry, /Request a demo/);
+});

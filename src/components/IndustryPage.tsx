@@ -65,10 +65,10 @@ export function IndustryPage({ content }: { content: IndustryContent }) {
           <p className="mt-5 max-w-3xl text-black/60 text-lg">{content.intro}</p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
-              to="/login"
+              to="/contact"
               className="inline-flex items-center gap-2 rounded-full bg-[color:var(--color-alert-red)] px-6 py-3 text-sm font-black uppercase tracking-widest text-white"
             >
-              Start free
+              Request a demo
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
             <Link
